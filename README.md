@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Pilsa Frontend
 
-## Getting Started
+필사 홈페이지 제작단 Frontend팀
 
-First, run the development server:
+## 👥 Team Members
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- 윤정민 [@Kristyn-Yoon](https://github.com/Kristyn-Yoon)
+- 문예빈 [@yeabhin37](https://github.com/yeabhin37)
+- 신채원 [@kalrae](https://github.com/kalrae)
+- 정주환 [@juhwan12345](https://github.com/juhwan12345)
+- 하종연 [@jngyeon125](https://github.com/jngyeon125)
+
+## 할당업무 (추후 업데이트 예정)
+
+- 윤정민
+- 문예빈
+- 신채원
+- 정주환
+- 하종연
+
+## 폴더구조
+
+```
+├── app/ #  Next.js App Router (라우팅 전용)
+│   ├── layout.js  # 전역 레이아웃 (Header 등)
+│   ├── page.js  # 메인 페이지
+│   ├── (auth)/  # 인증 관련 라우트 그룹
+│   ├── (member)/  # 로그인 후 영역 - 재학생, 졸업생
+│   └── (public)/  # 비로그인 접근 가능 페이지
+├── components/  # 재사용 가능한 UI 컴포넌트
+│   ├── ui/  # 가장 작은 단위 UI (shadcn, button, input 등)
+│   ├── common/  # 전역 공통 단일 컴포넌트
+│   ├── shared/  # 여러 컴포넌트가 조합 + 여러 곳에서 사용되는 컴포넌트
+│   └── service/  # 특정 도메인 전용 컴포넌트
+├── hooks/  # 커스텀 React Hooks
+├── apis/  # API 통신 관련 로직
+├── stores/  # Zustand 전역 상태
+├── utils/  # 유틸리티 함수
+└── constants/  # 상수 정의
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 기술 스택
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+![Next.js](https://img.shields.io/badge/Next.js-000?logo=next.js&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-000?logo=tailwindcss&logoColor=white)
+![Zustand](https://img.shields.io/badge/Zustand-000?logo=react&logoColor=white)
+![shadcn/ui](https://img.shields.io/badge/shadcn%2Fui-000?logo=radixui&logoColor=white)
