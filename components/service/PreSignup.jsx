@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 
-export default function StudentStatusSelector() {
+export default function PreSignup() {
   const [hoveredButton, setHoveredButton] = useState(null);
 
   const handleSelection = (type) => {
