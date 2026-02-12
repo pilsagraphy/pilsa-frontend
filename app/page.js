@@ -1,4 +1,5 @@
-// app/page.js (컴포넌트 테스트용)
+import LoginSection from '../components/service/LoginPage/LoginSection';
+
 export default function MainPage() {
   return (
     <section className="mx-auto flex w-full flex-col gap-6 ">
