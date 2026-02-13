@@ -10,14 +10,8 @@ export default function LoginSection() {
   const [error, setError] = useState(false);
 
   const handleLogin = () => {
-    // TODO: 실제 API 연결 시 여기서 결과에 따라 setError(true/false)
-    const loginSuccess = false; // 지금은 실패했다고 가정
-
-    if (!loginSuccess) {
-      setError(true);
-    } else {
-      setError(false);
-    }
+    const loginSuccess = false;
+    setError(!loginSuccess);
   };
 
   return (
@@ -26,6 +20,36 @@ export default function LoginSection() {
         <h2 className="text-[24px] font-semibold text-[#454545]">로그인</h2>
 
         <div className="mt-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-[6px] text-[14px] text-black tracking-[-0.28px]">
+              <Checkbox
+                className="h-6 w-6 rounded-[2px]"
+                checked={saveId}
+                onCheckedChange={(v) => setSaveId(Boolean(v))}
+              />
+              아이디 저장
+            </label>
+
+            <div className="flex items-center text-[14px] tracking-[-0.28px]  whitespace-nowrap">
+              <button
+                type="button"
+                className="text-[#c4c4c4] hover:text-[#424242] hover:underline transition-colors"
+              >
+                아이디
+              </button>
+
+              <span className="mx-1 text-[#c4c4c4]">/</span>
+
+              <button
+                type="button"
+                className="text-[#c4c4c4] hover:text-[#424242] hover:underline transition-colors"
+              >
+                비밀번호
+              </button>
+              <span className="text-[#c4c4c4]">를 잊으셨나요?</span>
+            </div>
+          </div>
+
           <Input
             className="h-[56px] rounded-[6px] border-[#c4c4c4] text-[18px]"
             placeholder="아이디를 입력하세요"
@@ -36,21 +60,11 @@ export default function LoginSection() {
             placeholder="비밀번호를 입력하세요"
           />
 
-          {/* 에러 메시지: error === true 일 때만 보임 */}
           {error && (
-            <p className="text-[14px] text-[#c75c5c]">아이디 또는 비밀번호가 잘못 되었습니다</p>
+            <p className="text-[14px] text-[#c75c5c]">
+              로그인 정보를 찾을 수 없습니다. 다시 시도해주세요.
+            </p>
           )}
-
-          <div className="flex items-center justify-between">
-            <label className="flex items-center gap-2 text-[18px] text-[#919191]">
-              <Checkbox checked={saveId} onCheckedChange={(v) => setSaveId(Boolean(v))} />
-              아이디 저장
-            </label>
-
-            <button type="button" className="text-[18px] text-[#c4c4c4] hover:underline">
-              /비밀번호를 잊으셨나요?
-            </button>
-          </div>
 
           <div className="pt-2 space-y-3">
             <Button
