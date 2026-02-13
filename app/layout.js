@@ -2,7 +2,7 @@ import ClientToaster from '@/components/common/ClientToaster';
 import './globals.css';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
-import Line from '@/components/shared/Line';
+import Line from '@/components/service/Line';
 
 export const metadata = {
   title: 'pilsa-homepage',

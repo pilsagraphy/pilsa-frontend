@@ -1,6 +1,6 @@
 import { Menu } from 'lucide-react';
 import { Zen_Dots } from 'next/font/google';
-import BackArrow from '@/components/shared/BackArrow';
+import BackArrow from '@/components/service/BackArrow';
 
 const zenDots = Zen_Dots({
   weight: '400',
