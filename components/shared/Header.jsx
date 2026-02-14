@@ -1,6 +1,5 @@
 import { Menu } from 'lucide-react';
 import { Zen_Dots } from 'next/font/google';
-import BackArrow from '@/components/service/BackArrow';
 
 const zenDots = Zen_Dots({
   weight: '400',
@@ -9,14 +8,7 @@ const zenDots = Zen_Dots({
 
 export default function Header() {
   return (
-    <header className="relative w-full h-40">
-      <BackArrow
-        className="
-      absolute
-      left-64
-      top-32
-      -translate-y-1/2"
-      />
+    <header className="w-full h-40">
       <div
         className="
           grid h-full items-center
