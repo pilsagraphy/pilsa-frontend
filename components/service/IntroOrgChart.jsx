@@ -3,10 +3,10 @@ import Image from "next/image";
 export default function IntroOrgChart() {
   return (
     <div className="flex flex-col gap-5 w-full">
-      <div className="text-[18px] font-medium leading-[1.6] tracking-[-0.02] text-[#919191]">
+      <h3 className="text-[18px] font-medium leading-[1.6] tracking-[-0.02] text-[#919191]">
         조직도
-      </div>
-      <div>
+      </h3>
+      <div className="flex justify-start">
         {/* 조직도 사진 */}
         <Image
           src="/images/intro_org_chart.png"
