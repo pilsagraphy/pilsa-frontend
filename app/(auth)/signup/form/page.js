@@ -1,6 +1,11 @@
-// 실제 정보 입력 페이지 예정
-import signup from '@/components/service/Signup';
+// app/(auth)/signup/form/page.js
+import SignupForm from '@/components/service/Signup/SignupForm';
+import { Suspense } from 'react';
 
-export default function Signup() {
-  return <Signup />;
+export default function SignupFormPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <SignupForm />
+    </Suspense>
+  );
 }
