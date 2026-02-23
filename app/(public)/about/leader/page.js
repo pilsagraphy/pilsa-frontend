@@ -1,0 +1,11 @@
+import Leader from '@/components/service/Leader';
+
+export default function MainPage() {
+  return (
+    <section className="mx-auto flex w-full flex-col gap-8 ">
+      <div className="space-y-2">
+        <Leader />
+      </div>
+    </section>
+  );
+}
