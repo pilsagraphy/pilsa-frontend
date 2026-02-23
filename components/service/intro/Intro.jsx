@@ -7,10 +7,10 @@ export default function Intro() {
     <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-[51px] bg-white p-8">
       {/* 타이틀 영역 */}
       <header className="flex flex-col gap-[12px] pb-[40px] border-b-[1.5px]">
-        <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.48px] text-[#212121]">
+        <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.02em] text-[#212121]">
           동아리 소개
         </h2>
-        <p className="font-['Pretendard',sans-serif] font-normal text-[16px] leading-[1.6] tracking-[-0.32px] text-[#919191]">
+        <p className="font-['Pretendard',sans-serif] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
           필사그래피
         </p>
       </header>
