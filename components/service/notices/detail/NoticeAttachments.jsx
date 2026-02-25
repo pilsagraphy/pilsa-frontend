@@ -18,16 +18,9 @@ export default function NoticeAttachments({ attachments = [] }) {
 
         <div className="flex flex-col gap-[8px]">
           {attachments.map((file, index) => (
-            <button
-              key={index}
-              type="button"
-              className="text-left text-[#454545] hover:underline"
-              onClick={() => {
-                console.log('첨부파일 클릭:', file.url);
-              }}
-            >
+            <a key={index} href={file.url} download className="text-[#454545] hover:underline">
               {file.name}
-            </button>
+            </a>
           ))}
         </div>
       </div>
