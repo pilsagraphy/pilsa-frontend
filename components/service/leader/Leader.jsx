@@ -15,14 +15,11 @@ export default function Leader() {
       </header>
 
       {/* 회장 카드 그리드 */}
-      <section className="grid grid-cols-3 gap-x-[140px] gap-y-[60px]">
+      <section className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-10 gap-y-20 justify-items-center">
         {DUMMY_LEADER.map((leader, index) => (
           <LeaderContent
             key={index}
-            order={leader.order}
-            name={leader.name}
-            period={leader.period}
-            imageSrc={leader.imageSrc}
+            {...leader} // 스프레드 연산자로 깔끔하게 전달
           />
         ))}
       </section>
