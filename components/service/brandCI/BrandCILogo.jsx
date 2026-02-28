@@ -1,4 +1,4 @@
-import svgPaths from "../../../constants/BrandCIIcons"; 
+import svgPaths from "../../../constants/brandCI/BrandCIIcons"; 
 
 export default function BrandCILogo() {
   return (
