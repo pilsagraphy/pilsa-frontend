@@ -18,15 +18,34 @@ function Chip() {
   );
 }
 
+function formatKoreanDate(value) {
+  if (!value) return '';
+  if (typeof value === 'string' && value.includes('.')) return value;
+
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}. ${mm}. ${dd}.`;
+}
+
 export default function NoticeInfo({ isImportant, title, date, author }) {
+  const safeTitle = title ?? '';
+  const safeAuthor = author ?? '';
+  const safeDate = formatKoreanDate(date);
+
   return (
     <section className="w-full">
       <Divider dark />
 
       <div className="h-[56px] flex items-center">
         <div className="flex items-center gap-[12px]">
-          {isImportant && <Chip />}
-          <h2 className="text-[18px] tracking-[-0.36px] text-[#212121] leading-none">{title}</h2>
+          {Boolean(isImportant) && <Chip />}
+          <h2 className="text-[18px] tracking-[-0.36px] text-[#212121] leading-none">
+            {safeTitle}
+          </h2>
         </div>
       </div>
 
@@ -36,13 +55,13 @@ export default function NoticeInfo({ isImportant, title, date, author }) {
         <div className="flex items-center gap-[12px]">
           <span className="text-[#919191] leading-none">등록일</span>
           <VLine />
-          <span className="text-[#454545] leading-none">{date}</span>
+          <span className="text-[#454545] leading-none">{safeDate}</span>
         </div>
 
         <div className="flex items-center gap-[12px]">
           <span className="text-[#919191] leading-none">작성자</span>
           <VLine />
-          <span className="text-[#454545] leading-none">{author}</span>
+          <span className="text-[#454545] leading-none">{safeAuthor}</span>
         </div>
       </div>
     </section>

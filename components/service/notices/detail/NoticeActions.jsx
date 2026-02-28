@@ -1,19 +1,20 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-export default function NoticeActions({ likes = 0 }) {
-  // ✅ 마크업 단계에서 상태 관리
-  const [likeCount, setLikeCount] = useState(likes);
+export default function NoticeActions({ likecount }) {
+  const initialCount = typeof likecount === 'number' ? likecount : 0;
+
+  const [likeCount, setLikeCount] = useState(initialCount);
   const [liked, setLiked] = useState(false);
 
+  useEffect(() => {
+    setLikeCount(initialCount);
+    setLiked(false);
+  }, [initialCount]);
+
   const handleLike = () => {
-    // API 없이 프론트에서만 토글
-    if (liked) {
-      setLikeCount((prev) => prev - 1);
-    } else {
-      setLikeCount((prev) => prev + 1);
-    }
+    setLikeCount((prev) => (liked ? prev - 1 : prev + 1));
     setLiked((prev) => !prev);
   };
 
@@ -49,11 +50,11 @@ export default function NoticeActions({ likes = 0 }) {
           />
         </svg>
 
-        {/* 숫자 */}
+        {/* ✅ mock likecount 기반 */}
         <span className="text-[#212121]">좋아요 {likeCount}</span>
       </button>
 
-      {/* 수정 / 삭제 (권한은 나중에) */}
+      {/* 수정 / 삭제 */}
       <div className="flex gap-[20px]">
         <button
           type="button"

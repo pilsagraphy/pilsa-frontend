@@ -7,7 +7,7 @@ function Divider() {
 }
 
 export default function NoticeAttachments({ attachments = [] }) {
-  if (!attachments || attachments.length === 0) return null;
+  if (!Array.isArray(attachments) || attachments.length === 0) return null;
 
   return (
     <section className="flex flex-col gap-[20px] w-full">
@@ -17,11 +17,24 @@ export default function NoticeAttachments({ attachments = [] }) {
         <span className="text-[#919191] shrink-0">첨부파일</span>
 
         <div className="flex flex-col gap-[8px]">
-          {attachments.map((file, index) => (
-            <a key={index} href={file.url} download className="text-[#454545] hover:underline">
-              {file.name}
-            </a>
-          ))}
+          {attachments.map((file) => {
+            const fileName = file?.originName ?? file?.name ?? '첨부파일';
+            const fileUrl = file?.fileUrl ?? file?.url ?? '#';
+            const key = file?.attachmentId ?? fileUrl ?? fileName;
+
+            return (
+              <a
+                key={key}
+                href={fileUrl}
+                download
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#454545] hover:underline flex items-center gap-1"
+              >
+                {fileName}
+              </a>
+            );
+          })}
         </div>
       </div>
 
