@@ -93,7 +93,7 @@ export default function Page() {
           top: '38%',
           transform: 'translate(-50%, -50%)',
           pointerEvents: 'none',
-          width: '650px',
+          width: '800px',
           height: 'auto',
           zIndex: 5,
         }}

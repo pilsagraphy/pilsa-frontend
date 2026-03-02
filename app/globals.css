@@ -74,18 +74,19 @@
 }
 
 .floatY {
-  animation: floatY 2.2s ease-in-out infinite;
+  animation: floating 3s ease-in-out infinite;
+  backface-visibility: hidden;
   will-change: transform;
 }
 
-@keyframes floatY {
+@keyframes floating {
   0% {
-    transform: translate(-50%, -50%) translateY(-10px);
+    transform: translate(-50%, -50%) translateY(0px);
   }
   50% {
-    transform: translate(-50%, -50%) translateY(10px);
+    transform: translate(-50%, -50%) translateY(-20px);
   }
   100% {
-    transform: translate(-50%, -50%) translateY(-10px);
+    transform: translate(-50%, -50%) translateY(0px);
   }
 }
