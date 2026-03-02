@@ -1,22 +1,24 @@
+import Image from 'next/image';
+
 const HonorCard = ({ data, rankType }) => {
   const props = {
     first: {
       w: "w-full max-w-[240px]",
-      aspect: "aspect-[3/4]",
       gap: "gap-5",
       info: "text-[18px] font-semibold leading-[32px]",
+      insert: "inset-[12%]", // 액자 두께에 맞게 조절
     },
     top: {
       w: "w-full max-w-[180px]",
-      aspect: "aspect-[3/4]",
       gap: "gap-4",
       info: "text-[16px] font-semibold",
+      insert: "inset-[12%]",
     },
     normal: {
-      w: "w-full max-w-[129px]",
-      aspect: "aspect-[3/4]",
+      w: "w-full max-w-[140px]",
       gap: "gap-3",
       info: "text-[12px]",
+      insert: "inset-[12%]",
     },
   };
 
@@ -24,15 +26,27 @@ const HonorCard = ({ data, rankType }) => {
 
   return (
     <div className={`flex flex-col items-center ${style.w} ${style.gap}`}>
-      {/* 이미지 영역 */}
-      <div className={`w-full bg-gray-200 overflow-hidden ${style.aspect}`}>
-        {data.imageUrl && (
-          <Image
-            src={data.imageUrl}
-            alt={data.name}
-            className="w-full h-full object-cover"
-          />
-        )}
+      {/* 프레임 + 이미지 영역 */}
+      <div className="relative w-full aspect-[3/4]">
+        {/* 이미지 영역 (액자 안쪽) */}
+        <div className={`absolute ${style.insert} overflow-hidden bg-gray-200`}>
+          {data.imageSrc && (
+            <Image
+              src={data.imageSrc}
+              alt={data.name}
+              fill 
+              className="object-cover"
+            />
+          )}
+        </div>
+        {/* 프레임 영역 */}
+        <Image 
+          src="/images/honor/frame.png"
+          alt="frame"
+          fill
+          className="object-contain pointer-events-none select-none"
+          priority={rankType === "first"}
+        />
       </div>
 
       {/* 인포 영역 */}
