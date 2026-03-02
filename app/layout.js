@@ -1,7 +1,4 @@
-import ClientToaster from '@/components/common/ClientToaster';
 import './globals.css';
-import Header from '@/components/shared/Header';
-import Footer from '@/components/shared/Footer';
 
 export const metadata = {
   title: 'pilsa-homepage',
@@ -11,15 +8,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
-      <body className={`min-h-screen bg-white text-neutral-900`}>
-        <ClientToaster />
-        <Header />
-
-        <main className="mx-auto w-full">
-          {children}
-          <Footer />
-        </main>
-      </body>
+      <body className={`min-h-screen bg-white text-neutral-900`}>{children}</body>
     </html>
   );
 }
