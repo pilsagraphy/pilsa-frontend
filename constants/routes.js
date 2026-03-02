@@ -10,6 +10,7 @@ export const ROUTES = {
   ABOUT_HISTORY: `${BASE_PATH}about/history`,
   ABOUT_LOGO: `${BASE_PATH}about/logo`,
   ABOUT_HONOR: `${BASE_PATH}about/honor`,
+  ABOUT_LEADER: `${BASE_PATH}about/leader`,
   GALLERY: `${BASE_PATH}gallery`,
 
   // auth 영역
@@ -30,6 +31,7 @@ export const PUBLIC_ROUTES = [
   ROUTES.ABOUT_HISTORY,
   ROUTES.ABOUT_LOGO,
   ROUTES.ABOUT_HONOR,
+  ROUTES.ABOUT_LEADER,
   ROUTES.GALLERY,
   ROUTES.LOGIN,
   ROUTES.SIGNUP,
