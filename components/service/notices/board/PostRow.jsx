@@ -2,17 +2,18 @@ import { TableCell, TableRow } from "@/components/ui/table";
 import CategoryBadge from "./CategoryBadge";
 import { Link } from "lucide-react";
 
-// { id: 0, title: "", isImportant: false, category: null, comments: 0, likes: 0, views: 0, date: "2026.01.01" },
+// postId, title, authorName, likeCount, viewCount, hasAttachment, created, pinned
 export default function PostRow({ post, boardType }) {
+  const formattedDate = post.created?.slice(0, 10).replace(/-/g, ".");
   return (
     <TableRow className="h-14 text-[16px] border-b border-[#B9B9B9] leading-[1.6] tracking-[-0.02em] text-[#454545]">
       {/* 번호 */}
       {/* (공지사항) 중요 or 게시글번호 */}
       <TableCell className="text-center">
-        {boardType === "notices" && post.isImportant ? (
+        {boardType === "notices" && post.pinned ? (
           <CategoryBadge>중요</CategoryBadge>
         ) : (
-          post.id
+          post.postId
         )}
       </TableCell>
 
@@ -24,7 +25,7 @@ export default function PostRow({ post, boardType }) {
             <CategoryBadge>{post.category}</CategoryBadge>
           )}
           <span className="truncate">{post.title}</span>
-          {post.isAttachment && (
+          {post.hasAttachment && (
             <span className="flex-shrink-0">
               <Link size={16} />
             </span>
@@ -42,12 +43,12 @@ export default function PostRow({ post, boardType }) {
 
       {/* 좋아요, 조회수, 등록일 */}
       <TableCell className="text-center">
-        {post.likes.toLocaleString()}
+        {post.likeCount.toLocaleString()}
       </TableCell>
       <TableCell className="text-center">
-        {post.views.toLocaleString()}
+        {post.viewCount.toLocaleString()}
       </TableCell>
-      <TableCell className="text-center">{post.date}</TableCell>
+      <TableCell className="text-center">{formattedDate}</TableCell>
     </TableRow>
   );
 }

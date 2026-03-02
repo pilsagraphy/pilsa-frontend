@@ -36,7 +36,7 @@ export default function PostTable({ posts, boardType }) {
             </TableRow>
           ) : (
             posts.map((post) => (
-              <PostRow key={post.id} post={post} boardType={boardType} />
+              <PostRow key={post.postId} post={post} boardType={boardType} />
             ))
           )}
         </TableBody>
