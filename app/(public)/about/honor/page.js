@@ -1,10 +1,4 @@
-import Intro from '@/components/service/Intro';
+import Honor from "@/components/service/honor/Honor";
 export default function HonorPage() {
-  return (
-    <section className="mx-auto flex w-full flex-col gap-8">
-      <div className="space-y-2">
-        <Intro />
-      </div>
-    </section>
-  );
+  return <Honor />;
 }

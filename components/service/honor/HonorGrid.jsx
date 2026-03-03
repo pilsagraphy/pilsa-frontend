@@ -13,7 +13,7 @@ const HonorGrid = ({ items, rankType }) => {
       <div className={props[rankType]}>
         {items.map((item) => (
           <HonorCard
-            key={`${item.name}-${item.dept}`}
+            key={item.donationId}
             data={item}
             rankType={rankType}
           />
