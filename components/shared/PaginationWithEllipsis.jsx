@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/pagination";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-export default function PaginationWithGroup({
+export default function PaginationWithEllipsis({
   currentPage,
   totalPages,
   onPageChange,
