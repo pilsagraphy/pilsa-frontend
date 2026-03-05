@@ -1,7 +1,7 @@
 "use client";
 
 import SortSelect from "./SortSelect";
-import CategorySelect from "./CategorySelect"; 
+import CategorySelect from "./CategorySelect";
 import SearchInput from "./SearchInput";
 import PostTable from "./PostTable";
 import WriteButton from "./WriteButton";
