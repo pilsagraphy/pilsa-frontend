@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useFreeWriteStore } from '../../../stores/freewrite.store';
+import { useFreeWriteStore } from '@/stores/freewrite.store';
 
 export default function FreeWriteBox({
   label,
