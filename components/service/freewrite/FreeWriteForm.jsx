@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import FreeWriteBox from './FreeWriteBox';
-import { useFreeWriteStore } from '../../../stores/freewrite.store';
+import { useFreeWriteStore } from '@/stores/freewrite.store';
 
 export default function FreeWriteForm() {
   const isAnonymous = useFreeWriteStore((state) => state.isAnonymous);
