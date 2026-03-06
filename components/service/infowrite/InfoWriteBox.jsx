@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useInfoWriteStore } from '../../../stores/infowrite.store';
+import { useInfoWriteStore } from '@/stores/infowrite.store';
 
 export default function InfoWriteBox() {
   const { title, setTitle, category, setCategory, content, setContent, setFile } =
