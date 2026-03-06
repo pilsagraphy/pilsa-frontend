@@ -1,5 +1,5 @@
 import React from 'react';
-import svgPaths from '../../../constants/NoticeWriteData';
+import svgPaths from '@/constants/NoticeWriteData';
 
 export default function NoticeWriteBox({
   label,

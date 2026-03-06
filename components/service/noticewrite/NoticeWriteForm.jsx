@@ -1,6 +1,6 @@
 import React from 'react';
 import NoticeWriteBox from './NoticeWriteBox';
-import useNoticeStore from '../../../stores/useNoticeStore';
+import useNoticeStore from '@/stores/useNoticeStore';
 
 export default function NoticeWriteForm() {
   const { title, isImportant, content, setTitle, setFile, setIsImportant, setContent } =

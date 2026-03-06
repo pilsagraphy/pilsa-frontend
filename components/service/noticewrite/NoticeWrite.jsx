@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import NoticeWriteForm from './NoticeWriteForm';
-import useNoticeStore from '../../../stores/useNoticeStore';
+import useNoticeStore from '@/stores/useNoticeStore';
 
 export default function NoticeWrite() {
   const { title, file, isImportant, content, resetForm } = useNoticeStore();
