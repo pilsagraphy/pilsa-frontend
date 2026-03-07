@@ -4,13 +4,12 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-
-// 이메일 형식 유효성 검사를 위한 정규식 함수
-const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+import { emailSchema } from '@/schemas/auth';
 
 export default function FindPwEmail({ onNext, onPrev }) {
   // 입력된 이메일 주소를 관리하는 상태
   const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
   // API 요청 중 버튼 중복 클릭 방지를 위한 로딩 상태
   const [loading, setLoading] = useState(false);
   // 인증 성공 후 페이지 전환 딜레이를 제어하기 위한 타이머 Ref
@@ -19,18 +18,21 @@ export default function FindPwEmail({ onNext, onPrev }) {
   // 컴포넌트가 사라질 때(unmount) 남아있는 타이머를 제거하여 메모리 누수 방지
   useEffect(() => () => clearTimeout(timerRef.current), []);
 
+  const handleChange = (e) => {
+    setEmail(e.target.value);
+    // 사용자가 다시 타이핑하면 에러 초기화
+    if (error) setError('');
+  };
+
   // 폼 제출 핸들러
   const handleSubmit = async (e) => {
     e.preventDefault(); // 페이지 새로고침 방지
     if (loading) return; // 이미 처리 중이면 중단
 
-    // 유효성 검사: 빈 값 체크 및 이메일 형식 확인
-    if (!email.trim() || !isValidEmail(email)) {
-      toast.error(!email.trim() ? '이메일을 입력해 주세요.' : '이메일 형식이 올바르지 않습니다.', {
-        description: !email.trim()
-          ? '회원가입 시 등록한 이메일을 입력해 주세요.'
-          : '예: example@email.com',
-      });
+    const result = emailSchema.safeParse(email);
+
+    if (!result.success) {
+      setError(result.error.issues[0].message);
       return;
     }
 
@@ -75,12 +77,19 @@ export default function FindPwEmail({ onNext, onPrev }) {
           <Input
             type="email"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={handleChange}
             placeholder="본인 확인 이메일"
             autoComplete="email"
             disabled={loading} // 로딩 중에는 입력 불가
-            className="h-[52px] text-[16px]"
+            className={`h-[52px] text-[16px] ${
+              error
+                ? 'border-[#f44336] text-[#f44336] focus-visible:ring-0 focus-visible:border-[#f44336]'
+                : ''
+            }`}
           />
+          {error && (
+            <p className="text-[#f44336] text-[12px] tracking-[-0.24px] leading-[1.4]">{error}</p>
+          )}
         </div>
       </div>
 

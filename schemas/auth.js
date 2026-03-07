@@ -28,6 +28,15 @@ export const passwordSchema = z
   .regex(/[0-9]/, { message: '숫자 포함 여부를 확인해주세요.' })
   .regex(/[^A-Za-z0-9]/, { message: '특수문자 포함 여부를 확인해주세요.' });
 
+export const emailCodeSchema = z
+  .string()
+  .min(1, { message: '미입력 항목을 입력해주세요.' })
+  .regex(/^\d{6}$/, { message: '인증번호 6자리를 정확히 입력해주세요.' });
+
+export const emailSchema = z.email({
+  message: '올바른 이메일 형식이 아닙니다.',
+});
+
 // 전체 회원가입 폼 스키마
 export const registerFormSchema = z
   .object({
@@ -37,7 +46,7 @@ export const registerFormSchema = z
     emailLocal: z.string().min(1, { message: '이메일을 입력해주세요.' }), // 이메일 앞자리
     emailDomain: z.string().min(1, { message: '선택해주세요.' }), // 도메인
     emailCustom: z.string().optional(), // 직접 입력은 선택적
-    emailCode: z.string().min(1, { message: '인증번호를 입력해주세요.' }), // 인증번호 추가
+    emailCode: emailCodeSchema,
     username: loginIdSchema,
     password: passwordSchema,
     passwordConfirm: z.string().min(1, { message: '비밀번호 확인을 입력해주세요.' }),

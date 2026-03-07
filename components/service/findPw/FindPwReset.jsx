@@ -4,13 +4,18 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { z } from 'zod';
+import { passwordSchema } from '@/schemas/auth';
 
-/**
- * 비밀번호 유효성 검사 정규식
- * 영문, 숫자, 특수문자를 각각 최소 1개 이상 포함하며 8자 이상이어야 함
- */
-const isValidPassword = (v) =>
-  /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/.test(v);
+const resetPwSchema = z
+  .object({
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, { message: '비밀번호 확인을 입력해주세요.' }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: '비밀번호가 일치하지 않습니다.',
+    path: ['confirmPassword'],
+  });
 
 export default function FindPwReset({ username, onNext }) {
   // 입력 상태 관리
@@ -18,8 +23,10 @@ export default function FindPwReset({ username, onNext }) {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   // 개별 에러 메시지 상태 관리
-  const [newPasswordError, setNewPasswordError] = useState('');
-  const [confirmError, setConfirmError] = useState('');
+  const [errors, setErrors] = useState({
+    newPassword: '',
+    confirmPassword: '',
+  });
 
   // 로딩 및 타이머 설정
   const [loading, setLoading] = useState(false);
@@ -34,7 +41,7 @@ export default function FindPwReset({ username, onNext }) {
    */
   const handleNewPasswordChange = (e) => {
     setNewPassword(e.target.value);
-    if (newPasswordError) setNewPasswordError('');
+    if (errors.newPassword) setErrors((prev) => ({ ...prev, newPassword: '' }));
   };
 
   /**
@@ -42,7 +49,7 @@ export default function FindPwReset({ username, onNext }) {
    */
   const handleConfirmChange = (e) => {
     setConfirmPassword(e.target.value);
-    if (confirmError) setConfirmError('');
+    if (errors.confirmPassword) setErrors((prev) => ({ ...prev, confirmPassword: '' }));
   };
 
   /**
@@ -52,22 +59,25 @@ export default function FindPwReset({ username, onNext }) {
     e.preventDefault();
     if (loading) return;
 
-    let hasError = false;
+    const result = resetPwSchema.safeParse({
+      newPassword,
+      confirmPassword,
+    });
 
-    // 1. 신규 비밀번호 유효성 검사 (복합 규격 확인)
-    if (!newPassword.trim() || !isValidPassword(newPassword)) {
-      setNewPasswordError('비밀번호는 영문, 숫자, 특수문자를 포함해야 합니다.');
-      hasError = true;
+    if (!result.success) {
+      const newErrors = { newPassword: '', confirmPassword: '' };
+
+      // zod의 에러 배열을 순회하며 상태 업데이트
+      result.error.issues.forEach((issue) => {
+        const path = issue.path[0];
+        if (!newErrors[path]) {
+          newErrors[path] = issue.message;
+        }
+      });
+
+      setErrors(newErrors);
+      return;
     }
-
-    // 2. 비밀번호 일치 여부 확인
-    if (!confirmPassword.trim() || newPassword !== confirmPassword) {
-      setConfirmError('비밀번호가 일치하지 않습니다.');
-      hasError = true;
-    }
-
-    // 에러가 하나라도 있으면 중단
-    if (hasError) return;
 
     setLoading(true);
     try {
@@ -109,14 +119,14 @@ export default function FindPwReset({ username, onNext }) {
                 disabled={loading}
                 // 에러 발생 시 테두리 및 텍스트 색상 변경 (피그마 디자인 반영)
                 className={`h-[52px] text-[16px] ${
-                  newPasswordError
+                  errors.newPassword
                     ? 'border-[#f44336] text-[#f44336] focus-visible:ring-0 focus-visible:border-[#f44336]'
                     : ''
                 }`}
               />
-              {newPasswordError && (
+              {errors.newPassword && (
                 <p className="text-[#f44336] text-[12px] tracking-[-0.24px] leading-[1.4]">
-                  {newPasswordError}
+                  {errors.newPassword}
                 </p>
               )}
             </div>
@@ -135,14 +145,14 @@ export default function FindPwReset({ username, onNext }) {
                 placeholder="비밀번호 재입력"
                 disabled={loading}
                 className={`h-[52px] text-[16px] ${
-                  confirmError
+                  errors.confirmPassword
                     ? 'border-[#f44336] text-[#f44336] focus-visible:ring-0 focus-visible:border-[#f44336]'
                     : ''
                 }`}
               />
-              {confirmError && (
+              {errors.confirmPassword && (
                 <p className="text-[#f44336] text-[12px] tracking-[-0.24px] leading-[1.4]">
-                  {confirmError}
+                  {errors.confirmPassword}
                 </p>
               )}
             </div>

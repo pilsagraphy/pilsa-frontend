@@ -4,9 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-
-// 인증번호 유효성 검사: 숫자 6자리인지 확인
-const isValidCode = (v) => /^\d{6}$/.test(v);
+import { emailCodeSchema } from '@/schemas/auth';
 
 export default function FindPwCode({ email, onNext, onPrev }) {
   // 입력된 인증번호 상태 관리
@@ -33,12 +31,10 @@ export default function FindPwCode({ email, onNext, onPrev }) {
     e.preventDefault(); // 폼 제출 시 새로고침 방지
     if (loading) return; // 로딩 중에는 추가 실행 방지
 
-    // 유효성 검사: 값이 비어있거나 6자리 숫자가 아닌 경우
-    if (!code.trim() || !isValidCode(code)) {
-      setError('인증번호를 정확히 입력해주세요.');
-      toast.error('입력 오류', {
-        description: '인증번호 6자리를 정확히 입력해 주세요.',
-      });
+    const result = emailCodeSchema.safeParse(code);
+
+    if (!result.success) {
+      setError(result.error.issues[0].message);
       return;
     }
 
