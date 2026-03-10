@@ -7,7 +7,12 @@ export const useFreeWriteStore = create((set) => ({
   content: '',
   isAnonymous: false,
 
-  setField: (field, value) => set((state) => ({ ...state, [field]: value })),
+  // 👇 개별 상태 변경 함수들 추가 👇
+  setTitle: (title) => set({ title }),
+  setFile: (file) => set({ file }),
+  setCategory: (category) => set({ category }),
+  setContent: (content) => set({ content }),
+  setIsAnonymous: (isAnonymous) => set({ isAnonymous }),
 
   resetForm: () =>
     set({
