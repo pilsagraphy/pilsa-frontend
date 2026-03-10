@@ -1,5 +1,5 @@
 import React from 'react';
-import svgPaths from '@/constants/NoticeWriteData';
+import { CircleAlert } from 'lucide-react';
 
 export default function NoticeWriteBox({
   label,
@@ -13,15 +13,8 @@ export default function NoticeWriteBox({
         <label className="leading-[1.6] whitespace-pre-wrap">{label}</label>
 
         {showTooltip && (
-          <svg className="w-[20px] h-[20px] text-[#919191]" fill="none" viewBox="0 0 18 18">
-            <path
-              d={svgPaths.p4276680}
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="1.2"
-            />
-          </svg>
+          /* 기존 <svg> 태그를 지우고 CircleAlert로 교체! */
+          <CircleAlert className="w-[20px] h-[20px] text-[#919191]" strokeWidth={1.2} />
         )}
       </div>
 

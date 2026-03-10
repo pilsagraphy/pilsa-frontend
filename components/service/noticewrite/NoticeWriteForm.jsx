@@ -34,7 +34,7 @@ export default function NoticeWriteForm() {
             onChange={(e) => setIsImportant(e.target.value)}
             className="w-full h-full px-[16px] bg-transparent text-[16px] text-[#212121] tracking-[-0.32px] outline-none appearance-none cursor-pointer relative z-10"
           >
-            <option value="none">표시 안 함 / 표시 두 가지 드롭다운</option>
+            <option value="none">표시 안 함</option>
             <option value="important">표시</option>
           </select>
 

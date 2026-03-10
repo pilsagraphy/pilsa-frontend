@@ -2,21 +2,36 @@
 import React from 'react';
 import NoticeWriteForm from './NoticeWriteForm';
 import useNoticeStore from '@/stores/useNoticeStore';
+import { useRouter } from 'next/navigation';
 
 export default function NoticeWrite() {
   const { title, file, isImportant, content, resetForm } = useNoticeStore();
+  const router = useRouter();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const submitData = { title, file, isImportant, content };
-    console.log('🚀 Submit Data:', submitData);
-    alert('작성이 완료되었습니다!');
-    resetForm();
+
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('content', content);
+    formData.append('isImportant', isImportant === 'important');
+    if (file) formData.append('file', file);
+
+    try {
+      // API 호출 로직
+      await axios.post('/api/admin/stu/notices', formData);
+      alert('작성이 완료되었습니다!');
+      resetForm();
+      router.push('/notices'); // 작성 후 목록으로 이동
+    } catch (error) {
+      console.error('발송 실패:', error);
+    }
   };
 
   const handleCancel = () => {
-    if (window.confirm('작성을 취소하시겠습니까?')) {
+    if (window.confirm('작성을 취소하시겠습니까? 작성 중인 내용은 저장되지 않습니다.')) {
       resetForm();
+      router.back(); // 4. 취소 시 이전 페이지(목록)로 돌아가기
     }
   };
 
