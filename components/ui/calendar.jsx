@@ -30,6 +30,7 @@ export function Calendar({
   className = '',
   classNames,
   showOutsideDays = true,
+  modifiers,
   month: controlledMonth,
   onMonthChange,
   ...props
@@ -76,7 +77,7 @@ export function Calendar({
   const currentYear = month.getFullYear();
 
   const CustomDay = React.useCallback(
-    ({ day, modifiers, ...dayProps }) => {
+    ({ day, modifiers: dayModifiers, ...dayProps }) => {
       const date = day.date;
       const isOutside = date.getMonth() !== currentMonth || date.getFullYear() !== currentYear;
 
@@ -119,6 +120,24 @@ export function Calendar({
           background-color: #f5f5f5 !important;
           border-radius: 9999px !important;
         }
+
+        /* 점(Dot) 스타일 추가 */
+        .rdp-day_hasEvent .rdp-day_button::after {
+          content: '';
+          position: absolute;
+          bottom: 4px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background-color: #212121;
+        }
+        .rdp-day_selected.rdp-day_hasEvent .rdp-day_button::after {
+          background-color: #212121;
+        }
+
+        .rdp-day_button { position: relative; }
       `}</style>
 
       <div className="relative mx-auto w-full max-w-[336px] pb-2 pt-1">
@@ -165,6 +184,7 @@ export function Calendar({
         month={month}
         onMonthChange={setMonth}
         showOutsideDays={showOutsideDays}
+        modifiers={modifiers}
         className="p-0"
         formatters={{
           formatWeekdayName: (date) => EN_WEEKDAYS[date.getDay()],
@@ -188,6 +208,7 @@ export function Calendar({
           today: 'bg-transparent',
           outside: 'pointer-events-none',
           disabled: 'text-neutral-300 opacity-50',
+          day_hasEvent: 'rdp-day_hasEvent',
           ...classNames,
         }}
       />
