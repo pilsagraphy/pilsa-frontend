@@ -11,6 +11,7 @@ export const ROUTES = {
   ABOUT_LOGO: `${BASE_PATH}about/logo`,
   ABOUT_HONOR: `${BASE_PATH}about/honor`,
   ABOUT_LEADER: `${BASE_PATH}about/leader`,
+  CALENDAR: `${BASE_PATH}calendar`,
   GALLERY: `${BASE_PATH}gallery`,
 
   // auth 영역
@@ -32,6 +33,7 @@ export const PUBLIC_ROUTES = [
   ROUTES.ABOUT_LOGO,
   ROUTES.ABOUT_HONOR,
   ROUTES.ABOUT_LEADER,
+  ROUTES.CALENDAR,
   ROUTES.GALLERY,
   ROUTES.LOGIN,
   ROUTES.SIGNUP,
