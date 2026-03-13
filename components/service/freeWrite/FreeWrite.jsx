@@ -1,12 +1,12 @@
 'use client';
 import React from 'react';
 import { useEffect } from 'react';
-import NoticeWriteForm from './NoticeWriteForm';
-import useNoticeStore from '@/stores/useNoticeWriteStore';
+import FreeWriteForm from './FreeWriteForm';
+import { useFreeWriteStore } from '@/stores/useFreeWriteStore';
 import { useRouter } from 'next/navigation';
 
-export default function NoticeWrite() {
-  const { title, file, isImportant, content, resetForm } = useNoticeStore();
+export default function FreeWrite() {
+  const { title, file, category, content, isAnonymous, resetForm } = useFreeWriteStore();
   const router = useRouter();
 
   useEffect(() => {
@@ -16,18 +16,21 @@ export default function NoticeWrite() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 유효성 검사 (간단 예시)
+    if (!category) return alert('카테고리를 선택해주세요.');
+
     const formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
-    formData.append('isImportant', isImportant === 'important');
+    formData.append('category', category); // 스토어와 매칭
+    formData.append('isAnonymous', String(isAnonymous)); // 불리언은 문자열로 변환 권장
     if (file) formData.append('file', file);
 
     try {
-      // API 호출 로직
-      await axios.post('/api/admin/stu/notices', formData);
+      await axios.post('/api/admin/stu/free', formData);
       alert('작성이 완료되었습니다!');
       resetForm();
-      router.push('/notices'); // 작성 후 목록으로 이동
+      router.push('/free');
     } catch (error) {
       console.error('발송 실패:', error);
     }
@@ -36,7 +39,7 @@ export default function NoticeWrite() {
   const handleCancel = () => {
     if (window.confirm('작성을 취소하시겠습니까? 작성 중인 내용은 저장되지 않습니다.')) {
       resetForm();
-      router.back(); // 4. 취소 시 이전 페이지(목록)로 돌아가기
+      router.back(); // 취소 시 이전 페이지로 돌아가기
     }
   };
 
@@ -44,10 +47,10 @@ export default function NoticeWrite() {
     <form onSubmit={handleSubmit} className="flex flex-col gap-[20px] max-w-[1000px] mx-auto p-8">
       <div className="flex flex-col gap-[36px] w-full">
         <h1 className="text-[24px] font-bold text-black tracking-[-0.48px] leading-[1.5]">
-          공지사항 글쓰기
+          자유게시판 글쓰기
         </h1>
 
-        <NoticeWriteForm />
+        <FreeWriteForm />
       </div>
 
       <div className="flex flex-col gap-[12px] w-full mt-4">
