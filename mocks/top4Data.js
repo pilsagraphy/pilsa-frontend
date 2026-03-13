@@ -1,5 +1,5 @@
 export const DUMMY_MAIN_USER = {
-  userName: '박건희',
+  userName: '사용자',
   scheduleCount: 1,
   cheeringMessages: [
     '오늘, 무언가 고민하던 것이 있다면 꼭 시작하세요.',
