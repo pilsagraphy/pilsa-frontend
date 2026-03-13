@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { Calendar } from '@/components/ui/calendar';
-import MonthlyScheduleList from '@/components/service/calendars/MonthlyScheduleList';
+import MonthlyScheduleList from '@/components/shared/calendars/MonthlyScheduleList';
 import { calendarMockResponse } from '@/mocks/calendarData';
 import { isWithinInterval, parseISO, startOfDay } from 'date-fns';
 

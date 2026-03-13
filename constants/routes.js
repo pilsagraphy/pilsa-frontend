@@ -22,7 +22,7 @@ export const ROUTES = {
   FIND_PW: `${BASE_PATH}findPw`,
 
   // students 영역
-  // STUDENTS_DASHBOARD: `${BASE_PATH}students`,
+  STUDENTS_DASHBOARD: `${BASE_PATH}students`,
   NOTICES: `${BASE_PATH}students/notices`,
   NOTICE_DETAIL: (id) => `${BASE_PATH}students/notices/${encodeURIComponent(id)}`,
   NOTICE_WRITE: `${BASE_PATH}students/notices/write`,
@@ -55,7 +55,7 @@ export const ALLOWED_BOARD_ROLES = ['ADMIN', 'ALUMNI', 'STUDENTS'];
 
 // ROLE : STUDENTS, ADMIN 접근 가능
 export const PROTECTED_STUDENTS_ROUTES = [
-  // ROUTES.STUDENTS_DASHBOARD,
+  ROUTES.STUDENTS_DASHBOARD,
   ROUTES.NOTICES,
   ROUTES.NOTICE_WRITE,
   ROUTES.FREE_BOARD,

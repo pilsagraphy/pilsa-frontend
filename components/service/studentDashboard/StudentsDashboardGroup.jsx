@@ -56,7 +56,7 @@ function BoardList({ title, posts, boardType }) {
   );
 }
 
-export default function MainBoardGroup() {
+export default function StudentsDashboardGroup() {
   return (
     <div className="flex flex-row gap-[66px] w-full mt-[20px]">
       <BoardList title="공지사항" posts={DUMMY_POSTS_NOTICES} boardType="notices" />

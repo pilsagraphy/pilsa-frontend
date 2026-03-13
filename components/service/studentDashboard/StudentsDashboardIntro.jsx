@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 // top5Data에서 가져온 문구 중 하나를 랜덤으로 선택
 // 근데 이거 백엔드에 없는 부분이라 어떻게 해야할지 ..
 
-export default function HomeHero({ userData }) {
+export default function StudentsDashboardIntro({ userData }) {
   const [randomMessage, setRandomMessage] = useState('');
 
   useEffect(() => {
