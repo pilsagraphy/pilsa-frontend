@@ -16,6 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
@@ -150,7 +151,7 @@ export default function SignupForm() {
 
           {/* 이메일 섹션 (가독성을 위해 묶음) */}
           <div className="flex flex-col gap-[12px]">
-            <FormLabel>이메일</FormLabel>
+            <Label>이메일</Label>
             <div className="flex items-center gap-[12px]">
               <FormField
                 control={form.control}
@@ -236,7 +237,7 @@ export default function SignupForm() {
 
           {/* 아이디 중복확인 */}
           <div className="flex flex-col gap-[12px]">
-            <FormLabel>아이디</FormLabel>
+            <Label>아이디</Label>
             <div className="flex items-start gap-[12px]">
               <FormField
                 control={form.control}
