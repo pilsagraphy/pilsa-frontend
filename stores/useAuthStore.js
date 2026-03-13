@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { login, getRole } from '@/apis/auth';
+import { login, getRole, refreshAccessToken } from '@/apis/auth';
 
 const useAuthStore = create((set, get) => ({
   accessToken: null,
@@ -9,9 +9,13 @@ const useAuthStore = create((set, get) => ({
   role: null, // 'ADMIN' | 'ALUMNI' | 'STUDENTS' | ...
   isLoading: false,
   error: null,
+  authChecked: false,
 
   // 토큰 저장
   setAccessToken: (token) => set({ accessToken: token, isLoggedIn: !!token }),
+
+  // 역할 저장
+  setRole: (role) => set({ role }),
 
   // 역할 조회 (/api/role)
   fetchRole: async () => {
@@ -25,22 +29,20 @@ const useAuthStore = create((set, get) => ({
       return null;
     }
   },
-  setRole: (role) => set({ role }),
 
   // 로그인 액션
   login: async (loginId, password) => {
     set({ isLoading: true, error: null });
     try {
       const data = await login(loginId, password);
-      if (data.refreshToken) {
-        if (typeof window !== 'undefined')
-          window.localStorage.setItem('refreshToken', data.refreshToken);
-      }
+
       set({
-        user: data.user,
+        user: data.userId ? { userId: data.userId } : null,
         accessToken: data.accessToken ?? null,
-        isLoggedIn: true,
+        isLoggedIn: !!data.accessToken,
+        role: data.role ?? null,
         isLoading: false,
+        authChecked: true,
       });
       return data; // 성공 시 컴포넌트에서 후속 처리 가능 (리다이렉트 등)
     } catch (err) {
@@ -50,8 +52,38 @@ const useAuthStore = create((set, get) => ({
   },
 
   logout: () => {
-    if (typeof window !== 'undefined') window.localStorage.removeItem('refreshToken');
-    set({ user: null, accessToken: null, isLoggedIn: false, role: null });
+    set({
+      user: null,
+      accessToken: null,
+      isLoggedIn: false,
+      role: null,
+      authChecked: true,
+    });
+  },
+
+  initializeAuth: async () => {
+    set({ isLoading: true });
+    try {
+      const data = await refreshAccessToken();
+
+      set({
+        accessToken: data.accessToken ?? null,
+        isLoggedIn: !!data.accessToken,
+        user: data.userId ? { userId: data.userId } : null,
+        role: data.role ?? null,
+        isLoading: false,
+        authChecked: true,
+      });
+    } catch {
+      set({
+        accessToken: null,
+        isLoggedIn: false,
+        user: null,
+        role: null,
+        isLoading: false,
+        authChecked: true,
+      });
+    }
   },
 }));
 

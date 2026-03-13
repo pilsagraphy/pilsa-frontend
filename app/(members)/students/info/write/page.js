@@ -1,4 +1,9 @@
 import InfoWrite from '@/components/service/infoWrite/InfoWrite';
+import AuthGuard from '@/components/common/AuthGuard';
 export default function InfoWritePage() {
-  return <InfoWrite />;
+  return (
+    <AuthGuard>
+      <InfoWrite />
+    </AuthGuard>
+  );
 }
