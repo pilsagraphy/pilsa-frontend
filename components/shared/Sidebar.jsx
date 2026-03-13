@@ -1,16 +1,53 @@
 // components/shared/Sidebar.jsx
 'use client';
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
+import { toast } from 'sonner';
 import useSidebarStore from '@/stores/sidebar';
-import { ROUTES } from '@/constants/routes';
+import useAuthStore from '@/stores/useAuthStore';
+import { ROUTES, ALLOWED_BOARD_ROLES } from '@/constants/routes';
 
 const Sidebar = () => {
-  const { openMenus, toggleMenu, toggleLogin, isLoggedIn } = useSidebarStore();
+  const router = useRouter();
+  const { openMenus, toggleMenu, toggleLogin } = useSidebarStore();
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const role = useAuthStore((state) => state.role);
+  const fetchRole = useAuthStore((state) => state.fetchRole);
   const pathname = usePathname();
+
+  // 게시판 접근 가능 여부 확인 (로그인 + ADMIN/ALUMNI/STUDENTS)
+  const checkBoardAccess = useCallback(async () => {
+    if (!isLoggedIn) {
+      router.push(ROUTES.LOGIN);
+      return false;
+    }
+    let currentRole = role;
+    if (currentRole == null) {
+      currentRole = await fetchRole();
+    }
+    if (!currentRole || !ALLOWED_BOARD_ROLES.includes(currentRole)) {
+      toast.error('게시판 접근 권한이 없습니다.');
+      return false;
+    }
+    return true;
+  }, [isLoggedIn, role, fetchRole, router]);
+
+  const handleBoardMenuClick = useCallback(async () => {
+    const allowed = await checkBoardAccess();
+    if (allowed) toggleMenu('board');
+  }, [checkBoardAccess, toggleMenu]);
+
+  const handleBoardSubmenuClick = useCallback(
+    async (e, path) => {
+      e.preventDefault();
+      const allowed = await checkBoardAccess();
+      if (allowed) router.push(path);
+    },
+    [checkBoardAccess, router]
+  );
 
   // [수정] 메뉴 데이터 구조 재구성
   const menuConfig = {
@@ -27,12 +64,12 @@ const Sidebar = () => {
     },
     board: {
       title: '게시판',
-      path: ROUTES.STUDENTS_DASHBOARD,
+      path: ROUTES.NOTICES,
       subMenus: [
-        { name: '메인페이지', path: ROUTES.STUDENTS_DASHBOARD },
+        { name: '재학생메인페이지', path: ROUTES.STUDENTS_DASHBOARD },
         { name: '공지사항', path: ROUTES.NOTICES },
-        { name: '자유게시판', path: '/board/free' }, // 임시 경로
-        { name: '정보게시판', path: '/board/info' }, // 임시 경로
+        { name: '자유게시판', path: ROUTES.FREE_BOARD },
+        { name: '정보게시판', path: ROUTES.INFO_BOARD },
       ],
     },
   };
@@ -42,7 +79,7 @@ const Sidebar = () => {
   const isBoardActive = pathname.startsWith(ROUTES.STUDENTS_DASHBOARD);
 
   const loginText = isLoggedIn ? '로그아웃' : '로그인';
-  const loginPath = isLoggedIn ? ROUTES.LOGOUT : ROUTES.LOGIN;
+  const loginPath = isLoggedIn ? `${ROUTES.LOGIN}?logout=1` : ROUTES.LOGIN;
 
   return (
     <div className="w-[240px] h-full bg-white flex flex-col pr-[40px] py-10 font-['Pretendard']">
@@ -72,10 +109,10 @@ const Sidebar = () => {
           )}
         </div>
 
-        {/* 2. 게시판 (드롭다운) */}
+        {/* 2. 게시판 (드롭다운) - 로그인 + ADMIN/ALUMNI/STUDENTS만 접근 가능 */}
         <div className="w-full flex flex-col items-end">
           <button
-            onClick={() => toggleMenu('board')}
+            onClick={handleBoardMenuClick}
             className={`flex items-center gap-1 py-2 text-[16px] ${isBoardActive ? 'font-bold text-[#212121]' : 'font-medium text-[#919191]'}`}
           >
             게시판
@@ -85,7 +122,11 @@ const Sidebar = () => {
           {openMenus.board && (
             <div className="flex flex-col items-end gap-2 mt-2">
               {menuConfig.board.subMenus.map((menu) => (
-                <Link key={menu.name} href={menu.path}>
+                <Link
+                  key={menu.name}
+                  href={menu.path}
+                  onClick={(e) => handleBoardSubmenuClick(e, menu.path)}
+                >
                   <p
                     className={`text-[14px] cursor-pointer ${pathname === menu.path ? 'font-bold text-[#212121]' : 'text-[#919191] hover:text-[#212121]'}`}
                   >
