@@ -1,12 +1,18 @@
 'use client';
 import React from 'react';
+import { useEffect } from 'react';
 import InfoWriteForm from './InfoWriteForm';
-import { useInfoWriteStore } from '@/stores/infowrite.store';
+import { useInfoWriteStore } from '@/stores/useInfoWriteStore';
 import { useRouter } from 'next/navigation';
 
 export default function InfoWrite() {
   const { title, file, isImportant, content, resetForm } = useInfoWriteStore();
   const router = useRouter();
+
+  // 페이지에 들어오자마자 스토어 초기화
+  useEffect(() => {
+    resetForm();
+  }, [resetForm]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

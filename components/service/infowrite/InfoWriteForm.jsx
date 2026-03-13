@@ -1,6 +1,7 @@
 import React from 'react';
 import InfoWriteBox from './InfoWriteBox';
-import { useInfoWriteStore } from '@/stores/infowrite.store';
+import { useInfoWriteStore } from '@/stores/useInfoWriteStore';
+import { ChevronDown } from 'lucide-react';
 
 export default function InfoWriteForm() {
   const { title, category, content, setTitle, setFile, setCategory, setContent } =
@@ -47,20 +48,12 @@ export default function InfoWriteForm() {
             <option value="etc">기타</option>
           </select>
 
-          <svg
+          <ChevronDown
             className="absolute right-[16px] pointer-events-none"
-            width="15"
-            height="8"
-            viewBox="0 0 15 8"
-            fill="none"
-          >
-            <path
-              d="M14.5 0.5L7.5 7.5L0.5 0.5"
-              stroke="#212121"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+            size={15}
+            strokeWidth={2}
+            color="#212121"
+          />
         </InfoWriteBox>
       </div>
 
