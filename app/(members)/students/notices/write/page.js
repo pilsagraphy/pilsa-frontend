@@ -1,4 +1,9 @@
 import NoticeWrite from '@/components/service/noticeWrite/NoticeWrite';
+import AuthGuard from '@/components/common/AuthGuard';
 export default function NoticeWritePage() {
-  return <NoticeWrite />;
+  return (
+    <AuthGuard>
+      <NoticeWrite />
+    </AuthGuard>
+  );
 }

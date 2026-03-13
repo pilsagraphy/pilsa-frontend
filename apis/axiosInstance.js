@@ -2,10 +2,12 @@
 import axios from 'axios';
 import useAuthStore from '@/stores/useAuthStore';
 import { PUBLIC_ROUTES } from '@/constants/routes';
+import { refreshAccessToken } from '@/apis/auth';
 
 const axiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_URL,
   timeout: 5000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -38,28 +40,31 @@ axiosInstance.interceptors.response.use(
   (response) => response, // 성공 시 그대로 반환
   async (error) => {
     const originalRequest = error.config;
-    const { status, headers } = error.response;
+    const response = error.response;
+
+    if (!response) return Promise.reject(error);
+
+    const { status, headers } = response;
 
     // 백엔드 설정: 401 에러 + X-Token-Expired 헤더가 '1'인 경우
-    if (status === 401 && headers['x-token-expired'] === '1' && !originalRequest._retry) {
+    if (
+      status === 401 &&
+      headers['x-token-expired'] === '1' &&
+      !originalRequest._retry &&
+      !originalRequest.url?.startsWith('/api/auth/token/access/refresh')
+    ) {
       originalRequest._retry = true;
 
       try {
         // 1. 토큰 재발급 요청
-        const refreshToken = localStorage.getItem('refreshToken');
-        const baseURL = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:8080';
-        const res = await axios.post(
-          `${baseURL}/api/auth/token/access/refresh`,
-          { refreshToken },
-          { headers: { 'Content-Type': 'application/json' } }
-        );
-
-        const newAccessToken = res.data.accessToken;
+        const data = await refreshAccessToken();
+        const newAccessToken = data.accessToken;
 
         // 2. Zustand 스토어 업데이트
         useAuthStore.getState().setAccessToken(newAccessToken);
 
         // 3. 원래 실패했던 요청의 헤더를 새 토큰으로 교체 후 재시도
+        originalRequest.headers = originalRequest.headers ?? {};
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
