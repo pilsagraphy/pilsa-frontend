@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 
 const userData = {
   userName: '사용자',
-  scheduleCount: 300,
 };
 
 const cheeringMessages = [
@@ -30,11 +29,11 @@ export default function StudentsDashboardIntro() {
         {userData.userName}님, 안녕하세요! :) ✍️
       </h1>
 
-      {/* 영역 2: 일정 및 랜덤 멘트 (중앙 정렬 레이아웃) */}
+      {/* 영역 2: 응원 및 랜덤 멘트 */}
       <div className="flex flex-col gap-[4px] w-full">
-        {/* 오늘 일정 개수 안내 */}
+        {/* 행복한 하루 보내라는 응원멘트 */}
         <p className="text-[18px] font-normal tracking-[-0.02em] leading-[1.6] text-[#212121] h-[36px] flex items-center">
-          오늘은 일정 {userData.scheduleCount}개가 있어요.
+          오늘도 좋은하루 보내세요.
         </p>
 
         {/* 랜덤 응원 멘트 */}
