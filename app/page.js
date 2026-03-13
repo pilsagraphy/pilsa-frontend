@@ -1,5 +1,5 @@
-import MainPage from '@/components/service/main/Mainpage';
+import StudentsDashboardSection from '@/components/service/studentDashboard/StudentsDashboardSection';
 
-export default function Page() {
-  return <MainPage />;
+export default function StudentsDashboard() {
+  return <StudentsDashboardSection />;
 }

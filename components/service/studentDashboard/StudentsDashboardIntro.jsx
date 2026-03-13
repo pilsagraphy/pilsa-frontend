@@ -1,26 +1,31 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 
-// top5Data에서 가져온 문구 중 하나를 랜덤으로 선택
-// 근데 이거 백엔드에 없는 부분이라 어떻게 해야할지 ..
+const userData = {
+  userName: '사용자',
+  scheduleCount: 300,
+};
 
-export default function StudentsDashboardIntro({ userData }) {
+const cheeringMessages = [
+  '오늘, 무언가 고민하던 것이 있다면 꼭 시작하세요.',
+  '작은 시작이 큰 변화를 만듭니다. 오늘을 응원해요!',
+  '어제보다 더 나은 오늘이 되길 바랄게요.',
+  '포기하지 않는 마음이 가장 중요합니다. 파이팅!',
+  '필사 화이팅 ~~ S2',
+];
+
+export default function StudentsDashboardIntro() {
   const [randomMessage, setRandomMessage] = useState('');
 
   useEffect(() => {
-    // 화면이 브라우저에 마운트된 후에만 랜덤 문구를 설정
-    if (userData?.cheeringMessages?.length > 0) {
-      const msgs = userData.cheeringMessages;
-      const selected = msgs[Math.floor(Math.random() * msgs.length)];
-      setRandomMessage(selected);
-    }
-  }, [userData]);
-
-  if (!userData) return null;
+    // 컴포넌트가 마운트될 때 상수로 정의한 리스트에서 랜덤하게 하나를 선택합니다.
+    const randomIndex = Math.floor(Math.random() * cheeringMessages.length);
+    setRandomMessage(cheeringMessages[randomIndex]);
+  }, []);
 
   return (
     <div className="flex flex-col gap-[4px] w-full max-w-[915px]">
-      {/* 영역 1: 사용자 이름 인사 (Heading/03 스타일) */}
+      {/* 영역 1: 사용자 이름 인사 */}
       <h1 className="text-[24px] font-medium tracking-[-0.02em] leading-[1.5] text-black h-[36px] flex items-center">
         {userData.userName}님, 안녕하세요! :) ✍️
       </h1>
