@@ -1,6 +1,6 @@
 'use client';
 
-import MonthlyScheduleItem from '@/components/service/calendars/MonthlyScheduleItem';
+import MonthlyScheduleItem from '@/components/shared/calendars/MonthlyScheduleItem';
 
 export default function MonthlyScheduleList({
   schedules = [],

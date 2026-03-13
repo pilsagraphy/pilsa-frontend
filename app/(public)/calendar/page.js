@@ -1,4 +1,4 @@
-import CalendarSection from '@/components/service/calendars/CalendarSection';
+import CalendarSection from '@/components/shared/calendars/CalendarSection';
 import { calendarMockResponse } from '@/mocks/calendarData';
 
 export default function CalendarPage() {
