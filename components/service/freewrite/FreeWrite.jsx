@@ -1,20 +1,29 @@
 'use client';
 import React from 'react';
+import { useEffect } from 'react';
 import FreeWriteForm from './FreeWriteForm';
 import { useFreeWriteStore } from '@/stores/freewrite.store';
 import { useRouter } from 'next/navigation';
 
 export default function FreeWrite() {
-  const { title, file, isImportant, content, resetForm } = useFreeWriteStore();
+  const { title, file, category, content, isAnonymous, resetForm } = useFreeWriteStore();
   const router = useRouter();
+
+  useEffect(() => {
+    resetForm();
+  }, [resetForm]); // 페이지에 들어오자마자 스토어 초기화
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // 유효성 검사 (간단 예시)
+    if (!category) return alert('카테고리를 선택해주세요.');
+
     const formData = new FormData();
     formData.append('title', title);
     formData.append('content', content);
-    formData.append('isImportant', isImportant === 'important');
+    formData.append('category', category); // 스토어와 매칭
+    formData.append('isAnonymous', String(isAnonymous)); // 불리언은 문자열로 변환 권장
     if (file) formData.append('file', file);
 
     try {

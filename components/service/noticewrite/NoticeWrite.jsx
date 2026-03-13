@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import { useEffect } from 'react';
 import NoticeWriteForm from './NoticeWriteForm';
 import useNoticeStore from '@/stores/useNoticeStore';
 import { useRouter } from 'next/navigation';
@@ -7,6 +8,10 @@ import { useRouter } from 'next/navigation';
 export default function NoticeWrite() {
   const { title, file, isImportant, content, resetForm } = useNoticeStore();
   const router = useRouter();
+
+  useEffect(() => {
+    resetForm();
+  }, [resetForm]); // 페이지에 들어오자마자 스토어 초기화
 
   const handleSubmit = async (e) => {
     e.preventDefault();

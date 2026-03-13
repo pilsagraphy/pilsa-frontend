@@ -1,6 +1,7 @@
 import React from 'react';
 import NoticeWriteBox from './NoticeWriteBox';
 import useNoticeStore from '@/stores/useNoticeStore';
+import { ChevronDown } from 'lucide-react';
 
 export default function NoticeWriteForm() {
   const { title, isImportant, content, setTitle, setFile, setIsImportant, setContent } =
@@ -38,20 +39,12 @@ export default function NoticeWriteForm() {
             <option value="important">표시</option>
           </select>
 
-          <svg
+          <ChevronDown
             className="absolute right-[16px] pointer-events-none"
-            width="15"
-            height="8"
-            viewBox="0 0 15 8"
-            fill="none"
-          >
-            <path
-              d="M14.5 0.5L7.5 7.5L0.5 0.5"
-              stroke="#212121"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+            size={15}
+            strokeWidth={2}
+            color="#212121"
+          />
         </NoticeWriteBox>
       </div>
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import FreeWriteBox from './FreeWriteBox';
 import { useFreeWriteStore } from '@/stores/freewrite.store';
+import { ChevronDown } from 'lucide-react';
 
 export default function FreeWriteForm() {
   const {
@@ -54,20 +55,12 @@ export default function FreeWriteForm() {
             <option value="info">정보</option>
           </select>
 
-          <svg
+          <ChevronDown
             className="absolute right-[16px] pointer-events-none"
-            width="15"
-            height="8"
-            viewBox="0 0 15 8"
-            fill="none"
-          >
-            <path
-              d="M14.5 0.5L7.5 7.5L0.5 0.5"
-              stroke="#212121"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+            size={15}
+            strokeWidth={2}
+            color="#212121"
+          />
         </FreeWriteBox>
       </div>
 
