@@ -153,9 +153,9 @@ const Sidebar = () => {
             활동 사진들
           </p>
         </Link>
-        <Link href="/guestbook">
+        <Link href={ROUTES.GUESTBOOK}>
           <p
-            className={`text-[16px] font-bold ${pathname === '/guestbook' ? 'text-[#212121]' : 'text-[#919191] hover:text-[#212121]'}`}
+            className={`text-[16px] font-bold ${pathname === ROUTES.GUESTBOOK ? 'text-[#212121]' : 'text-[#919191] hover:text-[#212121]'}`}
           >
             방명록
           </p>
