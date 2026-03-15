@@ -1,16 +1,20 @@
 'use client';
+
 import { useRouter } from 'next/navigation'; // 1. 라우터 임포트
 import { Button } from '@/components/ui/button';
+
 const SELECTION_OPTIONS = [
-  { id: 'student', label: '재학생입니다' },
-  { id: 'graduate', label: '졸업생입니다' },
+  { id: 'STUDENTS', label: '재학생입니다' },
+  { id: 'ALUMNI', label: '졸업생입니다' },
 ];
+
 export default function PreSignup() {
   const router = useRouter(); // 2. 라우터 인스턴스 생성
   const handleSelection = (type) => {
     // 3. /signup/form 페이지로 이동하면서 쿼리 스트링(?role=...) 추가
     router.push(`/signup/form?role=${type}`);
   };
+
   return (
     <div className="flex size-full items-center justify-center py-20 font-pretendard">
       <div className="flex w-[600px] flex-col gap-[33px]">

@@ -4,6 +4,8 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { sendVerifyCode } from '@/apis/mail';
+import { getErrorMessage } from '@/apis/auth';
 
 // 이메일 형식 올바른지 확인
 const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
@@ -22,32 +24,35 @@ export default function FindIdEmail({ onNext }) {
     e.preventDefault();
     if (loading) return;
 
-    // 유효성 검사 - 비어있거나 형식 틀리면 알림 띄움
-    if (!email.trim() || !isValidEmail(email)) {
-      toast.error(!email.trim() ? '이메일을 입력해 주세요.' : '이메일 형식이 올바르지 않습니다.', {
-        description: !email.trim()
-          ? '회원가입 시 등록한 이메일을 입력해 주세요.'
-          : '예: example@email.com',
-      });
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail || !isValidEmail(normalizedEmail)) {
+      toast.error(
+        !normalizedEmail ? '이메일을 입력해 주세요.' : '이메일 형식이 올바르지 않습니다.',
+        {
+          description: !normalizedEmail
+            ? '회원가입 시 등록한 이메일을 입력해 주세요.'
+            : '예: example@khu.ac.kr',
+        }
+      );
       return;
     }
 
     // 성공 토스트 → 다음 화면 이동
     setLoading(true);
     try {
-      // 실제 API 호출이 들어갈 자리
-      // await api.findId(email);
+      await sendVerifyCode(normalizedEmail);
 
       toast.success('인증 메일을 발송했습니다.', {
-        description: `${email} 주소로 아이디 확인 메일을 보냈습니다.`,
+        description: `${normalizedEmail} 주소로 아이디 확인 메일을 보냈습니다.`,
       });
 
       timerRef.current = setTimeout(() => {
-        onNext(email);
-      }, 1500); // 알림 읽을 시간 주기 위해 여유시간 추가
+        onNext(normalizedEmail);
+      }, 1000); // 알림 읽을 시간 주기 위해 여유시간 추가
     } catch (error) {
       toast.error('발송 실패', {
-        description: '등록되지 않은 이메일이거나 서버 오류가 발생했습니다.',
+        description: getErrorMessage(error, '등록되지 않은 이메일이거나 서버 오류가 발생했습니다.'),
       });
       setLoading(false); // 실패 시에는 다시 입력을 시도할 수 있게 로딩 해제
     }

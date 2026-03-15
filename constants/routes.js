@@ -19,7 +19,7 @@ export const ROUTES = {
   SIGNUP: `${BASE_PATH}signup`,
   LOGOUT: `${BASE_PATH}logout`,
   FIND_ID: `${BASE_PATH}findId`,
-  FIND_PW: `${BASE_PATH}findPw`,
+  FIND_PW: `${BASE_PATH}findPassword`,
 
   // students 영역
   STUDENTS_DASHBOARD: `${BASE_PATH}students`,
