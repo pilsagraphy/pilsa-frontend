@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function BoardContent({ content = '' }) {
+export default function FreeContent({ content = '' }) {
   if (!content) return null;
 
   return (

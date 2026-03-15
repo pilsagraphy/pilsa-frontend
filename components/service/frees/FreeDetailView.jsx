@@ -3,12 +3,13 @@
 import React from 'react';
 import { DUMMY_BOARD_DETAILS } from '@/mocks/boardData';
 
-import BoardHead from '@/components/service/frees/BoardHead';
-import BoardInfo from '@/components/service/frees/BoardInfo';
-import BoardContent from '@/components/service/frees/BoardContent';
-import BoardActions from '@/components/service/frees/BoardActions';
-import BoardComments from '@/components/service/frees/BoardComments';
-import BoardPrevNext from '@/components/service/frees/BoardPrevNext';
+import FreeHead from './FreeHead';
+import FreeInfo from './FreeInfo';
+import FreeAttachments from './FreeAttachments';
+import FreeContent from './FreeContent';
+import FreeActions from './FreeActions';
+import FreeComments from './FreeComments';
+import FreePrevNext from './FreePrevNext';
 
 function formatKoreanDate(isoString) {
   if (!isoString) return '';
@@ -20,7 +21,7 @@ function formatKoreanDate(isoString) {
   return `${yyyy}. ${mm}. ${dd}.`;
 }
 
-export default function BoardDetailView({ postId }) {
+export default function FreeDetailView({ postId }) {
   const raw = DUMMY_BOARD_DETAILS.find((item) => item.postId === Number(postId));
 
   if (!raw) {
@@ -34,9 +35,13 @@ export default function BoardDetailView({ postId }) {
     date: formatKoreanDate(raw.updated),
     author: raw.anonymous ? '익명' : raw.authorName,
     content: raw.content,
-    likeCount: raw.likeCount,
+    likecount: raw.likeCount,
     liked: raw.liked,
-    attachments: raw.attachments ?? [],
+    attachments: (raw.attachments ?? []).map((a) => ({
+      attachmentId: a.attachmentId,
+      originName: a.originName,
+      fileUrl: a.fileUrl,
+    })),
     comments: raw.comments ?? [],
     links: {
       hasPrev: Boolean(raw.prevPostApi),
@@ -47,24 +52,32 @@ export default function BoardDetailView({ postId }) {
   };
 
   return (
-    <section className="mx-auto w-full max-w-[920px] flex flex-col gap-[80px]">
-      <div className="flex flex-col gap-[20px]">
-        <BoardHead categoryName={post.categoryName} />
-        <BoardInfo
+    <section className="mx-auto w-[920px] flex flex-col gap-[60px]">
+      <FreeHead categoryName={post.categoryName} />
+
+      <div className="flex flex-col">
+        <FreeInfo
           categoryName={post.categoryName}
           title={post.title}
           date={post.date}
           author={post.author}
-          attachments={post.attachments}
         />
-        <BoardContent content={post.content} />
-        <div className="w-full h-px bg-[#DEDEDE]" />
-        <BoardActions likeCount={post.likeCount} liked={post.liked} />
+        <FreeAttachments attachments={post.attachments} />
       </div>
 
-      <BoardComments comments={post.comments} />
+      <div className="flex flex-col">
+        <FreeContent content={post.content} />
 
-      <BoardPrevNext links={post.links} />
+        <div className="w-full h-px bg-[#DEDEDE] mt-[48px]" />
+
+        <div className="mt-[60px]">
+          <FreeActions likecount={post.likecount} liked={post.liked} />
+        </div>
+      </div>
+
+      <FreeComments comments={post.comments} />
+
+      <FreePrevNext links={post.links} />
     </section>
   );
 }

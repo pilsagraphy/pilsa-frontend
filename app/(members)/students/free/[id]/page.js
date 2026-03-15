@@ -1,6 +1,6 @@
-import BoardDetailView from '@/components/service/frees/BoardDetailView';
+import FreeDetailView from '@/components/service/frees/FreeDetailView';
 
 export default function Page({ params }) {
   const { id } = params;
-  return <BoardDetailView postId={id} />;
+  return <FreeDetailView postId={id} />;
 }

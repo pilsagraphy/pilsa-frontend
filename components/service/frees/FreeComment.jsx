@@ -13,7 +13,6 @@ function formatDate(isoString) {
   return `${yyyy}/${mm}/${dd}`;
 }
 
-// ㄴ 모양 답글 아이콘
 function ReplyIcon() {
   return (
     <div
@@ -28,10 +27,9 @@ function ReplyIcon() {
   );
 }
 
-// ⋮ 메뉴 아이콘
 function MenuIcon() {
   return (
-    <svg width="2" height="12" viewBox="0 0 2 12" fill="none">
+    <svg width="2" height="12" viewBox="0 0 2 12" fill="none" aria-hidden="true">
       <circle cx="1" cy="1" r="1" fill="#919191" />
       <circle cx="1" cy="6" r="1" fill="#919191" />
       <circle cx="1" cy="11" r="1" fill="#919191" />
@@ -39,7 +37,7 @@ function MenuIcon() {
   );
 }
 
-export default function BoardComment({ comment, isReply = false }) {
+export default function FreeComment({ comment, isReply = false }) {
   const displayContent = comment.private ? '비밀 댓글입니다.' : comment.content;
   const displayAuthor = comment.authorName ?? '익명';
 
@@ -65,11 +63,10 @@ export default function BoardComment({ comment, isReply = false }) {
         </div>
       </div>
 
-      {/* 더보기 버튼 */}
       <button
         type="button"
         aria-label="댓글 메뉴"
-        className="overflow-clip relative size-[24px] flex items-center justify-center"
+        className="mt-[4px] overflow-clip relative size-[24px] flex items-center justify-center"
         onClick={() => console.log('댓글 메뉴 클릭', comment.commentId)}
       >
         <MenuIcon />

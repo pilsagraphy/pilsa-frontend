@@ -2,8 +2,9 @@
 
 import React from 'react';
 
-export default function BoardPrevNext({ links }) {
+export default function FreePrevNext({ links }) {
   if (!links) return null;
+
   const { hasPrev, hasNext, prevPostApi, nextPostApi } = links;
 
   const baseBtn = 'text-[16px] tracking-[-0.32px] transition-colors';
@@ -12,24 +13,28 @@ export default function BoardPrevNext({ links }) {
 
   return (
     <div className="w-full flex justify-center">
-      <div className="relative h-[26px] w-[124px]">
-        {/* 이전 */}
+      <div className="flex gap-[40px]">
         <button
           type="button"
-          className={`absolute bottom-0 left-[21px] translate-y-1/2 ${baseBtn} ${hasPrev ? enabledBtn : disabledBtn}`}
+          className={`${baseBtn} ${hasPrev ? enabledBtn : disabledBtn}`}
           disabled={!hasPrev}
-          onClick={() => hasPrev && console.log('이전 클릭:', prevPostApi)}
+          onClick={() => {
+            if (!hasPrev) return;
+            console.log('이전 클릭:', prevPostApi);
+          }}
         >
-          이전
+          ◀ 이전
         </button>
-        {/* 다음 */}
         <button
           type="button"
-          className={`absolute bottom-0 left-[75px] translate-y-1/2 ${baseBtn} ${hasNext ? enabledBtn : disabledBtn}`}
+          className={`${baseBtn} ${hasNext ? enabledBtn : disabledBtn}`}
           disabled={!hasNext}
-          onClick={() => hasNext && console.log('다음 클릭:', nextPostApi)}
+          onClick={() => {
+            if (!hasNext) return;
+            console.log('다음 클릭:', nextPostApi);
+          }}
         >
-          다음
+          다음 ▶
         </button>
       </div>
     </div>

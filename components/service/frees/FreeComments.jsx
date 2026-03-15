@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import BoardComment from '@/components/service/frees/BoardComment';
+import FreeComment from './FreeComment';
 
 function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
 }
 
-export default function BoardComments({ comments = [] }) {
+export default function FreeComments({ comments = [] }) {
   const [commentText, setCommentText] = useState('');
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isSecret, setIsSecret] = useState(false);
@@ -25,34 +25,32 @@ export default function BoardComments({ comments = [] }) {
     <section className="flex flex-col gap-[60px] w-full">
       {/* 댓글 목록 */}
       <div className="flex flex-col gap-[23px] items-center w-full">
-        {/* 댓글 수 */}
         <div className="w-full px-[20px] py-[10px]">
           <span className="text-[18px] tracking-[-0.36px] text-[#454545] leading-[1.6]">
             댓글 {comments.length}개
           </span>
         </div>
 
-        {/* 댓글 아이템 */}
         {rootComments.map((comment, idx) => {
           const replies = getReplies(comment.commentId);
           return (
             <React.Fragment key={comment.commentId}>
               {idx !== 0 && <Divider />}
-              <BoardComment comment={comment} isReply={false} />
+              <FreeComment comment={comment} isReply={false} />
               {replies.map((reply) => (
                 <React.Fragment key={reply.commentId}>
                   <Divider />
-                  <BoardComment comment={reply} isReply={true} />
+                  <FreeComment comment={reply} isReply={true} />
                 </React.Fragment>
               ))}
             </React.Fragment>
           );
         })}
+        {comments.length > 0 && <Divider />}
       </div>
 
       {/* 댓글 입력 */}
       <div className="flex flex-col gap-[20px] w-full">
-        {/* 입력창 + 작성 버튼 */}
         <div className="flex items-center gap-[20px] w-full">
           <input
             type="text"
@@ -73,7 +71,6 @@ export default function BoardComments({ comments = [] }) {
 
         {/* 익명 + 비밀 댓글 체크박스 */}
         <div className="flex items-center gap-[20px]">
-          {/* 익명 */}
           <div className="flex items-center gap-[8px]">
             <input
               type="checkbox"
@@ -89,8 +86,6 @@ export default function BoardComments({ comments = [] }) {
               익명
             </label>
           </div>
-
-          {/* 비밀 댓글 */}
           <div className="flex items-center gap-[8px]">
             <input
               type="checkbox"
