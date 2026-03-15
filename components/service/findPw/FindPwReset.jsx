@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { passwordSchema } from '@/schemas/auth';
+import { resetPassword, getErrorMessage } from '@/apis/auth';
 
 const resetPwSchema = z
   .object({
@@ -17,7 +18,7 @@ const resetPwSchema = z
     path: ['confirmPassword'],
   });
 
-export default function FindPwReset({ username, onNext }) {
+export default function FindPwReset({ loginId, onNext }) {
   // 입력 상태 관리
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -81,19 +82,17 @@ export default function FindPwReset({ username, onNext }) {
 
     setLoading(true);
     try {
-      // 실제 API 호출이 들어갈 자리
-      // await api.resetPassword({ username, newPassword });
+      await resetPassword({ loginId, newPassword });
 
       toast.success('비밀번호가 변경되었습니다.');
-
       timerRef.current = setTimeout(() => {
         onNext();
-      }, 1500);
-    } catch (err) {
+      }, 1000); // 알림 읽을 시간 주기 위해 여유시간 추가
+    } catch (error) {
       toast.error('변경 실패', {
-        description: '서버 오류가 발생했습니다.',
+        description: getErrorMessage(error, '서버 오류가 발생했습니다.'),
       });
-      setLoading(false);
+      setLoading(false); // 다시 입력할 수 있도록 로딩 상태 해제
     }
   };
 
@@ -105,7 +104,6 @@ export default function FindPwReset({ username, onNext }) {
         </h1>
 
         <div className="flex flex-col gap-3 w-full">
-          {/* 신규 비밀번호 입력 섹션 */}
           <div className="flex flex-col gap-3 w-full">
             <p className="text-[#454545] text-[16px] tracking-[-0.32px] leading-[1.6]">
               신규 비밀번호
@@ -117,7 +115,6 @@ export default function FindPwReset({ username, onNext }) {
                 onChange={handleNewPasswordChange}
                 placeholder="영문, 숫자, 특수문자 포함 8자 이상"
                 disabled={loading}
-                // 에러 발생 시 테두리 및 텍스트 색상 변경 (피그마 디자인 반영)
                 className={`h-[52px] text-[16px] ${
                   errors.newPassword
                     ? 'border-[#f44336] text-[#f44336] focus-visible:ring-0 focus-visible:border-[#f44336]'
@@ -132,7 +129,6 @@ export default function FindPwReset({ username, onNext }) {
             </div>
           </div>
 
-          {/* 비밀번호 재입력 확인 섹션 */}
           <div className="flex flex-col gap-3 w-full">
             <p className="text-[#454545] text-[16px] tracking-[-0.32px] leading-[1.6]">
               비밀번호 재입력

@@ -46,7 +46,7 @@ export default function LoginSection() {
     e.preventDefault();
     try {
       await login(loginId, password);
-      router.push(ROUTES.NOTICES); // 로그인 성공 시 공지 목록으로 이동
+      router.push(ROUTES.STUDENTS_DASHBOARD);
     } catch (err) {
       const message =
         err.response?.data?.message ??

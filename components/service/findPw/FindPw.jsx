@@ -57,7 +57,9 @@ export default function FindPw() {
         {step === 'ID' && <FindPwId onNext={handleIdSubmit} />}
 
         {/* 2단계: 이메일 입력 및 인증 메일 발송 */}
-        {step === 'EMAIL' && <FindPwEmail onNext={handleEmailSubmit} onPrev={handleBackToId} />}
+        {step === 'EMAIL' && (
+          <FindPwEmail loginId={username} onNext={handleEmailSubmit} onPrev={handleBackToId} />
+        )}
 
         {/* 3단계: 인증번호 입력 및 검증 */}
         {step === 'CODE' && (

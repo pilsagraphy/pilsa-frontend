@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { login, getRole, refreshAccessToken } from '@/apis/auth';
+import { login, getRole, refreshAccessToken, getErrorMessage } from '@/apis/auth';
 
 const useAuthStore = create((set, get) => ({
   accessToken: null,
@@ -46,7 +46,10 @@ const useAuthStore = create((set, get) => ({
       });
       return data; // 성공 시 컴포넌트에서 후속 처리 가능 (리다이렉트 등)
     } catch (err) {
-      set({ error: err.response?.data?.message || '로그인 실패', isLoading: false });
+      set({
+        error: getErrorMessage(err, '로그인 실패'),
+        isLoading: false,
+      });
       throw err;
     }
   },

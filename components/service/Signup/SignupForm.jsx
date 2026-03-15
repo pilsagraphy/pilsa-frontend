@@ -1,13 +1,20 @@
 'use client';
 
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 
 import { registerFormSchema, loginIdSchema } from '@/schemas/auth';
 import { EMAIL_DOMAINS } from '@/constants/email';
+import {
+  registerUser,
+  checkLoginIdDuplicate,
+  checkEmailDuplicate,
+  getErrorMessage,
+} from '@/apis/auth';
+import { sendVerifyCode, verifyEmailCode } from '@/apis/mail';
 import {
   Form,
   FormControl,
@@ -28,90 +35,229 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-export default function SignupForm() {
-  const searchParams = useSearchParams();
-  const role = searchParams.get('role') || 'student';
+const ALLOWED_ROLES = ['STUDENTS', 'ALUMNI', 'ADMIN'];
+const DEFAULT_VALUES = {
+  name: '',
+  department: '',
+  studentId: '',
+  phone: '',
+  emailLocal: '',
+  emailDomain: '',
+  emailCustom: '',
+  emailCode: '',
+  username: '',
+  password: '',
+  passwordConfirm: '',
+};
 
-  // 인증 관련 상태
+function SignupFormInner() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const rawRole = searchParams.get('role') || 'STUDENTS';
+  const roleParam = ALLOWED_ROLES.includes(rawRole) ? rawRole : 'STUDENTS';
+  const roleForApi =
+    roleParam === 'STUDENTS' ? 'STUDENTS' : roleParam === 'ALUMNI' ? 'ALUMNI' : 'ADMIN';
+
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
   const [isDuplicateChecked, setIsDuplicateChecked] = useState(false);
 
+  const [isCheckingLoginId, setIsCheckingLoginId] = useState(false);
+  const [isSendingEmailCode, setIsSendingEmailCode] = useState(false);
+  const [isVerifyingEmailCode, setIsVerifyingEmailCode] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+
+  const [emailExpireTime, setEmailExpireTime] = useState(0);
+
   const form = useForm({
     resolver: zodResolver(registerFormSchema),
-    defaultValues: {
-      name: '',
-      department: '',
-      studentId: '',
-      emailLocal: '',
-      emailDomain: '',
-      emailCustom: '',
-      emailCode: '',
-      username: '',
-      password: '',
-      passwordConfirm: '',
-    },
-    mode: 'onChange', // 실시간 피드백을 위해 설정
+    defaultValues: DEFAULT_VALUES,
+    mode: 'onChange',
   });
 
   const emailDomain = form.watch('emailDomain');
   const passwordValue = form.watch('password');
 
-  // 아이디 중복 확인 (스키마 활용)
-  const handleDuplicateCheck = async () => {
-    const username = form.getValues('username');
+  const buildFinalEmail = (values) => {
+    const emailLocal = values.emailLocal?.trim();
+    const domain =
+      values.emailDomain === 'custom' ? values.emailCustom?.trim() : values.emailDomain?.trim();
 
-    // 1. Zod 개별 스키마로 먼저 검증 (불필요한 API 요청 방지)
+    if (!emailLocal || !domain) return '';
+    return `${emailLocal}@${domain}`;
+  };
+
+  useEffect(() => {
+    if (!isEmailSent || emailExpireTime <= 0) return;
+
+    const timer = setInterval(() => {
+      setEmailExpireTime((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isEmailSent, emailExpireTime]);
+
+  const formatTime = (seconds) => {
+    const min = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const sec = String(seconds % 60).padStart(2, '0');
+    return `${min}:${sec}`;
+  };
+
+  const resetEmailAuth = () => {
+    setIsEmailSent(false);
+    setIsEmailVerified(false);
+    setEmailExpireTime(0);
+    form.setValue('emailCode', '');
+  };
+
+  const handleDuplicateCheck = async () => {
+    const username = form.getValues('username')?.trim();
+
     const result = loginIdSchema.safeParse(username);
     if (!result.success) {
       toast.error(result.error.issues[0].message);
       return;
     }
 
-    // 2. 실무에서는 여기서 axios.post('/api/check-id', ...) 호출
-    console.log('API 중복 확인 호출:', username);
-    setIsDuplicateChecked(true);
-    toast.success('사용 가능한 아이디입니다.');
+    try {
+      setIsCheckingLoginId(true);
+      await checkLoginIdDuplicate(username);
+      setIsDuplicateChecked(true);
+      toast.success('사용 가능한 아이디입니다.');
+    } catch (error) {
+      setIsDuplicateChecked(false);
+      toast.error(getErrorMessage(error, '아이디 중복 확인에 실패했습니다.'));
+    } finally {
+      setIsCheckingLoginId(false);
+    }
   };
 
-  const handleEmailSend = () => {
-    const emailLocal = form.getValues('emailLocal');
-    if (!emailLocal) return toast.error('이메일 주소를 입력해주세요.');
+  const handleEmailSend = async () => {
+    const values = form.getValues();
+    const finalEmail = buildFinalEmail(values);
 
-    setIsEmailSent(true);
-    toast.success('인증번호가 발송되었습니다.');
+    if (!finalEmail) {
+      toast.error('이메일 주소를 완성해주세요.');
+      return;
+    }
+
+    try {
+      setIsSendingEmailCode(true);
+
+      // 1. 이메일 중복 확인
+      await checkEmailDuplicate(finalEmail);
+
+      // 2. 인증번호 발송
+      const expireTime = await sendVerifyCode(finalEmail);
+
+      setIsEmailSent(true);
+      setIsEmailVerified(false);
+      setEmailExpireTime(Number(expireTime) || 0);
+      form.setValue('emailCode', '');
+
+      toast.success('인증번호가 발송되었습니다.');
+    } catch (error) {
+      setIsEmailSent(false);
+      setIsEmailVerified(false);
+      setEmailExpireTime(0);
+      toast.error(getErrorMessage(error, '인증번호 발송에 실패했습니다.'));
+    } finally {
+      setIsSendingEmailCode(false);
+    }
   };
 
-  const handleEmailVerify = () => {
-    const code = form.getValues('emailCode');
-    if (!code) return toast.error('인증번호를 입력해주세요.');
+  const handleEmailVerify = async () => {
+    const values = form.getValues();
+    const finalEmail = buildFinalEmail(values);
+    const code = values.emailCode?.trim();
 
-    setIsEmailVerified(true);
-    toast.success('이메일 인증이 완료되었습니다.');
+    if (!finalEmail) {
+      toast.error('이메일 주소를 완성해주세요.');
+      return;
+    }
+
+    if (!code) {
+      toast.error('인증번호를 입력해주세요.');
+      return;
+    }
+
+    if (emailExpireTime <= 0) {
+      toast.error('인증시간이 만료되었습니다. 다시 발송해주세요.');
+      return;
+    }
+
+    try {
+      setIsVerifyingEmailCode(true);
+      const verified = await verifyEmailCode(finalEmail, code);
+
+      if (!verified) {
+        setIsEmailVerified(false);
+        toast.error('인증번호가 올바르지 않거나 만료되었습니다.');
+        return;
+      }
+
+      setIsEmailVerified(true);
+      toast.success('이메일 인증이 완료되었습니다.');
+    } catch (error) {
+      setIsEmailVerified(false);
+      toast.error(getErrorMessage(error, '이메일 인증에 실패했습니다.'));
+    } finally {
+      setIsVerifyingEmailCode(false);
+    }
   };
 
-  // 최종 제출
-  const onSubmit = (data) => {
-    // 비즈니스 로직 상 필수 체크
-    if (!isEmailVerified) return toast.error('이메일 인증이 필요합니다.');
-    if (!isDuplicateChecked) return toast.error('아이디 중복 확인을 해주세요.');
+  const onSubmit = async (data) => {
+    if (!isDuplicateChecked) {
+      toast.error('아이디 중복 확인을 해주세요.');
+      return;
+    }
 
-    const finalEmail =
-      data.emailDomain === 'custom'
-        ? `${data.emailLocal}@${data.emailCustom}`
-        : `${data.emailLocal}@${data.emailDomain}`;
+    if (!isEmailVerified) {
+      toast.error('이메일 인증을 완료해주세요.');
+      return;
+    }
 
-    const submitData = {
-      ...data,
-      email: finalEmail,
-      role,
+    const safe = (value) => String(value ?? '').trim();
+
+    const finalEmail = buildFinalEmail(data);
+
+    const payload = {
+      name: safe(data.name),
+      phone: safe(data.phone),
+      major: safe(data.department),
+      studentNo: safe(data.studentId),
+      email: safe(finalEmail),
+      loginId: safe(data.username),
+      password: data.password ?? '',
+      role: roleForApi,
     };
 
-    console.log('✅ 가입 데이터 전송:', submitData);
-    toast.success('회원가입이 완료되었습니다!');
+    try {
+      setIsRegistering(true);
+      await registerUser(payload);
+
+      toast.success('회원가입이 완료되었습니다.');
+
+      form.reset(DEFAULT_VALUES);
+      setIsEmailSent(false);
+      setIsEmailVerified(false);
+      setIsDuplicateChecked(false);
+      setEmailExpireTime(0);
+
+      router.push('/login');
+    } catch (error) {
+      toast.error(getErrorMessage(error, '회원가입에 실패했습니다.'));
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
-  // 비밀번호 실시간 체크 UI용 헬퍼 (비즈니스 로직은 Zod가 담당하므로 UI 전용)
   const checkPasswordRule = (regex) => regex.test(passwordValue || '');
 
   return (
@@ -120,7 +266,7 @@ export default function SignupForm() {
 
       <div className="mb-8">
         <span className="inline-block rounded-[4px] bg-[#f0f0f0] px-4 py-2 text-[14px] text-[#212121]">
-          {role === 'student' ? '재학생' : '졸업생'}
+          {roleParam === 'STUDENTS' ? '재학생' : roleParam === 'ALUMNI' ? '졸업생' : '관리자'}
         </span>
       </div>
 
@@ -128,7 +274,34 @@ export default function SignupForm() {
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-[20px]">
           <p className="text-[24px] font-semibold text-[#212121]">회원가입</p>
 
-          {/* 실명 / 학과 / 학번 (반복되는 구조는 생략, 학번 onChange만 유지) */}
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem className="flex flex-col gap-[12px] space-y-0">
+                <FormLabel>성함</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="실명을 입력해주세요" className="h-[52px]" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="department"
+            render={({ field }) => (
+              <FormItem className="flex flex-col gap-[12px] space-y-0">
+                <FormLabel>학과</FormLabel>
+                <FormControl>
+                  <Input {...field} placeholder="학과를 입력해주세요" className="h-[52px]" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="studentId"
@@ -138,10 +311,13 @@ export default function SignupForm() {
                 <FormControl>
                   <Input
                     {...field}
-                    placeholder="20231234"
-                    maxLength={8}
-                    onChange={(e) => field.onChange(e.target.value.replace(/[^0-9]/g, ''))}
-                    className="h-[52px]"
+                    placeholder="2023123456"
+                    maxLength={10}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      field.onChange(value);
+                    }}
+                    className="h-[52px] placeholder:text-[#9e9e9e]"
                   />
                 </FormControl>
                 <FormMessage />
@@ -149,9 +325,9 @@ export default function SignupForm() {
             )}
           />
 
-          {/* 이메일 섹션 (가독성을 위해 묶음) */}
           <div className="flex flex-col gap-[12px]">
             <Label>이메일</Label>
+
             <div className="flex items-center gap-[12px]">
               <FormField
                 control={form.control}
@@ -159,12 +335,22 @@ export default function SignupForm() {
                 render={({ field }) => (
                   <FormItem className="flex-1 space-y-0">
                     <FormControl>
-                      <Input {...field} placeholder="이메일 주소" className="h-[52px]" />
+                      <Input
+                        {...field}
+                        placeholder="이메일 주소"
+                        className="h-[52px]"
+                        onChange={(e) => {
+                          field.onChange(e);
+                          resetEmailAuth();
+                        }}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
               />
+
               <span className="text-[#919191]">@</span>
+
               {emailDomain === 'custom' ? (
                 <FormField
                   control={form.control}
@@ -172,7 +358,15 @@ export default function SignupForm() {
                   render={({ field }) => (
                     <FormItem className="flex-1 space-y-0">
                       <FormControl>
-                        <Input {...field} placeholder="직접 입력" className="h-[52px]" />
+                        <Input
+                          {...field}
+                          placeholder="직접 입력"
+                          className="h-[52px]"
+                          onChange={(e) => {
+                            field.onChange(e);
+                            resetEmailAuth();
+                          }}
+                        />
                       </FormControl>
                     </FormItem>
                   )}
@@ -183,7 +377,13 @@ export default function SignupForm() {
                   name="emailDomain"
                   render={({ field }) => (
                     <FormItem className="flex-1 space-y-0">
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={(val) => {
+                          field.onChange(val);
+                          resetEmailAuth();
+                        }}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger className="h-[52px]">
                             <SelectValue placeholder="선택" />
@@ -201,16 +401,21 @@ export default function SignupForm() {
                   )}
                 />
               )}
+
               <Button
                 type="button"
                 onClick={handleEmailSend}
-                disabled={isEmailSent}
-                className="h-[52px] bg-[#212121]"
+                disabled={isSendingEmailCode}
+                className="h-[52px] min-w-[120px] bg-[#212121]"
               >
-                {isEmailSent ? '발송완료' : '인증번호 발송'}
+                {isSendingEmailCode ? '발송중...' : isEmailSent ? '재발송' : '인증번호 발송'}
               </Button>
             </div>
-            {/* 인증번호 입력 */}
+
+            {isEmailSent && (
+              <p className="text-[13px] text-[#666]">남은 시간: {formatTime(emailExpireTime)}</p>
+            )}
+
             <div className="flex gap-[12px]">
               <FormField
                 control={form.control}
@@ -218,24 +423,58 @@ export default function SignupForm() {
                 render={({ field }) => (
                   <FormItem className="flex-1 space-y-0">
                     <FormControl>
-                      <Input {...field} placeholder="인증번호 입력" className="h-[52px]" />
+                      <Input
+                        {...field}
+                        placeholder="인증번호 입력"
+                        className="h-[52px]"
+                        disabled={!isEmailSent || isEmailVerified}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
               <Button
                 type="button"
                 onClick={handleEmailVerify}
-                disabled={isEmailVerified}
-                className="h-[52px] bg-[#212121]"
+                disabled={!isEmailSent || isEmailVerified || isVerifyingEmailCode}
+                className="h-[52px] min-w-[100px] bg-[#212121]"
               >
-                {isEmailVerified ? '인증완료' : '인증확인'}
+                {isVerifyingEmailCode ? '확인중...' : isEmailVerified ? '인증완료' : '인증확인'}
               </Button>
             </div>
           </div>
 
-          {/* 아이디 중복확인 */}
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem className="flex flex-col gap-[12px] space-y-0">
+                <FormLabel>전화번호</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    placeholder="010-0000-0000"
+                    maxLength={13}
+                    onChange={(e) => {
+                      const v = e.target.value.replace(/[^0-9]/g, '');
+                      let formatted = v;
+                      if (v.length > 3 && v.length <= 7) {
+                        formatted = `${v.slice(0, 3)}-${v.slice(3)}`;
+                      } else if (v.length > 7) {
+                        formatted = `${v.slice(0, 3)}-${v.slice(3, 7)}-${v.slice(7, 11)}`;
+                      }
+                      field.onChange(formatted);
+                    }}
+                    className="h-[52px] placeholder:text-[#9e9e9e]"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="flex flex-col gap-[12px]">
             <Label>아이디</Label>
             <div className="flex items-start gap-[12px]">
@@ -247,6 +486,7 @@ export default function SignupForm() {
                     <FormControl>
                       <Input
                         {...field}
+                        placeholder="아이디를 입력해주세요"
                         onChange={(e) => {
                           field.onChange(e);
                           setIsDuplicateChecked(false);
@@ -258,18 +498,22 @@ export default function SignupForm() {
                   </FormItem>
                 )}
               />
+
               <Button
                 type="button"
                 onClick={handleDuplicateCheck}
-                disabled={isDuplicateChecked}
+                disabled={isCheckingLoginId || isDuplicateChecked}
                 className="h-[52px] w-[150px] bg-[#212121]"
               >
-                {isDuplicateChecked ? '중복확인 완료' : '중복 확인'}
+                {isCheckingLoginId
+                  ? '확인중...'
+                  : isDuplicateChecked
+                    ? '중복확인 완료'
+                    : '중복 확인'}
               </Button>
             </div>
           </div>
 
-          {/* 비밀번호 섹션 */}
           <FormField
             control={form.control}
             name="password"
@@ -284,21 +528,28 @@ export default function SignupForm() {
                     className="h-[52px]"
                   />
                 </FormControl>
-                {/* 실시간 UI 피드백 */}
-                <div className="flex gap-[10px] mt-[4px]">
-                  {['문자', '숫자', '특수문자', '8~20자'].map((label, i) => {
-                    const regexes = [/[a-zA-Z]/, /\d/, /[^A-Za-z0-9]/, /^.{8,20}$/];
-                    const isValid = checkPasswordRule(regexes[i]);
+
+                <div className="mt-[4px] flex flex-wrap gap-x-[12px] gap-y-[4px]">
+                  {[
+                    { label: '문자', regex: /[a-zA-Z]/ },
+                    { label: '숫자', regex: /\d/ },
+                    { label: '특수문자', regex: /[^A-Za-z0-9]/ },
+                    { label: '8~20자', regex: /^.{8,20}$/ },
+                  ].map((rule) => {
+                    const isValid = checkPasswordRule(rule.regex);
                     return (
                       <span
-                        key={label}
-                        className={`text-[12px] ${isValid ? 'text-blue-500' : 'text-[#9e9e9e]'}`}
+                        key={rule.label}
+                        className={`text-[12px] transition-colors ${
+                          isValid ? 'text-blue-600 font-medium' : 'text-[#9e9e9e]'
+                        }`}
                       >
-                        ● {label}
+                        ● {rule.label}
                       </span>
                     );
                   })}
                 </div>
+
                 <FormMessage />
               </FormItem>
             )}
@@ -308,7 +559,8 @@ export default function SignupForm() {
             control={form.control}
             name="passwordConfirm"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex flex-col gap-[12px] space-y-0">
+                <FormLabel>비밀번호 확인</FormLabel>
                 <FormControl>
                   <Input
                     {...field}
@@ -322,11 +574,25 @@ export default function SignupForm() {
             )}
           />
 
-          <Button type="submit" className="h-[52px] w-full bg-[#212121] text-white mt-4">
-            가입하기
+          <Button
+            type="submit"
+            disabled={isRegistering}
+            className="mt-4 h-[52px] w-full bg-[#212121] text-white transition-all hover:bg-[#333]"
+          >
+            {isRegistering ? '가입 중...' : '가입하기'}
           </Button>
         </form>
       </Form>
     </div>
+  );
+}
+
+export default function SignupForm() {
+  return (
+    <Suspense
+      fallback={<div className="flex h-screen items-center justify-center">로딩 중...</div>}
+    >
+      <SignupFormInner />
+    </Suspense>
   );
 }

@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import { verifyFindIdCode, findLoginIdByEmail, getErrorMessage } from '@/apis/auth';
 
 // 인증번호는 숫자 6자리
 const isValidCode = (v) => /^\d{6}$/.test(v);
@@ -27,7 +28,9 @@ export default function FindIdCode({ email, onNext, onPrev }) {
     e.preventDefault();
     if (loading) return;
 
-    if (!code.trim() || !isValidCode(code)) {
+    const normalizedCode = code.trim();
+
+    if (!normalizedCode || !isValidCode(normalizedCode)) {
       setError('인증번호를 정확히 입력해주세요.');
       toast.error('입력 오류', {
         description: '인증번호 6자리를 정확히 입력해 주세요.',
@@ -37,21 +40,19 @@ export default function FindIdCode({ email, onNext, onPrev }) {
 
     setLoading(true);
     try {
-      // 실제 인증 API 호출 자리
-      // await api.verifyCode(code);
-
-      const mockId = 'pilsagraphy'; // 찾은 아이디 예시로 넣어둠
+      await verifyFindIdCode(email, normalizedCode);
+      const result = await findLoginIdByEmail(email);
 
       toast.success('인증이 완료되었습니다.', {
         description: '아이디 확인 화면으로 이동합니다.',
       });
 
       timerRef.current = setTimeout(() => {
-        onNext(mockId);
-      }, 1500);
+        onNext(result.loginId);
+      }, 1000);
     } catch (err) {
       toast.error('인증 실패', {
-        description: '인증번호가 일치하지 않거나 만료되었습니다.',
+        description: getErrorMessage(err, '인증번호가 일치하지 않거나 만료되었습니다.'),
       });
       setLoading(false);
     }
@@ -75,7 +76,6 @@ export default function FindIdCode({ email, onNext, onPrev }) {
               inputMode="numeric"
               maxLength={6}
               disabled={loading}
-              // 에러 시 빨간 테두리 적용
               className={`h-[52px] text-[16px] ${
                 error
                   ? 'border-[#f44336] text-[#f44336] focus-visible:ring-0 focus-visible:border-[#f44336]'
