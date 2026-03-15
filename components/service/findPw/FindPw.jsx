@@ -16,12 +16,12 @@ export default function FindPw() {
   const [step, setStep] = useState('ID');
 
   // 자식 컴포넌트 간 공유 및 API 호출에 필요한 사용자 정보 상태
-  const [username, setUsername] = useState(''); // 사용자가 입력한 아이디
+  const [loginId, setLoginId] = useState(''); // 사용자가 입력한 아이디
   const [email, setEmail] = useState(''); // 사용자가 입력한 본인 확인용 이메일
 
-  // 1단계(아이디 입력) 완료 후 실행되는 핸들러
-  const handleIdSubmit = (submittedUsername) => {
-    setUsername(submittedUsername); // 입력받은 아이디 저장
+  // 1단계(로그인 아이디 입력) 완료 후 실행되는 핸들러
+  const handleLoginIdSubmit = (submittedLoginId) => {
+    setLoginId(submittedLoginId); // 입력받은 로그인 아이디 저장
     setStep('EMAIL'); // 이메일 입력 단계로 이동
   };
 
@@ -54,11 +54,11 @@ export default function FindPw() {
         {/* 각 단계(step) 상태에 따라 해당 컴포넌트를 조건부 렌더링 */}
 
         {/* 1단계: 아이디 확인 */}
-        {step === 'ID' && <FindPwId onNext={handleIdSubmit} />}
+        {step === 'ID' && <FindPwId onNext={handleLoginIdSubmit} />}
 
         {/* 2단계: 이메일 입력 및 인증 메일 발송 */}
         {step === 'EMAIL' && (
-          <FindPwEmail loginId={username} onNext={handleEmailSubmit} onPrev={handleBackToId} />
+          <FindPwEmail loginId={loginId} onNext={handleEmailSubmit} onPrev={handleBackToId} />
         )}
 
         {/* 3단계: 인증번호 입력 및 검증 */}
@@ -67,7 +67,7 @@ export default function FindPw() {
         )}
 
         {/* 4단계: 새로운 비밀번호 설정 (저장된 username 사용) */}
-        {step === 'RESET' && <FindPwReset username={username} onNext={handleReset} />}
+        {step === 'RESET' && <FindPwReset loginId={loginId} onNext={handleReset} />}
 
         {/* 5단계: 비밀번호 변경 완료 안내 및 로그인 유도 */}
         {step === 'SUCCESS' && <FindPwSuccess />}

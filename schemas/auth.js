@@ -37,6 +37,11 @@ export const emailSchema = z.email({
   message: '올바른 이메일 형식이 아닙니다.',
 });
 
+export const phoneSchema = z
+  .string()
+  .min(1, { message: '미입력 항목을 입력해주세요.' })
+  .regex(/^010-\d{4}-\d{4}$/, { message: '010-0000-0000 형식으로 입력해주세요.' });
+
 // 전체 회원가입 폼 스키마
 export const registerFormSchema = z
   .object({
@@ -47,6 +52,7 @@ export const registerFormSchema = z
     emailDomain: z.string().min(1, { message: '선택해주세요.' }), // 도메인
     emailCustom: z.string().optional(), // 직접 입력은 선택적
     emailCode: emailCodeSchema,
+    phone: phoneSchema,
     username: loginIdSchema,
     password: passwordSchema,
     passwordConfirm: z.string().min(1, { message: '비밀번호 확인을 입력해주세요.' }),
