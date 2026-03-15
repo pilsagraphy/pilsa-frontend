@@ -1,8 +1,11 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function NoticeHead() {
+  const router = useRouter();
+
   return (
     <div className="w-full flex justify-between">
       <h1 className="mt-[36px] text-[24px] font-semibold tracking-[-0.48px] text-[#212121]">
@@ -20,7 +23,7 @@ export default function NoticeHead() {
           text-white
           rounded-[4px]
         "
-        onClick={() => console.log('목록 클릭')}
+        onClick={() => router.push('/students/notices')}
       >
         목록
       </button>
