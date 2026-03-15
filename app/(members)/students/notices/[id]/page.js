@@ -1,7 +1,7 @@
-import NoticeDetailView from '@/components/service/notices/detail/NoticeDetailView';
+import NoticeDetailView from '@/components/service/noticeDetail/NoticeDetailView';
 import AuthGuard from '@/components/common/AuthGuard';
 
-export default function Page({ params, searchParams }) {
+export default function NoticeDetailPage({ params, searchParams }) {
   const { id } = params;
   const sort = searchParams?.sort ?? 'latest';
 
