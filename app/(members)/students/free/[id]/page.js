@@ -1,6 +1,11 @@
-import FreeDetailView from '@/components/service/frees/FreeDetailView';
+import FreeDetailView from '@/components/service/freeDetail/FreeDetailView';
+import AuthGuard from '@/components/common/AuthGuard';
 
-export default function Page({ params }) {
+export default function FreeDetailPage({ params }) {
   const { id } = params;
-  return <FreeDetailView postId={id} />;
+  return (
+    <AuthGuard>
+      <FreeDetailView postId={id} />
+    </AuthGuard>
+  );
 }

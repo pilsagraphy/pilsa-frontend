@@ -1,12 +1,16 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { ThumbsUp } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export default function FreeActions({ likecount, liked: initialLiked = false }) {
   const initialCount = typeof likecount === 'number' ? likecount : 0;
 
   const [likeCount, setLikeCount] = useState(initialCount);
   const [liked, setLiked] = useState(Boolean(initialLiked));
+
+  const router = useRouter();
 
   useEffect(() => {
     setLikeCount(initialCount);
@@ -40,14 +44,13 @@ export default function FreeActions({ likecount, liked: initialLiked = false }) 
           hover:bg-[#f5f5f5]
         "
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M7 10V20H4V10H7ZM9 20H15.5C16.3 20 17 19.4 17.2 18.6L18.9 11.6C19.1 10.8 18.5 10 17.7 10H13V5.5C13 4.7 12.3 4 11.5 4L9 10V20Z"
-            stroke={liked ? '#212121' : '#1E1E1E'}
-            strokeWidth="1.5"
-            strokeLinejoin="round"
-          />
-        </svg>
+        <ThumbsUp
+          width={18}
+          height={18}
+          stroke={liked ? '#212121' : '#1E1E1E'}
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
         <span className="text-[#212121]">좋아요 {likeCount}</span>
       </button>
 
@@ -56,7 +59,7 @@ export default function FreeActions({ likecount, liked: initialLiked = false }) 
         <button
           type="button"
           className="h-[52px] w-[135px] bg-[#212121] text-white rounded-[4px]"
-          onClick={() => console.log('수정 클릭')}
+          onClick={() => router.push('/students/free/write')}
         >
           수정
         </button>

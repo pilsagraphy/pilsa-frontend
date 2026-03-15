@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { MoreVertical } from 'lucide-react';
 
 function formatDate(isoString) {
   if (!isoString) return '';
@@ -24,16 +25,6 @@ function ReplyIcon() {
         borderBottom: '1px solid #919191',
       }}
     />
-  );
-}
-
-function MenuIcon() {
-  return (
-    <svg width="2" height="12" viewBox="0 0 2 12" fill="none" aria-hidden="true">
-      <circle cx="1" cy="1" r="1" fill="#919191" />
-      <circle cx="1" cy="6" r="1" fill="#919191" />
-      <circle cx="1" cy="11" r="1" fill="#919191" />
-    </svg>
   );
 }
 
@@ -69,7 +60,7 @@ export default function FreeComment({ comment, isReply = false }) {
         className="mt-[4px] overflow-clip relative size-[24px] flex items-center justify-center"
         onClick={() => console.log('댓글 메뉴 클릭', comment.commentId)}
       >
-        <MenuIcon />
+        <MoreVertical size={16} color="#919191" strokeWidth={2.5} />
       </button>
     </div>
   );
