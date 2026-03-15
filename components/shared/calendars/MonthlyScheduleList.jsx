@@ -7,7 +7,14 @@ export default function MonthlyScheduleList({
   selectedId = null,
   onSelect,
   maxHeight = 380,
+  isLoading = false,
 }) {
+  if (isLoading) {
+    return (
+      <div className="text-[18px] tracking-[-0.36px] text-[#919191]">일정을 불러오는 중입니다.</div>
+    );
+  }
+
   if (!schedules || schedules.length === 0) {
     return (
       <div className="text-[18px] tracking-[-0.36px] text-[#919191]">
