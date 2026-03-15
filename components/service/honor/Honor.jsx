@@ -1,8 +1,27 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import HonorGrid from "./HonorGrid";
+import { getHonorList } from "@/apis/honor";
+
 import { DUMMY_DONORS } from "@/mocks/donorsData";
 
 export default function Honor() {  
-  const donors = DUMMY_DONORS; 
+  const [donors, setDonors] = useState([]);
+
+  useEffect(() => {
+    const fetchHonor = async () => {
+      try {
+        const data = await getHonorList();
+        setDonors(data);
+      } catch (error) {
+        console.error("명예의 전당 조회 실패:", error);
+      }
+    };
+
+    fetchHonor();
+  }, []);
+  
   const sortedDonors = [...donors].sort((a, b) => b.amount - a.amount);
 
   const totalCount = sortedDonors.length;

@@ -1,14 +1,17 @@
 'use client';
 
 import { useEffect } from 'react';
-import useAuthStore from '@/stores/useAuthStore';
+import { usePathname } from 'next/navigation';
+import { PUBLIC_ROUTES } from '@/constants/routes';
 
 export default function AuthBootstrap({ children }) {
-  const initializeAuth = useAuthStore((s) => s.initializeAuth);
+  const pathname = usePathname();
 
   useEffect(() => {
-    initializeAuth();
-  }, [initializeAuth]);
+    const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+
+    if (isPublicRoute) return;
+  }, [pathname]);
 
   return children;
 }
