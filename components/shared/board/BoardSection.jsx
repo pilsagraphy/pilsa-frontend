@@ -1,24 +1,24 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-import SortSelect from './SortSelect';
-import CategorySelect from './CategorySelect';
-import SearchInput from './SearchInput';
-import PostTable from './PostTable';
-import WriteButton from './WriteButton';
-import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
+import SortSelect from "./SortSelect";
+import CategorySelect from "./CategorySelect";
+import SearchInput from "./SearchInput";
+import PostTable from "./PostTable";
+import WriteButton from "./WriteButton";
+import PaginationWithEllipsis from "@/components/shared/PaginationWithEllipsis";
 
-import { getNoticeList } from '@/apis/notice';
-import { getFreePostList, getFreeCategories } from '@/apis/free';
-import { getErrorMessage } from '@/apis/auth';
+import { getNoticeList } from "@/apis/notice";
+import { getFreePostList, getFreeCategories } from "@/apis/free";
+import { getErrorMessage } from "@/apis/auth";
 
 const PAGE_SIZE = 10;
 
 const SORT_MAP = {
-  latest: 'created',
-  views: 'viewCount',
-  likes: 'likeCount',
+  latest: "created",
+  views: "viewCount",
+  likes: "likeCount",
 };
 
 /**
@@ -36,16 +36,16 @@ export default function BoardSection({ title, boardType }) {
   const [totalPages, setTotalPages] = useState(1);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [sortOrder, setSortOrder] = useState('latest');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [category, setCategory] = useState('all');
+  const [sortOrder, setSortOrder] = useState("latest");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [category, setCategory] = useState("all");
 
   const [categoryMap, setCategoryMap] = useState({});
 
   const [loading, setLoading] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const isNoticeBoard = boardType === 'notices';
+  const isNoticeBoard = boardType === "notices";
 
   const handleSortChange = (value) => {
     setSortOrder(value);
@@ -66,7 +66,7 @@ export default function BoardSection({ title, boardType }) {
    * 카테고리 API 호출 (free 게시판만)
    */
   useEffect(() => {
-    if (boardType !== 'free') return;
+    if (boardType !== "free") return;
 
     const fetchCategories = async () => {
       try {
@@ -79,7 +79,7 @@ export default function BoardSection({ title, boardType }) {
 
         setCategoryMap(map);
       } catch (e) {
-        console.error('카테고리 조회 실패', e);
+        console.error("카테고리 조회 실패", e);
       }
     };
 
@@ -93,49 +93,61 @@ export default function BoardSection({ title, boardType }) {
     const api = BOARD_API_MAP[boardType];
     if (!api) return;
 
-    const isCategoryReady =
-      boardType !== 'free' || category === 'all' || categoryMap[category];
+    // 카테고리 정보가 필요한데 아직 없는 경우 대기
+    const categoryId = category !== "all" ? categoryMap[category] : null;
+    if (boardType === "free" && category !== "all" && !categoryId) return;
 
-    if (!isCategoryReady) return;
+    let isIgnore = false; // 레이스 컨디션 방지 플래그
 
     const fetchPosts = async () => {
       try {
         setLoading(true);
-        setErrorMessage('');
+        setErrorMessage("");
 
         const params = {
           page: currentPage,
           size: PAGE_SIZE,
-          keyword: searchQuery,
-          sort: SORT_MAP[sortOrder] ?? 'created',
+          keyword: searchQuery.trim(),
+          sort: SORT_MAP[sortOrder] ?? "created",
+          ...(categoryId && { categoryId }), // 값이 있을 때만 추가
         };
 
-        if (boardType === 'free' && category !== 'all') {
-          params.categoryId = categoryMap[category];
-        }
-
         const data = await api(params);
+        if (isIgnore) return; // 이전 요청이라면 무시
 
         const list = data?.posts ?? data?.notices ?? [];
-
-        const mapped = list.map((post) => ({
-          ...post,
-          pinned: Boolean(post.pinned ?? post.isPinned),
-        }));
-
-        setPosts(mapped);
+        setPosts(
+          list.map((post) => ({
+            ...post,
+            pinned: Boolean(post.pinned ?? post.isPinned),
+          })),
+        );
         setTotalPages(Math.max(1, Number(data?.totalPages) || 1));
       } catch (error) {
+        if (isIgnore) return;
         setPosts([]);
         setTotalPages(1);
-        setErrorMessage(getErrorMessage(error, '게시글을 불러오지 못했습니다.'));
+        setErrorMessage(
+          getErrorMessage(error, "게시글을 불러오지 못했습니다."),
+        );
       } finally {
-        setLoading(false);
+        if (!isIgnore) setLoading(false);
       }
     };
 
     fetchPosts();
-  }, [boardType, currentPage, sortOrder, searchQuery, category, categoryMap]);
+    
+    return () => {
+      isIgnore = true;
+    }; // Cleanup 시 플래그 변경
+  }, [
+    boardType,
+    currentPage,
+    sortOrder,
+    searchQuery,
+    category,
+    categoryMap[category],
+  ]); // 객체 대신 특정 값만 감시
 
   return (
     <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white p-8">
@@ -149,9 +161,13 @@ export default function BoardSection({ title, boardType }) {
         </span>
 
         <div className="flex gap-2">
-          <SortSelect boardType={boardType} value={sortOrder} onValueChange={handleSortChange} />
+          <SortSelect
+            boardType={boardType}
+            value={sortOrder}
+            onValueChange={handleSortChange}
+          />
 
-          {boardType !== 'notices' && (
+          {boardType !== "notices" && (
             <CategorySelect
               boardType={boardType}
               value={category}
@@ -172,7 +188,10 @@ export default function BoardSection({ title, boardType }) {
       />
 
       <div className="flex justify-end mt-[34px] mb-[120px]">
-        <WriteButton href={`/students/${boardType}/write`} boardType={boardType} />
+        <WriteButton
+          href={`/students/${boardType}/write`}
+          boardType={boardType}
+        />
       </div>
 
       <div className="flex justify-center">
