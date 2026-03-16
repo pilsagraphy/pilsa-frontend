@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MoreVertical } from 'lucide-react';
 
 function formatDate(isoString) {
@@ -29,8 +29,22 @@ function ReplyIcon() {
 }
 
 export default function InfoComment({ comment, isReply = false }) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
   const displayContent = comment.private ? '비밀 댓글입니다.' : comment.content;
   const displayAuthor = comment.authorName ?? '익명';
+
+  // 메뉴 외부 클릭 시 닫기
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
     <div className="flex items-start justify-between px-[40px] py-[16px] w-full">
@@ -54,14 +68,42 @@ export default function InfoComment({ comment, isReply = false }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        aria-label="댓글 메뉴"
-        className="mt-[4px] overflow-clip relative size-[24px] flex items-center justify-center"
-        onClick={() => console.log('댓글 메뉴 클릭', comment.commentId)}
-      >
-        <MoreVertical size={16} color="#919191" strokeWidth={2.5} />
-      </button>
+      {/* 더보기 버튼 + 드롭다운 */}
+      <div className="relative mt-[4px]" ref={menuRef}>
+        <button
+          type="button"
+          aria-label="댓글 메뉴"
+          className="overflow-clip relative size-[24px] flex items-center justify-center"
+          onClick={() => setMenuOpen((prev) => !prev)}
+        >
+          <MoreVertical size={16} color="#919191" strokeWidth={2.5} />
+        </button>
+
+        {menuOpen && (
+          <div className="absolute right-0 top-[28px] z-10 bg-white border border-[#DEDEDE] rounded-[4px] shadow-sm w-[80px]">
+            <button
+              type="button"
+              className="w-full px-[12px] py-[10px] text-left text-[14px] tracking-[-0.28px] text-[#212121] hover:bg-[#f6f6f6]"
+              onClick={() => {
+                setMenuOpen(false);
+                console.log('댓글 수정 클릭', comment.commentId);
+              }}
+            >
+              수정
+            </button>
+            <button
+              type="button"
+              className="w-full px-[12px] py-[10px] text-left text-[14px] tracking-[-0.28px] text-[#212121] hover:bg-[#f6f6f6]"
+              onClick={() => {
+                setMenuOpen(false);
+                console.log('댓글 삭제 클릭', comment.commentId);
+              }}
+            >
+              삭제
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
