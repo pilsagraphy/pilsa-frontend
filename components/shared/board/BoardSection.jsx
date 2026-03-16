@@ -11,6 +11,7 @@ import PaginationWithEllipsis from "@/components/shared/PaginationWithEllipsis";
 
 import { getNoticeList } from "@/apis/notice";
 import { getFreePostList, getFreeCategories } from "@/apis/free";
+import { getInfoPostList, getInfoCategories } from "@/apis/info";
 import { getErrorMessage } from "@/apis/auth";
 
 const PAGE_SIZE = 10;
@@ -21,14 +22,11 @@ const SORT_MAP = {
   likes: "likeCount",
 };
 
-/**
- * 게시판별 API 매핑
- * info 게시판 추가 시 여기만 수정하면 됨
- */
+// 게시판별 API 매핑
 const BOARD_API_MAP = {
   notices: getNoticeList,
   free: getFreePostList,
-  info: null, // 나중에 getInfoPostList 연결
+  info: getInfoPostList,
 };
 
 export default function BoardSection({ title, boardType }) {
@@ -62,15 +60,16 @@ export default function BoardSection({ title, boardType }) {
     setCurrentPage(1);
   };
 
-  /**
-   * 카테고리 API 호출 (free 게시판만)
-   */
+  // 카테고리 API 호출 
   useEffect(() => {
-    if (boardType !== "free") return;
+    if (boardType !== "free" && boardType !== "info") return;
 
     const fetchCategories = async () => {
       try {
-        const categories = await getFreeCategories();
+        const categories =
+          boardType === "free"
+            ? await getFreeCategories()
+            : await getInfoCategories();
 
         const map = {};
         categories.forEach((c) => {
@@ -86,16 +85,14 @@ export default function BoardSection({ title, boardType }) {
     fetchCategories();
   }, [boardType]);
 
-  /**
-   * 게시글 목록 API 호출
-   */
+  // 게시글 목록 API 호출 
   useEffect(() => {
     const api = BOARD_API_MAP[boardType];
     if (!api) return;
 
     // 카테고리 정보가 필요한데 아직 없는 경우 대기
     const categoryId = category !== "all" ? categoryMap[category] : null;
-    if (boardType === "free" && category !== "all" && !categoryId) return;
+    if ((boardType === "free" || boardType === "info") && category !== "all" && !categoryId) return;
 
     let isIgnore = false; // 레이스 컨디션 방지 플래그
 
@@ -136,7 +133,7 @@ export default function BoardSection({ title, boardType }) {
     };
 
     fetchPosts();
-    
+
     return () => {
       isIgnore = true;
     }; // Cleanup 시 플래그 변경

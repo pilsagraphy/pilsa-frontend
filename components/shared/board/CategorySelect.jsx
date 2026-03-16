@@ -21,12 +21,10 @@ export default function CategorySelect({ boardType, value, onValueChange }) {
     ],
     info: [
       { value: "all", label: "전체" },
-      { value: "공대", label: "공대" },
-      { value: "소융대", label: "소융대" },
-      { value: "생과대", label: "생과대" },
-      { value: "외대", label: "외대" },
-      { value: "예디대", label: "예디대" },
-      { value: "전정대", label: "전정대" },
+      { value: "공지", label: "공지" },
+      { value: "꿀팁", label: "꿀팁" },
+      { value: "질문/상담", label: "질문/상담" },
+      { value: "취업/진로", label: "취업/진로" },
     ],
   };
 
