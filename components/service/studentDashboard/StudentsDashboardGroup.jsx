@@ -6,6 +6,7 @@ import { DUMMY_POSTS_FREE } from '@/mocks/top4Data';
 import { ArrowRight } from 'lucide-react';
 import { getTop5Notices } from '@/apis/notice';
 import { getErrorMessage } from '@/apis/auth';
+import CategoryBadge from '@/components/shared/board/CategoryBadge';
 
 // 게시판 5개 노출
 function BoardList({
@@ -28,7 +29,7 @@ function BoardList({
   return (
     <div className="flex flex-col gap-[10px] w-full lg:w-[424.5px]">
       <div className="flex justify-between items-center pr-[20px] h-[30px] w-full">
-        <h3 className="mx-auto text-[20px] font-medium tracking-[-0.02em] leading-[1.5] text-black pl-[16px]">
+        <h3 className="text-[20px] font-medium tracking-[-0.02em] leading-[1.5] text-black">
           {title}
         </h3>
 
@@ -56,13 +57,10 @@ function BoardList({
               onClick={() => goDetail(post.postId)}
               className="flex items-center h-[56px] border-b border-[#B9B9B9] cursor-pointer hover:bg-[#F6F6F6] transition"
             >
+              {/* 번호/중요 뱃지 영역 */}
               <div className="w-[80px] flex justify-center items-center flex-shrink-0">
-                {boardType === 'notices' && post.isPinned ? (
-                  <div className="flex justify-center items-center px-[12px] py-[10px] w-[46px] h-[27px] bg-[#212121] rounded-[103px]">
-                    <span className="text-[12px] font-normal leading-[1.4] tracking-[-0.02em] text-white">
-                      중요
-                    </span>
-                  </div>
+                {boardType === 'notices' && Boolean(post.pinned ?? post.isPinned) ? (
+                  <CategoryBadge>중요</CategoryBadge>
                 ) : (
                   <span className="text-[16px] font-normal leading-[1.6] tracking-[-0.02em] text-[#454545]">
                     {index + 1}

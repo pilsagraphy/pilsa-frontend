@@ -8,7 +8,7 @@ import { calendarMockResponse } from '@/mocks/calendarData';
 // 합치는 곳
 export default function StudentsDashboardSection() {
   return (
-    <section className="flex flex-col items-start p-0 gap-[40px] w-[915px]">
+    <section className="mx-auto flex w-full max-w-[1016px] flex-col bg-white p-8 gap-[51px]">
       {/* 영역 1: 인사말 */}
       <StudentsDashboardIntro />
 
