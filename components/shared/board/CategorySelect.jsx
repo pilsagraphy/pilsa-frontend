@@ -13,9 +13,11 @@ export default function CategorySelect({ boardType, value, onValueChange }) {
   const categoryMap = {
     free: [
       { value: "all", label: "전체" },
-      { value: "일상", label: "일상" },
       { value: "자랑", label: "자랑" },
+      { value: "정보", label: "정보" },
       { value: "질문", label: "질문" },
+      { value: "일상", label: "일상" },
+      { value: "모임", label: "모임" },
     ],
     info: [
       { value: "all", label: "전체" },
