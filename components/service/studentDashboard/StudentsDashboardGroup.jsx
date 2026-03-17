@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DUMMY_POSTS_FREE } from '@/mocks/top4Data';
 import { ArrowRight } from 'lucide-react';
 import { getTop5Notices } from '@/apis/notice';
+import { getTop5FreePosts } from '@/apis/free';
 import { getErrorMessage } from '@/apis/auth';
 import CategoryBadge from '@/components/shared/board/CategoryBadge';
 
@@ -83,19 +83,22 @@ function BoardList({
 
 export default function StudentsDashboardGroup() {
   const [noticePosts, setNoticePosts] = useState([]);
+  const [freePosts, setFreePosts] = useState([]);
+
   const [loadingNotices, setLoadingNotices] = useState(true);
+  const [loadingFree, setLoadingFree] = useState(true);
+
   const [noticeError, setNoticeError] = useState('');
+  const [freeError, setFreeError] = useState('');
 
   useEffect(() => {
     let isMounted = true;
 
-    const fetchTop5 = async () => {
+    const fetchNotices = async () => {
       try {
         setLoadingNotices(true);
         setNoticeError('');
-
         const data = await getTop5Notices();
-
         if (!isMounted) return;
         setNoticePosts(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -107,7 +110,24 @@ export default function StudentsDashboardGroup() {
       }
     };
 
-    fetchTop5();
+    const fetchFree = async () => {
+      try {
+        setLoadingFree(true);
+        setFreeError('');
+        const data = await getTop5FreePosts();
+        if (!isMounted) return;
+        setFreePosts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (!isMounted) return;
+        setFreePosts([]);
+        setFreeError(getErrorMessage(error, '자유게시판을 불러오지 못했습니다.'));
+      } finally {
+        if (isMounted) setLoadingFree(false);
+      }
+    };
+
+    fetchNotices();
+    fetchFree();
 
     return () => {
       isMounted = false;
@@ -123,7 +143,13 @@ export default function StudentsDashboardGroup() {
         loading={loadingNotices}
         emptyText={noticeError || '등록된 게시글이 없습니다.'}
       />
-      <BoardList title="자유게시판" posts={DUMMY_POSTS_FREE} boardType="free" />
+      <BoardList
+        title="자유게시판"
+        posts={freePosts}
+        boardType="free"
+        loading={loadingFree}
+        emptyText={freeError || '등록된 게시글이 없습니다.'}
+      />
     </div>
   );
 }

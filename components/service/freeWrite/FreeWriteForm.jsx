@@ -1,20 +1,47 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import FreeWriteBox from './FreeWriteBox';
 import { useFreeWriteStore } from '@/stores/useFreeWriteStore';
 import { ChevronDown } from 'lucide-react';
+import { getFreeCategories } from '@/apis/free';
 
 export default function FreeWriteForm() {
   const {
     title,
-    category,
+    categoryId,
     content,
     isAnonymous,
     setTitle,
-    setFile,
-    setCategory,
+    setFiles,
+    setCategoryId,
     setContent,
     setIsAnonymous,
   } = useFreeWriteStore();
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCategories = async () => {
+      try {
+        const data = await getFreeCategories();
+        if (!isMounted) return;
+        setCategories(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (!isMounted) return;
+        setCategories([]);
+        console.error('자유게시판 카테고리 조회 실패', error);
+      }
+    };
+
+    fetchCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <div className="flex flex-col gap-[12px] w-full">
@@ -33,26 +60,28 @@ export default function FreeWriteForm() {
         <FreeWriteBox label="첨부파일" showTooltip={true}>
           <input
             type="file"
-            onChange={(e) => setFile(e.target.files[0])}
+            multiple
+            onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
             className="w-full h-full px-[16px] pt-[12px] bg-transparent text-[16px] tracking-[-0.32px] outline-none cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-[4px] file:border-0 file:text-sm file:bg-gray-100 file:text-[#212121] hover:file:bg-gray-200"
           />
         </FreeWriteBox>
 
         <FreeWriteBox label="카테고리">
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
             className="w-full h-full px-[16px] bg-transparent text-[16px] text-[#212121] tracking-[-0.32px] outline-none appearance-none cursor-pointer relative z-10"
             required
           >
-            {/* 기본 선택 옵션 */}
             <option value="" disabled>
               게시글 카테고리를 선택하세요
             </option>
-            {/* 임의의 카테고리 예시 */}
-            <option value="general">일반</option>
-            <option value="question">질문</option>
-            <option value="info">정보</option>
+
+            {categories.map((category) => (
+              <option key={category.categoryId} value={category.categoryId}>
+                {category.name}
+              </option>
+            ))}
           </select>
 
           <ChevronDown

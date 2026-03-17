@@ -3,7 +3,6 @@ import React from 'react';
 import StudentsDashboardIntro from './StudentsDashboardIntro';
 import StudentsDashboardGroup from './StudentsDashboardGroup';
 import CalendarSection from '@/components/shared/calendars/CalendarSection';
-import { calendarMockResponse } from '@/mocks/calendarData';
 
 // 합치는 곳
 export default function StudentsDashboardSection() {
@@ -13,7 +12,7 @@ export default function StudentsDashboardSection() {
       <StudentsDashboardIntro />
 
       {/* 영역 2: 일정 달력 */}
-      <CalendarSection response={calendarMockResponse} />
+      <CalendarSection />
 
       {/* 영역 3: 게시판 리스트 */}
       <StudentsDashboardGroup />

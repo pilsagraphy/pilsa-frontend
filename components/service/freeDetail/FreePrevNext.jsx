@@ -1,11 +1,22 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 
-export default function FreePrevNext({ links }) {
-  if (!links) return null;
+function extractPostId(apiPath) {
+  if (!apiPath) return null;
+  const match = String(apiPath).match(/\/posts\/(\d+)/);
+  return match ? match[1] : null;
+}
 
-  const { hasPrev, hasNext, prevPostApi, nextPostApi } = links;
+export default function FreePrevNext({ prevPostApi, nextPostApi }) {
+  const router = useRouter();
+
+  const prevPostId = extractPostId(prevPostApi);
+  const nextPostId = extractPostId(nextPostApi);
+
+  const hasPrev = Boolean(prevPostId);
+  const hasNext = Boolean(nextPostId);
 
   const baseBtn = 'text-[16px] tracking-[-0.32px] transition-colors';
   const enabledBtn = 'text-[#919191] hover:text-[#212121]';
@@ -20,7 +31,7 @@ export default function FreePrevNext({ links }) {
           disabled={!hasPrev}
           onClick={() => {
             if (!hasPrev) return;
-            console.log('이전 클릭:', prevPostApi);
+            router.push(`/students/free/${prevPostId}`);
           }}
         >
           ◀ 이전
@@ -31,7 +42,7 @@ export default function FreePrevNext({ links }) {
           disabled={!hasNext}
           onClick={() => {
             if (!hasNext) return;
-            console.log('다음 클릭:', nextPostApi);
+            router.push(`/students/free/${nextPostId}`);
           }}
         >
           다음 ▶
