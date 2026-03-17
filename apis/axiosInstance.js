@@ -5,7 +5,7 @@ import { PUBLIC_ROUTES } from '@/constants/routes';
 import { refreshAccessToken } from '@/apis/auth';
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+  baseURL: '', // 또는 '/'
   timeout: 5000,
   withCredentials: true,
   headers: {
