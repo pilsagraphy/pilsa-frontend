@@ -39,7 +39,7 @@ export default function StudentsDashboardIntro() {
 
         {/* 오른쪽: 랜덤 응원 멘트 (우측 정렬) */}
         <p className="text-[14px] font-normal tracking-[-0.02em] text-[#B9B9B9] pb-[4px]">
-          "{randomMessage}"
+          &quot;{randomMessage}&quot;
         </p>
       </div>
 
