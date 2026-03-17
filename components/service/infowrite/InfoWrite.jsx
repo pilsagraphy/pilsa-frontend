@@ -1,13 +1,17 @@
 'use client';
-import React from 'react';
-import { useEffect } from 'react';
+
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import InfoWriteForm from './InfoWriteForm';
 import { useInfoWriteStore } from '@/stores/useInfoWriteStore';
-import { useRouter } from 'next/navigation';
+import { createInfoPost } from '@/apis/info';
+import { getErrorMessage } from '@/apis/auth';
 
 export default function InfoWrite() {
-  const { title, file, isImportant, content, resetForm } = useInfoWriteStore();
   const router = useRouter();
+  const { title, categoryId, content, files, resetForm } = useInfoWriteStore();
+
+  const [submitting, setSubmitting] = useState(false);
 
   // 페이지에 들어오자마자 스토어 초기화
   useEffect(() => {
@@ -17,19 +21,38 @@ export default function InfoWrite() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('content', content);
-    formData.append('isImportant', isImportant === 'important');
-    if (file) formData.append('file', file);
+    if (!title.trim()) {
+      alert('제목을 입력해주세요.');
+      return;
+    }
+
+    if (!content.trim()) {
+      alert('내용을 입력해주세요.');
+      return;
+    }
+
+    if (!categoryId) {
+      alert('카테고리를 선택해주세요.');
+      return;
+    }
 
     try {
-      await axios.post('/api/admin/stu/info', formData);
-      alert('작성이 완료되었습니다!');
+      setSubmitting(true);
+
+      await createInfoPost({
+        title: title.trim(),
+        content: content.trim(),
+        categoryId: Number(categoryId),
+        files,
+      });
+
+      alert('작성이 완료되었습니다.');
       resetForm();
-      router.push('/info');
+      router.push('/students/info');
     } catch (error) {
-      console.error('발송 실패:', error);
+      alert(getErrorMessage(error, '게시글 작성에 실패했습니다.'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -41,27 +64,28 @@ export default function InfoWrite() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-[20px] max-w-[1000px] mx-auto p-8">
-      <div className="flex flex-col gap-[36px] w-full">
-        <h1 className="text-[24px] font-bold text-black tracking-[-0.48px] leading-[1.5]">
+    <form onSubmit={handleSubmit} className="mx-auto flex max-w-[1000px] flex-col gap-[20px] p-8">
+      <div className="flex w-full flex-col gap-[36px]">
+        <h1 className="text-[24px] leading-[1.5] tracking-[-0.48px] font-bold text-black">
           정보게시판 글쓰기
         </h1>
 
         <InfoWriteForm />
       </div>
 
-      <div className="flex flex-col gap-[12px] w-full mt-4">
+      <div className="mt-4 flex w-full flex-col gap-[12px]">
         <button
           type="submit"
-          className="flex items-center justify-center w-full h-[52px] bg-[#212121] text-[16px] text-white tracking-[-0.32px] rounded-[4px] hover:bg-black transition-colors cursor-pointer"
+          disabled={submitting}
+          className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white transition-colors hover:bg-black disabled:opacity-60"
         >
-          글 작성하기
+          {submitting ? '작성 중...' : '글 작성하기'}
         </button>
 
         <button
           type="button"
           onClick={handleCancel}
-          className="flex items-center justify-center w-full h-[52px] bg-white border border-[#b9b9b9] text-[16px] text-[#212121] tracking-[-0.32px] rounded-[4px] hover:bg-gray-50 transition-colors cursor-pointer"
+          className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white text-[16px] tracking-[-0.32px] text-[#212121] transition-colors hover:bg-gray-50"
         >
           취소
         </button>

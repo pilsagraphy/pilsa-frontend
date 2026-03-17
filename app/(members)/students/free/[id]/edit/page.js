@@ -1,8 +1,7 @@
-import FreeEdit from '@/components/service/freeEdit/FreeEdit';
+import Edit from '@/components/shared/Edit';
 
 export default async function FreeEditPage({ params }) {
-  const resolvedParams = await params;
-  const postId = resolvedParams?.id;
+  const { id } = await params;
 
-  return <FreeEdit postId={postId} />;
+  return <Edit postId={id} boardType="free" titleText="자유게시판 글 수정" />;
 }

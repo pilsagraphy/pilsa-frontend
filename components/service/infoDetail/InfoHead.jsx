@@ -3,13 +3,13 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function InfoHead({ categoryName = '정보게시판' }) {
+export default function InfoHead() {
   const router = useRouter();
 
   return (
     <div className="w-full flex justify-between">
       <h1 className="mt-[36px] text-[24px] font-semibold tracking-[-0.48px] text-[#212121]">
-        {categoryName}
+        정보게시판
       </h1>
       <button
         type="button"

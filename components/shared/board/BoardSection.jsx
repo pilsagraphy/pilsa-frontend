@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import SortSelect from './SortSelect';
 import CategorySelect from './CategorySelect';
@@ -39,6 +39,13 @@ export default function BoardSection({ title, boardType }) {
   const [category, setCategory] = useState('all');
 
   const [categoryMap, setCategoryMap] = useState({});
+  const categoryNameToIdMap = useMemo(() => {
+    const reversed = {};
+    Object.entries(categoryMap).forEach(([name, id]) => {
+      reversed[name] = id;
+    });
+    return reversed;
+  }, [categoryMap]);
 
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -86,7 +93,6 @@ export default function BoardSection({ title, boardType }) {
     const api = BOARD_API_MAP[boardType];
     if (!api) return;
 
-    // 카테고리 정보가 필요한데 아직 없는 경우 대기
     const categoryId = category !== 'all' ? categoryMap[category] : null;
     if ((boardType === 'free' || boardType === 'info') && category !== 'all' && !categoryId) {
       return;
@@ -114,13 +120,14 @@ export default function BoardSection({ title, boardType }) {
         };
 
         const data = await api(params);
-        if (isIgnore) return; // 이전 요청이라면 무시
+        if (isIgnore) return;
 
         const list = data?.posts ?? data?.notices ?? [];
         setPosts(
           list.map((post) => ({
             ...post,
             pinned: Boolean(post.pinned ?? post.isPinned),
+            categoryId: post.categoryId ?? categoryNameToIdMap[post.categoryName] ?? null,
           }))
         );
         setTotalPages(Math.max(1, Number(data?.totalPages) || 1));
@@ -139,7 +146,7 @@ export default function BoardSection({ title, boardType }) {
     return () => {
       isIgnore = true;
     }; // Cleanup 시 플래그 변경
-  }, [boardType, currentPage, sortOrder, searchQuery, category, categoryMap[category]]); // 객체 대신 특정 값만 감시
+  }, [boardType, currentPage, sortOrder, searchQuery, category, categoryMap, categoryNameToIdMap]); // 객체 대신 특정 값만 감시
 
   return (
     <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white p-8">
@@ -147,8 +154,8 @@ export default function BoardSection({ title, boardType }) {
         {title}
       </h2>
 
-      <div className="flex justify-between items-end mt-[10px] mb-4 gap-10">
-        <span className="text-[18px] leading-[1.6] tracking-[-0.02em] text-[#212121] shrink-0">
+      <div className="mt-[10px] mb-4 flex items-end justify-between gap-10">
+        <span className="shrink-0 text-[18px] leading-[1.6] tracking-[-0.02em] text-[#212121]">
           목록
         </span>
 
@@ -175,7 +182,7 @@ export default function BoardSection({ title, boardType }) {
         errorMessage={errorMessage}
       />
 
-      <div className="flex justify-end mt-[34px] mb-[120px]">
+      <div className="mt-[34px] mb-[120px] flex justify-end">
         <WriteButton href={`/students/${boardType}/write`} boardType={boardType} />
       </div>
 
