@@ -21,6 +21,18 @@ export default function Footer() {
             https://jajudy.khu.ac.kr/club/25720
           </a>
         </p>
+
+        <p className="text-[13px] leading-[1.6] break-all mb-2 font-bold">
+          건의사항 :{' '}
+          <a
+            href="https://forms.gle/ZyGebkpQrLoDk7e68"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-neutral-700"
+          >
+            https://forms.gle/ZyGebkpQrLoDk7e68
+          </a>
+        </p>
       </div>
 
       <p className="mt-2 text-[12px] leading-[35px] text-[#919191]">
