@@ -1,9 +1,9 @@
 import NoticeDetailView from '@/components/service/noticeDetail/NoticeDetailView';
 import AuthGuard from '@/components/common/AuthGuard';
 
-export default function NoticeDetailPage({ params, searchParams }) {
-  const { id } = params;
-  const sort = searchParams?.sort ?? 'latest';
+export default async function NoticeDetailPage({ params, searchParams }) {
+  const { id } = await params;
+  const { sort = 'latest' } = await searchParams;
 
   return (
     <AuthGuard>
