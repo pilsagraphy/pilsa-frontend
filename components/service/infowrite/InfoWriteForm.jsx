@@ -1,11 +1,43 @@
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import InfoWriteBox from './InfoWriteBox';
 import { useInfoWriteStore } from '@/stores/useInfoWriteStore';
-import { ChevronDown } from 'lucide-react';
+import { getInfoCategories } from '@/apis/info';
 
 export default function InfoWriteForm() {
-  const { title, category, content, setTitle, setFile, setCategory, setContent } =
+  const { title, categoryId, content, files, setTitle, setFiles, setCategoryId, setContent } =
     useInfoWriteStore();
+
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCategories = async () => {
+      try {
+        const data = await getInfoCategories();
+        if (!isMounted) return;
+        setCategories(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('정보게시판 카테고리 조회 실패', error);
+        if (!isMounted) return;
+        setCategories([]);
+      }
+    };
+
+    fetchCategories();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleFileChange = (e) => {
+    const nextFiles = Array.from(e.target.files ?? []);
+    setFiles(nextFiles);
+  };
 
   return (
     <div className="flex flex-col gap-[12px] w-full">
@@ -24,28 +56,28 @@ export default function InfoWriteForm() {
         <InfoWriteBox label="첨부파일" showTooltip={true}>
           <input
             type="file"
-            onChange={(e) => setFile(e.target.files[0])}
+            multiple
+            onChange={handleFileChange}
             className="w-full h-full px-[16px] pt-[12px] bg-transparent text-[16px] tracking-[-0.32px] outline-none cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-[4px] file:border-0 file:text-sm file:bg-gray-100 file:text-[#212121] hover:file:bg-gray-200"
           />
         </InfoWriteBox>
 
-        {/* '중요' 표시 여부 -> 카테고리로 변경 */}
         <InfoWriteBox label="카테고리">
           <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
             className="w-full h-full px-[16px] bg-transparent text-[16px] text-[#212121] tracking-[-0.32px] outline-none appearance-none cursor-pointer relative z-10"
             required
           >
-            {/* 기본 선택 옵션 */}
             <option value="" disabled>
               게시글 카테고리를 선택하세요
             </option>
-            {/* 정보게시판용 카테고리 예시 */}
-            <option value="scholarship">장학</option>
-            <option value="study">학업</option>
-            <option value="event">행사</option>
-            <option value="etc">기타</option>
+
+            {categories.map((category) => (
+              <option key={category.categoryId} value={String(category.categoryId)}>
+                {category.name}
+              </option>
+            ))}
           </select>
 
           <ChevronDown
@@ -56,6 +88,15 @@ export default function InfoWriteForm() {
           />
         </InfoWriteBox>
       </div>
+
+      {Array.isArray(files) && files.length > 0 && (
+        <div className="px-[4px] text-[14px] tracking-[-0.28px] text-[#666666]">
+          {files
+            .map((file) => file?.name)
+            .filter(Boolean)
+            .join(', ')}
+        </div>
+      )}
 
       <InfoWriteBox label="내용" heightClass="h-[615px]">
         <textarea

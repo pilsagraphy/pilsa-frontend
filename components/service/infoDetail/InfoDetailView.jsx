@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { getMockInfoDetail } from '@/mocks/infoData';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import InfoHead from './InfoHead';
 import InfoInfo from './InfoInfo';
@@ -10,6 +10,9 @@ import InfoContent from './InfoContent';
 import InfoActions from './InfoActions';
 import InfoComments from './InfoComments';
 import InfoPrevNext from './InfoPrevNext';
+
+import { getInfoPostDetail } from '@/apis/info';
+import { getErrorMessage } from '@/apis/auth';
 
 function formatKoreanDate(isoString) {
   if (!isoString) return '';
@@ -22,33 +25,59 @@ function formatKoreanDate(isoString) {
 }
 
 export default function InfoDetailView({ postId }) {
-  const raw = getMockInfoDetail(postId);
+  const router = useRouter();
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const post = {
-    id: raw.postId,
-    categoryName: raw.categoryName,
-    title: raw.title,
-    date: formatKoreanDate(raw.updated),
-    author: raw.authorName,
-    content: raw.content,
-    likecount: raw.likeCount,
-    liked: raw.liked,
-    attachments: (raw.attachments ?? []).map((a) => ({
-      attachmentId: a.attachmentId,
-      originName: a.originName,
-      fileUrl: a.fileUrl,
-    })),
-    comments: raw.comments ?? [],
-    links: {
-      hasPrev: Boolean(raw.prevPostApi),
-      hasNext: Boolean(raw.nextPostApi),
-      prevPostApi: raw.prevPostApi,
-      nextPostApi: raw.nextPostApi,
-    },
+  const fetchDetail = async () => {
+    try {
+      setLoading(true);
+
+      const raw = await getInfoPostDetail(postId);
+
+      setPost({
+        postId: raw.postId,
+        userId: raw.userId,
+        categoryName: raw.categoryName,
+        title: raw.title,
+        date: formatKoreanDate(raw.updated),
+        author: raw.authorName,
+        content: raw.content,
+        likeCount: raw.likeCount ?? 0,
+        liked: Boolean(raw.liked),
+        attachments: (raw.attachments ?? []).map((a) => ({
+          attachmentId: a.attachmentId,
+          originName: a.originName,
+          fileUrl: a.fileUrl,
+        })),
+        comments: raw.comments ?? [],
+        links: {
+          hasPrev: Boolean(raw.prevPostApi),
+          hasNext: Boolean(raw.nextPostApi),
+          prevPostApi: raw.prevPostApi,
+          nextPostApi: raw.nextPostApi,
+        },
+      });
+    } catch (error) {
+      alert(getErrorMessage(error, '게시글을 불러오지 못했습니다.'));
+      router.push('/students/info');
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    if (postId) fetchDetail();
+  }, [postId]);
+
+  if (loading) {
+    return <div className="py-20 text-center text-[#919191]">불러오는 중입니다.</div>;
+  }
+
+  if (!post) return null;
+
   return (
-    <section className="mx-auto w-[920px] flex flex-col gap-[60px]">
+    <section className="mx-auto flex w-[920px] flex-col gap-[60px]">
       <InfoHead categoryName={post.categoryName} />
 
       <div className="flex flex-col">
@@ -64,14 +93,20 @@ export default function InfoDetailView({ postId }) {
       <div className="flex flex-col">
         <InfoContent content={post.content} />
 
-        <div className="w-full h-px bg-[#DEDEDE] mt-[48px]" />
+        <div className="mt-[48px] h-px w-full bg-[#DEDEDE]" />
 
         <div className="mt-[60px]">
-          <InfoActions likecount={post.likecount} liked={post.liked} />
+          <InfoActions
+            postId={post.postId}
+            authorId={post.userId}
+            likeCount={post.likeCount}
+            liked={post.liked}
+            onDeleted={() => router.push('/students/info')}
+          />
         </div>
       </div>
 
-      <InfoComments comments={post.comments} />
+      <InfoComments postId={post.postId} comments={post.comments} onChanged={fetchDetail} />
 
       <InfoPrevNext links={post.links} />
     </section>
