@@ -1,4 +1,5 @@
 import { Menu } from 'lucide-react';
+import Link from 'next/link';
 import { Zen_Dots } from 'next/font/google';
 
 const zenDots = Zen_Dots({
@@ -18,7 +19,9 @@ export default function Header() {
       >
         {/* 중앙 로고 */}
         <h1 className={`${zenDots.className} text-[48px] text-center whitespace-nowrap`}>
-          PILSAGRAPHY
+          <Link href="/" aria-label="홈으로 이동" className="inline-block">
+            PILSAGRAPHY
+          </Link>
         </h1>
       </div>
     </header>

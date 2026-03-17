@@ -1,9 +1,9 @@
 // 공지사항 게시판 관련 API 처리
-import authApi from '@/apis/authApi';
+import axiosInstance from '@/apis/axiosInstance';
 
 // 1. 공지사항 상단 5개 조회 (GET api/stu/notices/top5)
 export const getTop5Notices = async () => {
-  const response = await authApi.get('/api/stu/notices/top5');
+  const response = await axiosInstance.get('/api/stu/notices/top5');
   return response.data;
 };
 
@@ -20,13 +20,13 @@ export const getNoticeList = async ({
     params.keyword = keyword.trim();
   }
 
-  const response = await authApi.get('/api/stu/notices', { params });
+  const response = await axiosInstance.get('/api/stu/notices', { params });
   return response.data;
 };
 
 // 3. 공지사항 단일글 조회 (GET api/stu/notices/{postId})
 export const getNoticeDetail = async (postId, sort = 'created') => {
-  const response = await authApi.get(`/api/stu/notices/${postId}`, {
+  const response = await axiosInstance.get(`/api/stu/notices/${postId}`, {
     params: { sort },
   });
   return response.data;
@@ -34,6 +34,6 @@ export const getNoticeDetail = async (postId, sort = 'created') => {
 
 // 4. 공지사항 좋아요 처리 (PATCH api/stu/notices/{postId}/like)
 export const toggleNoticeLike = async (postId) => {
-  const response = await authApi.patch(`/api/stu/notices/${postId}/like`);
+  const response = await axiosInstance.patch(`/api/stu/notices/${postId}/like`);
   return response.data;
 };
