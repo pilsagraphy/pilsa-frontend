@@ -24,9 +24,11 @@ const HonorCard = ({ data, rankType }) => {
 
   const style = props[rankType];
 
-  const isAnonymous = data.isAnonymous;
+  const isAnonymous = Boolean(data.isAnonymous);
   const displayName = isAnonymous ? '익명' : data.displayName;
-  const imageUrl = data.photoUrl || null;
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+  const imageUrl = data.photoUrl ? `${baseUrl}${data.photoUrl}` : null;
 
   return (
     <div className={`flex flex-col items-center ${style.w} ${style.gap}`}>
