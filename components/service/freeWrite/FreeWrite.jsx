@@ -1,13 +1,17 @@
 'use client';
-import React from 'react';
-import { useEffect } from 'react';
+
+import React, { useEffect, useState } from 'react';
 import FreeWriteForm from './FreeWriteForm';
 import { useFreeWriteStore } from '@/stores/useFreeWriteStore';
 import { useRouter } from 'next/navigation';
+import { createFreePost } from '@/apis/free';
+import { getErrorMessage } from '@/apis/auth';
 
 export default function FreeWrite() {
-  const { title, file, category, content, isAnonymous, resetForm } = useFreeWriteStore();
+  const { title, files, categoryId, content, isAnonymous, resetForm } = useFreeWriteStore();
+
   const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     resetForm();
@@ -16,23 +20,39 @@ export default function FreeWrite() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // 유효성 검사 (간단 예시)
-    if (!category) return alert('카테고리를 선택해주세요.');
+    if (!title.trim()) {
+      alert('제목을 입력해주세요.');
+      return;
+    }
 
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('content', content);
-    formData.append('category', category); // 스토어와 매칭
-    formData.append('isAnonymous', String(isAnonymous)); // 불리언은 문자열로 변환 권장
-    if (file) formData.append('file', file);
+    if (!content.trim()) {
+      alert('내용을 입력해주세요.');
+      return;
+    }
+
+    if (!categoryId) {
+      alert('카테고리를 선택해주세요.');
+      return;
+    }
 
     try {
-      await axios.post('/api/admin/stu/free', formData);
-      alert('작성이 완료되었습니다!');
+      setSubmitting(true);
+
+      await createFreePost({
+        title: title.trim(),
+        content: content.trim(),
+        categoryId: Number(categoryId),
+        isAnonymous,
+        files,
+      });
+
+      alert('작성이 완료되었습니다.');
       resetForm();
-      router.push('/free');
+      router.push('/students/free');
     } catch (error) {
-      console.error('발송 실패:', error);
+      alert(getErrorMessage(error, '글 작성에 실패했습니다.'));
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -56,9 +76,10 @@ export default function FreeWrite() {
       <div className="flex flex-col gap-[12px] w-full mt-4">
         <button
           type="submit"
-          className="flex items-center justify-center w-full h-[52px] bg-[#212121] text-[16px] text-white tracking-[-0.32px] rounded-[4px] hover:bg-black transition-colors cursor-pointer"
+          disabled={submitting}
+          className="flex items-center justify-center w-full h-[52px] bg-[#212121] text-[16px] text-white tracking-[-0.32px] rounded-[4px] hover:bg-black transition-colors cursor-pointer disabled:opacity-60"
         >
-          글 작성하기
+          {submitting ? '작성 중...' : '글 작성하기'}
         </button>
 
         <button
