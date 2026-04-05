@@ -60,7 +60,7 @@ function BoardList({
               {/* 번호/중요 뱃지 영역 */}
               <div className="w-[80px] flex justify-center items-center flex-shrink-0">
                 {boardType === 'notices' && Boolean(post.pinned ?? post.isPinned) ? (
-                  <CategoryBadge>중요</CategoryBadge>
+                  <CategoryBadge variant="pinned">중요</CategoryBadge>
                 ) : (
                   <span className="text-[16px] font-normal leading-[1.6] tracking-[-0.02em] text-[#454545]">
                     {index + 1}
@@ -135,7 +135,7 @@ export default function StudentsDashboardGroup() {
   }, []);
 
   return (
-    <div className="flex flex-row gap-[66px] w-full mt-[20px]">
+    <div className="flex flex-col lg:flex-row gap-20 lg:gap-[66px] w-full mt-[20px]">
       <BoardList
         title="공지사항"
         posts={noticePosts}

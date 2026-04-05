@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { getNoticeDetail } from '@/apis/notice';
 import { getErrorMessage } from '@/apis/auth';
 
@@ -41,6 +42,7 @@ function buildNoticeHref(postId, sort) {
 }
 
 export default function NoticeDetailView({ noticeId, sort = 'latest' }) {
+  const router = useRouter();
   const [notice, setNotice] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -98,19 +100,31 @@ export default function NoticeDetailView({ noticeId, sort = 'latest' }) {
   }, [noticeId, sort]);
 
   if (loading) {
-    return <div className="py-20 text-center text-[#919191]">불러오는 중입니다.</div>;
+    return (
+      <div className="px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base">
+        불러오는 중입니다.
+      </div>
+    );
   }
 
   if (errorMessage) {
-    return <div className="py-20 text-center text-[#919191]">{errorMessage}</div>;
+    return (
+      <div className="px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base">
+        {errorMessage}
+      </div>
+    );
   }
 
   if (!notice) {
-    return <div className="py-20 text-center text-[#919191]">존재하지 않는 게시글입니다.</div>;
+    return (
+      <div className="px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base">
+        존재하지 않는 게시글입니다.
+      </div>
+    );
   }
 
   return (
-    <section className="mx-auto w-[920px] flex flex-col gap-[60px]">
+    <section className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-12 md:gap-[60px] md:px-0 md:pb-0">
       <NoticeHead />
 
       <div className="flex flex-col">
@@ -126,10 +140,20 @@ export default function NoticeDetailView({ noticeId, sort = 'latest' }) {
       <div className="flex flex-col">
         <NoticeContent content={notice.content} />
 
-        <div className="w-full h-px bg-[#DEDEDE] mt-[48px]" />
+        <div className="mt-8 h-px w-full bg-[#DEDEDE] md:mt-[48px]" />
 
-        <div className="mt-[60px]">
+        <div className="mt-8 md:mt-[60px]">
           <NoticeActions postId={notice.postId} likecount={notice.likecount} liked={notice.liked} />
+        </div>
+
+        <div className="mt-[10px] md:hidden">
+          <button
+            type="button"
+            className="h-12 w-full rounded-[4px] bg-[#212121] text-white"
+            onClick={() => router.push('/students/notices')}
+          >
+            목록
+          </button>
         </div>
       </div>
 

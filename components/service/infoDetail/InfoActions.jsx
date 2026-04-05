@@ -13,6 +13,7 @@ export default function InfoActions({
   likeCount: initialLikeCount = 0,
   liked: initialLiked = false,
   onDeleted,
+  afterLikeOnMobile = null,
 }) {
   const [likeCount, setLikeCount] = useState(
     typeof initialLikeCount === 'number' ? initialLikeCount : 0
@@ -86,29 +87,33 @@ export default function InfoActions({
   };
 
   return (
-    <div className="flex w-full items-center justify-between">
-      {/* 좋아요 버튼 */}
-      <button
-        type="button"
-        onClick={handleLike}
-        disabled={likeLoading}
-        className="flex h-[52px] w-[135px] items-center justify-center gap-[6px] rounded-[4px] border border-[#b9b9b9] text-[16px] tracking-[-0.32px] transition-colors hover:bg-[#f5f5f5] disabled:opacity-60"
-      >
-        <ThumbsUp
-          width={18}
-          height={18}
-          stroke={liked ? '#212121' : '#1E1E1E'}
-          strokeWidth={1.5}
-          aria-hidden="true"
-        />
-        <span className="text-[#212121]">좋아요 {likeCount}</span>
-      </button>
-
-      {/* 수정 / 삭제 */}
-      <div className="flex gap-[20px]">
+    <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
+      <div className="flex w-full flex-col gap-[10px] md:w-auto">
+        {/* 좋아요 버튼 */}
         <button
           type="button"
-          className="h-[52px] w-[135px] rounded-[4px] bg-[#212121] text-white"
+          onClick={handleLike}
+          disabled={likeLoading}
+          className="flex h-12 w-full items-center justify-center gap-[6px] rounded-[4px] border border-[#b9b9b9] text-[15px] tracking-[-0.32px] transition-colors hover:bg-[#f5f5f5] disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px]"
+        >
+          <ThumbsUp
+            width={18}
+            height={18}
+            stroke={liked ? '#212121' : '#1E1E1E'}
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <span className="text-[#212121]">좋아요 {likeCount}</span>
+        </button>
+
+        {afterLikeOnMobile != null && <div className="w-full md:hidden">{afterLikeOnMobile}</div>}
+      </div>
+
+      {/* 수정 / 삭제 */}
+      <div className="flex w-full gap-2 md:w-auto md:gap-5">
+        <button
+          type="button"
+          className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white md:h-[52px] md:w-[135px] md:flex-none"
           onClick={handleEdit}
         >
           수정
@@ -116,7 +121,7 @@ export default function InfoActions({
         <button
           type="button"
           disabled={deleteLoading}
-          className="h-[52px] w-[135px] rounded-[4px] bg-[#212121] text-white disabled:opacity-60"
+          className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white disabled:opacity-60 md:h-[52px] md:w-[135px] md:flex-none"
           onClick={handleDelete}
         >
           {deleteLoading ? '삭제 중...' : '삭제'}

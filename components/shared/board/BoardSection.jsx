@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react';
 
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
+
 import SortSelect from './SortSelect';
 import CategorySelect from './CategorySelect';
 import SearchInput from './SearchInput';
@@ -30,6 +32,8 @@ const BOARD_API_MAP = {
 };
 
 export default function BoardSection({ title, boardType }) {
+  const isMdUp = useMinWidthMd();
+
   const [posts, setPosts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
 
@@ -64,6 +68,14 @@ export default function BoardSection({ title, boardType }) {
     setCategory(value);
     setCurrentPage(1);
   };
+
+  // 모바일(768px 미만)에서는 조회순·인기순 미노출 → 정렬을 최신순으로 고정
+  useEffect(() => {
+    if (isMdUp) return;
+    if (sortOrder === 'views' || sortOrder === 'likes') {
+      setSortOrder('latest');
+    }
+  }, [isMdUp, sortOrder]);
 
   // 카테고리 API 호출
   useEffect(() => {
@@ -149,18 +161,23 @@ export default function BoardSection({ title, boardType }) {
   }, [boardType, currentPage, sortOrder, searchQuery, category, categoryMap, categoryNameToIdMap]); // 객체 대신 특정 값만 감시
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white p-8">
-      <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.02em] text-[#212121]">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10">
+      <h2 className="font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] my-[15px] text-[#212121] sm:text-[20px] md:text-[24px]">
         {title}
       </h2>
 
-      <div className="mt-[10px] mb-4 flex items-end justify-between gap-10">
-        <span className="shrink-0 text-[18px] leading-[1.6] tracking-[-0.02em] text-[#212121]">
+      <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:items-end md:justify-between md:gap-10">
+        <span className="hidden shrink-0 text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121] md:block md:text-[18px]">
           목록
         </span>
 
-        <div className="flex gap-2">
-          <SortSelect boardType={boardType} value={sortOrder} onValueChange={handleSortChange} />
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-stretch sm:justify-end">
+          <SortSelect
+            boardType={boardType}
+            value={sortOrder}
+            onValueChange={handleSortChange}
+            compactSort={!isMdUp}
+          />
 
           {boardType !== 'notices' && (
             <CategorySelect
@@ -170,7 +187,9 @@ export default function BoardSection({ title, boardType }) {
             />
           )}
 
-          <SearchInput value={searchQuery} onChange={handleSearchChange} />
+          <div className="mb-[5px] min-w-0 sm:min-w-[200px] md:mb-0 sm:flex-1">
+            <SearchInput value={searchQuery} onChange={handleSearchChange} />
+          </div>
         </div>
       </div>
 
@@ -182,7 +201,7 @@ export default function BoardSection({ title, boardType }) {
         errorMessage={errorMessage}
       />
 
-      <div className="mt-[34px] mb-[120px] flex justify-end">
+      <div className="mt-6 mb-16 flex justify-end md:mt-[34px] md:mb-[120px]">
         <WriteButton href={`/students/${boardType}/write`} boardType={boardType} />
       </div>
 

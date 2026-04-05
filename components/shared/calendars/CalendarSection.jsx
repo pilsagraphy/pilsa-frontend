@@ -107,11 +107,13 @@ export default function CalendarSection({ response }) {
   };
 
   return (
-    <section className="mx-auto flex w-full max-w-[915px] flex-col gap-[40px]">
-      <h2 className="text-[24px] font-semibold tracking-[-0.48px] text-[#212121]">일정 달력</h2>
+    <section className="mx-auto flex w-full max-w-[915px] flex-col gap-6 sm:gap-8 lg:gap-[40px]">
+      <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
+        일정 달력
+      </h2>
 
-      <div className="flex w-full flex-col gap-[24px] lg:flex-row lg:gap-[45px]">
-        <div className="w-full bg-white p-[24px] lg:w-[443px]">
+      <div className="flex w-full flex-col gap-4 sm:gap-5 lg:flex-row lg:gap-[45px]">
+        <div className="w-full bg-white p-4 sm:p-5 lg:w-[443px] lg:p-[24px]">
           <Calendar
             mode="single"
             month={currentMonth}
@@ -127,14 +129,13 @@ export default function CalendarSection({ response }) {
           />
         </div>
 
-        <div className="flex w-full flex-col gap-[12px] lg:w-[427px]">
-          <p className="text-[18px] tracking-[-0.36px] text-[#212121]">월별 일정</p>
+        <div className="flex w-full flex-col gap-2 sm:gap-[12px] lg:w-[427px]">
+          <p className="text-[16px] tracking-[-0.36px] text-[#212121] sm:text-[18px]">월별 일정</p>
 
           <MonthlyScheduleList
             schedules={schedules}
             selectedId={selectedScheduleId}
             onSelect={handleSelectSchedule}
-            maxHeight={380}
             isLoading={isLoading}
           />
         </div>

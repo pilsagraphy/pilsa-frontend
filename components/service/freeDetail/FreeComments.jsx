@@ -90,10 +90,10 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
   // const getReplies = (parentId) => comments.filter((c) => c.parentId === parentId);
 
   return (
-    <section className="flex flex-col gap-[60px] w-full">
-      <div className="flex flex-col gap-[23px] items-center w-full">
-        <div className="w-full px-[20px] py-[10px]">
-          <span className="text-[18px] tracking-[-0.36px] text-[#454545] leading-[1.6]">
+    <section className="flex w-full flex-col gap-8 md:gap-[60px]">
+      <div className="flex w-full flex-col items-center gap-4 md:gap-[23px]">
+        <div className="w-full py-2 md:px-5 md:py-[10px]">
+          <span className="text-[16px] leading-[1.6] tracking-[-0.36px] text-[#454545] md:text-[18px]">
             댓글 {comments.length}개
           </span>
         </div>
@@ -102,8 +102,8 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
           <React.Fragment key={comment.commentId}>
             {idx !== 0 && <Divider />}
 
-            <div className="flex items-start justify-between px-[40px] py-[16px] w-full">
-              <div className="flex flex-col gap-[7px] flex-1">
+            <div className="flex w-full flex-col gap-3 py-3 md:flex-row md:items-start md:justify-between md:px-10 md:py-4">
+              <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
                 <span className="text-[16px] tracking-[-0.32px] text-[#454545] leading-[1.6]">
                   {(comment.isAnonymous ?? comment.anonymous) ? '익명' : comment.authorName}
                 </span>
@@ -155,7 +155,7 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
               </div>
 
               {editingId !== comment.commentId && (
-                <div className="flex items-center gap-[12px] ml-[20px]">
+                <div className="flex shrink-0 items-center gap-3 md:ml-5">
                   {/* 나중에 대댓글 기능 추가 시 사용
                   <button
                     type="button"
@@ -189,20 +189,20 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
       </div>
 
       {/* 댓글 입력 */}
-      <div className="flex flex-col gap-[20px] w-full">
-        <div className="flex items-center gap-[20px] w-full">
+      <div className="flex w-full flex-col gap-4 md:gap-5">
+        <div className="flex w-full flex-col gap-2 md:flex-row md:items-center md:gap-5">
           <input
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
             placeholder="댓글을 작성하세요."
-            className="flex-1 h-[52px] bg-white border border-[#b9b9b9] rounded-[4px] px-[16px] text-[16px] tracking-[-0.32px] text-[#212121] placeholder:text-[#919191] outline-none focus:border-[#919191]"
+            className="h-12 w-full flex-1 rounded-[4px] border border-[#b9b9b9] bg-white px-4 text-[15px] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#919191] md:h-[52px] md:text-[16px]"
             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
           />
           <button
             type="button"
             onClick={handleSubmit}
-            className="h-[52px] w-[135px] bg-[#212121] text-white rounded-[4px] text-[16px] tracking-[-0.32px] shrink-0"
+            className="h-12 w-full shrink-0 rounded-[4px] bg-[#212121] text-[15px] tracking-[-0.32px] text-white md:h-[52px] md:w-[135px] md:text-[16px]"
           >
             댓글 작성
           </button>

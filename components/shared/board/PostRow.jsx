@@ -2,6 +2,7 @@
 
 import { TableCell, TableRow } from '@/components/ui/table';
 import CategoryBadge from './CategoryBadge';
+import { cn } from '@/lib/utils';
 import { Paperclip } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
@@ -19,15 +20,22 @@ export default function PostRow({ post, boardType, sortOrder = 'latest' }) {
   // 날짜 포맷 : YYYY-MM-DD -> YYYY.MM.DD
   const formattedDate = post.created?.slice(0, 10).replace(/-/g, '.');
   const isPinned = Boolean(post.pinned ?? post.isPinned);
+  const isFreeOrInfo = boardType === 'free' || boardType === 'info';
 
   return (
     <TableRow
       onClick={handleRowClick}
-      className="h-14 text-[16px] border-b border-[#B9B9B9] leading-[1.6] tracking-[-0.02em] text-[#454545] cursor-pointer hover:bg-muted/50"
+      className="h-12 cursor-pointer border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] hover:bg-muted/50 md:h-14 md:text-[16px]"
     >
       {/* 1. 게시글 번호 (공지사항 중요글은 배지로 표시) */}
-      <TableCell className="text-center">
-        {boardType === 'notices' && isPinned ? <CategoryBadge>중요</CategoryBadge> : post.postId}
+      <TableCell
+        className={cn('text-center', isFreeOrInfo && 'hidden md:table-cell')}
+      >
+        {boardType === 'notices' && isPinned ? (
+          <CategoryBadge variant="pinned">중요</CategoryBadge>
+        ) : (
+          post.postId
+        )}
       </TableCell>
 
       {/* 2. 제목 (카테고리 + 제목 + 첨부파일 아이콘) */}
@@ -47,12 +55,18 @@ export default function PostRow({ post, boardType, sortOrder = 'latest' }) {
 
       {/* 3. 댓글 (공지사항은 미표시)*/}
       {boardType !== 'notices' && (
-        <TableCell className="text-center">{post.commentCount?.toLocaleString() || 0}</TableCell>
+        <TableCell className="hidden text-center md:table-cell">
+          {post.commentCount?.toLocaleString() || 0}
+        </TableCell>
       )}
 
-      {/* 4. 좋아요, 조회수, 등록일 */}
-      <TableCell className="text-center">{post.likeCount?.toLocaleString() || 0}</TableCell>
-      <TableCell className="text-center">{post.viewCount?.toLocaleString() || 0}</TableCell>
+      {/* 4. 좋아요, 조회수, 등록일 (모바일·좁은 화면에서는 숨김) */}
+      <TableCell className="hidden text-center md:table-cell">
+        {post.likeCount?.toLocaleString() || 0}
+      </TableCell>
+      <TableCell className="hidden text-center md:table-cell">
+        {post.viewCount?.toLocaleString() || 0}
+      </TableCell>
       <TableCell className="text-center">{formattedDate}</TableCell>
     </TableRow>
   );

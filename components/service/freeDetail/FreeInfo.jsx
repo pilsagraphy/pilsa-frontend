@@ -38,10 +38,10 @@ export default function FreeInfo({ categoryName, title, date, author }) {
     <section className="w-full">
       <Divider dark />
 
-      <div className="h-[56px] flex items-center">
-        <div className="flex items-center gap-[12px]">
+      <div className="flex min-h-0 items-center py-3 md:h-[56px] md:py-0">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 md:gap-[12px]">
           {categoryName && <CategoryChip name={categoryName} />}
-          <h2 className="text-[18px] tracking-[-0.36px] text-[#212121] leading-none">
+          <h2 className="min-w-0 flex-1 text-[16px] leading-snug tracking-[-0.36px] text-[#212121] md:text-[18px] md:leading-none">
             {safeTitle}
           </h2>
         </div>
@@ -49,16 +49,16 @@ export default function FreeInfo({ categoryName, title, date, author }) {
 
       <Divider />
 
-      <div className="h-[56px] flex items-center justify-between text-[14px] tracking-[-0.28px]">
-        <div className="flex items-center gap-[12px]">
-          <span className="text-[#919191] leading-none">등록일</span>
+      <div className="flex flex-col gap-3 py-3 text-[13px] tracking-[-0.28px] md:h-[56px] md:flex-row md:items-center md:justify-between md:gap-0 md:py-0 md:text-[14px]">
+        <div className="flex flex-wrap items-center gap-2 md:gap-[12px]">
+          <span className="shrink-0 text-[#919191] leading-none">등록일</span>
           <VLine />
-          <span className="text-[#454545] leading-none">{safeDate}</span>
+          <span className="break-all text-[#454545] leading-none">{safeDate}</span>
         </div>
-        <div className="flex items-center gap-[12px]">
-          <span className="text-[#919191] leading-none">작성자</span>
+        <div className="flex flex-wrap items-center gap-2 md:gap-[12px]">
+          <span className="shrink-0 text-[#919191] leading-none">작성자</span>
           <VLine />
-          <span className="text-[#454545] leading-none">{safeAuthor}</span>
+          <span className="min-w-0 break-all text-[#454545] leading-none">{safeAuthor}</span>
         </div>
       </div>
     </section>

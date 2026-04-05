@@ -55,6 +55,11 @@ module.exports = {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      screens: {
+        // 'mobile'은 기본(0px 이상)이므로 보통 320px부터 시작한다고 가정합니다.
+        tablet: '768px', // => @media (min-width: 768px) { ... }
+        desktop: '1024px', // => @media (min-width: 1024px) { ... }
+      },
     },
   },
   plugins: [require('tailwindcss-animate')],

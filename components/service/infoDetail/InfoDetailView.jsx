@@ -71,13 +71,17 @@ export default function InfoDetailView({ postId }) {
   }, [postId]);
 
   if (loading) {
-    return <div className="py-20 text-center text-[#919191]">불러오는 중입니다.</div>;
+    return (
+      <div className="px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base">
+        불러오는 중입니다.
+      </div>
+    );
   }
 
   if (!post) return null;
 
   return (
-    <section className="mx-auto flex w-[920px] flex-col gap-[60px]">
+    <section className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-12 md:gap-[60px] md:px-0 md:pb-0">
       <InfoHead categoryName={post.categoryName} />
 
       <div className="flex flex-col">
@@ -93,15 +97,24 @@ export default function InfoDetailView({ postId }) {
       <div className="flex flex-col">
         <InfoContent content={post.content} />
 
-        <div className="mt-[48px] h-px w-full bg-[#DEDEDE]" />
+        <div className="mt-8 h-px w-full bg-[#DEDEDE] md:mt-[48px]" />
 
-        <div className="mt-[60px]">
+        <div className="mt-8 md:mt-[60px]">
           <InfoActions
             postId={post.postId}
             authorId={post.userId}
             likeCount={post.likeCount}
             liked={post.liked}
             onDeleted={() => router.push('/students/info')}
+            afterLikeOnMobile={
+              <button
+                type="button"
+                className="h-12 w-full rounded-[4px] bg-[#212121] text-white"
+                onClick={() => router.push('/students/info')}
+              >
+                목록
+              </button>
+            }
           />
         </div>
       </div>

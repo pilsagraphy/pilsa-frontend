@@ -25,10 +25,10 @@ export default function StudentsDashboardIntro() {
   return (
     // 1. 껍데기 제거: p-8, max-width, mx-auto를 지워서 부모의 정렬을 따르게 합니다.
     <div className="flex w-full flex-col">
-      {/* 2. 상단 텍스트와 랜덤 메시지를 한 줄로 배치 (justify-between) */}
-      <div className="flex justify-between items-end w-full pb-[40px]">
+      {/* 2. 넓은 화면: 인사말 / 랜덤 응원 멘트 한 줄 · 좁은 화면: 멘트는 다음 줄 */}
+      <div className="flex w-full flex-col gap-4 pb-[40px] lg:flex-row lg:items-end lg:justify-between lg:gap-8">
         {/* 왼쪽: 인사말 */}
-        <div className="flex flex-col gap-[12px]">
+        <div className="flex min-w-0 flex-col gap-[12px]">
           <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.48px] text-[#212121]">
             {userData.userName}님, 안녕하세요! :) ✍️
           </h2>
@@ -37,8 +37,8 @@ export default function StudentsDashboardIntro() {
           </p>
         </div>
 
-        {/* 오른쪽: 랜덤 응원 멘트 (우측 정렬) */}
-        <p className="text-[14px] font-normal tracking-[-0.02em] text-[#B9B9B9] pb-[4px]">
+        {/* 랜덤 응원 멘트: 모바일 전체 너비 · lg 이상 우측 정렬 */}
+        <p className="min-w-0 max-w-full break-words text-[14px] font-normal tracking-[-0.02em] text-[#B9B9B9] lg:max-w-[min(100%,28rem)] lg:shrink-0 lg:pb-[4px] lg:text-right">
           &quot;{randomMessage}&quot;
         </p>
       </div>
