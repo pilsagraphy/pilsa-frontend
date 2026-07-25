@@ -1,4 +1,5 @@
 import './globals.css';
+import AuthBootstrap from '@/components/common/AuthBootstrap';
 
 export const metadata = {
   title: 'pilsa-homepage',
@@ -7,8 +8,10 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="kor">
-      <body>{children}</body>
+    <html lang="ko">
+      <body className="min-h-screen bg-white text-neutral-900 flex flex-col">
+        <AuthBootstrap>{children}</AuthBootstrap>
+      </body>
     </html>
   );
 }
