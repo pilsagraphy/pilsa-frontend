@@ -1,6 +1,4 @@
-import History from '@/components/service/History'
+import History from '@/components/service/history/History';
 export default function HistoryPage() {
-	return (
-     <History/>
-  );
+  return <History />;
 }
