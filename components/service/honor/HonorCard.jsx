@@ -1,34 +1,34 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 const HonorCard = ({ data, rankType }) => {
   const props = {
     first: {
-      w: "w-full max-w-[240px]",
-      gap: "gap-5",
-      info: "text-[18px] font-semibold leading-[32px]",
-      insert: "inset-[12%]", // 액자 두께에 맞게 조절
+      w: 'w-full max-w-[240px]',
+      gap: 'gap-5',
+      info: 'text-[18px] font-semibold leading-[32px]',
+      insert: 'inset-[12%]', // 액자 두께에 맞게 조절
     },
     top: {
-      w: "w-full max-w-[180px]",
-      gap: "gap-4",
-      info: "text-[16px] font-semibold",
-      insert: "inset-[12%]",
+      w: 'w-full max-w-[180px]',
+      gap: 'gap-4',
+      info: 'text-[16px] font-semibold',
+      insert: 'inset-[12%]',
     },
     normal: {
-      w: "w-full max-w-[140px]",
-      gap: "gap-3",
-      info: "text-[12px]",
-      insert: "inset-[12%]",
+      w: 'w-full max-w-[140px]',
+      gap: 'gap-3',
+      info: 'text-[12px]',
+      insert: 'inset-[12%]',
     },
   };
 
   const style = props[rankType];
 
-  const isAnonymous = data.anonymous;
-  const displayName = isAnonymous ? "익명" : data.displayName;
+  const isAnonymous = Boolean(data.isAnonymous);
+  const displayName = isAnonymous ? '익명' : data.displayName;
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL; 
-  const imageUrl = data.photoUrl ? `${baseUrl}${data.photoUrl}` : null; 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || '';
+  const imageUrl = data.photoUrl ? `${baseUrl}${data.photoUrl}` : null;
 
   return (
     <div className={`flex flex-col items-center ${style.w} ${style.gap}`}>
@@ -37,12 +37,7 @@ const HonorCard = ({ data, rankType }) => {
         {/* 이미지 영역 (액자 안쪽) */}
         <div className={`absolute ${style.insert} overflow-hidden bg-gray-200`}>
           {!isAnonymous && imageUrl && (
-            <Image
-              src={imageUrl}
-              alt={data.displayName}
-              fill
-              className="object-cover"
-            />
+            <Image src={imageUrl} alt={data.displayName} fill className="object-cover" />
           )}
         </div>
         {/* 프레임 영역 */}
@@ -51,13 +46,13 @@ const HonorCard = ({ data, rankType }) => {
           alt="frame"
           fill
           className="object-contain pointer-events-none select-none"
-          priority={rankType === "first"}
+          priority={rankType === 'first'}
         />
       </div>
 
       {/* 인포 영역 */}
       <div className={`text-center ${style.info}`}>
-        {rankType === "first" ? (
+        {rankType === 'first' ? (
           <>
             {/* 1등 (first) */}
             <p>{displayName}</p>
@@ -67,7 +62,7 @@ const HonorCard = ({ data, rankType }) => {
                 <p>{data.major}</p>
               </>
             )}
-            <p>" {data.message} "</p>
+            <p>&quot; {data.message} &quot;</p>
           </>
         ) : (
           <>

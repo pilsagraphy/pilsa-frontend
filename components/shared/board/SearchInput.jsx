@@ -9,7 +9,7 @@ import { Search } from "lucide-react";
 
 export default function SearchInput({ value, onChange }) {
   return (
-    <InputGroup className="max-w-80 h-[52px]">
+    <InputGroup className="h-12 w-full max-w-full md:h-[52px] md:max-w-80">
       <InputGroupInput
         value={value}
         onChange={(e) => onChange(e.target.value)}

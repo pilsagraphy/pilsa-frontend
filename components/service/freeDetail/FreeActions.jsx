@@ -7,7 +7,13 @@ import { toggleFreePostLike, deleteFreePost } from '@/apis/free';
 import { getErrorMessage } from '@/apis/auth';
 import useAuthStore from '@/stores/useAuthStore';
 
-export default function FreeActions({ postId, authorId, likecount, liked: initialLiked = false }) {
+export default function FreeActions({
+  postId,
+  authorId,
+  likecount,
+  liked: initialLiked = false,
+  afterLikeOnMobile = null,
+}) {
   const initialCount = typeof likecount === 'number' ? likecount : 0;
 
   const [likeCount, setLikeCount] = useState(initialCount);
@@ -82,36 +88,40 @@ export default function FreeActions({ postId, authorId, likecount, liked: initia
   };
 
   return (
-    <div className="flex justify-between items-center w-full">
-      {/* 좋아요 버튼 */}
-      <button
-        type="button"
-        onClick={handleLike}
-        disabled={likeLoading}
-        className="h-[52px] w-[135px] border border-[#b9b9b9] rounded-[4px] flex items-center justify-center gap-[6px] text-[16px] tracking-[-0.32px] transition-colors hover:bg-[#f5f5f5] disabled:opacity-60"
-      >
-        <ThumbsUp
-          width={18}
-          height={18}
-          stroke={liked ? '#212121' : '#1E1E1E'}
-          strokeWidth={1.5}
-          aria-hidden="true"
-        />
-        <span className="text-[#212121]">좋아요 {likeCount}</span>
-      </button>
-
-      {/* 수정 / 삭제 */}
-      <div className="flex gap-[20px]">
+    <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
+      <div className="flex w-full flex-col gap-[10px] md:w-auto">
+        {/* 좋아요 버튼 */}
         <button
           type="button"
-          className="h-[52px] w-[135px] bg-[#212121] text-white rounded-[4px]"
+          onClick={handleLike}
+          disabled={likeLoading}
+          className="flex h-12 w-full items-center justify-center gap-[6px] rounded-[4px] border border-[#b9b9b9] text-[15px] tracking-[-0.32px] transition-colors hover:bg-[#f5f5f5] disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px]"
+        >
+          <ThumbsUp
+            width={18}
+            height={18}
+            stroke={liked ? '#212121' : '#1E1E1E'}
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <span className="text-[#212121]">좋아요 {likeCount}</span>
+        </button>
+
+        {afterLikeOnMobile != null && <div className="w-full md:hidden">{afterLikeOnMobile}</div>}
+      </div>
+
+      {/* 수정 / 삭제 */}
+      <div className="flex w-full gap-2 md:w-auto md:gap-5">
+        <button
+          type="button"
+          className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white md:h-[52px] md:w-[135px] md:flex-none"
           onClick={handleEdit}
         >
           수정
         </button>
         <button
           type="button"
-          className="h-[52px] w-[135px] bg-[#212121] text-white rounded-[4px]"
+          className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white md:h-[52px] md:w-[135px] md:flex-none"
           onClick={handleDelete}
         >
           삭제

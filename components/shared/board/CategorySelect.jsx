@@ -32,7 +32,7 @@ export default function CategorySelect({ boardType, value, onValueChange }) {
 
   return (
     <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="w-[135px] h-[52px] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121] [&>span]:text-[#212121]">
+      <SelectTrigger className="h-12 w-full min-w-0 shrink-0 text-[15px] leading-[1.6] tracking-[-0.02em] text-[#212121] sm:w-[120px] md:h-[52px] md:w-[135px] md:text-[16px] [&>span]:text-[#212121]">
         <SelectValue placeholder="카테고리" />
       </SelectTrigger>
       <SelectContent>

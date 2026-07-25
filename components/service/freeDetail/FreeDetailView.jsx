@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import FreeHead from './FreeHead';
 import FreeInfo from './FreeInfo';
@@ -14,6 +15,7 @@ import { getFreePostDetail } from '@/apis/free';
 import { getErrorMessage } from '@/apis/auth';
 
 export default function FreeDetailView({ postId }) {
+  const router = useRouter();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -54,19 +56,23 @@ export default function FreeDetailView({ postId }) {
   }, [postId]);
 
   if (loading) {
-    return <div className="py-20 text-center text-[#919191]">불러오는 중입니다.</div>;
+    return (
+      <div className="px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base">
+        불러오는 중입니다.
+      </div>
+    );
   }
 
   if (!post) {
     return (
-      <div className="py-20 text-center text-[#919191]">
+      <div className="px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base">
         {errorMessage || '존재하지 않는 게시글입니다.'}
       </div>
     );
   }
 
   return (
-    <section className="mx-auto w-[920px] flex flex-col gap-[60px]">
+    <section className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-12 md:gap-[60px] md:px-0 md:pb-0">
       <FreeHead categoryName={post.categoryName} />
 
       <div className="flex flex-col">
@@ -82,14 +88,23 @@ export default function FreeDetailView({ postId }) {
       <div className="flex flex-col">
         <FreeContent content={post.content} />
 
-        <div className="w-full h-px bg-[#DEDEDE] mt-[48px]" />
+        <div className="mt-8 h-px w-full bg-[#DEDEDE] md:mt-[48px]" />
 
-        <div className="mt-[60px]">
+        <div className="mt-8 md:mt-[60px]">
           <FreeActions
             postId={post.postId}
             authorId={post.userId}
             likecount={post.likeCount}
             liked={post.liked}
+            afterLikeOnMobile={
+              <button
+                type="button"
+                className="h-12 w-full rounded-[4px] bg-[#212121] text-white"
+                onClick={() => router.push('/students/free')}
+              >
+                목록
+              </button>
+            }
           />
         </div>
       </div>

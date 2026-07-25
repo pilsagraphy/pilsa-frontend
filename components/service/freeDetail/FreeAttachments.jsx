@@ -10,13 +10,13 @@ export default function FreeAttachments({ attachments = [] }) {
   if (!Array.isArray(attachments) || attachments.length === 0) return null;
 
   return (
-    <section className="flex flex-col gap-[20px] w-full">
+    <section className="flex w-full flex-col gap-4 md:gap-[20px]">
       <Divider />
 
-      <div className="flex items-start gap-[24px] text-[16px] tracking-[-0.32px]">
-        <span className="text-[#919191] shrink-0">첨부파일</span>
+      <div className="flex flex-col gap-2 text-[15px] tracking-[-0.32px] md:flex-row md:items-start md:gap-6 md:text-[16px]">
+        <span className="shrink-0 text-[#919191]">첨부파일</span>
 
-        <div className="flex flex-col gap-[8px]">
+        <div className="flex min-w-0 flex-col gap-2 md:gap-[8px]">
           {attachments.map((file) => {
             const fileName = file?.originName ?? file?.name ?? '첨부파일';
             const fileUrl = file?.fileUrl ?? file?.url ?? '#';
@@ -29,7 +29,7 @@ export default function FreeAttachments({ attachments = [] }) {
                 download
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[#454545] hover:underline flex items-center gap-1"
+                className="flex items-center gap-1 break-all text-[#454545] hover:underline"
               >
                 {fileName}
               </a>

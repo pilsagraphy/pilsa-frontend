@@ -35,28 +35,31 @@ export default function NoticeActions({ postId, likecount, liked: initialLiked =
   };
 
   return (
-    <div className="flex justify-between items-center w-full">
+    <div className="flex w-full items-stretch justify-between md:items-center">
       {/* 좋아요 버튼 */}
       <button
         type="button"
         onClick={handleLike}
         disabled={isSubmitting}
         className="
-          h-[52px]
-          w-[135px]
-          border
-          border-[#b9b9b9]
-          rounded-[4px]
           flex
+          h-12
+          w-full
           items-center
           justify-center
           gap-[6px]
-          text-[16px]
+          rounded-[4px]
+          border
+          border-[#b9b9b9]
+          text-[15px]
           tracking-[-0.32px]
           transition-colors
           hover:bg-[#f5f5f5]
-          disabled:opacity-60
           disabled:cursor-not-allowed
+          disabled:opacity-60
+          md:h-[52px]
+          md:w-[135px]
+          md:text-[16px]
         "
       >
         {/* 아이콘 */}

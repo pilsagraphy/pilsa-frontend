@@ -7,7 +7,18 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-export default function SortSelect({ boardType, value, onValueChange }) {
+export default function SortSelect({ boardType, value, onValueChange, compactSort = false }) {
+  if (compactSort) {
+    return (
+      <div
+        className="flex h-12 w-full min-w-0 shrink-0 items-center rounded-md border border-input bg-white px-3 text-[15px] leading-[1.6] tracking-[-0.02em] text-[#212121] sm:w-[120px] md:h-[52px] md:w-[135px] md:text-[16px]"
+        aria-label="정렬: 최신순"
+      >
+        최신순
+      </div>
+    );
+  }
+
   const options =
     boardType === 'notices'
       ? [
@@ -22,7 +33,7 @@ export default function SortSelect({ boardType, value, onValueChange }) {
 
   return (
     <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="w-[135px] h-[52px] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121]">
+      <SelectTrigger className="h-12 w-full min-w-0 shrink-0 text-[15px] leading-[1.6] tracking-[-0.02em] text-[#212121] sm:w-[120px] md:h-[52px] md:w-[135px] md:text-[16px]">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

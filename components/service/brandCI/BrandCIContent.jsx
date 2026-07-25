@@ -1,14 +1,13 @@
-import BrandCIText from "./BrandCIText";
-import BrandCILogo from "./BrandCILogo";
-import DownloadButton from "./DownloadButton";
-import BrandColor from "./BrandColor";
+import BrandCIText from './BrandCIText';
+import BrandCILogo from './BrandCILogo';
+import DownloadButton from './DownloadButton';
+import BrandColor from './BrandColor';
 
-import { BRAND_CI_TEXT } from "../../../constants/brandCI/BrandCIData";
+import { BRAND_CI_TEXT } from '@/constants/brandCI';
 
 export default function BrandCIContent() {
   return (
-    <div className="flex flex-col gap-[80px] w-full"> 
-      
+    <div className="flex flex-col gap-[80px] w-full">
       {/* 1. 로고 섹션 */}
       <section className="flex gap-[60px] items-start justify-between">
         <BrandCIText title="로고">
@@ -16,7 +15,7 @@ export default function BrandCIContent() {
             <p key={index}>{text}</p>
           ))}
         </BrandCIText>
-        
+
         <div className="flex gap-[12px] items-start">
           <BrandCILogo />
           <DownloadButton />
@@ -30,7 +29,7 @@ export default function BrandCIContent() {
             <p key={index}>{text}</p>
           ))}
         </BrandCIText>
-        
+
         <BrandColor />
       </section>
     </div>
