@@ -20,6 +20,7 @@ export const ROUTES = {
   SIGNUP: `${BASE_PATH}signup`,
   LOGOUT: `${BASE_PATH}logout`,
   FIND_ID: `${BASE_PATH}findId`,
+  FIND_EMAIL: `${BASE_PATH}findEmail`,
   FIND_PW: `${BASE_PATH}findPassword`,
 
   // students 영역
@@ -49,6 +50,7 @@ export const PUBLIC_ROUTES = [
   ROUTES.LOGIN,
   ROUTES.SIGNUP,
   ROUTES.FIND_ID,
+  ROUTES.FIND_EMAIL,
   ROUTES.FIND_PW,
 ];
 
