@@ -21,6 +21,7 @@ export const ROUTES = {
   LOGOUT: `${BASE_PATH}logout`,
   FIND_ID: `${BASE_PATH}findId`,
   FIND_PW: `${BASE_PATH}findPassword`,
+  MYPAGE: `${BASE_PATH}mypage`,
 
   // students 영역
   STUDENTS_DASHBOARD: `${BASE_PATH}students`,

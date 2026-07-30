@@ -11,9 +11,20 @@ export const getErrorMessage = (error, fallback) => {
 
 // 토큰 관련 API
 // 1. 액세스 토큰 재발급 (POST /api/auth/token/access/refresh)
+// 진행 중인 재발급 요청을 재사용(single-flight)해 동시 호출로 인한
+// 리프레시 토큰 회전(rotation) 레이스를 방지한다.
+let refreshPromise = null;
 export const refreshAccessToken = async () => {
-  const response = await axiosInstance.post('/api/auth/token/access/refresh');
-  return response.data; // 새로운 accessToken 반환 예상
+  if (refreshPromise) return refreshPromise;
+
+  refreshPromise = axiosInstance
+    .post('/api/auth/token/access/refresh')
+    .then((response) => response.data) // 새로운 accessToken 반환 예상
+    .finally(() => {
+      refreshPromise = null;
+    });
+
+  return refreshPromise;
 };
 
 // 2. 리프레시 토큰 검사 (POST /api/auth/token/refresh/validate)
