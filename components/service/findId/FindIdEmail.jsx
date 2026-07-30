@@ -1,19 +1,16 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { sendVerifyCode } from '@/apis/mail';
 import { getErrorMessage } from '@/apis/auth';
-import { ROUTES } from '@/constants/routes';
 
 // 이메일 형식 올바른지 확인
 const isValidEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 export default function FindIdEmail({ onNext }) {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const timerRef = useRef(null);
@@ -88,17 +85,6 @@ export default function FindIdEmail({ onNext }) {
       >
         {loading ? '메일 발송 중...' : '다음'}
       </Button>
-
-      {/* 이메일 찾기 페이지로 이동 (로그인 페이지 링크와 동일 스타일) */}
-      <div className="flex w-full justify-center">
-        <button
-          type="button"
-          onClick={() => router.push(ROUTES.FIND_EMAIL)}
-          className="text-[14px] tracking-[-0.28px] text-[#c4c4c4] hover:text-[#424242] hover:underline transition-colors"
-        >
-          이메일을 잊으셨나요?
-        </button>
-      </div>
     </form>
   );
 }

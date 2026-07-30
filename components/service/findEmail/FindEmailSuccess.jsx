@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 
-export default function FindEmailSuccess({ email = 'ki****@naver.com' }) {
+export default function FindEmailSuccess({ email }) {
   const router = useRouter();
 
   return (

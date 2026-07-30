@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,10 +35,6 @@ export default function FindEmailVerify({ onNext }) {
   const [studentId, setStudentId] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const timerRef = useRef(null);
-
-  // 언마운트 시 타이머 정리 (메모리 누수 방지)
-  useEffect(() => () => clearTimeout(timerRef.current), []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
