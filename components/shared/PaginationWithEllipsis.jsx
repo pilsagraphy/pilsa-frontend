@@ -79,14 +79,14 @@ export default function PaginationWithEllipsis({
           </PaginationLink>
         </PaginationItem>
 
-        {/* 페이지 번호 - 박스 대신 색상 변화로 현재 페이지 표시 */}
+        {/* 페이지 번호 - 아웃라인 박스 + 색상 변화로 현재 페이지 표시 */}
         {pages.map((page) => {
           const isActive = page === currentPage;
           return (
             <PaginationItem key={page}>
               <PaginationLink
-                aria-current={isActive ? "page" : undefined}
-                className={`cursor-pointer bg-transparent text-[20px] font-medium hover:bg-transparent ${
+                isActive={isActive}
+                className={`cursor-pointer text-[20px] font-medium ${
                   isActive ? "text-[#212121]" : "text-[#919191]"
                 }`}
                 onClick={() => onPageChange(page)}
