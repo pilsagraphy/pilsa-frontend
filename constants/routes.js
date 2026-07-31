@@ -21,6 +21,7 @@ export const ROUTES = {
   LOGOUT: `${BASE_PATH}logout`,
   FIND_ID: `${BASE_PATH}findId`,
   FIND_PW: `${BASE_PATH}findPassword`,
+  FIND_EMAIL: `${BASE_PATH}findEmail`,
 
   // students 영역
   STUDENTS_DASHBOARD: `${BASE_PATH}students`,
@@ -53,6 +54,7 @@ export const PUBLIC_ROUTES = [
   ROUTES.SIGNUP,
   ROUTES.FIND_ID,
   ROUTES.FIND_PW,
+  ROUTES.FIND_EMAIL,
 ];
 
 // 게시판 접근 가능 역할 (ADMIN, ALUMNI, STUDENTS)
