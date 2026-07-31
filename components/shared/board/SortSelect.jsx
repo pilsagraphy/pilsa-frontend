@@ -7,7 +7,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-export default function SortSelect({ boardType, value, onValueChange, compactSort = false }) {
+// options를 넘기면 게시판 기본 선택지 대신 해당 목록을 사용한다. (예: 관리자 회원 목록)
+export default function SortSelect({
+  boardType,
+  value,
+  onValueChange,
+  compactSort = false,
+  options: customOptions,
+}) {
   if (compactSort) {
     return (
       <div
@@ -20,7 +27,8 @@ export default function SortSelect({ boardType, value, onValueChange, compactSor
   }
 
   const options =
-    boardType === 'notices'
+    customOptions ??
+    (boardType === 'notices'
       ? [
           { value: 'latest', label: '최신순' },
           { value: 'views', label: '조회순' },
@@ -29,7 +37,7 @@ export default function SortSelect({ boardType, value, onValueChange, compactSor
           { value: 'latest', label: '최신순' },
           { value: 'likes', label: '인기순' },
           { value: 'views', label: '조회순' },
-        ];
+        ]);
 
   return (
     <Select value={value} onValueChange={onValueChange}>
