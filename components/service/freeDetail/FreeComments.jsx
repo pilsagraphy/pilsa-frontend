@@ -100,7 +100,7 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
       resetInput();
       onChanged?.();
     } catch (error) {
-      alert(getErrorMessage(error, '댓글 수정에 실패했습니다.'));
+      setAlertState({ title: getErrorMessage(error, '댓글 수정에 실패했습니다.') });
     }
   };
 
@@ -112,7 +112,7 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
       if (editingId === commentId || replyTo?.commentId === commentId) resetInput();
       onChanged?.();
     } catch (error) {
-      alert(getErrorMessage(error, '댓글 삭제에 실패했습니다.'));
+      setAlertState({ title: getErrorMessage(error, '댓글 삭제에 실패했습니다.') });
     }
   };
 
@@ -143,7 +143,7 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
       resetInput();
       onChanged?.();
     } catch (error) {
-      alert(getErrorMessage(error, '댓글 등록에 실패했습니다.'));
+      setAlertState({ title: getErrorMessage(error, '댓글 등록에 실패했습니다.') });
     }
   };
 
@@ -213,8 +213,8 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
     return (
       <div
         key={comment.commentId}
-        className={`flex w-full flex-col gap-3 py-3 md:flex-row md:items-start md:justify-between md:py-4 ${indentClass} ${
-          highlighted ? 'rounded-[4px] bg-[#f5f5f5]' : ''
+        className={`flex w-full flex-col gap-3 py-4 md:flex-row md:items-start md:justify-between md:py-5 ${indentClass} ${
+          highlighted ? 'bg-[#f5f5f5]' : ''
         }`}
       >
         <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
@@ -288,7 +288,9 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
 
   return (
     <section className="flex w-full flex-col gap-8 md:gap-[60px]">
-      <div className="flex w-full flex-col items-center gap-4 md:gap-[23px]">
+      {/* 간격은 각 댓글 행의 안쪽 여백(py)으로 준다.
+          컨테이너에 gap을 주면 하이라이트(회색 배경) 바깥에 빈 공간이 생긴다 */}
+      <div className="flex w-full flex-col items-center">
         <div className="w-full py-2 md:px-5 md:py-[10px]">
           <span className="text-[16px] leading-[1.6] tracking-[-0.36px] text-[#454545] md:text-[18px]">
             댓글 {comments.length}개
@@ -313,7 +315,11 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
             onChange={(e) => setCommentText(e.target.value)}
             placeholder={replyTo ? '답글을 작성하세요.' : '댓글을 작성하세요.'}
             className="h-12 w-full flex-1 rounded-[4px] border border-[#b9b9b9] bg-white px-4 text-[15px] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#919191] md:h-[52px] md:text-[16px]"
-            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+            onKeyDown={(e) => {
+              // 한글 등 IME 조합 중의 Enter는 글자를 확정하는 키이므로 제출하지 않는다
+              if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
+              handleSubmit();
+            }}
           />
           <button
             type="button"

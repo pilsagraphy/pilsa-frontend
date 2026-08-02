@@ -108,13 +108,11 @@ export const deleteFreePost = async (postId) => {
 };
 
 // 9. 자유게시판 댓글 등록 (POST /api/stu/free/posts/{postId}/comments)
-// parentId가 있으면 대댓글로 등록 (null이면 최상위 댓글)
-export const createFreeComment = async (postId, { content, isAnonymous = false, parentId = null }) => {
+export const createFreeComment = async (postId, { content, isAnonymous = false }) => {
   const response = await axiosInstance.post(`/api/stu/free/posts/${postId}/comments`, {
     content,
     isAnonymous: Boolean(isAnonymous),
     anonymous: Boolean(isAnonymous),
-    parentId,
   });
   return response.data;
 };
