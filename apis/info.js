@@ -105,10 +105,12 @@ export const deleteInfoPost = async (postId) => {
 };
 
 // 9. 정보게시판 댓글 등록 (POST /api/stu/info/posts/{postId}/comments)
-export const createInfoComment = async (postId, { content, isPrivate = false }) => {
+// parentId가 있으면 대댓글로 등록 (null이면 최상위 댓글)
+export const createInfoComment = async (postId, { content, isPrivate = false, parentId = null }) => {
   const response = await axiosInstance.post(`/api/stu/info/posts/${postId}/comments`, {
     content,
     isPrivate: Boolean(isPrivate),
+    parentId,
   });
   return response.data;
 };
