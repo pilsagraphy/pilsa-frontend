@@ -13,12 +13,12 @@ export default function LoginRestrictedSection({
   return (
     <section className="mx-auto flex w-full max-w-[600px] flex-col items-center gap-[50px] px-4 py-[80px]">
       <div className="flex flex-col items-center gap-[50px] text-center [word-break:keep-all]">
-        <h2 className="text-[24px] font-normal leading-[1.5] tracking-[-0.48px] text-black">
+        <h2 className="text-[24px] font-semibold leading-[1.5] tracking-[-0.48px] text-black">
           로그인이 제한된 계정입니다
         </h2>
         <div className="space-y-1 text-[16px] leading-[1.6] tracking-[-0.32px] text-[#212121]">
           <p className="font-normal">{reason}</p>
-          <p className="font-normal">{unlockAt} 부터 다시 로그인 할 수 있습니다.</p>
+          <p className="font-semibold">{unlockAt} 부터 다시 로그인 할 수 있습니다.</p>
         </div>
       </div>
 
