@@ -1,8 +1,21 @@
 'use client';
 
+import { useState } from 'react';
+
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { TableCell, TableRow } from '@/components/ui/table';
-import { MEMBER_ROLES } from '@/constants/adminMembers';
+import {
+  ENROLLMENT_STATUSES,
+  MEMBER_ROLE_OPTIONS,
+  MEMBER_ROLES,
+} from '@/constants/adminMembers';
 import { cn } from '@/lib/utils';
 
 // 재학상태 · 권한에 쓰이는 알약(pill) 뱃지
@@ -22,9 +35,61 @@ function Pill({ filled = false, children }) {
   );
 }
 
+// 평소에는 뱃지로 보이다가, 누르면 그 자리에 select가 열리는 셀.
+// 값을 고르거나 바깥을 클릭하면 다시 뱃지로 돌아간다.
+function EditablePill({ label, value, options, filled = false, onChange }) {
+  const [isEditing, setIsEditing] = useState(false);
+
+  if (!isEditing) {
+    return (
+      <button
+        type="button"
+        onClick={() => setIsEditing(true)}
+        aria-label={`${label} 변경 (현재 ${value})`}
+        className="rounded-[13px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
+        <Pill filled={filled}>{value}</Pill>
+      </button>
+    );
+  }
+
+  return (
+    <Select
+      defaultOpen
+      value={value}
+      onValueChange={(next) => {
+        onChange(next);
+        setIsEditing(false);
+      }}
+      onOpenChange={(open) => {
+        if (!open) setIsEditing(false);
+      }}
+    >
+      <SelectTrigger
+        aria-label={`${label} 선택`}
+        className="mx-auto h-8 w-[104px] rounded-[13px] px-2 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545]"
+      >
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((option) => (
+          <SelectItem key={option} value={option}>
+            {option}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 // member: memberId, loginId, name, phone, studentNumber, email,
 //         enrollmentStatus, role, postCount, commentCount, suspendedPeriod
-export default function MemberRow({ member, selected = false, onSelectChange }) {
+export default function MemberRow({
+  member,
+  selected = false,
+  onSelectChange,
+  onFieldChange,
+}) {
   const isAdminRole = member.role !== MEMBER_ROLES.GENERAL;
 
   return (
@@ -46,14 +111,25 @@ export default function MemberRow({ member, selected = false, onSelectChange }) 
       <TableCell className="whitespace-nowrap text-center">{member.studentNumber}</TableCell>
       <TableCell className="whitespace-nowrap text-center">{member.email}</TableCell>
 
-      {/* 3. 재학상태 (외곽선 뱃지) */}
+      {/* 3. 재학상태 (누르면 select로 변경) */}
       <TableCell className="whitespace-nowrap text-center">
-        <Pill>{member.enrollmentStatus}</Pill>
+        <EditablePill
+          label="재학상태"
+          value={member.enrollmentStatus}
+          options={ENROLLMENT_STATUSES}
+          onChange={(next) => onFieldChange?.(member.memberId, 'enrollmentStatus', next)}
+        />
       </TableCell>
 
-      {/* 4. 권한 (일반회원은 외곽선, 관리 Lv.N은 채움) */}
+      {/* 4. 권한 (일반회원은 외곽선, 관리 Lv.N은 채움 / 누르면 select로 변경) */}
       <TableCell className="whitespace-nowrap text-center">
-        <Pill filled={isAdminRole}>{member.role}</Pill>
+        <EditablePill
+          label="권한"
+          value={member.role}
+          options={MEMBER_ROLE_OPTIONS}
+          filled={isAdminRole}
+          onChange={(next) => onFieldChange?.(member.memberId, 'role', next)}
+        />
       </TableCell>
 
       {/* 5. 활동 수치 */}

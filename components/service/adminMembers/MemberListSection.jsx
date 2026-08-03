@@ -21,18 +21,27 @@ export default function MemberListSection({ title = '회원 목록' }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
 
+  // 행에서 재학상태·권한을 바꾼 결과가 화면에 남아야 해서 목록을 상태로 들고 간다.
+  const [members, setMembers] = useState(DUMMY_MEMBERS);
+
   // TODO: API 연동 시 DUMMY_MEMBERS 대신 서버 응답(목록·totalPages)을 사용하고,
   //       검색·정렬·페이지네이션도 서버에 위임할 것. (BoardSection.jsx 참고)
   const filteredMembers = useMemo(() => {
     const keyword = searchQuery.trim().toLowerCase();
-    if (!keyword) return DUMMY_MEMBERS;
 
-    return DUMMY_MEMBERS.filter(
-      (member) =>
-        member.loginId.toLowerCase().includes(keyword) ||
-        member.name.toLowerCase().includes(keyword)
+    const matched = keyword
+      ? members.filter(
+          (member) =>
+            member.loginId.toLowerCase().includes(keyword) ||
+            member.name.toLowerCase().includes(keyword)
+        )
+      : members;
+
+    // memberId가 클수록 최근 가입 → 최신순은 내림차순, 오래된순은 오름차순.
+    return [...matched].sort((a, b) =>
+      sortOrder === 'oldest' ? a.memberId - b.memberId : b.memberId - a.memberId
     );
-  }, [searchQuery]);
+  }, [members, searchQuery, sortOrder]);
 
   const totalPages = Math.max(1, Math.ceil(filteredMembers.length / PAGE_SIZE));
 
@@ -73,6 +82,16 @@ export default function MemberListSection({ title = '회원 목록' }) {
     setSelectedIds(checked ? pagedMembers.map((member) => member.memberId) : []);
   };
 
+  // 행에서 재학상태·권한 select로 값을 바꿨을 때
+  // TODO: API 연동 시 서버에 변경 요청을 보내고 응답으로 목록을 갱신할 것
+  const handleFieldChange = (memberId, field, value) => {
+    setMembers((prev) =>
+      prev.map((member) =>
+        member.memberId === memberId ? { ...member, [field]: value } : member
+      )
+    );
+  };
+
   return (
     <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10">
       <h2 className="my-[15px] font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]">
@@ -91,7 +110,7 @@ export default function MemberListSection({ title = '회원 목록' }) {
             <SearchInput
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder="ID / 닉네임 / 이름 검색"
+              placeholder="ID / 이름 검색"
             />
           </div>
         </div>
@@ -117,6 +136,7 @@ export default function MemberListSection({ title = '회원 목록' }) {
         selectedIds={selectedIds}
         onSelectOne={handleSelectOne}
         onSelectAll={handleSelectAll}
+        onFieldChange={handleFieldChange}
       />
 
       <div className="mt-6 mb-16 flex justify-center md:mt-[34px] md:mb-[120px]">

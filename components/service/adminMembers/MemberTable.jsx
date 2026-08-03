@@ -19,6 +19,7 @@ export default function MemberTable({
   selectedIds = [],
   onSelectOne,
   onSelectAll,
+  onFieldChange,
   loading = false,
   errorMessage = '',
 }) {
@@ -79,6 +80,7 @@ export default function MemberTable({
                 member={member}
                 selected={selectedIds.includes(member.memberId)}
                 onSelectChange={onSelectOne}
+                onFieldChange={onFieldChange}
               />
             ))
           )}
