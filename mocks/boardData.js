@@ -22,32 +22,76 @@ export const DUMMY_BOARD_DETAILS = [
     ],
     attachmentCount: 1,
     comments: [
+      // userId가 301이면 '내 댓글'로 취급된다 (답글/수정/삭제 표시)
       {
         commentId: 1,
         authorName: '박건희',
+        loginId: 'pk301',
+        studentId: '2024001234',
         content: '가냥아 나도 기대돼 ㅎㅎㅎ',
-        updated: '2026-02-22T00:00:00.000Z',
+        updated: '2026-02-22T08:13:00.000Z',
         userId: 301,
-        private: false,
         parentId: null,
+        isAnonymous: false,
       },
+      // 타인의 답글 (답글/신고 표시)
+      // loginId, studentId는 신고 모달의 '대상 회원' 표시용 (백엔드 추가 예정 필드)
       {
         commentId: 2,
         authorName: '한서은',
+        loginId: 'ch400',
+        studentId: '2026000000',
         content: '저두욤',
-        updated: '2026-02-22T00:00:00.000Z',
+        updated: '2026-02-22T08:20:00.000Z',
         userId: 302,
-        private: false,
         parentId: 1,
+        isAnonymous: false,
       },
+      // 익명 답글 → 작성자명이 '익명'으로 표시된다
+      // 익명은 신고 모달에서도 '익명'만 노출하므로 loginId/studentId를 일부러 넣지 않는다
       {
         commentId: 3,
-        authorName: '익명',
-        content: '비밀 댓글입니다.',
-        updated: '2026-02-22T00:00:00.000Z',
+        authorName: '김가영',
+        content: '저도 기대되네요',
+        updated: '2026-02-22T08:29:00.000Z',
         userId: 303,
-        private: true,
         parentId: 1,
+        isAnonymous: true,
+      },
+      // 삭제된 댓글 → '삭제된 댓글입니다'로 표시되고 액션 버튼이 숨겨진다
+      {
+        commentId: 4,
+        authorName: '김철수',
+        content: '지워진 내용',
+        updated: '2026-02-22T09:00:00.000Z',
+        userId: 304,
+        parentId: null,
+        isDeleted: true,
+      },
+      // 3단계 중첩 확인용: 1(박건희) → 2(한서은) → 5(이영희)
+      // 답글의 답글이므로 한 단계 더 들여쓰기된다
+      {
+        commentId: 5,
+        authorName: '이영희',
+        loginId: 'lyh305',
+        studentId: '2025005678',
+        content: '나도 좋아',
+        updated: '2026-02-22T09:10:00.000Z',
+        userId: 305,
+        parentId: 2,
+        isAnonymous: false,
+      },
+      // 삭제된 댓글(4번)의 답글 → 부모가 삭제돼도 내용이 그대로 유지되는지 확인
+      {
+        commentId: 6,
+        authorName: '최민수',
+        loginId: 'cms306',
+        studentId: '2025009999',
+        content: '저는 다음에 참여할게요',
+        updated: '2026-02-22T09:30:00.000Z',
+        userId: 306,
+        parentId: 4,
+        isAnonymous: false,
       },
     ],
     anonymous: false,
