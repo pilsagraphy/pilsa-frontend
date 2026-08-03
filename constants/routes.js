@@ -34,6 +34,9 @@ export const ROUTES = {
   INFO_BOARD: `${BASE_PATH}students/info`,
   INFO_BOARD_DETAIL: (id) => `${BASE_PATH}students/info/${encodeURIComponent(id)}`,
   INFO_BOARD_WRITE: `${BASE_PATH}students/info/write`,
+
+  // admin 영역
+  ADMIN_MEMBERS: `${BASE_PATH}admin/members`,
 };
 
 // 비로그인 접근 가능
