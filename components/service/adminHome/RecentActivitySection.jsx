@@ -1,22 +1,7 @@
 'use client';
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-
-const RECENT_REPORTS = [
-  { id: 1, board: '자유게시판', content: '글 내용 글 내용 글 내용', date: '2026.05.03' },
-  { id: 2, board: '자유게시판', content: '글 내용 글 내용 글 내용', date: '2026.05.03' },
-  { id: 3, board: '자유게시판', content: '글 내용 글 내용 글 내용', date: '2026.05.03' },
-  { id: 4, board: '자유게시판', content: '글 내용 글 내용 글 내용', date: '2026.05.03' },
-  { id: 5, board: '자유게시판', content: '글 내용 글 내용 글 내용', date: '2026.05.03' },
-];
-
-const RECENT_MEMBERS = [
-  { id: 1, role: '재학생', username: 'ch400', name: '김본명', joinDate: '2026.06.05' },
-  { id: 2, role: '재학생', username: 'ch400', name: '김본명', joinDate: '2026.06.05' },
-  { id: 3, role: '재학생', username: 'ch400', name: '김본명', joinDate: '2026.06.05' },
-  { id: 4, role: '재학생', username: 'ch400', name: '김본명', joinDate: '2026.06.05' },
-  { id: 5, role: '재학생', username: 'ch400', name: '김본명', joinDate: '2026.06.05' },
-];
+import { RECENT_REPORTS, RECENT_MEMBERS } from './AdminMocs';
 
 // 섹션 헤더: 제목 + 전체보기 →
 function ActivityHeader({ title }) {
@@ -34,9 +19,9 @@ function ActivityHeader({ title }) {
 }
 
 // 최근 신고 목록
-function RecentReports({ reports = [] }) {
+function RecentReports({ reports = RECENT_REPORTS }) {
   return (
-    <div className="flex w-full flex-col lg:w-[442px]">
+    <div className="flex w-full flex-col lg:flex-1 lg:basis-0">
       <ActivityHeader title="최근 신고" />
       <div className="mt-[7px] flex flex-col border-t border-[#B9B9B9]">
         {reports.map((report) => (
@@ -64,9 +49,9 @@ function RecentReports({ reports = [] }) {
 }
 
 // 최근 가입 회원 목록
-function RecentMembers({ members = [] }) {
+function RecentMembers({ members = RECENT_MEMBERS }) {
   return (
-    <div className="flex w-full flex-col lg:w-[442px]">
+    <div className="flex w-full flex-col lg:flex-1 lg:basis-0">
       <ActivityHeader title="최근 가입 회원" />
       <div className="mt-[7px] flex flex-col border-t border-[#B9B9B9]">
         {members.map((member) => (
@@ -74,7 +59,7 @@ function RecentMembers({ members = [] }) {
             key={member.id}
             className="flex h-[44px] items-center border-b border-[#B9B9B9] pl-[10px] pr-[8px]"
           >
-            <span className="text-[18px] font-semibold leading-[1.6] tracking-[-0.36px] text-[#212121]">
+            <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]">
               {member.role}
             </span>
             <span className="mx-[10px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9]" />
@@ -96,11 +81,14 @@ function RecentMembers({ members = [] }) {
 }
 
 // 최근 신고 / 최근 가입 회원을 합치는 섹션
-export default function RecentActivitySection() {
+export default function RecentActivitySection({
+  reports = RECENT_REPORTS,
+  members = RECENT_MEMBERS,
+}) {
   return (
     <div className="flex w-full flex-col gap-10 lg:flex-row lg:gap-[28px]">
-      <RecentReports reports={RECENT_REPORTS} />
-      <RecentMembers members={RECENT_MEMBERS} />
+      <RecentReports reports={reports} />
+      <RecentMembers members={members} />
     </div>
   );
 }
