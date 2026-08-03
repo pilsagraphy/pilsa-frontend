@@ -17,10 +17,12 @@ const Gallery = () => {
   ] = GALLERY_PHOTOS;
 
   return (
-    <div className="flex flex-col items-start w-full gap-6">
-      <h2 className="[word-break:break-word] font-['Pretendard:SemiBold',sans-serif] leading-[1.5] not-italic text-[24px] text-black tracking-[-0.48px]">
-        활동 사진
-      </h2>
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-[51px] bg-white p-8">
+      <header className="pb-[40px] border-b-[1.5px]">
+        <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.02em] text-[#212121]">
+          활동 사진
+        </h2>
+      </header>
 
       {/* 전체 하나의 큰 직사각형(2:1) 안을 여백 없이 채우는 구조 */}
       <div className="flex flex-col w-full aspect-[2/1] overflow-hidden">
