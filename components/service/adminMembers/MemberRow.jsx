@@ -67,7 +67,13 @@ function EditablePill({ label, value, options, filled = false, onChange }) {
     >
       <SelectTrigger
         aria-label={`${label} 선택`}
-        className="mx-auto h-8 w-[104px] rounded-[13px] px-2 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545]"
+        className={cn(
+          // 평소 Pill과 같은 모양으로 맞춰 편집 진입 시 튀지 않게 한다. (화살표 아이콘은 숨김)
+          'mx-auto h-auto w-fit justify-center rounded-[13px] border px-2 py-0 text-[16px] leading-[1.6] tracking-[-0.02em] shadow-none [&>svg]:hidden',
+          filled
+            ? 'border-transparent bg-[#454545] text-white'
+            : 'border-[#454545] text-[#454545]'
+        )}
       >
         <SelectValue />
       </SelectTrigger>

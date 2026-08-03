@@ -11,7 +11,7 @@ export const MEMBER_ROLES = {
 
 // 권한 · 재학상태 인라인 수정 select의 선택지
 export const MEMBER_ROLE_OPTIONS = Object.values(MEMBER_ROLES);
-export const ENROLLMENT_STATUSES = ['재학생', '휴학생', '졸업생'];
+export const ENROLLMENT_STATUSES = ['재학생', '동문회'];
 
 // 정렬 선택지
 // TODO: 실제 정렬 기준은 API 스펙 확정 후 디자인팀과 맞출 것
