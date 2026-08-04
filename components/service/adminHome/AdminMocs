@@ -1,0 +1,25 @@
+// 기본 목업이 자리를 채우고, props.stats 가 오면 그걸로 교체됨
+export const STATS = [
+  { value: 3, label: '신규 가입자' },
+  { value: 2, label: '처리 대기 신고' },
+  { value: 6, label: '신규 작성 게시글' },
+  { value: 1234567825, label: '전체 회원 수' },
+];
+
+// 기본 목업이 자리를 채우고, props.reports / props.members 가 오면 그걸로 교체됨
+export const RECENT_REPORTS = [
+  { id: 1, board: '자유게시판', content: '글 내용 글 내용 글 내용', date: '2026.05.03' },
+  { id: 2, board: '자유게시판', content: '글 내용 글 내용 글 내용', date: '2026.05.03' },
+  { id: 3, board: '자유게시판', content: '글 내용 글 내용 글 내용', date: '2026.05.03' },
+  { id: 4, board: '자유게시판', content: '글 내용 글 내용 글 내용', date: '2026.05.03' },
+  { id: 5, board: '자유게시판', content: '글 내용 글 내용 글 내용', date: '2026.05.03' },
+];
+
+
+export const RECENT_MEMBERS = [
+  { id: 1, role: '재학생', username: 'ch400', name: '김본명', joinDate: '2026.06.05' },
+  { id: 2, role: '재학생', username: 'ch400', name: '김본명', joinDate: '2026.06.05' },
+  { id: 3, role: '재학생', username: 'ch400', name: '김본명', joinDate: '2026.06.05' },
+  { id: 4, role: '재학생', username: 'ch400', name: '김본명', joinDate: '2026.06.05' },
+  { id: 5, role: '재학생', username: 'ch400', name: '김본명', joinDate: '2026.06.05' },
+];
