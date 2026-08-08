@@ -26,9 +26,19 @@ function SelectWithChevron({ value, onChange, children, ariaLabel }) {
   );
 }
 
+// 일정 막대에 쓰는 modifier 이름 → 클래스. 막대 CSS가 이 파일에 있으므로 매핑도 여기서 들고 있는다.
+// CalendarSection이 modifiers로 scheduleDay · scheduleActive · scheduleStart · scheduleEnd를 넘기면 된다.
+const SCHEDULE_MODIFIER_CLASS_NAMES = {
+  scheduleDay: 'pilsa-schedule-day',
+  scheduleActive: 'pilsa-schedule-active',
+  scheduleStart: 'pilsa-schedule-start',
+  scheduleEnd: 'pilsa-schedule-end',
+};
+
 export function Calendar({
   className = '',
   classNames,
+  modifiersClassNames,
   showOutsideDays = true,
   modifiers,
   month: controlledMonth,
@@ -113,30 +123,49 @@ export function Calendar({
           border-radius: 9999px !important;
         }
 
-        /* 점(Dot) 스타일 추가 */
-        .rdp-day_hasEvent .rdp-day_button::after {
+        /* 일정 막대(pill)
+           칸(td) 자체에 배경을 주면 border-collapse 때문에 모서리가 둥글어지지 않아서,
+           칸 안쪽에 ::before를 깔아 막대를 그린다. 이웃한 칸끼리 좌우로 붙어 한 줄로 이어진다. */
+        .pilsa-schedule-day,
+        .pilsa-schedule-active {
+          position: relative;
+        }
+        .pilsa-schedule-day::before,
+        .pilsa-schedule-active::before {
           content: '';
           position: absolute;
-          bottom: 2px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 3px;
-          height: 3px;
-          border-radius: 50%;
-          background-color: #212121;
+          top: 4px;
+          right: -1px;
+          bottom: 4px;
+          left: -1px;
+          background-color: #f6f6f6;
         }
-        @media (min-width: 640px) {
-          .rdp-day_hasEvent .rdp-day_button::after {
-            bottom: 4px;
-            width: 4px;
-            height: 4px;
-          }
+        .pilsa-schedule-active::before {
+          background-color: #454545;
         }
-        .rdp-day_selected.rdp-day_hasEvent .rdp-day_button::after {
-          background-color: #212121;
+        /* 칸마다 따로 그리다 보니 딱 붙여만 두면 두 경계가 각각 안티에일리어싱되어
+           날짜 사이에 옅은 세로선이 보인다. 이어지는 쪽만 1px씩 겹치게 해서 이음매를 없앤다.
+           막대의 시작 · 끝 칸은 겹칠 이웃이 없으므로 칸 경계에 맞추고 둥글게 잘라 알약 모양을 만든다. */
+        .pilsa-schedule-start::before {
+          left: 0;
+          border-top-left-radius: 9999px;
+          border-bottom-left-radius: 9999px;
         }
-
-        .rdp-day_button { position: relative; }
+        .pilsa-schedule-end::before {
+          right: 0;
+          border-top-right-radius: 9999px;
+          border-bottom-right-radius: 9999px;
+        }
+        /* 날짜 숫자는 막대 위로 올리고, 선택 원이 막대를 덮지 않도록 배경을 지운다. */
+        .pilsa-schedule-day > button,
+        .pilsa-schedule-active > button {
+          position: relative;
+          z-index: 1;
+          background-color: transparent !important;
+        }
+        .pilsa-schedule-active > button {
+          color: #ffffff !important;
+        }
       `}</style>
 
       <div className="relative mx-auto w-full max-w-[272px] pb-2 pt-1 sm:max-w-[336px]">
@@ -184,6 +213,7 @@ export function Calendar({
         onMonthChange={setMonth}
         showOutsideDays={showOutsideDays}
         modifiers={modifiers}
+        modifiersClassNames={{ ...SCHEDULE_MODIFIER_CLASS_NAMES, ...modifiersClassNames }}
         className="p-0"
         formatters={{
           formatWeekdayName: (date) => EN_WEEKDAYS[date.getDay()],
@@ -208,7 +238,6 @@ export function Calendar({
           today: 'bg-transparent',
           outside: 'pointer-events-none',
           disabled: 'text-neutral-300 opacity-50',
-          day_hasEvent: 'rdp-day_hasEvent',
           ...classNames,
         }}
       />
