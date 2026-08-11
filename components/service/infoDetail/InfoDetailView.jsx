@@ -121,7 +121,12 @@ export default function InfoDetailView({ postId }) {
 
       <InfoComments postId={post.postId} comments={post.comments} onChanged={fetchDetail} />
 
-      <InfoPrevNext links={post.links} />
+      <InfoPrevNext
+        links={post.links}
+        currentTitle={post.title}
+        currentCategory={post.categoryName}
+        currentDate={post.date}
+      />
     </section>
   );
 }
