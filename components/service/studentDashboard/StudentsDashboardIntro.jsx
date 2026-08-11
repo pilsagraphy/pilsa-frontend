@@ -86,19 +86,17 @@ export default function StudentsDashboardIntro() {
           <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.48px] text-[#212121]">
             {userName}님, 안녕하세요! :) ✍️
           </h2>
-          <p className="font-['Pretendard',sans-serif] font-normal text-[18px] leading-[1.6] tracking-[-0.32px] text-[#212121]">
+          <p className="font-['Pretendard',sans-serif] font-normal text-[20px] leading-[1.6] tracking-[-0.32px] text-[#212121]">
             {greetingSubText}
           </p>
         </div>
 
-        {/* 랜덤 응원 멘트: 모바일 전체 너비 · lg 이상 우측 정렬 */}
-        <p className="min-w-0 max-w-full break-words text-[14px] font-normal tracking-[-0.02em] text-[#B9B9B9] lg:max-w-[min(100%,28rem)] lg:shrink-0 lg:pb-[4px] lg:text-right">
+        {/* 랜덤 응원 멘트: 모바일 전체 너비 · lg 이상 인사말과 같은 줄에서 우측 정렬
+            폭 제한을 두지 않아 한 줄로 유지되고, 공간이 모자라면 인사말과 나눠 갖는다 */}
+        <p className="min-w-0 max-w-full break-words text-[20px] font-normal tracking-[-0.02em] text-[#B9B9B9] lg:whitespace-nowrap lg:pb-[4px] lg:text-right">
           &quot;{randomMessage}&quot;
         </p>
       </div>
-
-      {/* 3. 구분선 */}
-      <div className="w-full border-b-[1.5px] border-[#DEDEDE]" />
     </div>
   );
 }

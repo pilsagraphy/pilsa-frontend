@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { getTop5Notices } from '@/apis/notice';
 import { getTop5FreePosts } from '@/apis/free';
@@ -57,16 +57,6 @@ function BoardList({
   emptyText = '등록된 게시글이 없습니다.',
   className = '',
 }) {
-  const router = useRouter();
-
-  const goList = () => {
-    router.push(`/students/${boardType}`);
-  };
-
-  const goDetail = (postId) => {
-    router.push(`/students/${boardType}/${postId}`);
-  };
-
   // 중요 공지는 번호 대신 배지를 쓰므로, 번호는 일반 글끼리만 1부터 센다
   let normalIndex = 0;
   const rows = posts.map((post) => {
@@ -84,12 +74,14 @@ function BoardList({
           {title}
         </h3>
 
-        <div
-          onClick={goList}
-          className="w-[24px] h-[24px] cursor-pointer flex items-center justify-center hover:bg-[#F6F6F6] transition rounded-sm flex-shrink-0"
+        {/* 목록 전체보기 (이동이므로 링크로 둔다) */}
+        <Link
+          href={`/students/${boardType}`}
+          aria-label={`${title} 전체보기`}
+          className="w-[24px] h-[24px] flex items-center justify-center hover:bg-[#F6F6F6] transition rounded-sm flex-shrink-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#212121]"
         >
-          <ArrowRight size={18} color="#1E1E1E" strokeWidth={2} />
-        </div>
+          <ArrowRight size={18} color="#1E1E1E" strokeWidth={2} aria-hidden />
+        </Link>
       </div>
 
       <div className="flex flex-col w-full border-t border-[#B9B9B9]">
@@ -103,10 +95,10 @@ function BoardList({
           </div>
         ) : (
           rows.map(({ post, pinned, number }) => (
-            <div
+            <Link
               key={post.postId}
-              onClick={() => goDetail(post.postId)}
-              className="flex items-center h-[56px] border-b border-[#B9B9B9] cursor-pointer hover:bg-[#F6F6F6] transition"
+              href={`/students/${boardType}/${post.postId}`}
+              className="flex items-center h-[56px] border-b border-[#B9B9B9] hover:bg-[#F6F6F6] transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#212121]"
             >
               {/* 번호/중요 뱃지 영역 */}
               <div className="w-[80px] flex justify-center items-center flex-shrink-0">
@@ -124,7 +116,7 @@ function BoardList({
                   {post.title}
                 </p>
               </div>
-            </div>
+            </Link>
           ))
         )}
       </div>

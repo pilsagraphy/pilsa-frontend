@@ -14,6 +14,9 @@ export default function StudentsDashboardSection() {
       {/* 영역 2: 일정 달력 */}
       <CalendarSection />
 
+      {/* 구분선: 디자인상 일정 달력과 게시판 리스트 사이 */}
+      <div className="w-full border-b-[1.5px] border-[#DEDEDE]" />
+
       {/* 영역 3: 게시판 리스트 */}
       <StudentsDashboardGroup />
     </section>
