@@ -70,7 +70,8 @@ function BoardList({
     // 너비는 부모가 정한다 (공지사항은 전체 폭, 자유·정보게시판은 className으로 2단 분배)
     <div className={`flex min-w-0 w-full flex-col gap-[10px] ${className}`}>
       <div className="flex justify-between items-center pr-[20px] h-[30px] w-full">
-        <h3 className="text-[20px] font-medium tracking-[-0.02em] leading-[1.5] text-black">
+        {/* 디자인 스펙: Pretendard / SemiBold(600) / 20px, 색상은 다른 제목들과 동일하게 #212121 */}
+        <h3 className="font-['Pretendard',sans-serif] text-[20px] font-semibold tracking-[-0.02em] leading-[1.5] text-[#212121]">
           {title}
         </h3>
 
