@@ -37,6 +37,7 @@ export const ROUTES = {
 
   // admin 영역
   ADMIN_MEMBERS: `${BASE_PATH}admin/members`,
+  ADMIN_BOARDS: `${BASE_PATH}admin/community/boards`,
 };
 
 // 비로그인 접근 가능
