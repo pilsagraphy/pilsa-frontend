@@ -27,10 +27,10 @@ apis/
 ├── notification.js       ✅ 연동됨  알림함 + 알림 수신 기기 (수정 금지)
 ├── mypage.js             🔨 일부     마이페이지 (탈퇴만 연동됨)
 │
-├── board.js              🆕 공통게시판 — 게시판 목록/카테고리/게시글 CRUD/좋아요
-├── comment.js            🆕 댓글·대댓글
-├── file.js               🆕 파일 업로드 + 인증형 조회(blob)
-├── draft.js              🆕 임시저장(초안)
+├── board.js              ✅ 연동됨  공통게시판 — 게시판 목록/카테고리/게시글 CRUD/좋아요
+├── comment.js            ✅ 연동됨  댓글·대댓글
+├── file.js               ✅ 연동됨  파일 업로드 + 인증형 조회(blob)
+├── draft.js              ✅ 연동됨  임시저장(초안) — 화면은 아직 없음
 ├── report.js             🆕 신고 접수 + 사유 목록
 ├── quote.js              🆕 이 주의 문장 (메인)
 ├── event.js              🆕 일정(캘린더) + ICS
@@ -48,12 +48,12 @@ apis/
 │   └── event.js          🆕 일정 등록/수정/삭제
 │
 └── (교체 대상)
-    ├── free.js           ❌ /api/stu/free/**     → board.js
-    ├── info.js           ❌ /api/stu/info/**     → board.js
-    ├── notice.js         ❌ /api/stu/notices/**  → board.js
     ├── schedule.js       ❌ /api/public/schedules → event.js
     └── honor.js          ❌ /api/public/honor/    → donation.js
 ```
+
+> `free.js` · `info.js` · `notice.js` 는 삭제됨 (2026-08-26).
+> 게시판 3종 화면이 `board.js` + `comment.js` 로 전환 완료되어 사용처가 사라졌다.
 
 ---
 
@@ -95,4 +95,6 @@ apis/
    함수명도 `findEmailByStudentNo` 로 맞춘다.
 3. **`authApi.js`** — `axiosInstance.js` 와 역할이 겹친다. 토큰 재발급 인터셉터가 없어
    401 처리가 안 되므로 사용처를 `axiosInstance` 로 옮기고 제거한다.
-4. **구 파일 5개** (`free` `info` `notice` `schedule` `honor`) — 화면 전환이 끝나면 삭제.
+4. **구 파일** — `free` `info` `notice` 는 삭제 완료. `schedule` `honor` 는 화면 전환 후 삭제.
+5. **관리자 화면의 게시글 링크** — `constants/adminPosts.js` 의 게시판 이름→`boardId` 매핑은
+   목업 전용이다. 관리자 API 가 `boardId` 를 내려주면 그 매핑과 `getBoardIdByName` 은 지운다.

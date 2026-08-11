@@ -1,117 +1,78 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+
+import BoardWriteForm from '@/components/shared/board/boardWrite/BoardWriteForm';
+import useBoard from '@/hooks/useBoard';
+import useBoardWriteStore from '@/stores/useBoardWriteStore';
+import { getBoardPost, getBoardCategories, updateBoardPost } from '@/apis/board';
 import { getErrorMessage } from '@/apis/auth';
+import { ROUTES } from '@/constants/routes';
 
-import FreeWriteForm from '@/components/service/freeWrite/FreeWriteForm';
-import InfoWriteForm from '@/components/service/infowrite/InfoWriteForm';
+const MESSAGE_CLASS = 'py-20 text-center text-[#919191]';
 
-import { useFreeWriteStore } from '@/stores/useFreeWriteStore';
-import { useInfoWriteStore } from '@/stores/useInfoWriteStore';
-
-import { getFreePostDetail, getFreeCategories, updateFreePost } from '@/apis/free';
-import { getInfoPostDetail, getInfoCategories, updateInfoPost } from '@/apis/info';
-
-export default function Edit({ postId, boardType, titleText }) {
+// 공통게시판 게시글 수정. 글쓰기 폼(BoardWriteForm)을 재사용하고 기존 값으로 채운다.
+export default function Edit({ boardId, postId }) {
   const router = useRouter();
+  const { board, boards, error: boardError } = useBoard(boardId);
 
-  const config = useMemo(() => {
-    if (boardType === 'free') {
-      return {
-        FormComponent: FreeWriteForm,
-        useWriteStore: useFreeWriteStore,
-        getPostDetail: getFreePostDetail,
-        getCategories: getFreeCategories,
-        updatePost: updateFreePost,
-        listPath: '/students/free',
-        detailPathBuilder: (id) => `/students/free/${id}`,
-        includeAnonymous: true,
-      };
-    }
-
-    if (boardType === 'info') {
-      return {
-        FormComponent: InfoWriteForm,
-        useWriteStore: useInfoWriteStore,
-        getPostDetail: getInfoPostDetail,
-        getCategories: getInfoCategories,
-        updatePost: updateInfoPost,
-        listPath: '/students/info',
-        detailPathBuilder: (id) => `/students/info/${id}`,
-        includeAnonymous: false,
-      };
-    }
-
-    throw new Error(`지원하지 않는 boardType입니다: ${boardType}`);
-  }, [boardType]);
-
-  const {
-    FormComponent,
-    useWriteStore,
-    getPostDetail,
-    getCategories,
-    updatePost,
-    listPath,
-    detailPathBuilder,
-    includeAnonymous,
-  } = config;
-
-  const store = useWriteStore();
-  const { title, categoryId, content, setForm, resetForm } = store;
-  const isAnonymous = includeAnonymous ? Boolean(store.isAnonymous) : false;
+  const { title, content, categoryId, isAnonymous, files, deleteAttachmentIds, setForm, resetForm } =
+    useBoardWriteStore();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
+  const categoryMode = Boolean(board?.categoryMode);
+  // 게시판 정책(플래그)이 확정된 뒤에 상세를 불러온다.
+  // 먼저 불러오면 categoryMode 가 나중에 true 로 바뀌며 이 effect 가 재실행되고,
+  // setForm 이 사용자가 그사이 고친 내용을 서버 값으로 덮어써 버린다.
+  const boardReady = Boolean(board);
+
   useEffect(() => {
+    if (!boardId || !postId || !boardReady) return;
+
     let isMounted = true;
 
     const fetchEditData = async () => {
       try {
         setLoading(true);
 
-        const [detailData, categoryData] = await Promise.all([
-          getPostDetail(postId),
-          getCategories(),
+        const [detail, categoryData] = await Promise.all([
+          getBoardPost(boardId, postId),
+          categoryMode ? getBoardCategories(boardId) : Promise.resolve([]),
         ]);
 
         if (!isMounted) return;
 
         const categories = Array.isArray(categoryData) ? categoryData : [];
-        const matchedCategory = categories.find(
-          (category) => category.name === detailData?.categoryName
-        );
+        const matched = categories.find((c) => c.name === detail?.categoryName);
 
-        const nextForm = {
-          title: detailData?.title ?? '',
-          content: detailData?.content ?? '',
-          categoryId: matchedCategory?.categoryId ? String(matchedCategory.categoryId) : '',
+        setForm({
+          title: detail?.title ?? '',
+          content: detail?.content ?? '',
+          categoryId: matched?.categoryId ? String(matched.categoryId) : '',
+          isAnonymous: Boolean(detail?.isAnonymous),
           files: [],
-        };
-
-        if (includeAnonymous) {
-          nextForm.isAnonymous = Boolean(detailData?.isAnonymous);
-        }
-
-        setForm(nextForm);
+          // 이미 붙어 있는 첨부를 폼에 실어 화면에 보여주고, 지울 것만 골라내게 한다
+          existingAttachments: Array.isArray(detail?.attachments) ? detail.attachments : [],
+          deleteAttachmentIds: [],
+        });
       } catch (error) {
         if (!isMounted) return;
         alert(getErrorMessage(error, '게시글 정보를 불러오지 못했습니다.'));
-        router.push(listPath);
+        router.push(ROUTES.BOARD(boardId));
       } finally {
         if (isMounted) setLoading(false);
       }
     };
 
-    if (postId) {
-      fetchEditData();
-    }
+    fetchEditData();
 
     return () => {
       isMounted = false;
     };
-  }, [postId, router, setForm, getPostDetail, getCategories, includeAnonymous, listPath]);
+  }, [boardId, postId, boardReady, categoryMode, setForm, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -120,13 +81,11 @@ export default function Edit({ postId, boardType, titleText }) {
       alert('제목을 입력해주세요.');
       return;
     }
-
     if (!content?.trim()) {
       alert('내용을 입력해주세요.');
       return;
     }
-
-    if (!categoryId) {
+    if (categoryMode && !categoryId) {
       alert('카테고리를 선택해주세요.');
       return;
     }
@@ -134,21 +93,30 @@ export default function Edit({ postId, boardType, titleText }) {
     try {
       setSubmitting(true);
 
-      const payload = {
-        title: title.trim(),
-        content: content.trim(),
-        categoryId: Number(categoryId),
-      };
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('content', content.trim());
+      if (categoryMode && categoryId) formData.append('categoryId', String(categoryId));
+      if (board?.allowAnonymous) formData.append('isAnonymous', String(Boolean(isAnonymous)));
+      // 첨부는 증분 방식이다 — 유지할 기존 첨부는 아무것도 보내지 않고,
+      // 지울 기존 첨부만 deleteAttachmentIds 로, 새로 올릴 파일만 files 로 보낸다.
+      if (board?.allowAttachment) {
+        deleteAttachmentIds.forEach((id) => {
+          formData.append('deleteAttachmentIds', String(id));
+        });
 
-      if (includeAnonymous) {
-        payload.isAnonymous = isAnonymous;
+        if (Array.isArray(files)) {
+          files.forEach((file) => {
+            if (file) formData.append('files', file);
+          });
+        }
       }
 
-      await updatePost(postId, payload);
+      await updateBoardPost(boardId, postId, formData);
 
       alert('수정이 완료되었습니다.');
       resetForm();
-      router.push(detailPathBuilder(postId));
+      router.push(ROUTES.BOARD_POST(boardId, postId));
     } catch (error) {
       alert(getErrorMessage(error, '게시글 수정에 실패했습니다.'));
     } finally {
@@ -163,18 +131,28 @@ export default function Edit({ postId, boardType, titleText }) {
     }
   };
 
-  if (loading) {
-    return <div className="py-20 text-center text-[#919191]">불러오는 중입니다.</div>;
+  // 게시판 목록 조회가 실패하면 플래그를 모르는 상태로 폼을 그리게 되므로 먼저 걸러낸다.
+  if (boardError) {
+    return <div className={MESSAGE_CLASS}>{boardError}</div>;
+  }
+
+  if (boards && !board) {
+    return <div className={MESSAGE_CLASS}>존재하지 않는 게시판입니다.</div>;
+  }
+
+  // 게시판 플래그 대기 + 상세 조회 대기 (boardReady 전에는 loading 이 계속 true 다)
+  if (!boards || loading) {
+    return <div className={MESSAGE_CLASS}>불러오는 중입니다.</div>;
   }
 
   return (
     <form onSubmit={handleSubmit} className="mx-auto flex max-w-[1000px] flex-col gap-[20px] p-8">
       <div className="flex w-full flex-col gap-[36px]">
         <h1 className="text-[24px] leading-[1.5] tracking-[-0.48px] font-bold text-black">
-          {titleText}
+          {board?.boardName ?? ''} 글 수정
         </h1>
 
-        <FormComponent />
+        <BoardWriteForm boardId={boardId} board={board} />
       </div>
 
       <div className="mt-4 flex w-full flex-col gap-[12px]">

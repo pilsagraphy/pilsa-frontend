@@ -11,9 +11,9 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
-import SortSelect from '@/components/shared/board/SortSelect';
-import CategorySelect from '@/components/shared/board/CategorySelect';
-import SearchInput from '@/components/shared/board/SearchInput';
+import SortSelect from '@/components/shared/board/boardList/SortSelect';
+import CategorySelect from '@/components/shared/board/boardList/CategorySelect';
+import SearchInput from '@/components/shared/board/boardList/SearchInput';
 
 // 탭 정의
 const TABS = [
@@ -35,7 +35,7 @@ const MOCK_ROWS = Array.from({ length: 6 }, (_, i) => ({
 
 export default function MyPageBoard() {
   const [activeTab, setActiveTab] = useState('posts');
-  const [sortOrder, setSortOrder] = useState('latest');
+  const [sortOrder, setSortOrder] = useState('created');
   const [category, setCategory] = useState('all'); // 코드베이스 표준값 'all' (CategorySelect/API 전제)
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -78,7 +78,6 @@ export default function MyPageBoard() {
         {/* 정렬·카테고리: 트리거 폭 135px → 138px (검색창은 flex-1이라 그만큼 자동 축소) */}
         <div className="md:[&_button]:!w-[140px]">
           <SortSelect
-            boardType="free"
             value={sortOrder}
             onValueChange={(v) => {
               setSortOrder(v);
@@ -88,7 +87,7 @@ export default function MyPageBoard() {
         </div>
         <div className="md:[&_button]:!w-[140px]">
           <CategorySelect
-            boardType="free"
+            categories={[]}
             value={category}
             onValueChange={(v) => {
               setCategory(v);

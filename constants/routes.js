@@ -25,15 +25,14 @@ export const ROUTES = {
 
   // students 영역
   STUDENTS_DASHBOARD: `${BASE_PATH}students`,
-  NOTICES: `${BASE_PATH}students/notices`,
-  NOTICE_DETAIL: (id) => `${BASE_PATH}students/notices/${encodeURIComponent(id)}`,
-  NOTICE_WRITE: `${BASE_PATH}students/notices/write`,
-  FREE_BOARD: `${BASE_PATH}students/free`,
-  FREE_BOARD_DETAIL: (id) => `${BASE_PATH}students/free/${encodeURIComponent(id)}`,
-  FREE_BOARD_WRITE: `${BASE_PATH}students/free/write`,
-  INFO_BOARD: `${BASE_PATH}students/info`,
-  INFO_BOARD_DETAIL: (id) => `${BASE_PATH}students/info/${encodeURIComponent(id)}`,
-  INFO_BOARD_WRITE: `${BASE_PATH}students/info/write`,
+  // 공통게시판 — 게시판은 DB 로 정의되므로 boardId 로 경로를 만든다 (슬러그 하드코딩 금지).
+  // 메뉴는 GET /api/user/boards 결과로 그린다.
+  BOARD: (boardId) => `${BASE_PATH}students/boards/${boardId}`,
+  BOARD_WRITE: (boardId) => `${BASE_PATH}students/boards/${boardId}/write`,
+  BOARD_POST: (boardId, postId) =>
+    `${BASE_PATH}students/boards/${boardId}/posts/${encodeURIComponent(postId)}`,
+  BOARD_POST_EDIT: (boardId, postId) =>
+    `${BASE_PATH}students/boards/${boardId}/posts/${encodeURIComponent(postId)}/edit`,
 
   // user 영역 (재학생·졸업생 공용)
   MY_PAGE: `${BASE_PATH}mypage`,
@@ -85,20 +84,7 @@ export const HELP_LINKS = [
 ];
 
 // ROLE : STUDENTS, ADMIN 접근 가능
-export const PROTECTED_STUDENTS_ROUTES = [
-  ROUTES.STUDENTS_DASHBOARD,
-  ROUTES.NOTICES,
-  ROUTES.NOTICE_WRITE,
-  ROUTES.FREE_BOARD,
-  ROUTES.INFO_BOARD,
-  ROUTES.FREE_BOARD_WRITE,
-  ROUTES.INFO_BOARD_WRITE,
-];
+export const PROTECTED_STUDENTS_ROUTES = [ROUTES.STUDENTS_DASHBOARD];
 
-// 상세/하위 경로까지 커버하려면 prefix도 같이!
-export const PROTECTED_STUDENTS_PREFIX = [
-  '/students',
-  '/students/notices',
-  '/students/free',
-  '/students/info',
-];
+// 상세/하위 경로까지 커버하려면 prefix도 같이! (게시판은 /students/boards 하위로 통합)
+export const PROTECTED_STUDENTS_PREFIX = ['/students', '/students/boards'];

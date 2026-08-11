@@ -7,6 +7,7 @@ import { ChevronDown, Menu, X } from 'lucide-react';
 import { toast } from 'sonner';
 import useSidebarStore from '@/stores/sidebar';
 import useAuthStore from '@/stores/useAuthStore';
+import useBoardStore from '@/stores/useBoardStore';
 import { ROUTES, ALLOWED_BOARD_MEMBER_TYPES } from '@/constants/routes';
 
 const Sidebar = () => {
@@ -22,6 +23,19 @@ const Sidebar = () => {
 
   const isAdmin = adminLevel >= 1; // 관리자(adminLevel 1~3)
   const isAdminArea = pathname.startsWith(ROUTES.ADMIN_HOME); // /admin 하위면 관리자 사이드바로 전환
+
+  // 게시판 메뉴는 하드코딩하지 않고 GET /api/user/boards 결과로 그린다
+  const boardData = useBoardStore((state) => state.data);
+  const ensureBoards = useBoardStore((state) => state.ensureBoards);
+
+  // 로그아웃 상태에서는 이전 계정의 메뉴가 남지 않도록 아예 쓰지 않는다
+  const boards = isLoggedIn ? boardData : null;
+
+  // 로그인 상태에서 게시판 목록을 불러온다
+  // (스토어가 동시 요청을 단일화하고, 계정이 바뀌면 캐시를 버리고 새로 받는다)
+  useEffect(() => {
+    if (isLoggedIn) ensureBoards();
+  }, [isLoggedIn, ensureBoards]);
 
   // 페이지 이동 시 모바일 메뉴 닫기
   useEffect(() => {
@@ -65,7 +79,7 @@ const Sidebar = () => {
     [checkBoardAccess, router]
   );
 
-  // 일반(비관리자 영역) 메뉴 구성. 게시판 하위는 다음 작업에서 /api/user/boards로 통합 예정 — 지금은 유지.
+  // 일반(비관리자 영역) 메뉴 구성.
   const menuConfig = {
     about: {
       subMenus: [
@@ -76,15 +90,23 @@ const Sidebar = () => {
         { name: '역대회장', path: ROUTES.ABOUT_LEADER },
       ],
     },
-    board: {
-      subMenus: [
-        { name: '메인페이지', path: ROUTES.STUDENTS_DASHBOARD },
-        { name: '공지사항', path: ROUTES.NOTICES },
-        { name: '자유게시판', path: ROUTES.FREE_BOARD },
-        { name: '정보게시판', path: ROUTES.INFO_BOARD },
-      ],
-    },
   };
+
+  // 게시판 하위 메뉴 = 메인페이지 + API 로 받은 게시판 목록 (displayOrder 순서 그대로)
+  // exact: 하위 경로까지 활성으로 볼지. '메인페이지'(/students)는 게시판 경로까지 삼키므로 정확 일치만 쓴다.
+  const boardSubMenus = [
+    { name: '메인페이지', path: ROUTES.STUDENTS_DASHBOARD, exact: true },
+    ...(boards ?? []).map((board) => ({
+      name: board.boardName,
+      path: ROUTES.BOARD(board.boardId),
+    })),
+  ];
+
+  // 게시판은 목록 아래로 상세(/posts/{id})·글쓰기(/write)·수정 경로가 있어서
+  // 정확 일치로 판정하면 그 화면들에서 현재 게시판 강조가 풀린다.
+  // '/2' 가 '/20' 에 걸리지 않게 경계('/')를 붙여 비교한다.
+  const isMenuActive = ({ path, exact }) =>
+    exact ? pathname === path : pathname === path || pathname.startsWith(`${path}/`);
 
   // 관리자 영역 펼침 메뉴 구성
   const adminMenuConfig = {
@@ -247,14 +269,14 @@ const Sidebar = () => {
               </button>
               {openMenus.board && (
                 <div className="flex flex-col items-start gap-[15px] mt-3">
-                  {menuConfig.board.subMenus.map((menu) => (
+                  {boardSubMenus.map((menu) => (
                     <Link
-                      key={menu.name}
+                      key={menu.path}
                       href={menu.path}
                       onClick={(e) => handleBoardSubmenuClick(e, menu.path)}
                     >
                       <p
-                        className={`text-[14px] cursor-pointer ${pathname === menu.path ? 'font-bold text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
+                        className={`text-[14px] cursor-pointer ${isMenuActive(menu) ? 'font-bold text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
                       >
                         {menu.name}
                       </p>
