@@ -1,7 +1,15 @@
 'use client';
 
 import * as React from 'react';
-import { format, isSameDay, isWithinInterval, parseISO, startOfDay } from 'date-fns';
+import {
+  addDays,
+  format,
+  isSameMonth,
+  isWithinInterval,
+  parseISO,
+  startOfDay,
+  subDays,
+} from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import MonthlyScheduleList from '@/components/shared/calendars/MonthlyScheduleList';
 import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
@@ -15,13 +23,13 @@ function isDateIncludedInSchedule(date, schedule) {
   });
 }
 
-function isScheduleStart(date, schedule) {
-  return isSameDay(startOfDay(date), startOfDay(parseISO(schedule.startDate)));
-}
-
-function isScheduleEnd(date, schedule) {
-  return isSameDay(startOfDay(date), startOfDay(parseISO(schedule.endDate)));
-}
+// 한 칸에 그려지는 막대는 '고른 일정'(ACTIVE) 아니면 '그 외 일정들'(OTHER) 중 하나다.
+//
+// 일정이 같은 날에 겹칠 때는 고른 일정만 보인다(= 겹치는 날의 나머지 일정은 가려진다).
+// 디자인 확정 사항이다. 한 칸에 막대를 여러 줄로 겹쳐 그리는 방식은 다음 기수에서 검토한다.
+// CSS 선언 순서에 기대지 않도록 두 층을 여기서 상호 배타로 갈라 둔다.
+const LAYER_ACTIVE = 'active';
+const LAYER_OTHER = 'other';
 
 export default function CalendarSection({ response }) {
   // 기존 response prop이 들어오면 그걸 우선 fallback으로 사용
@@ -41,6 +49,14 @@ export default function CalendarSection({ response }) {
   const currentYearMonth = format(currentMonth, 'yyyy-MM');
 
   React.useEffect(() => {
+    // response prop이 들어오면 그 값을 그대로 쓰고 조회하지 않는다.
+    // (목 데이터로 화면을 확인할 때 사용 — 조회가 돌면 prop이 덮어써져 무의미해진다)
+    if (response) {
+      setApiResponse(response);
+      setIsLoading(false);
+      return;
+    }
+
     let isMounted = true;
 
     const fetchSchedules = async () => {
@@ -69,7 +85,7 @@ export default function CalendarSection({ response }) {
     return () => {
       isMounted = false;
     };
-  }, [currentYearMonth]);
+  }, [currentYearMonth, response]);
 
   // API 성공 데이터 우선, 실패 시 fallback 사용
   const data = apiResponse ?? (hasFetchError ? fallbackResponse : null);
@@ -98,28 +114,47 @@ export default function CalendarSection({ response }) {
   const selectedSchedule =
     schedules.find((schedule) => schedule.scheduleId === selectedScheduleId) ?? null;
 
-  // 막대의 양 끝만 둥글게 하려고 시작 · 끝 칸을 따로 구한다.
-  // 주가 바뀌면 줄이 끊기므로 일요일 · 토요일도 끝으로 본다.
+  // 그 날 칸에 어떤 막대가 그려지는지 판정한다. 일정이 없으면 null.
+  const layerOfDate = (date) => {
+    if (selectedSchedule && isDateIncludedInSchedule(date, selectedSchedule)) return LAYER_ACTIVE;
+
+    const inOther = schedules.some(
+      (schedule) =>
+        schedule.scheduleId !== selectedScheduleId && isDateIncludedInSchedule(date, schedule)
+    );
+
+    return inOther ? LAYER_OTHER : null;
+  };
+
+  // 막대의 양 끝만 둥글게 하려고 시작 · 끝 칸을 구한다.
+  // 일정별로 따로 보면 'A의 중간이면서 B의 시작'인 칸에서 라운딩이 어긋나므로,
+  // 실제로 칠해지는 막대(층)를 기준으로 "어제/내일이 같은 층인가"만 본다.
   const scheduleModifiers = {
-    scheduleDay: (date) =>
-      schedules.some(
-        (schedule) =>
-          schedule.scheduleId !== selectedScheduleId && isDateIncludedInSchedule(date, schedule)
-      ),
-    scheduleActive: (date) =>
-      Boolean(selectedSchedule) && isDateIncludedInSchedule(date, selectedSchedule),
-    scheduleStart: (date) =>
-      schedules.some(
-        (schedule) =>
-          isDateIncludedInSchedule(date, schedule) &&
-          (isScheduleStart(date, schedule) || date.getDay() === 0)
-      ),
-    scheduleEnd: (date) =>
-      schedules.some(
-        (schedule) =>
-          isDateIncludedInSchedule(date, schedule) &&
-          (isScheduleEnd(date, schedule) || date.getDay() === 6)
-      ),
+    scheduleDay: (date) => layerOfDate(date) === LAYER_OTHER,
+    scheduleActive: (date) => layerOfDate(date) === LAYER_ACTIVE,
+    scheduleStart: (date) => {
+      const layer = layerOfDate(date);
+      if (!layer) return false;
+
+      // 주가 바뀌면 줄이 끊기고, 지난 달 칸은 점으로만 표시되므로 둘 다 시작으로 본다.
+      if (date.getDay() === 0) return true;
+
+      const prev = subDays(date, 1);
+      if (!isSameMonth(prev, currentMonth)) return true;
+
+      return layerOfDate(prev) !== layer;
+    },
+    scheduleEnd: (date) => {
+      const layer = layerOfDate(date);
+      if (!layer) return false;
+
+      if (date.getDay() === 6) return true;
+
+      const next = addDays(date, 1);
+      if (!isSameMonth(next, currentMonth)) return true;
+
+      return layerOfDate(next) !== layer;
+    },
   };
 
   const handleSelectSchedule = (schedule) => {
@@ -134,21 +169,21 @@ export default function CalendarSection({ response }) {
     if (!d) return;
 
     // 날짜 토글 로직
-    setSelectedDate((prev) => {
-      const isSame = prev?.getTime() === d.getTime();
-      const nextDate = isSame ? undefined : d;
+    // updater 안에서 다른 setState를 호출하면 Strict Mode가 updater를 두 번 부를 때 같이 두 번 돌므로,
+    // prev 대신 selectedDate를 직접 읽어 토글을 계산하고 setState는 밖에서 따로 호출한다.
+    const isSame = selectedDate?.getTime() === d.getTime();
+    const nextDate = isSame ? undefined : d;
 
-      // 2. 선택한 날짜에 포함된 일정이 있다면 해당 리스트 아이템 강조
-      if (nextDate) {
-        const found = schedules.find((schedule) => isDateIncludedInSchedule(nextDate, schedule));
+    setSelectedDate(nextDate);
 
-        if (found) {
-          setSelectedScheduleId(found.scheduleId);
-        }
-      }
+    // 같은 날을 다시 눌러 날짜 선택만 푼 경우는 일정 강조를 그대로 둔다.
+    if (!nextDate) return;
 
-      return nextDate;
-    });
+    // 2. 선택한 날짜에 포함된 일정이 있으면 해당 리스트 아이템 강조, 없으면 강조 해제
+    //    (해제하면 아래 일정 상세도 함께 닫힌다)
+    const found = schedules.find((schedule) => isDateIncludedInSchedule(nextDate, schedule));
+
+    setSelectedScheduleId(found ? found.scheduleId : null);
   };
 
   return (

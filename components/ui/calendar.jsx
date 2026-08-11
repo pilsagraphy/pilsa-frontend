@@ -115,10 +115,9 @@ export function Calendar({
   return (
     <div className={`w-full ${className}`}>
       <style>{`
-        .rdp-day_today.rdp-day_selected button,
-        .rdp-day_today.rdp-day_selected .rdp-day_button,
-        [data-today][data-selected] button,
-        [data-today][data-selected] .rdp-day_button {
+        /* 오늘이면서 선택된 날. data 속성은 DayPicker가 칸에 직접 붙여준다.
+           일정 막대가 그려진 칸은 막대가 우선이므로 제외한다. */
+        [data-today][data-selected]:not(.pilsa-schedule-day):not(.pilsa-schedule-active) button {
           background-color: #f5f5f5 !important;
           border-radius: 9999px !important;
         }
@@ -156,14 +155,16 @@ export function Calendar({
           border-top-right-radius: 9999px;
           border-bottom-right-radius: 9999px;
         }
-        /* 날짜 숫자는 막대 위로 올리고, 선택 원이 막대를 덮지 않도록 배경을 지운다. */
-        .pilsa-schedule-day > button,
-        .pilsa-schedule-active > button {
+        /* 날짜 숫자는 막대 위로 올리고, 선택된 날 회색 원이 막대를 덮지 않도록 배경을 지운다.
+           selected에 붙는 Tailwind 유틸도 !important라서 선언 순서 싸움이 된다.
+           td를 붙여 선택자 명시도를 한 단계 높여 순서와 무관하게 이기도록 한다. */
+        td.pilsa-schedule-day > button,
+        td.pilsa-schedule-active > button {
           position: relative;
           z-index: 1;
           background-color: transparent !important;
         }
-        .pilsa-schedule-active > button {
+        td.pilsa-schedule-active > button {
           color: #ffffff !important;
         }
       `}</style>
@@ -219,22 +220,23 @@ export function Calendar({
           formatWeekdayName: (date) => EN_WEEKDAYS[date.getDay()],
         }}
         components={{ Day: CustomDay }}
+        // v9 키만 사용한다. v8 키(caption · table · head_row · head_cell · cell)는
+        // 조용히 무시되므로 남겨두면 죽은 코드가 된다.
+        // 월 · 년은 위쪽 커스텀 select로 직접 그리므로 기본 캡션과 nav는 숨긴다.
         classNames={{
-          caption: 'hidden',
           caption_label: 'hidden',
           nav: 'hidden',
           months: 'flex flex-col items-center',
           month: 'space-y-2',
-          table: 'mx-auto border-collapse',
-          head_row: 'flex',
-          weekday: 'text-neutral-400 font-normal text-[11px] sm:text-[14px]',
-          head_cell:
-            'w-10 text-center text-[11px] text-neutral-400 font-normal sm:w-12 sm:text-[14px]',
-          cell: 'h-10 w-10 p-0 text-center align-middle bg-transparent sm:h-12 sm:w-12',
+          month_grid: 'mx-auto border-collapse',
+          // weekdays(구 head_row)에는 flex를 주지 않는다. <tr>이 flex가 되면
+          // <th>가 table-cell을 잃어 본문 칸과 열이 어긋난다.
+          weekday:
+            'w-10 p-0 text-center text-[11px] font-normal text-neutral-400 sm:w-12 sm:text-[14px]',
+          day: 'h-10 w-10 p-0 text-center align-middle bg-transparent sm:h-12 sm:w-12',
           day_button:
             'flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-[13px] font-normal text-neutral-900 outline-none hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-12 sm:w-12 sm:text-[16px]',
-          selected:
-            '[&>button]:!bg-neutral-100 [&>button]:!rounded-full [&_.rdp-day_button]:!bg-neutral-100 [&_.rdp-day_button]:!rounded-full',
+          selected: '[&>button]:!bg-neutral-100 [&>button]:!rounded-full',
           today: 'bg-transparent',
           outside: 'pointer-events-none',
           disabled: 'text-neutral-300 opacity-50',
