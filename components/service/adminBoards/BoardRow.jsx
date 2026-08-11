@@ -52,15 +52,17 @@ export default function BoardRow({
   // 드래그로 순서 변경
   isDragging = false,
   isDropTarget = false,
+  dropPosition = null, // 'above' | 'below' - 놓았을 때 들어갈 자리
   onDragStart,
   onDragOver,
   onDrop,
   onDragEnd,
 }) {
   return (
+    // 행은 '놓는 곳'만 담당한다.
+    // 행 전체를 draggable로 두면 체크박스·권한 Select를 조작할 때 드래그가 시작되어
+    // 드롭다운이 열리지 않는 문제가 생기므로, 끄는 동작은 오른쪽 핸들에만 건다.
     <TableRow
-      draggable
-      onDragStart={() => onDragStart?.(board.id)}
       onDragOver={(e) => {
         // preventDefault를 해줘야 drop이 허용된다
         e.preventDefault();
@@ -70,10 +72,17 @@ export default function BoardRow({
         e.preventDefault();
         onDrop?.(board.id);
       }}
-      onDragEnd={() => onDragEnd?.()}
       className={`h-[46px] border-b border-[#b9b9b9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121] ${
         isDragging ? 'opacity-40' : ''
-      } ${isDropTarget ? 'border-t-2 border-t-[#212121]' : ''}`}
+      } ${
+        // 행에 이미 border-b(회색)가 있어 아래쪽 표시선이 묻힌다.
+        // 표시선은 항상 보여야 하므로 !(important)로 우선순위를 확실히 준다.
+        isDropTarget
+          ? dropPosition === 'below'
+            ? '!border-b-2 !border-b-[#212121]'
+            : '!border-t-2 !border-t-[#212121]'
+          : ''
+      }`}
     >
       {/* 1. 선택 체크박스
           table.jsx의 [&>[role=checkbox]]:translate-y-[2px]가 직계 자식에만 걸리므로,
@@ -121,10 +130,15 @@ export default function BoardRow({
         />
       </TableCell>
 
-      {/* 5. 순서 변경 핸들 (행 전체가 draggable이라 시각적 안내 역할) */}
+      {/* 5. 순서 변경 핸들 - 실제로 끄는 동작은 여기서만 시작된다
+          마우스 드래그 전용이라(키보드·터치 미지원) 보조기기에는 노출하지 않는다.
+          TODO: 키보드/터치로도 순서를 바꿔야 하면 방향키 조작이나 위·아래 버튼을 추가할 것 */}
       <TableCell className="text-center">
         <span
           aria-hidden
+          draggable
+          onDragStart={() => onDragStart?.(board.id)}
+          onDragEnd={() => onDragEnd?.()}
           title="드래그해서 순서 변경"
           className="inline-flex cursor-grab text-[#dedede] active:cursor-grabbing"
         >

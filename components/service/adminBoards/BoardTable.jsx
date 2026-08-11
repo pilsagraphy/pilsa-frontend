@@ -24,6 +24,7 @@ export default function BoardTable({
   onFieldChange,
   draggingId = null,
   dropTargetId = null,
+  dropPosition = null,
   onDragStart,
   onDragOver,
   onDrop,
@@ -91,11 +92,7 @@ export default function BoardTable({
         <TableBody>
           {emptyMessage ? (
             <TableRow className="h-[46px] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
-              <TableCell
-                colSpan={COLUMN_COUNT}
-                suppressHydrationWarning
-                className="text-center text-muted-foreground"
-              >
+              <TableCell colSpan={COLUMN_COUNT} className="text-center text-muted-foreground">
                 {emptyMessage}
               </TableCell>
             </TableRow>
@@ -109,6 +106,7 @@ export default function BoardTable({
                 onFieldChange={onFieldChange}
                 isDragging={draggingId === board.id}
                 isDropTarget={dropTargetId === board.id && draggingId !== board.id}
+                dropPosition={dropPosition}
                 onDragStart={onDragStart}
                 onDragOver={onDragOver}
                 onDrop={onDrop}

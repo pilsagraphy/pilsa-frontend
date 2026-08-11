@@ -37,6 +37,18 @@ export default function BoardListSection({ title = '게시판 관리' }) {
     [boards]
   );
 
+  // 놓았을 때 실제로 들어갈 자리를 표시선으로 알려준다.
+  // 아래로 끌면 대상 '아래', 위로 끌면 대상 '위'에 놓인다.
+  const dropPosition = useMemo(() => {
+    if (draggingId === null || dropTargetId === null || draggingId === dropTargetId) return null;
+
+    const fromIndex = sortedBoards.findIndex((board) => board.id === draggingId);
+    const toIndex = sortedBoards.findIndex((board) => board.id === dropTargetId);
+    if (fromIndex === -1 || toIndex === -1) return null;
+
+    return fromIndex < toIndex ? 'below' : 'above';
+  }, [draggingId, dropTargetId, sortedBoards]);
+
   const totalPages = Math.max(1, Math.ceil(sortedBoards.length / PAGE_SIZE));
 
   const pagedBoards = useMemo(() => {
@@ -183,6 +195,7 @@ export default function BoardListSection({ title = '게시판 관리' }) {
         onFieldChange={handleFieldChange}
         draggingId={draggingId}
         dropTargetId={dropTargetId}
+        dropPosition={dropPosition}
         onDragStart={setDraggingId}
         onDragOver={setDropTargetId}
         onDrop={handleDrop}

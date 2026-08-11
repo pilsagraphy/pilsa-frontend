@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -56,6 +62,11 @@ export default function BoardFormModal({ open, mode = 'create', board = null, on
         <DialogTitle className="text-[16px] font-semibold leading-[1.6] tracking-[-0.32px] text-[#212121]">
           {isEdit ? '게시판 수정' : '게시판 생성'}
         </DialogTitle>
+
+        {/* 디자인상 보이는 설명은 없지만, 스크린리더 안내와 Radix 경고 방지를 위해 넣는다 */}
+        <DialogDescription className="sr-only">
+          게시판 이름과 작성 권한을 {isEdit ? '수정' : '입력'}합니다.
+        </DialogDescription>
 
         <div className="flex flex-col gap-[4px]">
           <label
