@@ -2,8 +2,6 @@
 
 import React, { useMemo, useState } from 'react';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-
 import {
   Table,
   TableBody,
@@ -12,12 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-} from '@/components/ui/pagination';
+import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import SortSelect from '@/components/shared/board/SortSelect';
 import CategorySelect from '@/components/shared/board/CategorySelect';
 import SearchInput from '@/components/shared/board/SearchInput';
@@ -43,16 +36,15 @@ const MOCK_ROWS = Array.from({ length: 6 }, (_, i) => ({
 export default function MyPageBoard() {
   const [activeTab, setActiveTab] = useState('posts');
   const [sortOrder, setSortOrder] = useState('latest');
-  const [category, setCategory] = useState(''); // 기본값 미선택 → 플레이스홀더 '카테고리' 노출
+  const [category, setCategory] = useState('all'); // 코드베이스 표준값 'all' (CategorySelect/API 전제)
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
 
   // 마크업 단계: 목업 데이터 그대로 노출
   const rows = useMemo(() => MOCK_ROWS, []);
-  // '내가 쓴 댓글' 탭은 좋아요·조회수 대신 '내용' 컬럼을 노출
+  // '내가 쓴 댓글' 탭은 좋아요·조회수 대신 '내용' 컬럼을 노출 (번호/제목/내용/작성일)
   const isComments = activeTab === 'comments';
   const totalPages = 5;
-  const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
     <div className="flex w-full flex-col gap-[30px]">
@@ -123,7 +115,7 @@ export default function MyPageBoard() {
               <TableHead className="w-[64px] text-center text-[#424242]">번호</TableHead>
               <TableHead className="min-w-0 pl-[48px] text-left text-[#424242]">제목</TableHead>
               {isComments ? (
-                <TableHead className="hidden min-w-0 w-[300px] pr-[128px] text-center text-[#424242] md:table-cell">
+                <TableHead className="hidden w-[300px] pr-[128px] text-center text-[#424242] md:table-cell">
                   내용
                 </TableHead>
               ) : (
@@ -156,7 +148,7 @@ export default function MyPageBoard() {
                   <TableCell className="text-center">{row.no}</TableCell>
                   <TableCell className="truncate pl-[28px] text-left">{row.title}</TableCell>
                   {isComments ? (
-                    <TableCell className="hidden truncate w-[300px] pr-[128px] text-center text-[#424242] md:table-cell">
+                    <TableCell className="hidden w-[300px] truncate pr-[128px] text-center text-[#424242] md:table-cell">
                       {row.content}
                     </TableCell>
                   ) : (
@@ -177,65 +169,13 @@ export default function MyPageBoard() {
         </Table>
       </div>
 
-      {/* 페이지네이션 ( ‹ 1 2 3 4 5 › ) */}
+      {/* 페이지네이션 (공용 컴포넌트 사용) */}
       <div className="flex justify-center">
-        <Pagination>
-          <PaginationContent className="items-center gap-[4px]">
-            {/* 이전 */}
-            <PaginationItem>
-              <PaginationLink
-                size="icon"
-                aria-label="이전 페이지"
-                aria-disabled={currentPage <= 1}
-                className={`bg-transparent hover:bg-transparent ${
-                  currentPage <= 1
-                    ? 'pointer-events-none text-[#D9D9D9]'
-                    : 'cursor-pointer text-[#919191]'
-                }`}
-                onClick={currentPage <= 1 ? undefined : () => setCurrentPage(currentPage - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </PaginationLink>
-            </PaginationItem>
-
-            {/* 페이지 번호 */}
-            {pageNumbers.map((page) => {
-              const isActive = page === currentPage;
-              return (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    aria-current={isActive ? 'page' : undefined}
-                    className={`cursor-pointer border-0 bg-transparent text-[16px] hover:bg-transparent ${
-                      isActive ? 'font-bold text-[#212121]' : 'font-normal text-[#919191]'
-                    }`}
-                    onClick={() => setCurrentPage(page)}
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              );
-            })}
-
-            {/* 다음 */}
-            <PaginationItem>
-              <PaginationLink
-                size="icon"
-                aria-label="다음 페이지"
-                aria-disabled={currentPage >= totalPages}
-                className={`bg-transparent hover:bg-transparent ${
-                  currentPage >= totalPages
-                    ? 'pointer-events-none text-[#D9D9D9]'
-                    : 'cursor-pointer text-[#919191]'
-                }`}
-                onClick={
-                  currentPage >= totalPages ? undefined : () => setCurrentPage(currentPage + 1)
-                }
-              >
-                <ChevronRight className="h-4 w-4" />
-              </PaginationLink>
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+        <PaginationWithEllipsis
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
       </div>
     </div>
   );
