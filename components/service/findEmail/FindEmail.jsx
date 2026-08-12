@@ -18,7 +18,8 @@ export default function FindEmail() {
 
   return (
     // 전체 페이지의 여백과 중앙 정렬 레이아웃 (findId와 동일 패턴)
-    <div className="mx-auto w-full max-w-[1280px] px-[80px] py-[80px]">
+    // 기본값은 모바일·태블릿 시안(좌우 24px), desktop(1024px) 이상에서 데스크톱 여백(80px)
+    <div className="mx-auto w-full max-w-[1280px] px-[24px] py-[80px] desktop:px-[80px]">
       <div className="mx-auto w-full max-w-[600px]">
         {step === 'FORM' && <FindEmailVerify onNext={handleVerified} />}
 
