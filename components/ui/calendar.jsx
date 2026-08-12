@@ -115,13 +115,6 @@ export function Calendar({
   return (
     <div className={`w-full ${className}`}>
       <style>{`
-        /* 오늘이면서 선택된 날. data 속성은 DayPicker가 칸에 직접 붙여준다.
-           일정 막대가 그려진 칸은 막대가 우선이므로 제외한다. */
-        [data-today][data-selected]:not(.pilsa-schedule-day):not(.pilsa-schedule-active) button {
-          background-color: #f5f5f5 !important;
-          border-radius: 9999px !important;
-        }
-
         /* 일정 막대(pill)
            칸(td) 자체에 배경을 주면 border-collapse 때문에 모서리가 둥글어지지 않아서,
            칸 안쪽에 ::before를 깔아 막대를 그린다. 이웃한 칸끼리 좌우로 붙어 한 줄로 이어진다. */
@@ -155,8 +148,8 @@ export function Calendar({
           border-top-right-radius: 9999px;
           border-bottom-right-radius: 9999px;
         }
-        /* 날짜 숫자는 막대 위로 올리고, 선택된 날 회색 원이 막대를 덮지 않도록 배경을 지운다.
-           selected에 붙는 Tailwind 유틸도 !important라서 선언 순서 싸움이 된다.
+        /* 날짜 숫자와 선택 테두리를 막대 위로 올린다. 배경은 막대가 보이도록 비운다.
+           hover 등 다른 유틸도 !important라서 선언 순서 싸움이 되므로,
            td를 붙여 선택자 명시도를 한 단계 높여 순서와 무관하게 이기도록 한다. */
         td.pilsa-schedule-day > button,
         td.pilsa-schedule-active > button {
@@ -166,6 +159,25 @@ export function Calendar({
         }
         td.pilsa-schedule-active > button {
           color: #ffffff !important;
+        }
+
+        /* 선택한 날짜 표시.
+           하루짜리 일정 막대와 같은 크기 · 모양으로 그린다 — 칸 전체 폭, 위아래 4px 안쪽, 완전 둥근 모서리.
+           버튼(48px 정사각)에 테두리를 주면 막대(높이 40px)보다 높아져 위아래가 튄다. */
+        td[data-selected] {
+          position: relative;
+        }
+        td[data-selected]::after {
+          content: '';
+          position: absolute;
+          top: 4px;
+          right: 0;
+          bottom: 4px;
+          left: 0;
+          z-index: 2;
+          border: 1px solid #dedede;
+          border-radius: 9999px;
+          pointer-events: none;
         }
       `}</style>
 
@@ -236,7 +248,8 @@ export function Calendar({
           day: 'h-10 w-10 p-0 text-center align-middle bg-transparent sm:h-12 sm:w-12',
           day_button:
             'flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-[13px] font-normal text-neutral-900 outline-none hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-12 sm:w-12 sm:text-[16px]',
-          selected: '[&>button]:!bg-neutral-100 [&>button]:!rounded-full',
+          // 선택한 날짜 표시는 아래 <style>의 td[data-selected]::after로 그린다.
+          // 버튼에 테두리를 주면 버튼 크기(48px 정사각)를 따라가 막대보다 높아지기 때문.
           today: 'bg-transparent',
           outside: 'pointer-events-none',
           disabled: 'text-neutral-300 opacity-50',
