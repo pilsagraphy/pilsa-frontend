@@ -23,8 +23,7 @@ export default function MemberListSection({
     return members.filter(
       (m) =>
         m.name.toLowerCase().includes(query) ||
-        m.loginId.toLowerCase().includes(query) ||
-        m.nickname.toLowerCase().includes(query),
+        m.loginId.toLowerCase().includes(query),
     );
   }, [members, query]);
 
@@ -63,7 +62,7 @@ export default function MemberListSection({
           onKeyDown={(e) => {
             if (e.key === 'Enter') e.preventDefault(); // 엔터로도 검색어를 초기화하지 않고 유지
           }}
-          placeholder={focused ? '' : 'ID / 닉네임 / 이름 검색'}
+          placeholder={focused ? '' : 'ID / 이름 검색'}
           className="!text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121] placeholder:text-[#9E9E9E]"
         />
         {keyword && (
