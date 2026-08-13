@@ -2,7 +2,7 @@
 import React, { useMemo, useState } from 'react';
 import ReportRow, { REPORT_GRID, ReportCheckbox } from './ReportRow';
 
-const HEADERS = ['번호', '작성 위치', '닉네임', '처리 사유', '원문 링크', '상태', '처리일'];
+const HEADERS = ['번호', '작성 위치', '처리 사유', '원문 링크', '상태', '처리일'];
 
 // ReportRow 들을 합쳐 하나의 신고 목록 섹션을 만든다.
 // title: '신고 게시글' | '신고 댓글'

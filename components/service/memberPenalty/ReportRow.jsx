@@ -4,8 +4,8 @@ import { Check } from 'lucide-react';
 
 // 헤더 행과 데이터 행이 동일한 열 정렬을 쓰도록 공유하는 그리드 템플릿.
 // 체크박스만 고정폭, 나머지 7개 열은 남는 너비를 균등 분배해 왼쪽으로 몰리지 않게 한다.
-// [체크박스][번호][작성 위치][닉네임][처리 사유][원문 링크][상태][처리일]
-export const REPORT_GRID = 'grid grid-cols-[40px_repeat(7,minmax(0,1fr))] items-center';
+// [체크박스][번호][작성 위치][처리 사유][원문 링크][상태][처리일]
+export const REPORT_GRID = 'grid grid-cols-[40px_repeat(6,minmax(0,1fr))] items-center';
 
 // 신고 목록용 체크박스
 // - 활성(블라인드): 클릭 가능, 클릭 시 "흰 배경 속 검은 체크"(테두리 유지) 표시
@@ -26,7 +26,7 @@ export function ReportCheckbox({ checked = false, disabled = false, onChange }) 
       }`}
     >
       {checked && !disabled ? (
-        <Check size={10} strokeWidth={1.5} className="text-[#919191]" />
+        <Check size={10} strokeWidth={1.5} className="text-[#212121]" />
       ) : null}
     </button>
   );
@@ -46,7 +46,6 @@ export default function ReportRow({ report, number, checked = false, onCheckedCh
       </div>
       <div className="text-center">{number}</div>
       <div className="text-center">{report.board}</div>
-      <div className="text-center">{report.nickname}</div>
       <div className="text-center">{report.reason}</div>
       <div className="text-center">
         <a
