@@ -41,7 +41,7 @@ const GalleryMobileTile = ({ photo, isActive, canHover, onToggle }) => {
           }`}
         >
           {photo.title && (
-            <p className="line-clamp-2 text-[16px] font-semibold leading-[1.5] tracking-[-0.02em] text-white">
+            <p className="text-[16px] font-semibold leading-[1.5] tracking-[-0.02em] text-white">
               {photo.title}
             </p>
           )}
