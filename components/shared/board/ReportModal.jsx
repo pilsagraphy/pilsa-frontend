@@ -32,6 +32,8 @@ export default function ReportModal({
 }) {
   const [reason, setReason] = useState('');
   const [detail, setDetail] = useState('');
+  // 사유 목록의 열림 상태. ESC를 눌렀을 때 목록만 닫기 위해 직접 들고 있는다.
+  const [reasonOpen, setReasonOpen] = useState(false);
 
   // 디자인 형식: 로그인ID / 학번 / 이름
   const targetUserText = [targetUser?.loginId, targetUser?.studentId, targetUser?.name]
@@ -43,6 +45,7 @@ export default function ReportModal({
     if (!open) return;
     setReason('');
     setDetail('');
+    setReasonOpen(false);
   }, [open]);
 
   const isEtc = reason === REPORT_REASON_ETC;
@@ -58,6 +61,13 @@ export default function ReportModal({
     <Dialog open={open} onOpenChange={(next) => !next && onClose?.()}>
       <DialogContent
         hideCloseButton
+        // 사유 목록이 열려 있을 때의 ESC는 목록만 닫는다.
+        // 모달까지 같이 닫히면 body에 pointer-events: none이 남아 화면 전체가 클릭되지 않는다.
+        onEscapeKeyDown={(event) => {
+          if (!reasonOpen) return;
+          event.preventDefault();
+          setReasonOpen(false);
+        }}
         // 기타 선택 시 상세 사유 입력란이 늘어나므로, 짧은 화면에서는 모달 내부를 스크롤한다
         className="max-h-[90vh] max-w-[346px] gap-[16px] overflow-y-auto rounded-[4px] border-[#212121] p-[25px]"
       >
@@ -89,7 +99,12 @@ export default function ReportModal({
 
         <div className="flex flex-col gap-[4px]">
           <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">사유</span>
-          <Select value={reason} onValueChange={setReason}>
+          <Select
+            open={reasonOpen}
+            onOpenChange={setReasonOpen}
+            value={reason}
+            onValueChange={setReason}
+          >
             <SelectTrigger className="h-[52px] rounded-[4px] border-[#b9b9b9] text-[16px] tracking-[-0.32px] text-[#454545] shadow-none data-[placeholder]:text-[#b9b9b9]">
               <SelectValue placeholder="선택" />
             </SelectTrigger>
@@ -104,7 +119,14 @@ export default function ReportModal({
               className="max-h-[min(240px,var(--radix-select-content-available-height))]"
             >
               {REPORT_REASONS.map(({ code, label }) => (
-                <SelectItem key={code} value={code} className="text-[16px] text-[#454545]">
+                <SelectItem
+                  key={code}
+                  value={code}
+                  // 기본 hover 색은 Radix가 항목에 포커스를 줄 때(data-highlighted)만 켜지는데,
+                  // 모달(Dialog) 안에서는 포커스가 트리거에 묶여 있어 마우스를 올려도 아무 색이 안 뜬다.
+                  // 그래서 포커스와 무관한 :hover로 직접 회색을 준다. (키보드 이동용으로 highlighted도 함께 둔다)
+                  className="cursor-pointer text-[16px] text-[#454545] hover:bg-[#dedede] data-[highlighted]:bg-[#dedede]"
+                >
                   {label}
                 </SelectItem>
               ))}
