@@ -32,6 +32,17 @@ import {
   REPORT_DETAIL_MAX_LENGTH,
 } from '@/constants/report';
 
+// 표에 보여줄 제목 · 댓글 내용의 최대 글자 수. 넘으면 뒤를 ...으로 줄인다.
+// 공백도 한 글자로 센다.
+const CONTENT_MAX_LENGTH = 12;
+
+// 이모지처럼 두 칸을 차지하는 문자도 한 글자로 세도록 배열로 풀어서 자른다.
+const truncateContent = (text = '') => {
+  const characters = [...text];
+  if (characters.length <= CONTENT_MAX_LENGTH) return text;
+  return `${characters.slice(0, CONTENT_MAX_LENGTH).join('')}...`;
+};
+
 /**
  * 관리자 - 선택한 게시글 · 댓글에 조치를 취할 때 뜨는 모달 (블라인드 등)
  *
@@ -45,7 +56,9 @@ export default function ModerationModal({
   actionLabel = '블라인드',
   // '게시글' | '댓글' - 제목과 표의 마지막 열 이름에 함께 쓴다
   targetLabel = '게시글',
-  // [{ id, user, content }] - user는 '로그인ID / 학번 / 이름' 형식의 문자열
+  // [{ id, user, boardName, content }]
+  // user는 '로그인ID / 학번 / 이름' 형식의 문자열,
+  // content는 게시판 이름을 뺀 제목 · 댓글 내용만 넘긴다 ([게시판명]은 여기서 붙인다).
   items = [],
   onClose,
   onSubmit,
@@ -83,8 +96,10 @@ export default function ModerationModal({
           event.preventDefault();
           setReasonOpen(false);
         }}
+        // 폭은 표 내용에 따라 늘어난다. 짧으면 시안 크기(505px)를 지키고,
+        // 대상 회원 · 게시글이 길면 그만큼 넓어지되 화면을 넘지 않도록 상한을 둔다.
         // 선택 건수가 많거나 기타 선택 시 상세 사유가 붙으면 길어지므로 모달 내부를 스크롤한다
-        className="max-h-[90vh] max-w-[505px] gap-[16px] overflow-y-auto rounded-[4px] border-[#212121] p-[25px]"
+        className="max-h-[90vh] w-auto min-w-[505px] max-w-[min(900px,92vw)] gap-[16px] overflow-y-auto rounded-[4px] border-[#212121] p-[25px]"
       >
         <DialogTitle className="text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-[#212121]">
           선택된 {targetLabel}을 <span className="font-extrabold">{actionLabel}</span> 처리
@@ -99,16 +114,18 @@ export default function ModerationModal({
         {/* 위아래 진한 선은 표 바깥에 둔다.
             TableBody가 마지막 행의 아래선을 지워주므로, 마지막 행 밑에는 이 진한 선만 남는다. */}
         <div className="border-b border-t border-[#454545]">
-          <Table className="table-fixed">
+          {/* table-fixed가 아니라 내용에 맞춰 열이 늘어나는 기본(auto) 레이아웃이다.
+              앞 두 열은 시안 너비를 최소값으로만 잡아두고, 길어지면 그만큼 넓어진다. */}
+          <Table>
             <TableHeader>
               <TableRow className="h-[32px] border-b border-[#454545] hover:bg-transparent">
-                <TableHead className="w-[56px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
+                <TableHead className="min-w-[56px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
                   번호
                 </TableHead>
-                <TableHead className="w-[200px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
+                <TableHead className="min-w-[200px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
                   대상 회원
                 </TableHead>
-                <TableHead className="px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
+                <TableHead className="min-w-[199px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
                   대상 {targetLabel}
                 </TableHead>
               </TableRow>
@@ -123,11 +140,14 @@ export default function ModerationModal({
                   <TableCell className="px-0 pl-[18px] text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
                     {index + 1}
                   </TableCell>
-                  <TableCell className="truncate px-0 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
-                    {item.user}
+                  {/* 회원 정보가 길어져도 오른쪽 열 내용과 붙지 않도록 최소 16px을 띄운다.
+                      auto 레이아웃에서는 td의 max-width가 먹지 않아 안쪽 span으로 상한을 건다. */}
+                  <TableCell className="pl-0 pr-[16px] text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
+                    <span className="block max-w-[280px] truncate">{item.user}</span>
                   </TableCell>
-                  <TableCell className="truncate px-0 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
-                    {item.content}
+                  <TableCell className="whitespace-nowrap px-0 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
+                    {item.boardName && `[${item.boardName}] `}
+                    {truncateContent(item.content)}
                   </TableCell>
                 </TableRow>
               ))}
