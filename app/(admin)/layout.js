@@ -1,4 +1,5 @@
 import ClientToaster from '@/components/common/ClientToaster';
+import AdminGuard from '@/components/common/AdminGuard';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Sidebar from '@/components/shared/Sidebar';
@@ -22,7 +23,10 @@ export default function AdminLayout({ children }) {
         </aside>
 
         <main className="flex-1 flex flex-col min-w-0">
-          <div className="flex-1">{children}</div>
+          {/* 관리자 화면은 로그인 + 관리레벨(adminLevel >= 1) 둘 다 필요하므로 2차 검증 필터 추가 */}
+          <div className="flex-1">
+            <AdminGuard>{children}</AdminGuard>
+          </div>
           <Footer />
         </main>
       </div>

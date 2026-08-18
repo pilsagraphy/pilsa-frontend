@@ -22,7 +22,7 @@ export default function FreeActions({
 
   const router = useRouter();
 
-  const role = useAuthStore((s) => s.role);
+  const adminLevel = useAuthStore((s) => s.adminLevel);
   const user = useAuthStore((s) => s.user);
 
   useEffect(() => {
@@ -35,12 +35,12 @@ export default function FreeActions({
   }, [user]);
 
   const canEdit = useMemo(() => {
-    const isAdmin = role === 'ADMIN' || role === 'ROLE_ADMIN';
+    const isAdmin = adminLevel >= 1; // 관리자 여부는 admin_level 축으로 판정
     const isAuthor =
       currentUserId !== null && authorId !== null && Number(currentUserId) === Number(authorId);
 
     return isAdmin || isAuthor;
-  }, [role, currentUserId, authorId]);
+  }, [adminLevel, currentUserId, authorId]);
 
   const handleLike = async () => {
     if (!postId || likeLoading) return;
