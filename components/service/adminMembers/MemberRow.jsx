@@ -95,6 +95,8 @@ export default function MemberRow({
   selected = false,
   onSelectChange,
   onFieldChange,
+  onWithdraw,
+  canWithdraw = false,
 }) {
   const isAdminRole = member.role !== MEMBER_ROLES.GENERAL;
 
@@ -148,6 +150,19 @@ export default function MemberRow({
       {/* 6. 정지 기간 (없으면 '-') */}
       <TableCell className="whitespace-nowrap text-center text-[#212121]">
         {member.suspendedPeriod || '-'}
+      </TableCell>
+
+      {/* 7. 강제 탈퇴 — 관리 레벨 3만 사용 가능하고, 관리자 계정은 대상이 될 수 없다 */}
+      <TableCell className="whitespace-nowrap text-center">
+        <button
+          type="button"
+          disabled={!canWithdraw || isAdminRole}
+          title={canWithdraw ? undefined : '관리 레벨 3만 사용할 수 있습니다.'}
+          onClick={() => onWithdraw?.(member)}
+          className="rounded-[4px] border border-[#B9B9B9] px-3 py-1 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] transition hover:border-[#212121] hover:text-[#212121] disabled:cursor-not-allowed disabled:border-[#E0E0E0] disabled:text-[#C4C4C4]"
+        >
+          탈퇴
+        </button>
       </TableCell>
     </TableRow>
   );

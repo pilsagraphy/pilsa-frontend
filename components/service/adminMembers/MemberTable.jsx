@@ -12,7 +12,7 @@ import SelectAllCheckbox from '@/components/shared/admin/SelectAllCheckbox';
 import MemberRow from './MemberRow';
 
 // 체크박스 열까지 포함한 전체 열 개수 (빈 목록 안내문 가로 병합에 사용)
-const COLUMN_COUNT = 11;
+const COLUMN_COUNT = 12;
 
 export default function MemberTable({
   members,
@@ -20,6 +20,8 @@ export default function MemberTable({
   onSelectOne,
   onSelectAll,
   onFieldChange,
+  onWithdraw,
+  canWithdraw = false,
   loading = false,
   errorMessage = '',
 }) {
@@ -58,6 +60,7 @@ export default function MemberTable({
             <TableHead className="whitespace-nowrap text-center text-[#919191]">게시글</TableHead>
             <TableHead className="whitespace-nowrap text-center text-[#919191]">댓글</TableHead>
             <TableHead className="whitespace-nowrap text-center text-[#919191]">정지 기간</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-[#919191]">관리</TableHead>
           </TableRow>
         </TableHeader>
 
@@ -80,6 +83,8 @@ export default function MemberTable({
                 selected={selectedIds.includes(member.memberId)}
                 onSelectChange={onSelectOne}
                 onFieldChange={onFieldChange}
+                onWithdraw={onWithdraw}
+                canWithdraw={canWithdraw}
               />
             ))
           )}

@@ -12,7 +12,9 @@ import {
   listTitleClass,
 } from '@/components/shared/admin/CommunityListStyles';
 
+import useAuthStore from '@/stores/useAuthStore';
 import MemberTable from './MemberTable';
+import MemberWithdrawModal from './MemberWithdrawModal';
 import { DUMMY_MEMBERS, MEMBER_SORT_OPTIONS } from '@/constants/adminMembers';
 
 const PAGE_SIZE = 10;
@@ -22,6 +24,10 @@ export default function MemberListSection({ title = '회원 목록' }) {
   const [sortOrder, setSortOrder] = useState('latest');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
+  // 강제 탈퇴 확인 모달의 대상 회원 (null이면 닫힘)
+  const [withdrawTarget, setWithdrawTarget] = useState(null);
+  // 강제 탈퇴는 되돌릴 수 없어 관리 레벨 3 전용 (명세 140)
+  const canWithdraw = useAuthStore((s) => s.adminLevel) >= 3;
 
   // 행에서 재학상태·권한을 바꾼 결과가 화면에 남아야 해서 목록을 상태로 들고 간다.
   const [members, setMembers] = useState(DUMMY_MEMBERS);
@@ -94,6 +100,14 @@ export default function MemberListSection({ title = '회원 목록' }) {
     );
   };
 
+  // 강제 탈퇴 — 되돌릴 수 없는 처리(개인정보 즉시 파기)라 확인 모달을 거친다
+  // TODO: API 연동 시 PATCH /api/admin/users/{userId}/withdraw 호출 (관리 레벨 3 전용)
+  const handleWithdrawConfirm = () => {
+    setMembers((prev) => prev.filter((member) => member.memberId !== withdrawTarget?.memberId));
+    setSelectedIds((prev) => prev.filter((id) => id !== withdrawTarget?.memberId));
+    setWithdrawTarget(null);
+  };
+
   return (
     <div className={listSectionClass}>
       <h2 className={listTitleClass}>{title}</h2>
@@ -137,6 +151,14 @@ export default function MemberListSection({ title = '회원 목록' }) {
         onSelectOne={handleSelectOne}
         onSelectAll={handleSelectAll}
         onFieldChange={handleFieldChange}
+        onWithdraw={setWithdrawTarget}
+        canWithdraw={canWithdraw}
+      />
+
+      <MemberWithdrawModal
+        member={withdrawTarget}
+        onConfirm={handleWithdrawConfirm}
+        onCancel={() => setWithdrawTarget(null)}
       />
 
       <div className="mt-6 mb-16 flex justify-center md:mt-[34px] md:mb-[120px]">
