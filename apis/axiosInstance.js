@@ -47,10 +47,12 @@ axiosInstance.interceptors.response.use(
     const { status, headers } = response;
 
     // 백엔드 설정: 401 에러 + X-Token-Expired 헤더가 '1'인 경우
+    // _skipAuthRefresh: 로그아웃 직전 뒷정리(알림 기기 해제 등) 요청용 —
     if (
       status === 401 &&
       headers['x-token-expired'] === '1' &&
       !originalRequest._retry &&
+      !originalRequest._skipAuthRefresh &&
       !originalRequest.url?.startsWith('/api/auth/token/access/refresh')
     ) {
       originalRequest._retry = true;
