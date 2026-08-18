@@ -14,6 +14,9 @@ import { JUST_LOGGED_IN_KEY } from '@/components/service/notification/PushPrompt
 import LoginBannedSection from './LoginBannedSection';
 import LoginRestrictedSection from './LoginRestrictedSection';
 
+// 로그아웃 안내 토스트 — 로그인 시 닫아야 해서 id 를 고정한다
+const LOGOUT_TOAST_ID = 'logout-done';
+
 export default function LoginSection() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -22,6 +25,9 @@ export default function LoginSection() {
   const [autoLogin, setAutoLogin] = useState(false);
   // 제재 계정 안내: { banType: 'temporary'|'permanent', bannedUntil }
   const [banInfo, setBanInfo] = useState(null);
+  // 로그아웃 처리(알림 기기 해제 → 로그아웃 API)가 끝날 때까지 재로그인을 막는다.
+  // 처리 중에 로그인이 성공하면 뒤늦게 도착한 로그아웃이 방금 받은 세션을 지운다.
+  const [loggingOut, setLoggingOut] = useState(false);
   const { login, logout } = useAuthStore();
   const logoutHandled = useRef(false);
 
@@ -29,6 +35,7 @@ export default function LoginSection() {
   useEffect(() => {
     if (searchParams.get('logout') !== '1' || logoutHandled.current) return;
     logoutHandled.current = true;
+    setLoggingOut(true);
 
     const runLogout = async () => {
       try {
@@ -40,10 +47,11 @@ export default function LoginSection() {
         // API 실패해도 클라이언트 상태는 정리
       } finally {
         logout();
+        setLoggingOut(false);
         toast.success('로그아웃되었습니다!', {
-          duration: Infinity,
+          id: LOGOUT_TOAST_ID,
           action: {
-            label: '확인',
+            label: '홈으로',
             onClick: () => router.push(BASE_PATH),
           },
         });
@@ -55,6 +63,9 @@ export default function LoginSection() {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    if (loggingOut) return;
+    // 로그인 후 화면까지 따라다니지 않도록 로그아웃 안내를 닫는다
+    toast.dismiss(LOGOUT_TOAST_ID);
     try {
       await login(loginId, password, autoLogin);
 
@@ -156,9 +167,10 @@ export default function LoginSection() {
             {/* 3. Button의 onClick은 제거 (onSubmit이 처리함) */}
             <Button
               type="submit"
-              className="h-[64px] w-full rounded-[6px] bg-[#454545] text-[20px] font-semibold text-white hover:bg-[#454545]/90"
+              disabled={loggingOut}
+              className="h-[64px] w-full rounded-[6px] bg-[#454545] text-[20px] font-semibold text-white hover:bg-[#454545]/90 disabled:opacity-60"
             >
-              로그인
+              {loggingOut ? '로그아웃 처리 중...' : '로그인'}
             </Button>
 
             <Button
