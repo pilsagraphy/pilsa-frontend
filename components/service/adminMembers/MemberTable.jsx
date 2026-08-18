@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
+import SelectAllCheckbox from '@/components/shared/admin/SelectAllCheckbox';
 import MemberRow from './MemberRow';
 
 // 체크박스 열까지 포함한 전체 열 개수 (빈 목록 안내문 가로 병합에 사용)
@@ -41,12 +41,11 @@ export default function MemberTable({
         <TableHeader>
           <TableRow className="h-[46px] border-b border-[#919191] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
             <TableHead className="w-[64px] text-center">
-              <Checkbox
+              <SelectAllCheckbox
                 checked={allSelected}
                 disabled={!members?.length}
-                onCheckedChange={(checked) => onSelectAll?.(checked === true)}
-                aria-label="회원 전체 선택"
-                className="size-6 rounded-[4px] border-[#919191] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
+                onCheckedChange={onSelectAll}
+                label="회원 전체 선택"
               />
             </TableHead>
             <TableHead className="whitespace-nowrap text-center text-[#919191]">ID</TableHead>

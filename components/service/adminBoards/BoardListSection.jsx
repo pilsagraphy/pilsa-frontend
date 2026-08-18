@@ -5,15 +5,18 @@ import { useMemo, useState } from 'react';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import AlertModal from '@/components/common/AlertModal';
 import { Button } from '@/components/ui/button';
+import {
+  actionButtonClass,
+  listSectionClass,
+  listSubtitleClass,
+  listTitleClass,
+} from '@/components/shared/admin/CommunityListStyles';
 
 import BoardTable from './BoardTable';
 import BoardFormModal from './BoardFormModal';
 import { DUMMY_BOARDS, BOARD_READ_ROLES } from '@/constants/adminBoards';
 
 const PAGE_SIZE = 10;
-
-// 두 액션 버튼이 디자인상 크기가 같아 클래스를 공유한다.
-const actionButtonClass = 'h-[52px] w-[180px] rounded-[4px] text-[16px] font-normal';
 
 export default function BoardListSection({ title = '게시판 관리' }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -159,14 +162,12 @@ export default function BoardListSection({ title = '게시판 관리' }) {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10">
-      <h2 className="my-[15px] font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]">
-        {title}
-      </h2>
+    <div className={listSectionClass}>
+      <h2 className={listTitleClass}>{title}</h2>
 
       {/* 목록 (왼쪽) / 선택 게시판 수정 · 새 게시판 생성 (오른쪽) */}
       <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:items-center md:justify-between">
-        <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]">목록</span>
+        <span className={listSubtitleClass}>목록</span>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Button

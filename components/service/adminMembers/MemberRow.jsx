@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { Checkbox } from '@/components/ui/checkbox';
+import RowCheckbox from '@/components/shared/admin/RowCheckbox';
 import {
   Select,
   SelectContent,
@@ -102,11 +102,10 @@ export default function MemberRow({
     <TableRow className="h-[58px] border-b border-[#B9B9B9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
       {/* 1. 선택 체크박스 */}
       <TableCell className="text-center">
-        <Checkbox
+        <RowCheckbox
           checked={selected}
-          onCheckedChange={(checked) => onSelectChange?.(member.memberId, checked === true)}
-          aria-label={`${member.loginId} 회원 선택`}
-          className="size-6 rounded-[4px] border-[#919191] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
+          onCheckedChange={(checked) => onSelectChange?.(member.memberId, checked)}
+          label={`${member.loginId} 회원 선택`}
         />
       </TableCell>
 

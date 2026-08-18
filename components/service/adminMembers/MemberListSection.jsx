@@ -6,14 +6,16 @@ import SortSelect from '@/components/shared/board/SortSelect';
 import SearchInput from '@/components/shared/board/SearchInput';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import { Button } from '@/components/ui/button';
+import {
+  actionButtonClass,
+  listSectionClass,
+  listTitleClass,
+} from '@/components/shared/admin/CommunityListStyles';
 
 import MemberTable from './MemberTable';
 import { DUMMY_MEMBERS, MEMBER_SORT_OPTIONS } from '@/constants/adminMembers';
 
 const PAGE_SIZE = 10;
-
-// 두 액션 버튼이 디자인상 크기가 같아 클래스를 공유한다.
-const actionButtonClass = 'h-[52px] w-[180px] rounded-[4px] text-[16px] font-normal';
 
 export default function MemberListSection({ title = '회원 목록' }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -93,10 +95,8 @@ export default function MemberListSection({ title = '회원 목록' }) {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10">
-      <h2 className="my-[15px] font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]">
-        {title}
-      </h2>
+    <div className={listSectionClass}>
+      <h2 className={listTitleClass}>{title}</h2>
 
       {/* 정렬 · 검색 (왼쪽) / 회원 정지 · 영구 차단 (오른쪽) */}
       <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:items-center md:justify-between">
