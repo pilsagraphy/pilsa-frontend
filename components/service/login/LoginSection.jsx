@@ -2,18 +2,26 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import useAuthStore from '@/stores/useAuthStore';
-import { ROUTES, BASE_PATH } from '@/constants/routes';
+import { ROUTES, BASE_PATH, SANCTION_POLICY_URL } from '@/constants/routes';
 import { logout as logoutApi } from '@/apis/auth';
+import { disablePushForLogout, restorePushAfterLogin } from '@/lib/push';
+import { JUST_LOGGED_IN_KEY } from '@/components/service/notification/PushPromptBottomSheet';
+import LoginBannedSection from './LoginBannedSection';
+import LoginRestrictedSection from './LoginRestrictedSection';
 
 export default function LoginSection() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
+  const [autoLogin, setAutoLogin] = useState(false);
+  // 제재 계정 안내: { banType: 'temporary'|'permanent', bannedUntil }
+  const [banInfo, setBanInfo] = useState(null);
   const { login, logout } = useAuthStore();
   const logoutHandled = useRef(false);
 
@@ -24,6 +32,9 @@ export default function LoginSection() {
 
     const runLogout = async () => {
       try {
+        // 이 기기의 알림 수신을 서버에서 해제 — 로그아웃 API보다 먼저 (토큰 필요).
+        // 브라우저 구독(unsubscribe)은 유지한다 → 재로그인 시 알림 설정 자동 복구 근거.
+        await disablePushForLogout();
         await logoutApi();
       } catch {
         // API 실패해도 클라이언트 상태는 정리
@@ -45,16 +56,47 @@ export default function LoginSection() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      await login(loginId, password);
+      await login(loginId, password, autoLogin);
+
+      // 웹앱(standalone) 첫 로그인 알림 유도 바텀시트 노출 신호
+      try {
+        sessionStorage.setItem(JUST_LOGGED_IN_KEY, '1');
+      } catch {
+        // ignore
+      }
+
+      // 이 기기에 살아있는 푸시 구독이 있으면 서버에 조용히 재등록 (로그인 흐름을 막지 않음)
+      restorePushAfterLogin();
+
       router.push(ROUTES.STUDENTS_DASHBOARD);
     } catch (err) {
+      const data = err.response?.data;
+
+      // 정지/영구차단 계정: 403 + { message, banType, bannedUntil }
+      // message는 쓰지 않는다 — 안내 문구는 시안대로 각 Section의 기본 prop을 사용
+      if (err.response?.status === 403 && data?.banType) {
+        setBanInfo({ banType: data.banType, bannedUntil: data.bannedUntil });
+        return;
+      }
+
       const message =
-        err.response?.data?.message ??
-        (typeof err.response?.data === 'string' ? err.response.data : null) ??
-        err.message;
+        data?.message ?? (typeof data === 'string' ? data : null) ?? err.message;
       toast.error(message);
     }
   };
+
+  // 제재 계정 안내 화면 (시안: 로그인 제한 페이지)
+  if (banInfo?.banType === 'permanent') {
+    // 문의 경로 = 이용 제한 정책 문서 (이의 신청 절차 안내)
+    return (
+      <LoginBannedSection
+        onContact={() => window.open(SANCTION_POLICY_URL, '_blank', 'noopener,noreferrer')}
+      />
+    );
+  }
+  if (banInfo?.banType === 'temporary') {
+    return <LoginRestrictedSection unlockAt={banInfo.bannedUntil} />;
+  }
 
   return (
     <section className="mx-auto w-full max-w-[616px]">
@@ -63,8 +105,17 @@ export default function LoginSection() {
 
         {/* 2. onClick 대신 onSubmit 사용 */}
         <form onSubmit={handleLogin} className="mt-4 space-y-3">
-          <div className="flex items-center justify-end">
-            {/* justify-between에서 end로 (체크박스 없을 때 대비) */}
+          <div className="flex items-center justify-between">
+            {/* 자동 로그인 (시안의 체크박스 위치 — 좌측) */}
+            <label className="flex cursor-pointer select-none items-center gap-2 text-[14px] tracking-[-0.28px] text-[#c4c4c4] transition-colors hover:text-[#424242]">
+              <Checkbox
+                checked={autoLogin}
+                onCheckedChange={(checked) => setAutoLogin(checked === true)}
+                className="border-[#c4c4c4] data-[state=checked]:bg-[#212121] data-[state=checked]:border-[#212121]"
+              />
+              자동 로그인
+            </label>
+
             <div className="flex items-center text-[14px] tracking-[-0.28px] whitespace-nowrap">
               <button
                 type="button"
