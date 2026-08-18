@@ -1,0 +1,56 @@
+name: Deploy Production
+
+# 수동 트리거 전용: Actions 탭 → Deploy Production → Run workflow
+# release-app 브랜치를 운영 프론트(포트 3000, pm2 pilsa-frontend)에 배포
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-frontend-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PILSA_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.PILSA_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy frontend to Production
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -o ServerAliveInterval=30 -o ServerAliveCountMax=40 \
+              "${{ secrets.PILSA_USER }}@${{ secrets.PILSA_HOST }}" 'bash -s' <<'DEPLOY'
+          set -euo pipefail
+
+          echo "===== [1/4] 소스 최신화 (origin/release-app) ====="
+          cd ~/frontend
+          git fetch origin release-app
+          git reset --hard origin/release-app
+          git log --oneline -1
+
+          echo "===== [2/4] 의존성 설치 & Next.js 빌드 ====="
+          npm install
+          npm run build
+
+          echo "===== [3/4] pm2 재시작 (pilsa-frontend) ====="
+          pm2 restart pilsa-frontend
+
+          echo "===== [4/4] 헬스체크 (포트 3000) ====="
+          for i in $(seq 1 15); do
+            sleep 2
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/ || true)
+            if [ "$code" != "000" ]; then
+              echo "운영 프론트 응답 확인 (HTTP $code, 약 $((i*2))초 소요)"
+              exit 0
+            fi
+          done
+          echo "운영 프론트가 응답하지 않습니다. 최근 로그:"
+          pm2 logs pilsa-frontend --lines 50 --nostream
+          exit 1
+          DEPLOY

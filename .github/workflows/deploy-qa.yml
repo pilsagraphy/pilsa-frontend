@@ -1,0 +1,57 @@
+name: Deploy QA
+
+# dev 브랜치에 push 되면 QA 프론트(포트 3001, pm2 pilsa-frontend-qa)에 자동 배포
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-frontend-qa
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PILSA_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.PILSA_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy frontend to QA
+        run: |
+          ssh -i ~/.ssh/deploy_key \
+              -o ServerAliveInterval=30 -o ServerAliveCountMax=40 \
+              "${{ secrets.PILSA_USER }}@${{ secrets.PILSA_HOST }}" 'bash -s' <<'DEPLOY'
+          set -euo pipefail
+
+          echo "===== [1/4] 소스 최신화 (origin/dev) ====="
+          cd ~/frontend-qa
+          git fetch origin dev
+          git reset --hard origin/dev
+          git log --oneline -1
+
+          echo "===== [2/4] 의존성 설치 & Next.js 빌드 ====="
+          npm install
+          npm run build
+
+          echo "===== [3/4] pm2 재시작 (pilsa-frontend-qa) ====="
+          pm2 restart pilsa-frontend-qa
+
+          echo "===== [4/4] 헬스체크 (포트 3001) ====="
+          for i in $(seq 1 15); do
+            sleep 2
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/ || true)
+            if [ "$code" != "000" ]; then
+              echo "QA 프론트 응답 확인 (HTTP $code, 약 $((i*2))초 소요)"
+              exit 0
+            fi
+          done
+          echo "QA 프론트가 응답하지 않습니다. 최근 로그:"
+          pm2 logs pilsa-frontend-qa --lines 50 --nostream
+          exit 1
+          DEPLOY
