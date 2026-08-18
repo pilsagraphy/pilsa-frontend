@@ -2,7 +2,7 @@
 
 import { ChevronUp, Menu } from 'lucide-react';
 
-import { Checkbox } from '@/components/ui/checkbox';
+import RowCheckbox from '@/components/shared/admin/RowCheckbox';
 import {
   Select,
   SelectContent,
@@ -84,18 +84,13 @@ export default function BoardRow({
           : ''
       }`}
     >
-      {/* 1. 선택 체크박스
-          table.jsx의 [&>[role=checkbox]]:translate-y-[2px]가 직계 자식에만 걸리므로,
-          헤더(연한 체크를 겹쳐 놓느라 span으로 감쌈)와 위치를 맞추려고 같은 구조로 감싼다. */}
+      {/* 1. 선택 체크박스 */}
       <TableCell className="text-center">
-        <span className="relative inline-flex">
-          <Checkbox
-            checked={selected}
-            onCheckedChange={(checked) => onSelectChange?.(board.id, checked === true)}
-            aria-label={`${board.boardName} 선택`}
-            className="size-6 rounded-[4px] border-[#919191] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
-          />
-        </span>
+        <RowCheckbox
+          checked={selected}
+          onCheckedChange={(checked) => onSelectChange?.(board.id, checked)}
+          label={`${board.boardName} 선택`}
+        />
       </TableCell>
 
       {/* 2. 게시판 명 · 게시글 수 */}

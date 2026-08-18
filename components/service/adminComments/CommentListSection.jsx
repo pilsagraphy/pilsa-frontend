@@ -8,6 +8,12 @@ import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import AlertModal from '@/components/common/AlertModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import { Button } from '@/components/ui/button';
+import {
+  actionButtonClass,
+  listSectionClass,
+  listSubtitleClass,
+  listTitleClass,
+} from '@/components/shared/admin/CommunityListStyles';
 
 import CommentTable from './CommentTable';
 import {
@@ -18,9 +24,6 @@ import {
 } from '@/constants/adminComments';
 
 const PAGE_SIZE = 10;
-
-// 두 액션 버튼이 디자인상 크기가 같아 클래스를 공유한다.
-const actionButtonClass = 'h-[52px] w-[180px] rounded-[4px] text-[16px] font-normal';
 
 export default function CommentListSection({ title = '댓글 관리' }) {
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,10 +59,14 @@ export default function CommentListSection({ title = '댓글 관리' }) {
 
   const totalPages = Math.max(1, Math.ceil(filteredComments.length / PAGE_SIZE));
 
+  // 삭제로 목록이 줄어 currentPage가 사라진 페이지를 가리키면 빈 목록이 보인다.
+  // 렌더 시점에 잘라 마지막 페이지를 보여준다.
+  const page = Math.min(currentPage, totalPages);
+
   const pagedComments = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
+    const start = (page - 1) * PAGE_SIZE;
     return filteredComments.slice(start, start + PAGE_SIZE);
-  }, [filteredComments, currentPage]);
+  }, [filteredComments, page]);
 
   // 목록이 바뀌면 화면에 없는 댓글이 선택된 채로 남지 않도록 선택을 비운다.
   const resetToFirstPage = () => {
@@ -128,7 +135,9 @@ export default function CommentListSection({ title = '댓글 관리' }) {
     );
 
     setConfirmState(null);
-    setSelectedIds([]);
+    // 처리한 댓글만 선택에서 뺀다. 행 단위 액션 때문에 다른 선택이 풀리면 안 된다.
+    // (선택 액션일 땐 ids가 곧 selectedIds라 결과가 같다)
+    setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
   };
 
   // TODO: 신고 관리 페이지가 만들어지면 해당 댓글의 신고 내역으로 이동시킬 것
@@ -146,12 +155,10 @@ export default function CommentListSection({ title = '댓글 관리' }) {
     : '';
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10">
-      <h2 className="my-[15px] font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]">
-        {title}
-      </h2>
+    <div className={listSectionClass}>
+      <h2 className={listTitleClass}>{title}</h2>
 
-      <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]">목록</span>
+      <span className={listSubtitleClass}>목록</span>
 
       {/* 게시판 필터 · 검색 (왼쪽) / 선택 블라인드 · 선택 삭제 (오른쪽) */}
       <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:items-center md:justify-between">
@@ -204,7 +211,7 @@ export default function CommentListSection({ title = '댓글 관리' }) {
 
       <div className="mt-6 mb-16 flex justify-center md:mt-[34px] md:mb-[120px]">
         <PaginationWithEllipsis
-          currentPage={currentPage}
+          currentPage={page}
           totalPages={totalPages}
           onPageChange={handlePageChange}
         />

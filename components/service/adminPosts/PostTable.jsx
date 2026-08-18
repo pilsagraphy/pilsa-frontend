@@ -1,7 +1,5 @@
 'use client';
 
-import { Check } from 'lucide-react';
-
 import {
   Table,
   TableBody,
@@ -10,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
+import SelectAllCheckbox from '@/components/shared/admin/SelectAllCheckbox';
 import PostRow from './PostRow';
 
 // 체크박스 열까지 포함한 전체 열 개수 (빈 목록 안내문 가로 병합에 사용)
@@ -21,7 +19,7 @@ const COLUMN_COUNT = 10;
 // 그만큼 넓히고 나머지 열에서 덜어냈다.
 const COLUMNS = [
   { key: 'boardName', label: '게시판 명', width: 'w-[11%]' },
-  { key: 'title', label: '제목', width: 'w-[21%]' },
+  { key: 'title', label: '제목', width: 'w-[20%]' },
   { key: 'author', label: '글쓴이', width: 'w-[9%]' },
   { key: 'commentCount', label: '댓글', width: 'w-[7%]' },
   { key: 'likeCount', label: '좋아요', width: 'w-[7%]' },
@@ -62,24 +60,12 @@ export default function PostTable({
         <TableHeader>
           <TableRow className="h-[46px] border-b border-[#919191] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
             <TableHead className="w-[8%] text-center">
-              {/* 전체 선택 체크박스.
-                  디자인처럼 선택 전에도 연한 체크 표시가 보이도록,
-                  체크되지 않았을 때만 회색 체크 아이콘을 겹쳐 보여준다. */}
-              <span className="relative inline-flex align-middle">
-                <Checkbox
-                  checked={allSelected}
-                  disabled={!posts?.length}
-                  onCheckedChange={(checked) => onSelectAll?.(checked === true)}
-                  aria-label="게시글 전체 선택"
-                  className="size-6 rounded-[4px] border-[#919191] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
-                />
-                {!allSelected && (
-                  <Check
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 m-auto size-4 text-[#dedede]"
-                  />
-                )}
-              </span>
+              <SelectAllCheckbox
+                checked={allSelected}
+                disabled={!posts?.length}
+                onCheckedChange={onSelectAll}
+                label="게시글 전체 선택"
+              />
             </TableHead>
 
             {COLUMNS.map((column) => (

@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 
-import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
 import RowActionButton from '@/components/shared/admin/RowActionButton';
+import RowCheckbox from '@/components/shared/admin/RowCheckbox';
 import { COMMENT_STATUSES, getPostDetailHref } from '@/constants/adminComments';
 
 // comment: commentId, boardName, author, content, createdAt, status, postId, postTitle
@@ -21,18 +21,13 @@ export default function CommentRow({
 
   return (
     <TableRow className="h-[46px] border-b border-[#b9b9b9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121]">
-      {/* 1. 선택 체크박스
-          Checkbox 자체는 grid(블록 레벨)라 text-center로는 가운데 정렬되지 않는다.
-          헤더와 같은 inline-flex span으로 감싸야 가로·세로 위치가 맞는다. */}
+      {/* 1. 선택 체크박스 */}
       <TableCell className="text-center">
-        <span className="relative inline-flex align-middle">
-          <Checkbox
-            checked={selected}
-            onCheckedChange={(checked) => onSelectChange?.(comment.commentId, checked === true)}
-            aria-label={`${comment.author}님의 댓글 선택`}
-            className="size-6 rounded-[4px] border-[#919191] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
-          />
-        </span>
+        <RowCheckbox
+          checked={selected}
+          onCheckedChange={(checked) => onSelectChange?.(comment.commentId, checked)}
+          label={`${comment.author}님의 댓글 선택`}
+        />
       </TableCell>
 
       {/* 2. 게시판 명 · 글쓴이 */}
@@ -52,12 +47,15 @@ export default function CommentRow({
 
       {/* 5. 원글 - 댓글이 달린 게시글 상세로 이동한다.
              열이 좁아 제목 대신 '바로가기'로 두고 제목은 title 속성으로만 보여준다.
+             링크 텍스트가 전부 '바로가기'라 보조기기에서는 구분되지 않으므로
+             aria-label로 원글 제목을 알려준다. (텍스트가 있으면 title은 접근성 이름이 되지 않는다)
              TODO: 원글 제목을 노출해야 하면 디자인팀과 열 너비를 다시 맞출 것 */}
       <TableCell className="whitespace-nowrap text-center">
         {postHref ? (
           <Link
             href={postHref}
             title={comment.postTitle}
+            aria-label={`원글 보기: ${comment.postTitle}`}
             className="underline decoration-solid underline-offset-2"
           >
             바로가기

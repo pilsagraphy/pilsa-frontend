@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 
-import { Checkbox } from '@/components/ui/checkbox';
 import { TableCell, TableRow } from '@/components/ui/table';
 import RowActionButton from '@/components/shared/admin/RowActionButton';
+import RowCheckbox from '@/components/shared/admin/RowCheckbox';
 import { POST_STATUSES, getPostDetailHref } from '@/constants/adminPosts';
 
 // post: postId, boardName, title, author, commentCount, likeCount,
@@ -22,20 +22,13 @@ export default function PostRow({
 
   return (
     <TableRow className="h-[46px] border-b border-[#b9b9b9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121]">
-      {/* 1. 선택 체크박스
-          Checkbox 자체는 grid(블록 레벨)라 text-center로는 가운데 정렬되지 않는다.
-          inline-flex인 span으로 감싸야 가운데로 오고,
-          table.jsx의 [&>[role=checkbox]]:translate-y-[2px]도 직계 자식에만 걸리므로
-          헤더와 같은 구조로 감싸야 세로 위치까지 맞는다. */}
+      {/* 1. 선택 체크박스 */}
       <TableCell className="text-center">
-        <span className="relative inline-flex align-middle">
-          <Checkbox
-            checked={selected}
-            onCheckedChange={(checked) => onSelectChange?.(post.postId, checked === true)}
-            aria-label={`${post.title} 선택`}
-            className="size-6 rounded-[4px] border-[#919191] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
-          />
-        </span>
+        <RowCheckbox
+          checked={selected}
+          onCheckedChange={(checked) => onSelectChange?.(post.postId, checked)}
+          label={`${post.title} 선택`}
+        />
       </TableCell>
 
       {/* 2. 게시판 명 */}
