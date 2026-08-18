@@ -14,9 +14,6 @@ import {
 } from '@/apis/notification';
 import { resolveNotificationUrl } from '@/lib/notificationRoute';
 
-// 404는 "알림 없음"으로 처리한다.
-const isNotDeployed = (err) => err?.response?.status === 404;
-
 const TYPE_LABELS = {
   COMMENT: '댓글',
   REPLY: '답글',
@@ -69,8 +66,8 @@ export default function NotificationBell() {
     try {
       const data = await getUnreadCount();
       applyBadge(data?.unreadCount ?? 0);
-    } catch (err) {
-      if (isNotDeployed(err)) applyBadge(0);
+    } catch {
+      applyBadge(0);
     }
   }, [applyBadge]);
 
@@ -81,8 +78,8 @@ export default function NotificationBell() {
       const list = data?.toasts ?? [];
       setItems(list);
       if (data?.unreadCount != null) applyBadge(data.unreadCount);
-    } catch (err) {
-      if (isNotDeployed(err)) setItems([]);
+    } catch {
+      setItems([]);
     } finally {
       setLoading(false);
     }
@@ -190,11 +187,11 @@ export default function NotificationBell() {
 
   const handleReadAll = async () => {
     try {
-      await readAllToasts();
-      applyBadge(0);
+      const data = await readAllToasts();
+      if (data?.unreadCount != null) applyBadge(data.unreadCount);
       setItems((prev) => prev.map((item) => ({ ...item, isRead: true })));
-    } catch (err) {
-      if (!isNotDeployed(err)) toast.error('알림 읽음 처리에 실패했어요.');
+    } catch {
+      toast.error('알림 읽음 처리에 실패했어요.');
     }
   };
 
@@ -204,8 +201,8 @@ export default function NotificationBell() {
       const data = await deleteToast(item.toastId);
       if (data?.unreadCount != null) applyBadge(data.unreadCount);
       setItems((prev) => prev.filter((it) => it.toastId !== item.toastId));
-    } catch (err) {
-      if (!isNotDeployed(err)) toast.error('알림 삭제에 실패했어요.');
+    } catch {
+      toast.error('알림 삭제에 실패했어요.');
     }
   };
 
