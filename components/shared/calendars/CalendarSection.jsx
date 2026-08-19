@@ -13,6 +13,7 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import MonthlyScheduleList from '@/components/shared/calendars/MonthlyScheduleList';
 import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
+import CalendarSubscribeButton from '@/components/shared/calendars/CalendarSubscribeButton';
 import { calendarMockResponse } from '@/mocks/calendarData';
 import { getScheduleList } from '@/apis/schedule';
 
@@ -188,9 +189,12 @@ export default function CalendarSection({ response }) {
 
   return (
     <section className="mx-auto flex w-full max-w-[915px] flex-col gap-6 sm:gap-8 lg:gap-[40px]">
-      <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
-        일정 달력
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
+          일정 달력
+        </h2>
+        <CalendarSubscribeButton />
+      </div>
 
       {/* 달력 왼쪽 · 월별 일정 오른쪽.
           사이드바가 tablet(768px)부터 240px를 가져가므로 본문 폭은 늘 뷰포트보다 240px 좁다.

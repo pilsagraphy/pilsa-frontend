@@ -22,12 +22,45 @@ function resolveNotificationUrl(data) {
   return url;
 }
 
-self.addEventListener('install', () => {
+// ─────────────────────── 오프라인 폴백 ───────────────────────
+// fetch 핸들러가 있어야 브라우저가 이 사이트를 "설치 가능"으로 판정한다 (PWA·TWA 요건).
+// 캐싱은 최소한으로만 한다 — 페이지 이동 요청만 네트워크 우선, 실패하면 오프라인 안내를 보여준다.
+// API 응답은 절대 가로채지 않는다: 토큰 재발급·알림 등이 캐시된 응답을 받으면 인증 상태가 꼬인다.
+const OFFLINE_CACHE = 'pilsa-offline-v1';
+const OFFLINE_URL = '/offline.html';
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(OFFLINE_CACHE).then((cache) => cache.addAll([OFFLINE_URL, '/icons/icon-192.png']))
+  );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    (async () => {
+      // 옛 버전 캐시 정리 (OFFLINE_CACHE 이름을 올리면 자동으로 갈린다)
+      const keys = await caches.keys();
+      await Promise.all(keys.filter((key) => key !== OFFLINE_CACHE).map((key) => caches.delete(key)));
+      await self.clients.claim();
+    })()
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  // 페이지 이동(navigate)만 다룬다. 그 외(API·스크립트·이미지)는 그대로 네트워크로 흘려보낸다.
+  if (event.request.mode !== 'navigate') return;
+
+  event.respondWith(
+    (async () => {
+      try {
+        return await fetch(event.request);
+      } catch {
+        const cache = await caches.open(OFFLINE_CACHE);
+        return (await cache.match(OFFLINE_URL)) ?? Response.error();
+      }
+    })()
+  );
 });
 
 self.addEventListener('push', (event) => {
