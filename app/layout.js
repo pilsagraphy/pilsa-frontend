@@ -20,7 +20,9 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: '#ffffff',
+  // 브랜드 CI 색 (components/service/brandCI/BrandColor.jsx). TWA 상태바 색이 된다.
+  // 스플래시는 manifest 의 background_color(흰색) 를 쓴다 — 앱 화면이 흰 바탕이라 그쪽은 맞춰 둔다.
+  themeColor: '#212121',
   width: 'device-width',
   initialScale: 1,
 };
