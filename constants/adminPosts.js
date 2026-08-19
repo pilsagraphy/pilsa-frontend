@@ -60,17 +60,21 @@ const TITLE_POOL = [
   '방학 중 활동 일정 문의',
 ];
 
-const AUTHOR_POOL = [
-  'ch400',
-  'younghee',
-  'minsu',
-  'jiwoo',
-  'haneul',
-  'doyoon',
-  'seoyeon',
-  'jiho',
-  'yerin',
-  'jaehyun',
+// 글쓴이 정보. 목록의 '글쓴이' 열에는 loginId만 쓰지만,
+// 조치 모달의 '대상 회원'은 로그인ID / 학번 / 이름을 함께 보여줘서 셋을 다 들고 있는다.
+// 댓글 관리(adminComments.js)에서도 같은 회원을 쓰도록 여기서 내보낸다.
+// TODO: API 연동 시 서버가 주는 작성자 정보로 대체할 것
+export const MEMBER_POOL = [
+  { loginId: 'ch400', studentId: '2026000001', name: '김철수' },
+  { loginId: 'younghee', studentId: '2025000042', name: '이영희' },
+  { loginId: 'minsu', studentId: '2024000117', name: '박민수' },
+  { loginId: 'jiwoo', studentId: '2026000073', name: '최지우' },
+  { loginId: 'haneul', studentId: '2023000205', name: '정하늘' },
+  { loginId: 'doyoon', studentId: '2025000088', name: '강도윤' },
+  { loginId: 'seoyeon', studentId: '2024000019', name: '조서연' },
+  { loginId: 'jiho', studentId: '2026000134', name: '윤지호' },
+  { loginId: 'yerin', studentId: '2022000061', name: '장예린' },
+  { loginId: 'jaehyun', studentId: '2023000150', name: '임재현' },
 ];
 
 // 페이지네이션을 확인할 수 있도록 시안대로 5페이지 분량(10건씩 4페이지 + 7건)을 만든다.
@@ -80,12 +84,16 @@ const DUMMY_POST_COUNT = 47;
 export const DUMMY_POSTS = Array.from({ length: DUMMY_POST_COUNT }, (_, index) => {
   const postId = index + 1;
   const { boardName, status } = POST_PATTERN[index % POST_PATTERN.length];
+  const member = MEMBER_POOL[index % MEMBER_POOL.length];
 
   return {
     postId,
     boardName,
     title: TITLE_POOL[index % TITLE_POOL.length],
-    author: AUTHOR_POOL[index % AUTHOR_POOL.length],
+    // author는 목록 '글쓴이' 열용, 나머지 둘은 조치 모달의 '대상 회원'용
+    author: member.loginId,
+    authorStudentId: member.studentId,
+    authorName: member.name,
     commentCount: (postId * 3) % 17,
     likeCount: (postId * 5) % 29,
     viewCount: (postId * 13) % 241,
