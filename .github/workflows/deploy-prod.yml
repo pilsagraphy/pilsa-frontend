@@ -1,37 +1,31 @@
 name: Deploy Production
 
-# 수동 트리거 전용: Actions 탭 → Deploy Production → Run workflow
-# release-app 브랜치를 운영 프론트(포트 3000, pm2 pilsa-frontend)에 배포
+# release-app 브랜치 push 시 운영 프론트(포트 3000, pm2 pilsa-frontend)에 자동 배포
 on:
+  push:
+    branches: [release-app]
   workflow_dispatch:
 
 concurrency:
   group: deploy-frontend-prod
   cancel-in-progress: false
 
+env:
+  DEPLOY_BRANCH: release-app
+
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 25
     steps:
-      - name: Configure SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.PILSA_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H "${{ secrets.PILSA_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
-
       - name: Deploy frontend to Production
         run: |
-          ssh -i ~/.ssh/deploy_key \
-              -o ServerAliveInterval=30 -o ServerAliveCountMax=40 \
-              "${{ secrets.PILSA_USER }}@${{ secrets.PILSA_HOST }}" 'bash -s' <<'DEPLOY'
           set -euo pipefail
 
-          echo "===== [1/4] 소스 최신화 (origin/release-app) ====="
+          echo "===== [1/4] 소스 최신화 (origin/${DEPLOY_BRANCH}) ====="
           cd ~/frontend
-          git fetch origin release-app
-          git reset --hard origin/release-app
+          git fetch origin "${DEPLOY_BRANCH}"
+          git reset --hard "origin/${DEPLOY_BRANCH}"
           git log --oneline -1
 
           echo "===== [2/4] 의존성 설치 & Next.js 빌드 ====="
@@ -53,4 +47,3 @@ jobs:
           echo "운영 프론트가 응답하지 않습니다. 최근 로그:"
           pm2 logs pilsa-frontend --lines 50 --nostream
           exit 1
-          DEPLOY
