@@ -2,11 +2,14 @@ import ClientToaster from '@/components/common/ClientToaster';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Sidebar from '@/components/shared/Sidebar';
+import PushPromptBottomSheet from '@/components/service/notification/PushPromptBottomSheet';
 
 export default function MembersLayout({ children }) {
   return (
     <>
       <ClientToaster />
+      {/* 웹앱(standalone) 첫 로그인 시 알림 유도 팝업창 */}
+      <PushPromptBottomSheet />
       {/* 헤더 상단 고정: 스크롤해도 제자리 유지 */}
       <div className="tablet:sticky tablet:top-0 tablet:z-50 bg-white">
         <Header />

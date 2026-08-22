@@ -7,7 +7,7 @@ import { ChevronDown, Menu, X } from 'lucide-react';
 import { toast } from 'sonner';
 import useSidebarStore from '@/stores/sidebar';
 import useAuthStore from '@/stores/useAuthStore';
-import { ROUTES, ALLOWED_BOARD_ROLES } from '@/constants/routes';
+import { ROUTES, ALLOWED_BOARD_MEMBER_TYPES } from '@/constants/routes';
 
 const Sidebar = () => {
   const router = useRouter();
@@ -16,7 +16,8 @@ const Sidebar = () => {
 
   const { openMenus, toggleMenu, toggleLogin } = useSidebarStore();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
-  const role = useAuthStore((state) => state.role);
+  const memberType = useAuthStore((state) => state.memberType);
+  const adminLevel = useAuthStore((state) => state.adminLevel);
   const fetchRole = useAuthStore((state) => state.fetchRole);
 
   // 페이지 이동 시 모바일 메뉴 닫기
@@ -29,21 +30,28 @@ const Sidebar = () => {
       router.push(ROUTES.LOGIN);
       return false;
     }
-    let currentRole = role;
-    if (currentRole == null) {
-      currentRole = await fetchRole();
+    // 신분(memberType) + 관리레벨(adminLevel) 2축 판정 — 스토어에 없으면 /api/role 재조회
+    let currentMemberType = memberType;
+    let currentAdminLevel = adminLevel;
+    if (currentMemberType == null) {
+      const data = await fetchRole();
+      currentMemberType = data?.memberType ?? null;
+      currentAdminLevel = data?.adminLevel ?? 0;
     }
-    if (!currentRole || !ALLOWED_BOARD_ROLES.includes(currentRole)) {
+    const allowed =
+      currentAdminLevel >= 1 ||
+      (currentMemberType && ALLOWED_BOARD_MEMBER_TYPES.includes(currentMemberType));
+    if (!allowed) {
       toast.error('게시판 접근 권한이 없습니다.');
       return false;
     }
     return true;
-  }, [isLoggedIn, role, fetchRole, router]);
+  }, [isLoggedIn, memberType, adminLevel, fetchRole, router]);
 
-  const handleBoardMenuClick = useCallback(async () => {
-    const allowed = await checkBoardAccess();
-    if (allowed) toggleMenu('board');
-  }, [checkBoardAccess, toggleMenu]);
+  // 게시판 상위 메뉴는 단순 펼침/접힘 — 로그인 요구는 하위 메뉴(실제 페이지 이동) 클릭 시에만
+  const handleBoardMenuClick = useCallback(() => {
+    toggleMenu('board');
+  }, [toggleMenu]);
 
   const handleBoardSubmenuClick = useCallback(
     async (e, path) => {
@@ -66,7 +74,7 @@ const Sidebar = () => {
     },
     board: {
       subMenus: [
-        { name: '재학생메인페이지', path: ROUTES.STUDENTS_DASHBOARD },
+        { name: '메인페이지', path: ROUTES.STUDENTS_DASHBOARD },
         { name: '공지사항', path: ROUTES.NOTICES },
         { name: '자유게시판', path: ROUTES.FREE_BOARD },
         { name: '정보게시판', path: ROUTES.INFO_BOARD },
@@ -151,7 +159,7 @@ const Sidebar = () => {
               className={`flex items-center text-[16px] ${isBoardActive ? 'font-bold text-grayscale-06' : 'font-medium text-grayscale-03'}`}
             >
               <ArrowIcon isOpen={openMenus.board} />
-              게시판
+              회원 게시판
             </button>
             {openMenus.board && (
               <div className="flex flex-col items-start gap-[15px] mt-3">
@@ -203,7 +211,7 @@ const Sidebar = () => {
         <div className="flex flex-col items-start gap-4">
           {/* 로그인 상태에서만 마이페이지 노출 */}
           {isLoggedIn && (
-            <Link href={ROUTES.MYPAGE}>
+            <Link href={ROUTES.MY_PAGE}>
               <p className="text-[16px] font-bold text-[#212121] hover:underline">마이페이지</p>
             </Link>
           )}

@@ -157,7 +157,12 @@ export default function NoticeDetailView({ noticeId, sort = 'latest' }) {
         </div>
       </div>
 
-      <NoticePrevNext links={notice.links} />
+      <NoticePrevNext
+        links={notice.links}
+        currentTitle={notice.title}
+        currentImportant={notice.isImportant}
+        currentDate={notice.date}
+      />
     </section>
   );
 }

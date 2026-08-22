@@ -39,8 +39,9 @@ export const extendRefreshToken = (token) => {
 
 // 로그인 관련 API
 // 1. 로그인 (POST /api/auth/login)
-export const login = async (loginId, password) => {
-  const response = await axiosInstance.post('/api/auth/login', { loginId, password });
+// autoLogin: 자동 로그인 여부
+export const login = async (loginId, password, autoLogin = false) => {
+  const response = await axiosInstance.post('/api/auth/login', { loginId, password, autoLogin });
   return response.data;
 };
 
@@ -72,7 +73,7 @@ export const logout = async () => {
   return response.data;
 };
 
-// 4. 역할 조회 (GET /api/role) - 로그인 사용자 역할 확인
+// 4. 권한 조회 (GET /api/role) - 응답: { memberType: 'STUDENT'|'ALUMNI', adminLevel: 0~3 }
 export const getRole = async () => {
   const response = await axiosInstance.get('/api/role');
   return response.data;
@@ -91,6 +92,16 @@ export const findLoginIdByEmail = async (email) => {
     params: { email },
   });
   return response.data; // { message, loginId }
+};
+
+// 5-3. 이메일 찾기 (아이디로 등록된 이메일 조회)
+// TODO: 백엔드 엔드포인트 확정 후 연동 (현재 API 미구현 - 응답 형식 예상: { message, email })
+export const findEmailByLoginId = async (loginId) => {
+  // const response = await axiosInstance.get('/api/auth/email/find', {
+  //   params: { loginId },
+  // });
+  // return response.data; // { message, email }
+  throw new Error('NOT_IMPLEMENTED');
 };
 
 // 6. 비밀번호 초기화

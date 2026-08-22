@@ -111,7 +111,13 @@ export default function FreeDetailView({ postId }) {
 
       <FreeComments postId={post.postId} comments={post.comments} onChanged={fetchDetail} />
 
-      <FreePrevNext prevPostApi={post.prevPostApi} nextPostApi={post.nextPostApi} />
+      <FreePrevNext
+        prevPostApi={post.prevPostApi}
+        nextPostApi={post.nextPostApi}
+        currentTitle={post.title}
+        currentCategory={post.categoryName}
+        currentDate={post.updated}
+      />
     </section>
   );
 }
