@@ -35,7 +35,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
-const ALLOWED_ROLES = ['STUDENTS', 'ALUMNI', 'ADMIN'];
+const ALLOWED_ROLES = ['STUDENTS', 'ALUMNI'];
+const MEMBER_TYPE_BY_ROLE = { STUDENTS: 'STUDENT', ALUMNI: 'ALUMNI' };
 const DEFAULT_VALUES = {
   name: '',
   department: '',
@@ -55,8 +56,7 @@ function SignupFormInner() {
   const searchParams = useSearchParams();
   const rawRole = searchParams.get('role') || 'STUDENTS';
   const roleParam = ALLOWED_ROLES.includes(rawRole) ? rawRole : 'STUDENTS';
-  const roleForApi =
-    roleParam === 'STUDENTS' ? 'STUDENTS' : roleParam === 'ALUMNI' ? 'ALUMNI' : 'ADMIN';
+  const memberTypeForApi = MEMBER_TYPE_BY_ROLE[roleParam];
 
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
@@ -235,7 +235,7 @@ function SignupFormInner() {
       email: safe(finalEmail),
       loginId: safe(data.username),
       password: data.password ?? '',
-      role: roleForApi,
+      memberType: memberTypeForApi,
     };
 
     try {
@@ -266,7 +266,7 @@ function SignupFormInner() {
 
       <div className="mb-8">
         <span className="inline-block rounded-[4px] bg-[#f0f0f0] px-4 py-2 text-[14px] text-[#212121]">
-          {roleParam === 'STUDENTS' ? '재학생' : roleParam === 'ALUMNI' ? '졸업생' : '관리자'}
+          {roleParam === 'STUDENTS' ? '재학생' : '졸업생'}
         </span>
       </div>
 

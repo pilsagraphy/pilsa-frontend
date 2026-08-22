@@ -28,8 +28,9 @@ export const extendRefreshToken = (token) => {
 
 // 로그인 관련 API
 // 1. 로그인 (POST /api/auth/login)
-export const login = async (loginId, password) => {
-  const response = await axiosInstance.post('/api/auth/login', { loginId, password });
+// autoLogin: 자동 로그인 여부
+export const login = async (loginId, password, autoLogin = false) => {
+  const response = await axiosInstance.post('/api/auth/login', { loginId, password, autoLogin });
   return response.data;
 };
 
@@ -61,7 +62,7 @@ export const logout = async () => {
   return response.data;
 };
 
-// 4. 역할 조회 (GET /api/role) - 로그인 사용자 역할 확인
+// 4. 권한 조회 (GET /api/role) - 응답: { memberType: 'STUDENT'|'ALUMNI', adminLevel: 0~3 }
 export const getRole = async () => {
   const response = await axiosInstance.get('/api/role');
   return response.data;

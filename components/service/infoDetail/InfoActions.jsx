@@ -25,10 +25,10 @@ export default function InfoActions({
   const router = useRouter();
 
   const user = useAuthStore((s) => s.user);
-  const role = useAuthStore((s) => s.role);
+  const adminLevel = useAuthStore((s) => s.adminLevel);
 
   const currentUserId = Number(user?.userId ?? user?.id ?? user?.user_id);
-  const isAdmin = role === 'ADMIN' || role === 'ROLE_ADMIN';
+  const isAdmin = adminLevel >= 1; // 관리자 여부는 admin_level 축으로 판정
   const canEdit = isAdmin || (Number.isFinite(currentUserId) && currentUserId === Number(authorId));
   const canDelete = Number.isFinite(currentUserId) && currentUserId === Number(authorId);
 
