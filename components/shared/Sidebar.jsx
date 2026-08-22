@@ -204,8 +204,8 @@ const Sidebar = () => {
           </Link>
         </div>
 
-        {/* 4. 로그인 영역 — 메뉴 바로 아래 고정 간격 */}
-        <div className="flex flex-col items-end pt-12">
+        {/* 4. 로그인 영역 */}
+        <div className="mt-auto flex flex-col items-end pt-10">
           <Link href={loginPath}>
             <button
               onClick={toggleLogin}

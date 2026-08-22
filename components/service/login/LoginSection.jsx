@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
@@ -14,14 +14,40 @@ import { JUST_LOGGED_IN_KEY } from '@/components/service/notification/PushPrompt
 import LoginBannedSection from './LoginBannedSection';
 import LoginRestrictedSection from './LoginRestrictedSection';
 
+// 아이디 저장(로컬 스토리지) 키 — 아이디만 채워둘 뿐 세션과는 무관
+const SAVED_LOGIN_ID_KEY = 'savedLoginId';
+
 // 로그아웃 안내 토스트 — 로그인 시 닫아야 해서 id 를 고정한다
 const LOGOUT_TOAST_ID = 'logout-done';
+
+// 시안의 체크박스 — 아이디 저장 / 자동 로그인이 같은 모양을 공유한다
+function LoginCheckbox({ checked, onChange, label }) {
+  return (
+    <label className="flex cursor-pointer items-center gap-1.5 select-none">
+      <input
+        type="checkbox"
+        className="peer sr-only"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span
+        aria-hidden
+        className="grid size-6 place-content-center rounded-[2px] border border-[#919191] bg-white text-white transition-colors peer-checked:border-[#212121] peer-checked:bg-[#212121] peer-focus-visible:ring-2 peer-focus-visible:ring-[#212121]/40"
+      >
+        {checked && <Check className="size-4" strokeWidth={3} />}
+      </span>
+      <span className="text-[14px] font-bold tracking-[-0.28px] text-black">{label}</span>
+    </label>
+  );
+}
 
 export default function LoginSection() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
+  // 아이디 저장(입력값 프리필)과 자동 로그인(세션 복원)은 서로 독립된 옵션이다
+  const [rememberId, setRememberId] = useState(false);
   const [autoLogin, setAutoLogin] = useState(false);
   // 제재 계정 안내: { banType: 'temporary'|'permanent', bannedUntil }
   const [banInfo, setBanInfo] = useState(null);
@@ -30,6 +56,19 @@ export default function LoginSection() {
   const [loggingOut, setLoggingOut] = useState(false);
   const { login, logout } = useAuthStore();
   const logoutHandled = useRef(false);
+
+  // 아이디 저장: 마운트 시 저장된 아이디가 있으면 자동 입력 + 체크박스 활성화
+  useEffect(() => {
+    try {
+      const savedLoginId = localStorage.getItem(SAVED_LOGIN_ID_KEY);
+      if (savedLoginId) {
+        setLoginId(savedLoginId);
+        setRememberId(true);
+      }
+    } catch {
+      // localStorage 접근 불가 환경(시크릿 모드 등) — 프리필만 건너뛴다
+    }
+  }, []);
 
   // 로그아웃 플로우: /login?logout=1 접근 시 실행
   useEffect(() => {
@@ -50,6 +89,7 @@ export default function LoginSection() {
         setLoggingOut(false);
         toast.success('로그아웃되었습니다!', {
           id: LOGOUT_TOAST_ID,
+          duration: Infinity,
           action: {
             label: '홈으로',
             onClick: () => router.push(BASE_PATH),
@@ -68,6 +108,17 @@ export default function LoginSection() {
     toast.dismiss(LOGOUT_TOAST_ID);
     try {
       await login(loginId, password, autoLogin);
+
+      // 아이디 저장: 체크 시 저장, 해제 시 삭제
+      try {
+        if (rememberId) {
+          localStorage.setItem(SAVED_LOGIN_ID_KEY, loginId);
+        } else {
+          localStorage.removeItem(SAVED_LOGIN_ID_KEY);
+        }
+      } catch {
+        // localStorage 접근 불가 환경에서도 로그인 자체는 성공 처리
+      }
 
       // 웹앱(standalone) 첫 로그인 알림 유도 바텀시트 노출 신호
       try {
@@ -90,8 +141,7 @@ export default function LoginSection() {
         return;
       }
 
-      const message =
-        data?.message ?? (typeof data === 'string' ? data : null) ?? err.message;
+      const message = data?.message ?? (typeof data === 'string' ? data : null) ?? err.message;
       toast.error(message);
     }
   };
@@ -112,63 +162,72 @@ export default function LoginSection() {
   return (
     <section className="mx-auto w-full max-w-[616px]">
       <div className="rounded-[6px] bg-white p-6">
-        <h2 className="text-[24px] font-semibold text-[#454545]">로그인</h2>
+        <form onSubmit={handleLogin} className="flex flex-col gap-5">
+          {/* 제목 + (아이디 저장·자동 로그인 / 아이디 찾기·이메일 찾기·비밀번호 재설정) */}
+          <div className="flex flex-col gap-3">
+            <h2 className="text-[24px] font-semibold tracking-[-0.48px] text-black">로그인</h2>
 
-        {/* 2. onClick 대신 onSubmit 사용 */}
-        <form onSubmit={handleLogin} className="mt-4 space-y-3">
-          <div className="flex items-center justify-between">
-            {/* 자동 로그인 (시안의 체크박스 위치 — 좌측) */}
-            <label className="flex cursor-pointer select-none items-center gap-2 text-[14px] tracking-[-0.28px] text-[#c4c4c4] transition-colors hover:text-[#424242]">
-              <Checkbox
-                checked={autoLogin}
-                onCheckedChange={(checked) => setAutoLogin(checked === true)}
-                className="border-[#c4c4c4] data-[state=checked]:bg-[#212121] data-[state=checked]:border-[#212121]"
-              />
-              자동 로그인
-            </label>
+            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
+              {/* 아이디 저장 / 자동 로그인 */}
+              <div className="flex items-center gap-4">
+                <LoginCheckbox label="아이디 저장" checked={rememberId} onChange={setRememberId} />
+                <LoginCheckbox label="자동 로그인" checked={autoLogin} onChange={setAutoLogin} />
+              </div>
 
-            <div className="flex items-center text-[14px] tracking-[-0.28px] whitespace-nowrap">
-              <button
-                type="button"
-                className="text-[#c4c4c4] hover:text-[#424242] hover:underline transition-colors"
-                onClick={() => router.push(ROUTES.FIND_ID)}
-              >
-                아이디
-              </button>
-              <span className="mx-1 text-[#c4c4c4]">/</span>
-              <button
-                type="button"
-                className="text-[#c4c4c4] hover:text-[#424242] hover:underline transition-colors"
-                onClick={() => router.push(ROUTES.FIND_PW)}
-              >
-                비밀번호
-              </button>
-              <span className="text-[#c4c4c4]">를 잊으셨나요?</span>
+              {/* 아이디 찾기 / 이메일 찾기 / 비밀번호 재설정 */}
+              <div className="flex items-center gap-1.5 text-[14px] font-bold tracking-[-0.28px] text-black whitespace-nowrap">
+                <button
+                  type="button"
+                  className="transition-colors hover:underline"
+                  onClick={() => router.push(ROUTES.FIND_ID)}
+                >
+                  아이디 찾기
+                </button>
+                <span className="h-[9px] w-px bg-[#e5e5e5]" aria-hidden />
+                <button
+                  type="button"
+                  className="transition-colors hover:underline"
+                  onClick={() => router.push(ROUTES.FIND_EMAIL)}
+                >
+                  이메일 찾기
+                </button>
+                <span className="h-[9px] w-px bg-[#e5e5e5]" aria-hidden />
+                <button
+                  type="button"
+                  className="transition-colors hover:underline"
+                  onClick={() => router.push(ROUTES.FIND_PW)}
+                >
+                  비밀번호 재설정
+                </button>
+              </div>
             </div>
           </div>
 
-          <Input
-            required
-            className="h-[56px] rounded-[6px] border-[#c4c4c4] text-[18px]"
-            placeholder="아이디를 입력하세요"
-            value={loginId}
-            onChange={(e) => setLoginId(e.target.value)}
-          />
-          <Input
-            required
-            type="password"
-            className="h-[56px] rounded-[6px] border-[#c4c4c4] text-[18px]"
-            placeholder="비밀번호를 입력하세요"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
+          {/* 입력 필드 */}
+          <div className="flex flex-col gap-3">
+            <Input
+              required
+              className="h-[52px] rounded-[4px] border-[#dedede] text-[16px] placeholder:text-[#9e9e9e]"
+              placeholder="아이디를 입력하세요."
+              value={loginId}
+              onChange={(e) => setLoginId(e.target.value)}
+            />
+            <Input
+              required
+              type="password"
+              className="h-[52px] rounded-[4px] border-[#dedede] text-[16px] placeholder:text-[#9e9e9e]"
+              placeholder="비밀번호를 입력하세요."
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-          <div className="pt-2 space-y-3">
-            {/* 3. Button의 onClick은 제거 (onSubmit이 처리함) */}
+          {/* 버튼 */}
+          <div className="flex flex-col gap-3">
             <Button
               type="submit"
               disabled={loggingOut}
-              className="h-[64px] w-full rounded-[6px] bg-[#454545] text-[20px] font-semibold text-white hover:bg-[#454545]/90 disabled:opacity-60"
+              className="h-[52px] w-full rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#212121]/90 disabled:opacity-60"
             >
               {loggingOut ? '로그아웃 처리 중...' : '로그인'}
             </Button>
@@ -176,25 +235,12 @@ export default function LoginSection() {
             <Button
               type="button"
               variant="outline"
-              className="h-[64px] w-full rounded-[6px] border-[#454545] text-[20px] font-semibold text-[#454545]"
+              className="h-[52px] w-full rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]"
               onClick={() => router.push(ROUTES.SIGNUP)}
             >
               회원가입
             </Button>
           </div>
-
-          {/* 간편로그인 예정 */}
-          {/* <div className="pt-8">
-            <p className="text-center text-[18px] text-[#919191]">간편로그인</p>
-            <div className="mt-4 flex items-center justify-center">
-              <button
-                type="button"
-                className="grid size-[54px] place-items-center rounded-full bg-[#F5DE00]"
-              >
-                <span className="text-[12px] font-semibold">K</span>
-              </button>
-            </div>
-          </div> */}
         </form>
       </div>
     </section>

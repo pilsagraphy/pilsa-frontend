@@ -83,6 +83,16 @@ export const findLoginIdByEmail = async (email) => {
   return response.data; // { message, loginId }
 };
 
+// 5-3. 이메일 찾기 (아이디로 등록된 이메일 조회)
+// TODO: 백엔드 엔드포인트 확정 후 연동 (현재 API 미구현 - 응답 형식 예상: { message, email })
+export const findEmailByLoginId = async (loginId) => {
+  // const response = await axiosInstance.get('/api/auth/email/find', {
+  //   params: { loginId },
+  // });
+  // return response.data; // { message, email }
+  throw new Error('NOT_IMPLEMENTED');
+};
+
 // 6. 비밀번호 초기화
 // 6-1. 비밀번호 찾기 전 단계 - 인증번호 발송 (GET /api/auth/verification)
 export const sendPasswordResetVerification = async (loginId, email) => {

@@ -20,8 +20,8 @@ export const ROUTES = {
   SIGNUP: `${BASE_PATH}signup`,
   LOGOUT: `${BASE_PATH}logout`,
   FIND_ID: `${BASE_PATH}findId`,
-  FIND_PW: `${BASE_PATH}findPassword`,
   FIND_EMAIL: `${BASE_PATH}findEmail`,
+  FIND_PW: `${BASE_PATH}findPassword`,
 
   // students 영역
   STUDENTS_DASHBOARD: `${BASE_PATH}students`,
@@ -59,8 +59,8 @@ export const PUBLIC_ROUTES = [
   ROUTES.LOGIN,
   ROUTES.SIGNUP,
   ROUTES.FIND_ID,
-  ROUTES.FIND_PW,
   ROUTES.FIND_EMAIL,
+  ROUTES.FIND_PW,
 ];
 
 // 게시판 접근 가능 신분 (백엔드 users.member_type — STUDENT: 재학생 / ALUMNI: 졸업생)
