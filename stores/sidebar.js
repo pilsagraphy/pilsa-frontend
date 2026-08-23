@@ -5,6 +5,8 @@ const useSidebarStore = create((set) => ({
   openMenus: {
     about: true, // 기본적으로 ABOUT PILSA가 열려있는 상태로 가정
     board: true, // 게시판도 기본 확장
+    members: true, // 관리자: 회원관리 기본 확장
+    community: true, // 관리자: 커뮤니티 관리 기본 확장
   },
   toggleLogin: () => set((state) => ({ isLoggedIn: !state.isLoggedIn })),
   toggleMenu: (menu) =>
