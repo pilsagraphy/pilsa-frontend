@@ -28,19 +28,28 @@ export function toParts(date) {
  *
  * 첫 번째 클릭으로 시작일, 두 번째 클릭으로 종료일을 고른다.
  * (거꾸로 누르면 앞뒤를 바꿔서 잡는다)
+ *
+ * 날짜를 골라도 창은 그대로 열려 있고, 확인을 눌러야 폼에 반영되며 닫힌다.
+ * triggerRef: 이 창을 여는 달력 버튼. 버튼 클릭을 '바깥 클릭'으로 세면
+ *             닫자마자 버튼의 토글이 다시 열어 버려서 예외로 둔다.
  */
-export default function ScheduleDatePicker({ start, end, onSelectRange, onClose }) {
+export default function ScheduleDatePicker({ start, end, triggerRef, onConfirm, onClose }) {
   const [month, setMonth] = React.useState(() => toDate(start));
 
-  // 고르는 중인 구간. 시작만 찍힌 상태에서는 draftEnd가 null이다.
-  const [draftStart, setDraftStart] = React.useState(() => startOfDay(toDate(start)));
-  const [draftEnd, setDraftEnd] = React.useState(() => startOfDay(toDate(end)));
+  // 고르는 중인 구간. 시작만 찍힌 상태에서는 end가 null이다.
+  // 시작 · 종료를 따로 두면 한 번에 두 번 눌렸을 때 앞선 상태를 못 읽으므로 한 덩어리로 든다.
+  const [draft, setDraft] = React.useState(() => ({
+    start: startOfDay(toDate(start)),
+    end: startOfDay(toDate(end)),
+  }));
 
   const rootRef = React.useRef(null);
 
   React.useEffect(() => {
     const handlePointerDown = (event) => {
-      if (!rootRef.current?.contains(event.target)) onClose?.();
+      if (rootRef.current?.contains(event.target)) return;
+      if (triggerRef?.current?.contains(event.target)) return;
+      onClose?.();
     };
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') onClose?.();
@@ -53,13 +62,13 @@ export default function ScheduleDatePicker({ start, end, onSelectRange, onClose 
       document.removeEventListener('mousedown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [onClose]);
+  }, [onClose, triggerRef]);
 
   const isInDraft = (date) => {
-    if (!draftStart) return false;
-    if (!draftEnd) return isSameDay(startOfDay(date), draftStart);
+    if (!draft.start) return false;
+    if (!draft.end) return isSameDay(startOfDay(date), draft.start);
 
-    return isWithinInterval(startOfDay(date), { start: draftStart, end: draftEnd });
+    return isWithinInterval(startOfDay(date), { start: draft.start, end: draft.end });
   };
 
   // 막대의 양 끝만 둥글게 한다. 주가 바뀌거나 달을 벗어나면 거기서 끊어 준다.
@@ -87,20 +96,25 @@ export default function ScheduleDatePicker({ start, end, onSelectRange, onClose 
 
     const picked = startOfDay(date);
 
-    // 구간이 다 잡혀 있으면 새로 시작한다.
-    if (!draftStart || draftEnd) {
-      setDraftStart(picked);
-      setDraftEnd(null);
+    setDraft((prev) => {
+      // 구간이 다 잡혀 있으면 새로 시작한다.
+      if (!prev.start || prev.end) return { start: picked, end: null };
+
+      // 거꾸로 눌렀으면 앞뒤를 바꿔서 잡는다.
+      return picked < prev.start
+        ? { start: picked, end: prev.start }
+        : { start: prev.start, end: picked };
+    });
+  };
+
+  // 종료일을 안 고르고 확인하면 하루짜리 일정으로 본다.
+  const handleConfirm = () => {
+    if (!draft.start) {
+      onClose?.();
       return;
     }
 
-    const [rangeStart, rangeEnd] =
-      picked < draftStart ? [picked, draftStart] : [draftStart, picked];
-
-    setDraftStart(rangeStart);
-    setDraftEnd(rangeEnd);
-    onSelectRange?.(toParts(rangeStart), toParts(rangeEnd));
-    onClose?.();
+    onConfirm?.(toParts(draft.start), toParts(draft.end ?? draft.start));
   };
 
   return (
@@ -120,9 +134,22 @@ export default function ScheduleDatePicker({ start, end, onSelectRange, onClose 
         className="w-full"
       />
 
-      <p className="mt-[8px] text-center text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
-        {draftEnd ? '시작일을 다시 누르면 새로 고를 수 있어요.' : '종료일을 골라 주세요.'}
-      </p>
+      <div className="mt-[12px] flex items-center justify-end gap-[12px]">
+        <button
+          type="button"
+          onClick={onClose}
+          className="h-[40px] w-[80px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6]"
+        >
+          취소
+        </button>
+        <button
+          type="button"
+          onClick={handleConfirm}
+          className="h-[40px] w-[80px] rounded-[4px] bg-[#212121] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242]"
+        >
+          확인
+        </button>
+      </div>
     </div>
   );
 }

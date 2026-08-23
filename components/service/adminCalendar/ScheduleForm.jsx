@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { CalendarDays, Pencil } from 'lucide-react';
+import { CalendarDays, Pencil, Plus } from 'lucide-react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { DEFAULT_SCHEDULE_CATEGORY, SCHEDULE_CATEGORY_OPTIONS } from '@/constants/calendar';
@@ -50,20 +50,27 @@ function toTimeParts(value) {
 }
 
 /**
- * 관리자 일정 수정 폼.
+ * 관리자 일정 추가 · 수정 폼.
  *
- * TODO: API 연동 시 확인을 누르면 수정 요청을 보내고 목록을 다시 불러올 것.
+ * schedule이 없으면 '일정 추가', 있으면 '일정 수정'으로 그린다. 입력 항목은 같다.
+ * defaultDate('yyyy-MM-dd')는 추가할 때 시작 · 종료일의 초깃값. 없으면 오늘로 채운다.
+ *
+ * TODO: API 연동 시 확인을 누르면 등록 · 수정 요청을 보내고 목록을 다시 불러올 것.
  *       지금은 마크업 단계라 입력값을 그대로 onSubmit으로 넘기기만 한다.
  */
-export default function ScheduleForm({ schedule, onCancel, onSubmit }) {
+export default function ScheduleForm({ schedule = null, defaultDate = null, onCancel, onSubmit }) {
+  const isCreate = !schedule;
   const [title, setTitle] = React.useState(schedule?.title ?? '');
   const [category, setCategory] = React.useState(schedule?.category ?? DEFAULT_SCHEDULE_CATEGORY);
   const [content, setContent] = React.useState(schedule?.content ?? '');
   const [isAllDay, setIsAllDay] = React.useState(!schedule?.startTime);
 
-  const [start, setStart] = React.useState(() => toDateParts(schedule?.startDate));
-  const [end, setEnd] = React.useState(() => toDateParts(schedule?.endDate ?? schedule?.startDate));
+  const [start, setStart] = React.useState(() => toDateParts(schedule?.startDate ?? defaultDate));
+  const [end, setEnd] = React.useState(() =>
+    toDateParts(schedule?.endDate ?? schedule?.startDate ?? defaultDate)
+  );
   const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false);
+  const datePickerTriggerRef = React.useRef(null);
   const [startTime, setStartTime] = React.useState(() => toTimeParts(schedule?.startTime));
   const [endTime, setEndTime] = React.useState(() => toTimeParts(schedule?.endTime));
 
@@ -158,8 +165,12 @@ export default function ScheduleForm({ schedule, onCancel, onSubmit }) {
   return (
     <form onSubmit={handleSubmit} className="w-full border-t border-[#DEDEDE] pt-6 md:pt-[30px]">
       <h3 className="flex items-center gap-[16px] text-[16px] font-bold leading-[1.6] tracking-[-0.32px] text-[#454545]">
-        <Pencil aria-hidden="true" strokeWidth={1.6} className="size-5 shrink-0" />
-        일정 수정
+        {isCreate ? (
+          <Plus aria-hidden="true" strokeWidth={1.6} className="size-5 shrink-0" />
+        ) : (
+          <Pencil aria-hidden="true" strokeWidth={1.6} className="size-5 shrink-0" />
+        )}
+        {isCreate ? '일정 추가' : '일정 수정'}
       </h3>
 
       <div className="mt-6 flex flex-col gap-[26px] md:mt-[34px]">
@@ -197,6 +208,7 @@ export default function ScheduleForm({ schedule, onCancel, onSubmit }) {
 
               <div className="relative shrink-0">
                 <button
+                  ref={datePickerTriggerRef}
                   type="button"
                   onClick={() => setIsDatePickerOpen((prev) => !prev)}
                   aria-label="달력에서 날짜 고르기"
@@ -211,9 +223,12 @@ export default function ScheduleForm({ schedule, onCancel, onSubmit }) {
                   <ScheduleDatePicker
                     start={start}
                     end={end}
-                    onSelectRange={(nextStart, nextEnd) => {
+                    triggerRef={datePickerTriggerRef}
+                    // 확인을 눌렀을 때만 폼에 반영하고 닫는다.
+                    onConfirm={(nextStart, nextEnd) => {
                       setStart(nextStart);
                       setEnd(nextEnd);
+                      setIsDatePickerOpen(false);
                     }}
                     onClose={() => setIsDatePickerOpen(false)}
                   />
