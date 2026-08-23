@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { createInfoComment, updateInfoComment, deleteInfoComment } from '@/apis/info';
 import { getErrorMessage } from '@/apis/auth';
+import { getCommentAnchorId } from '@/lib/utils';
 import useAuthStore from '@/stores/useAuthStore';
 import ReportModal from '@/components/shared/board/ReportModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
@@ -51,6 +52,32 @@ export default function InfoComments({ postId, comments = [], onChanged }) {
   const [confirmState, setConfirmState] = useState(null);
   // 안내 모달 { title, description } (null이면 닫힘)
   const [alertState, setAlertState] = useState(null);
+
+  // URL 해시(#comment-3)로 지목된 댓글. 관리자 신고 관리에서 링크를 타고 들어올 때 쓴다.
+  const [focusedAnchor, setFocusedAnchor] = useState(null);
+  // 해시 이동은 처음 한 번만 한다. 댓글을 쓰거나 지워서 목록이 갱신될 때마다
+  // 다시 스크롤되면 방금 쓴 댓글에서 화면이 튀어버린다.
+  const hashHandledRef = useRef(false);
+
+  // 댓글은 원글을 불러온 뒤에 그려지므로, 브라우저의 기본 해시 이동은
+  // 대상이 아직 없는 시점에 일어나 아무 일도 하지 않는다. 댓글이 채워진 뒤 직접 한 번 옮겨준다.
+  useEffect(() => {
+    if (hashHandledRef.current || comments.length === 0) return;
+
+    const anchor = window.location.hash.slice(1);
+    if (!anchor.startsWith('comment-')) return;
+
+    // 아직 그려지지 않았으면 플래그를 쓰지 않고 다음 갱신에 다시 시도한다.
+    // 여기서 미리 표시해 버리면 댓글이 나중에 붙는 경우(단계적 로딩 등) 영구히 못 찾는다.
+    const target = document.getElementById(anchor);
+    if (!target) return;
+
+    hashHandledRef.current = true;
+
+    // block: 'center'로 옮기면 상단 고정 영역에 가려지지 않는다
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setFocusedAnchor(anchor);
+  }, [comments]);
 
   // 대댓글 구조: 직계 자식을 재귀적으로 렌더링해 깊이에 따라 들여쓴다
   const commentById = new Map(comments.map((c) => [c.commentId, c]));
@@ -202,7 +229,9 @@ export default function InfoComments({ postId, comments = [], onChanged }) {
     const owner = isOwner(comment);
     const replying = replyTo?.commentId === comment.commentId;
     const editing = editingId === comment.commentId;
-    const highlighted = replying || editing;
+    const anchorId = getCommentAnchorId(comment.commentId);
+    // 해시로 지목된 댓글도 답글·수정 중인 댓글과 같은 회색 배경으로 눈에 띄게 한다
+    const highlighted = replying || editing || focusedAnchor === anchorId;
 
     const actionClassName = (active) =>
       `text-[14px] transition-colors ${
@@ -212,7 +241,10 @@ export default function InfoComments({ postId, comments = [], onChanged }) {
     return (
       <div
         key={comment.commentId}
-        className={`flex w-full flex-col gap-3 py-4 md:flex-row md:items-start md:justify-between md:py-5 ${indentClass} ${
+        // 댓글 하나를 URL로 가리킬 수 있게 앵커를 붙인다 (예: /students/info/12#comment-3)
+        // scroll-mt는 해시로 바로 들어와 브라우저가 스크롤할 때 위가 잘리지 않게 하는 여백이다
+        id={anchorId}
+        className={`flex w-full scroll-mt-[100px] flex-col gap-3 py-4 md:flex-row md:items-start md:justify-between md:py-5 ${indentClass} ${
           highlighted ? 'bg-[#f5f5f5]' : ''
         }`}
       >
