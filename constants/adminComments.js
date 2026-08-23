@@ -1,8 +1,8 @@
 // 관리자 - 댓글 관리 마크업용 상수
 // API 연동 전까지 DUMMY_COMMENTS로 화면을 그린다.
 
-// 상태 라벨(공개 / 블라인드)과 게시판 필터는 게시글 관리와 같은 값을 쓰므로 가져온다.
-import { POST_STATUSES } from './adminPosts';
+// 상태 라벨(공개 / 블라인드) · 게시판 필터 · 회원 정보는 게시글 관리와 같은 값을 쓰므로 가져온다.
+import { MEMBER_POOL, POST_STATUSES } from './adminPosts';
 
 export { BOARD_FILTER_ALL, BOARD_FILTER_OPTIONS, getPostDetailHref } from './adminPosts';
 
@@ -38,19 +38,6 @@ const CONTENT_POOL = [
   '방학 일정은 따로 공지 올라오나요?',
 ];
 
-const AUTHOR_POOL = [
-  'ch400',
-  'younghee',
-  'minsu',
-  'jiwoo',
-  'haneul',
-  'doyoon',
-  'seoyeon',
-  'jiho',
-  'yerin',
-  'jaehyun',
-];
-
 // 원글 링크에 마우스를 올렸을 때 보여줄 제목. 게시판별 상세 경로는 postId로 만든다.
 const POST_TITLE_POOL = [
   '필사 엠티 넘 재밌어요!!',
@@ -67,11 +54,15 @@ const DUMMY_COMMENT_COUNT = 47;
 export const DUMMY_COMMENTS = Array.from({ length: DUMMY_COMMENT_COUNT }, (_, index) => {
   const commentId = index + 1;
   const { boardName, status } = COMMENT_PATTERN[index % COMMENT_PATTERN.length];
+  const member = MEMBER_POOL[index % MEMBER_POOL.length];
 
   return {
     commentId,
     boardName,
-    author: AUTHOR_POOL[index % AUTHOR_POOL.length],
+    // author는 목록 '글쓴이' 열용, 나머지 둘은 조치 모달의 '대상 회원'용
+    author: member.loginId,
+    authorStudentId: member.studentId,
+    authorName: member.name,
     content: CONTENT_POOL[index % CONTENT_POOL.length],
     createdAt: `26.05.${String((index % 28) + 1).padStart(2, '0')}`,
     status,

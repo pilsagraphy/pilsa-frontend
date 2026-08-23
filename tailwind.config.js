@@ -49,6 +49,14 @@ module.exports = {
           4: 'hsl(var(--chart-4))',
           5: 'hsl(var(--chart-5))',
         },
+        grayscale: {
+          '01': '#F6F6F6',
+          '02': '#DEDEDE',
+          '03': '#B9B9B9',
+          '04': '#919191',
+          '05': '#454545',
+          '06': '#212121',
+        },
       },
       borderRadius: {
         lg: 'var(--radius)',

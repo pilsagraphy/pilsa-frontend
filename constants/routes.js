@@ -20,8 +20,8 @@ export const ROUTES = {
   SIGNUP: `${BASE_PATH}signup`,
   LOGOUT: `${BASE_PATH}logout`,
   FIND_ID: `${BASE_PATH}findId`,
-  FIND_PW: `${BASE_PATH}findPassword`,
   FIND_EMAIL: `${BASE_PATH}findEmail`,
+  FIND_PW: `${BASE_PATH}findPassword`,
 
   // students 영역
   STUDENTS_DASHBOARD: `${BASE_PATH}students`,
@@ -36,13 +36,18 @@ export const ROUTES = {
   INFO_BOARD_WRITE: `${BASE_PATH}students/info/write`,
 
   // user 영역 (재학생·졸업생 공용)
-  MY_PAGE: `${BASE_PATH}user/myPage`,
+  MY_PAGE: `${BASE_PATH}mypage`,
 
   // admin 영역
-  ADMIN_MEMBERS: `${BASE_PATH}admin/members`,
+  ADMIN_HOME: `${BASE_PATH}admin`,
+  ADMIN_MEMBERS: `${BASE_PATH}admin/members`, // 회원관리 그룹 prefix (활성 판정용)
+  ADMIN_MEMBER_LIST: `${BASE_PATH}admin/members/memberslist`,
+  ADMIN_MEMBER_PENALTY: `${BASE_PATH}admin/members/penalty`,
   ADMIN_BOARDS: `${BASE_PATH}admin/community/boards`,
   ADMIN_POSTS: `${BASE_PATH}admin/community/posts`,
   ADMIN_COMMENTS: `${BASE_PATH}admin/community/comments`,
+  ADMIN_REPORTS: `${BASE_PATH}admin/community/reports`,
+  ADMIN_CALENDAR: `${BASE_PATH}admin/calendar`,
 };
 
 // 비로그인 접근 가능
@@ -59,8 +64,8 @@ export const PUBLIC_ROUTES = [
   ROUTES.LOGIN,
   ROUTES.SIGNUP,
   ROUTES.FIND_ID,
-  ROUTES.FIND_PW,
   ROUTES.FIND_EMAIL,
+  ROUTES.FIND_PW,
 ];
 
 // 게시판 접근 가능 신분 (백엔드 users.member_type — STUDENT: 재학생 / ALUMNI: 졸업생)
