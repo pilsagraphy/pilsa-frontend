@@ -20,6 +20,9 @@ const Sidebar = () => {
   const adminLevel = useAuthStore((state) => state.adminLevel);
   const fetchRole = useAuthStore((state) => state.fetchRole);
 
+  const isAdmin = adminLevel >= 1; // 관리자(adminLevel 1~3)
+  const isAdminArea = pathname.startsWith(ROUTES.ADMIN_HOME); // /admin 하위면 관리자 사이드바로 전환
+
   // 페이지 이동 시 모바일 메뉴 닫기
   useEffect(() => {
     setIsMobileOpen(false);
@@ -62,6 +65,7 @@ const Sidebar = () => {
     [checkBoardAccess, router]
   );
 
+  // 일반(비관리자 영역) 메뉴 구성. 게시판 하위는 다음 작업에서 /api/user/boards로 통합 예정 — 지금은 유지.
   const menuConfig = {
     about: {
       subMenus: [
@@ -82,10 +86,36 @@ const Sidebar = () => {
     },
   };
 
+  // 관리자 영역 펼침 메뉴 구성
+  const adminMenuConfig = {
+    members: {
+      label: '회원관리',
+      subMenus: [
+        { name: '회원목록', path: ROUTES.ADMIN_MEMBER_LIST },
+        { name: '제재 회원 관리', path: ROUTES.ADMIN_MEMBER_PENALTY },
+      ],
+    },
+    community: {
+      label: '커뮤니티 관리',
+      subMenus: [
+        { name: '게시판 관리', path: ROUTES.ADMIN_BOARDS },
+        { name: '게시글 관리', path: ROUTES.ADMIN_POSTS },
+        { name: '댓글 관리', path: ROUTES.ADMIN_COMMENTS },
+        { name: '신고 관리', path: ROUTES.ADMIN_REPORTS },
+      ],
+    },
+  };
+
   const isAboutActive = pathname.startsWith(ROUTES.ABOUT);
   const isBoardActive = pathname.startsWith(ROUTES.STUDENTS_DASHBOARD);
-  const loginText = isLoggedIn ? '로그아웃' : '로그인';
-  const loginPath = isLoggedIn ? `${ROUTES.LOGIN}?logout=1` : ROUTES.LOGIN;
+  const isMembersActive = pathname.startsWith(ROUTES.ADMIN_MEMBERS);
+  const isCommunityActive = pathname.startsWith(`${ROUTES.ADMIN_HOME}/community`);
+
+  // 단일 링크 색상 (선택: grayscale-06 / 미선택: grayscale-03)
+  const singleLinkClass = (active) =>
+    `text-[16px] font-bold ${active ? 'text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`;
+  // 로그인/마이페이지/관리자 이동 등 하단 영역 공통 스타일
+  const bottomItemClass = 'text-[16px] font-bold text-[#212121] hover:underline';
 
   return (
     <>
@@ -115,7 +145,7 @@ const Sidebar = () => {
         className={`
           fixed top-0 left-0 h-full bg-white z-[60] flex flex-col pl-[80px] py-10 font-['Pretendard'] border-r border-gray-100
           w-[260px] transition-transform duration-300 ease-in-out
-          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} 
+          ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
           tablet:translate-x-0 tablet:static tablet:w-[240px] tablet:z-auto tablet:border-none
         `}
       >
@@ -127,102 +157,163 @@ const Sidebar = () => {
           <X size={20} className="text-[#919191]" />
         </button>
 
-        <div className="flex flex-col gap-[26px] w-full items-start mt-10 tablet:mt-0">
-          {/* 1. ABOUT PILSA */}
-          <div className="w-full flex flex-col items-start">
-            <button
-              onClick={() => toggleMenu('about')}
-              className={`flex items-center text-[16px] ${isAboutActive ? 'font-bold text-grayscale-06' : 'font-medium text-grayscale-03'}`}
-            >
-              <ArrowIcon isOpen={openMenus.about} />
-              ABOUT PILSA
-            </button>
-            {openMenus.about && (
-              <div className="flex flex-col items-start gap-[15px] mt-3">
-                {menuConfig.about.subMenus.map((menu) => (
-                  <Link key={menu.name} href={menu.path}>
-                    <p
-                      className={`text-[14px] cursor-pointer ${pathname === menu.path ? 'font-bold text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
-                    >
-                      {menu.name}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+        {isAdminArea ? (
+          /* ===================== 관리자 사이드바 ===================== */
+          <div className="flex flex-col gap-[26px] w-full items-start mt-10 tablet:mt-0">
+            {/* 관리자홈 */}
+            <Link href={ROUTES.ADMIN_HOME}>
+              <p className={singleLinkClass(pathname === ROUTES.ADMIN_HOME)}>관리자홈</p>
+            </Link>
 
-          {/* 2. 게시판 */}
-          <div className="w-full flex flex-col items-start">
-            <button
-              onClick={handleBoardMenuClick}
-              className={`flex items-center text-[16px] ${isBoardActive ? 'font-bold text-grayscale-06' : 'font-medium text-grayscale-03'}`}
-            >
-              <ArrowIcon isOpen={openMenus.board} />
-              회원 게시판
-            </button>
-            {openMenus.board && (
-              <div className="flex flex-col items-start gap-[15px] mt-3">
-                {menuConfig.board.subMenus.map((menu) => (
-                  <Link
-                    key={menu.name}
-                    href={menu.path}
-                    onClick={(e) => handleBoardSubmenuClick(e, menu.path)}
+            {/* 회원관리 / 커뮤니티 관리 (펼침 메뉴) */}
+            {[
+              { key: 'members', active: isMembersActive },
+              { key: 'community', active: isCommunityActive },
+            ].map(({ key, active }) => {
+              const cfg = adminMenuConfig[key];
+              return (
+                <div key={key} className="w-full flex flex-col items-start">
+                  <button
+                    onClick={() => toggleMenu(key)}
+                    className={`flex items-center text-[16px] ${active ? 'font-bold text-grayscale-06' : 'font-medium text-grayscale-03'}`}
                   >
-                    <p
-                      className={`text-[14px] cursor-pointer ${pathname === menu.path ? 'font-bold text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
-                    >
-                      {menu.name}
-                    </p>
-                  </Link>
-                ))}
-              </div>
-            )}
+                    <ArrowIcon isOpen={openMenus[key]} />
+                    {cfg.label}
+                  </button>
+                  {openMenus[key] && (
+                    <div className="flex flex-col items-start gap-[15px] mt-3">
+                      {cfg.subMenus.map((menu) => (
+                        <Link key={menu.name} href={menu.path}>
+                          <p
+                            className={`text-[14px] cursor-pointer ${pathname === menu.path ? 'font-bold text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
+                          >
+                            {menu.name}
+                          </p>
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* 일정 달력 관리 */}
+            <Link href={ROUTES.ADMIN_CALENDAR}>
+              <p className={singleLinkClass(pathname.startsWith(ROUTES.ADMIN_CALENDAR))}>
+                일정 달력 관리
+              </p>
+            </Link>
+
+            {/* ABOUT 필사 (공개 소개 영역으로 이동 → 일반 사이드바로 복귀) */}
+            <Link href={ROUTES.ABOUT}>
+              <p className={singleLinkClass(false)}>ABOUT 필사</p>
+            </Link>
           </div>
+        ) : (
+          /* ===================== 일반 사이드바 ===================== */
+          <div className="flex flex-col gap-[26px] w-full items-start mt-10 tablet:mt-0">
+            {/* 1. ABOUT PILSA */}
+            <div className="w-full flex flex-col items-start">
+              <button
+                onClick={() => toggleMenu('about')}
+                className={`flex items-center text-[16px] ${isAboutActive ? 'font-bold text-grayscale-06' : 'font-medium text-grayscale-03'}`}
+              >
+                <ArrowIcon isOpen={openMenus.about} />
+                ABOUT PILSA
+              </button>
+              {openMenus.about && (
+                <div className="flex flex-col items-start gap-[15px] mt-3">
+                  {menuConfig.about.subMenus.map((menu) => (
+                    <Link key={menu.name} href={menu.path}>
+                      <p
+                        className={`text-[14px] cursor-pointer ${pathname === menu.path ? 'font-bold text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
+                      >
+                        {menu.name}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* 3. 단일 메뉴들 */}
-          <Link href="/calendar">
-            <p
-              className={`text-[16px] font-bold ${pathname === '/calendar' ? 'text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
-            >
-              일정 달력
-            </p>
-          </Link>
-          <Link href={ROUTES.GALLERY}>
-            <p
-              className={`text-[16px] font-bold ${pathname === ROUTES.GALLERY ? 'text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
-            >
-              활동 사진들
-            </p>
-          </Link>
-          <Link href={ROUTES.GUESTBOOK}>
-            <p
-              className={`text-[16px] font-bold ${pathname === ROUTES.GUESTBOOK ? 'text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
-            >
-              방명록
-            </p>
-          </Link>
-        </div>
+            {/* 2. 회원 게시판 */}
+            <div className="w-full flex flex-col items-start">
+              <button
+                onClick={handleBoardMenuClick}
+                className={`flex items-center text-[16px] ${isBoardActive ? 'font-bold text-grayscale-06' : 'font-medium text-grayscale-03'}`}
+              >
+                <ArrowIcon isOpen={openMenus.board} />
+                회원 게시판
+              </button>
+              {openMenus.board && (
+                <div className="flex flex-col items-start gap-[15px] mt-3">
+                  {menuConfig.board.subMenus.map((menu) => (
+                    <Link
+                      key={menu.name}
+                      href={menu.path}
+                      onClick={(e) => handleBoardSubmenuClick(e, menu.path)}
+                    >
+                      <p
+                        className={`text-[14px] cursor-pointer ${pathname === menu.path ? 'font-bold text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
+                      >
+                        {menu.name}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
 
-        {/* 방명록 ↔ 마이페이지(로그인) 간격: 최대 130px, 최소 40px, 그보다 좁아지면 스크롤 */}
+            {/* 3. 단일 메뉴들 */}
+            <Link href={ROUTES.CALENDAR}>
+              <p className={singleLinkClass(pathname === ROUTES.CALENDAR)}>일정 달력</p>
+            </Link>
+            <Link href={ROUTES.GALLERY}>
+              <p className={singleLinkClass(pathname === ROUTES.GALLERY)}>활동 사진들</p>
+            </Link>
+            <Link href={ROUTES.GUESTBOOK}>
+              <p className={singleLinkClass(pathname === ROUTES.GUESTBOOK)}>방명록</p>
+            </Link>
+          </div>
+        )}
+
+        {/* 상단 메뉴 ↔ 하단 영역 간격: 최대 130px, 최소 40px, 그보다 좁아지면 스크롤 */}
         <div className="flex-1 min-h-[40px] max-h-[130px]" aria-hidden />
 
-        {/* 4. 로그인 / 마이페이지 영역 */}
+        {/* 하단 영역 */}
         <div className="flex flex-col items-start gap-4">
-          {/* 로그인 상태에서만 마이페이지 노출 */}
-          {isLoggedIn && (
-            <Link href={ROUTES.MY_PAGE}>
-              <p className="text-[16px] font-bold text-[#212121] hover:underline">마이페이지</p>
+          {isAdminArea ? (
+            /* 관리자 영역: 로그아웃만 */
+            <Link href={`${ROUTES.LOGIN}?logout=1`}>
+              <button onClick={toggleLogin} className={bottomItemClass}>
+                로그아웃
+              </button>
+            </Link>
+          ) : isLoggedIn ? (
+            /* 로그인 상태: (관리자면) 관리자 페이지 이동 · 마이페이지 · 로그아웃 */
+            <>
+              {isAdmin && (
+                <Link href={ROUTES.ADMIN_HOME}>
+                  <p className={bottomItemClass}>관리자 페이지 이동</p>
+                </Link>
+              )}
+              <Link href={ROUTES.MY_PAGE}>
+                <p className={bottomItemClass}>마이페이지</p>
+              </Link>
+              <Link href={`${ROUTES.LOGIN}?logout=1`}>
+                <button onClick={toggleLogin} className={bottomItemClass}>
+                  로그아웃
+                </button>
+              </Link>
+            </>
+          ) : (
+            /* 비로그인: 로그인만 */
+            <Link href={ROUTES.LOGIN}>
+              <button onClick={toggleLogin} className={bottomItemClass}>
+                로그인
+              </button>
             </Link>
           )}
-          <Link href={loginPath}>
-            <button
-              onClick={toggleLogin}
-              className="text-[16px] font-bold text-[#212121] hover:underline"
-            >
-              {loginText}
-            </button>
-          </Link>
         </div>
       </aside>
     </>
