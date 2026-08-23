@@ -9,7 +9,8 @@ import useSidebarStore from '@/stores/sidebar';
 import useAuthStore from '@/stores/useAuthStore';
 import { ROUTES, ALLOWED_BOARD_MEMBER_TYPES } from '@/constants/routes';
 
-const Sidebar = () => {
+// forceAdminMenu: 경로와 상관없이 관리자 메뉴로 그린다. (개발용 미리보기 화면에서만 사용)
+const Sidebar = ({ forceAdminMenu = false }) => {
   const router = useRouter();
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -21,7 +22,7 @@ const Sidebar = () => {
   const fetchRole = useAuthStore((state) => state.fetchRole);
 
   const isAdmin = adminLevel >= 1; // 관리자(adminLevel 1~3)
-  const isAdminArea = pathname.startsWith(ROUTES.ADMIN_HOME); // /admin 하위면 관리자 사이드바로 전환
+  const isAdminArea = forceAdminMenu || pathname.startsWith(ROUTES.ADMIN_HOME); // /admin 하위면 관리자 사이드바로 전환
 
   // 페이지 이동 시 모바일 메뉴 닫기
   useEffect(() => {

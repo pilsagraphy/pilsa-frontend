@@ -31,7 +31,15 @@ function isDateIncludedInSchedule(date, schedule) {
 const LAYER_ACTIVE = 'active';
 const LAYER_OTHER = 'other';
 
-export default function CalendarSection({ response }) {
+// renderScheduleAction: 월별 일정 카드 오른쪽에 놓을 조작 버튼 (관리자 화면의 ⋮ 메뉴)
+// renderDetail: 목록 아래에 그릴 내용. 기본은 읽기용 일정 상세다.
+//               관리자 화면은 '일정 수정' 폼으로 갈아끼우려고 열어 뒀다.
+export default function CalendarSection({
+  response,
+  renderScheduleAction,
+  renderDetail,
+  scrollableScheduleList = true,
+}) {
   // 기존 response prop이 들어오면 그걸 우선 fallback으로 사용
   const fallbackResponse = React.useMemo(() => response ?? calendarMockResponse, [response]);
 
@@ -218,6 +226,8 @@ export default function CalendarSection({ response }) {
             selectedId={selectedScheduleId}
             onSelect={handleSelectSchedule}
             isLoading={isLoading}
+            renderAction={renderScheduleAction}
+            scrollable={scrollableScheduleList}
           />
         </div>
       </div>
@@ -225,7 +235,11 @@ export default function CalendarSection({ response }) {
       {/* 4. 고른 일정의 상세
           TODO: API 연동 시 상세(category · content · startTime · endTime)도 함께 내려받을 것.
                 지금은 목 데이터에만 있어 실제 응답에서는 기본값으로 그려진다. */}
-      <ScheduleDetail schedule={selectedSchedule} />
+      {renderDetail ? (
+        renderDetail(selectedSchedule)
+      ) : (
+        <ScheduleDetail schedule={selectedSchedule} />
+      )}
     </section>
   );
 }
