@@ -1,7 +1,9 @@
 'use client';
 
 import * as React from 'react';
+import { getDaysInMonth } from 'date-fns';
 import { CalendarDays, Pencil, Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { DEFAULT_SCHEDULE_CATEGORY, SCHEDULE_CATEGORY_OPTIONS } from '@/constants/calendar';
@@ -10,19 +12,35 @@ import ScheduleDatePicker from './ScheduleDatePicker';
 import ScheduleSelect from './ScheduleSelect';
 import { FIELD_CLASS, ScheduleFormRow } from './ScheduleFormField';
 
-// 셀렉트 후보값. 년은 올해를 가운데 두고 앞뒤 5년까지만 고른다.
+// 셀렉트 후보값.
 const pad2 = (n) => String(n).padStart(2, '0');
 const range = (length, start = 0, step = 1) =>
   Array.from({ length }, (_, i) => pad2(start + i * step));
 
 const MONTH_OPTIONS = range(12, 1);
-const DAY_OPTIONS = range(31, 1);
 const HOUR_OPTIONS = range(24);
 const MINUTE_OPTIONS = range(12, 0, 5);
 
-// 시안처럼 최근 연도가 위로 오게 내림차순으로 둔다.
+// 년은 고른 값을 가운데 두고 앞뒤 5년. 시안처럼 최근 연도가 위로 오게 내림차순으로 둔다.
+// 시작 · 종료가 각자 자기 값을 기준으로 만든다. 한쪽 기준으로 목록을 공유하면
+// 다른 쪽 값이 목록 밖으로 밀려나 다시 고를 수 없게 된다.
 function buildYearOptions(year) {
   return Array.from({ length: 11 }, (_, i) => String(year + 5 - i));
+}
+
+// 그 해 그 달의 마지막 날. (2월 28 · 29일, 30일인 달)
+function lastDayOf({ year, month }) {
+  return getDaysInMonth(new Date(Number(year), Number(month) - 1));
+}
+
+// 일 후보는 년 · 월에 따라 달라진다. 늘 31일까지 열어 두면 2월 31일 같은 날짜를 만들 수 있고,
+// 그 값으로 Date를 만들면 조용히 다음 달로 넘어간다. (new Date(2026, 1, 31) → 3월 3일)
+const dayOptionsOf = (parts) => range(lastDayOf(parts), 1);
+
+// 년 · 월을 바꿔 그 달의 일수가 줄면 고른 일자를 마지막 날로 당긴다.
+function clampDay(parts) {
+  const last = lastDayOf(parts);
+  return Number(parts.day) > last ? { ...parts, day: pad2(last) } : parts;
 }
 
 // 'yyyy-MM-dd' → { year, month, day }. 값이 없으면 오늘로 채운다.
@@ -89,29 +107,52 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
     el.style.height = `${el.scrollHeight + border}px`;
   }, [content]);
 
-  const yearOptions = React.useMemo(
-    () => buildYearOptions(Number(start.year) || new Date().getFullYear()),
-    [start.year]
-  );
+  // normalize: 값이 바뀐 뒤 한 번 더 손보는 함수. 날짜는 일자 clamp에 쓴다.
+  const patch = (setter, normalize) => (key) => (value) =>
+    setter((prev) => {
+      const next = { ...prev, [key]: value };
+      return normalize ? normalize(next) : next;
+    });
 
-  const patch = (setter) => (key) => (value) => setter((prev) => ({ ...prev, [key]: value }));
-  const setStartField = patch(setStart);
-  const setEndField = patch(setEnd);
+  const setStartField = patch(setStart, clampDay);
+  const setEndField = patch(setEnd, clampDay);
   const setStartTimeField = patch(setStartTime);
   const setEndTimeField = patch(setEndTime);
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
+    const startDate = `${start.year}-${start.month}-${start.day}`;
+    const endDate = `${end.year}-${end.month}-${end.day}`;
+    const from = `${startTime.hour}:${startTime.minute}`;
+    const to = `${endTime.hour}:${endTime.minute}`;
+
+    // 날짜 · 시각 모두 0으로 채운 고정 폭이라 문자열 비교로 앞뒤를 가릴 수 있다.
+    // 달력 팝오버는 거꾸로 고르면 앞뒤를 바꿔 주지만, 셀렉트를 직접 돌리면 막을 게 없다.
+    if (endDate < startDate) {
+      toast.error('날짜를 확인해 주세요.', {
+        description: '종료일은 시작일보다 빠를 수 없습니다.',
+      });
+      return;
+    }
+
+    // 시각은 같은 날일 때만 따진다. 날짜가 다르면 19:00 ~ 09:00도 정상이다.
+    if (!isAllDay && startDate === endDate && to < from) {
+      toast.error('시각을 확인해 주세요.', {
+        description: '종료 시각은 시작 시각보다 빠를 수 없습니다.',
+      });
+      return;
+    }
+
     onSubmit?.({
       ...schedule,
       title,
       category,
       content,
-      startDate: `${start.year}-${start.month}-${start.day}`,
-      endDate: `${end.year}-${end.month}-${end.day}`,
-      startTime: isAllDay ? null : `${startTime.hour}:${startTime.minute}`,
-      endTime: isAllDay ? null : `${endTime.hour}:${endTime.minute}`,
+      startDate,
+      endDate,
+      startTime: isAllDay ? null : from,
+      endTime: isAllDay ? null : to,
     });
   };
 
@@ -120,7 +161,7 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
       <ScheduleSelect
         value={parts.year}
         onChange={setField('year')}
-        options={yearOptions}
+        options={buildYearOptions(Number(parts.year) || new Date().getFullYear())}
         width={85}
         ariaLabel={`${prefix} 년`}
       />
@@ -134,7 +175,7 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
       <ScheduleSelect
         value={parts.day}
         onChange={setField('day')}
-        options={DAY_OPTIONS}
+        options={dayOptionsOf(parts)}
         width={64}
         ariaLabel={`${prefix} 일`}
       />

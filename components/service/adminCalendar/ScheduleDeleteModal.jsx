@@ -1,5 +1,7 @@
 'use client';
 
+import * as React from 'react';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -11,6 +13,14 @@ import {
 
 // 일정 삭제 확인 모달
 export default function ScheduleDeleteModal({ schedule, onConfirm, onCancel }) {
+  // 닫을 때 schedule이 곧바로 null이 되는데, 모달은 닫힘 애니메이션(200ms) 동안 살아 있다.
+  // 그 사이 제목이 사라져 '　일정을 삭제할까요?'가 보이므로 마지막 일정을 붙들어 둔다.
+  const [shown, setShown] = React.useState(schedule);
+
+  React.useEffect(() => {
+    if (schedule) setShown(schedule);
+  }, [schedule]);
+
   return (
     <Dialog open={Boolean(schedule)} onOpenChange={(next) => !next && onCancel?.()}>
       <DialogContent
@@ -18,7 +28,7 @@ export default function ScheduleDeleteModal({ schedule, onConfirm, onCancel }) {
         className="max-w-[320px] gap-[16px] rounded-[4px] border-[#dedede] p-[24px]"
       >
         <DialogTitle className="text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.32px] text-[#212121] [word-break:keep-all]">
-          {schedule?.title} 일정을 삭제할까요?
+          {shown?.title} 일정을 삭제할까요?
         </DialogTitle>
 
         <DialogDescription className="text-center text-[14px] leading-[1.6] tracking-[-0.28px] text-[#757575] [word-break:keep-all]">
