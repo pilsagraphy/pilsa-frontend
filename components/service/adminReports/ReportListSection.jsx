@@ -30,7 +30,6 @@ import {
   getReportPanelId,
   getReportTabId,
   isDeletable,
-  isRestorable,
 } from '@/constants/adminReports';
 
 import ReportActionModal from './ReportActionModal';
@@ -187,9 +186,6 @@ export default function ReportListSection({ title = '신고 관리' }) {
     setActionOpen(true);
   };
 
-  // 삭제는 최종 상태다. 이미 삭제된 항목은 복원도, 다시 삭제도 할 수 없다.
-  const canAct = (action) => (action === REPORT_ACTION_RESTORE ? isRestorable : isDeletable);
-
   // 선택 액션. 삭제된 항목이 섞여 있으면 안내부터 하고, 남은 것만으로 처리 창을 연다.
   const openBulkConfirm = (action) => {
     const actionLabel = REPORT_ACTION_LABELS[action];
@@ -207,8 +203,11 @@ export default function ReportListSection({ title = '신고 관리' }) {
       return;
     }
 
+    // 복원은 블라인드든 삭제든 언제나 할 수 있어서 걸러낼 것이 없다.
+    // 이미 삭제된 것을 다시 삭제하는 경우에만 대상에서 빼고 안내한다.
     const selected = buildActionItems(selectedIds);
-    const allowed = selected.filter(canAct(action));
+    const allowed =
+      action === REPORT_ACTION_DELETE ? selected.filter(isDeletable) : selected;
     const blocked = selected.length - allowed.length;
 
     if (blocked === 0) {
@@ -219,11 +218,7 @@ export default function ReportListSection({ title = '신고 관리' }) {
     // 처리할 것이 남아 있으면 안내를 닫은 뒤 이어서 처리 창을 연다.
     // 하나도 남지 않으면 안내만 하고 끝낸다.
     setAlertState({
-      // '삭제된 댓글은 삭제할 수 없습니다'처럼 읽히지 않도록 조치별로 문구를 나눈다
-      title:
-        action === REPORT_ACTION_RESTORE
-          ? `삭제된 ${targetLabel}은 복원할 수 없습니다.`
-          : `이미 삭제된 ${targetLabel}은 다시 삭제할 수 없습니다.`,
+      title: `이미 삭제된 ${targetLabel}은 다시 삭제할 수 없습니다.`,
       description:
         allowed.length > 0
           ? `선택한 ${selected.length}건 중 삭제된 ${blocked}건을 제외하고\n${allowed.length}건만 ${actionLabel} 처리합니다.`

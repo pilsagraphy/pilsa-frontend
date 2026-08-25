@@ -9,7 +9,6 @@ import {
   getReportReasonLabel,
   getReportTargetHref,
   isDeletable,
-  isRestorable,
   truncatePreview,
 } from '@/constants/adminReports';
 
@@ -24,7 +23,6 @@ export default function ReportRow({
 }) {
   const targetHref = getReportTargetHref(report);
   const preview = truncatePreview(report.preview);
-  const restorable = isRestorable(report);
   const deletable = isDeletable(report);
 
   return (
@@ -77,16 +75,13 @@ export default function ReportRow({
       <TableCell className="whitespace-nowrap px-[4px] text-center">{report.firstReportedAt}</TableCell>
       <TableCell className="whitespace-nowrap px-[4px] text-center">{report.status}</TableCell>
 
-      {/* 6. 관리 - 복원(블라인드 해제) · 삭제(소프트 딜리트)
-             삭제는 최종 상태라 이미 삭제된 행에서는 둘 다 할 수 있는 일이 없다.
+      {/* 6. 관리 - 복원(블라인드 해제 · 삭제 되살리기) · 삭제(소프트 딜리트)
+             복원은 어떤 상태에서도 할 수 있다. 이미 삭제된 행에서 할 일이 없는 것은 삭제뿐이라
+             삭제 버튼만 비활성으로 둔다.
              버튼을 없애면 관리 열 너비가 행마다 달라져 표가 흔들리므로 회색으로 비활성만 한다. */}
       <TableCell className="px-[4px] text-center">
         <div className="flex items-center justify-center gap-[8px]">
-          <RowActionButton
-            className="min-w-[44px]"
-            disabled={!restorable}
-            onClick={() => onRestore?.(report)}
-          >
+          <RowActionButton className="min-w-[44px]" onClick={() => onRestore?.(report)}>
             복원
           </RowActionButton>
           <RowActionButton

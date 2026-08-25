@@ -2,7 +2,7 @@
 // API 연동 전까지 DUMMY_POST_REPORTS · DUMMY_COMMENT_REPORTS로 화면을 그린다.
 
 import { getCommentAnchorId } from '@/lib/utils';
-import { MEMBER_POOL, getPostDetailHref } from './adminPosts';
+import { MEMBER_POOL, boardHasComments, getPostDetailHref } from './adminPosts';
 import { REPORT_REASONS } from './report';
 
 // 게시판 필터는 게시글 · 댓글 관리와 같은 목록을 쓴다.
@@ -75,8 +75,10 @@ const REASON_LABEL_BY_CODE = Object.fromEntries(
 // 서버에 프론트가 모르는 사유 코드가 새로 생겨도 칸이 비지 않도록 코드를 그대로 보여준다.
 export const getReportReasonLabel = (code) => REASON_LABEL_BY_CODE[code] ?? code;
 
-// 이미 삭제된 글 · 댓글은 되돌릴 수 없다 (삭제가 최종 상태다).
-export const isRestorable = (report) => report.status !== REPORT_STATUSES.DELETED;
+// 복원은 어떤 상태에서도 할 수 있다 - 블라인드는 해제하고, 삭제는 되살린다.
+// PATCH /api/admin/reports/select-restore가 '복원 = 모든 조치의 되돌리기'로, 삭제된 대상도
+// 되살리고 부과됐던 주의 포인트까지 회수한다. 그래서 복원을 막는 술어는 두지 않는다.
+// 이미 공개 상태라 되돌릴 것이 없는 경우는 서버가 failures로 걸러 알려준다.
 
 // 이미 삭제된 것을 다시 삭제하는 것은 아무 일도 하지 않는 조치다.
 export const isDeletable = (report) => report.status !== REPORT_STATUSES.DELETED;
@@ -84,14 +86,19 @@ export const isDeletable = (report) => report.status !== REPORT_STATUSES.DELETED
 // 대상 미리보기 링크.
 // 게시글이면 그 글로, 댓글이면 댓글이 달린 원글 + 댓글 앵커(#comment-{id})로 이동한다.
 // 댓글은 별도 상세 페이지가 없어서 해시로만 특정할 수 있다.
-// 경로를 모르는 게시판이면 null → 행에서는 링크 대신 텍스트로 보여준다.
+// 갈 곳이 없으면 null → 행에서는 링크 대신 텍스트로 보여준다.
 export const getReportTargetHref = (report) => {
   const postHref = getPostDetailHref(report.boardName, report.postId);
   if (!postHref) return null;
 
-  return report.targetType === REPORT_TARGET_COMMENT
-    ? `${postHref}#${getCommentAnchorId(report.targetId)}`
-    : postHref;
+  if (report.targetType !== REPORT_TARGET_COMMENT) return postHref;
+
+  // 댓글 앵커는 그 게시판 상세에 댓글 영역이 있어야 의미가 있다.
+  // 없는데도 원글로 보내면 '이동은 했는데 문제의 댓글이 없는' 화면이 되므로
+  // 아예 링크를 걸지 않는다.
+  if (!boardHasComments(report.boardName)) return null;
+
+  return `${postHref}#${getCommentAnchorId(report.targetId)}`;
 };
 
 // ── 더미 데이터 ───────────────────────────────────────────────────────
@@ -110,6 +117,11 @@ const STATUS_PATTERN = [
 ];
 
 const BOARD_PATTERN = ['자유게시판', '자유게시판', '정보게시판', '공지사항', '자유게시판'];
+
+// 댓글 신고는 댓글 영역이 있는 게시판에서만 생길 수 있다.
+// (공지 상세에는 댓글이 없어 '공지사항 댓글 신고'는 실제로 존재할 수 없다)
+// 게시판이 늘어도 따라오도록 게시판 목록에서 걸러 만든다.
+const COMMENT_BOARD_PATTERN = BOARD_PATTERN.filter((boardName) => boardHasComments(boardName));
 
 // 게시글 신고용 글감.
 // 목록의 '대상 미리보기'는 본문을, 모달의 '신고 상세'는 제목을 보여준다(시안 기준).
@@ -188,10 +200,13 @@ const formatDummyDate = (reportId) => {
 };
 
 // reportId가 클수록 최근 신고로 본다. → 목록은 최초 신고일시 내림차순(최신순)으로 보여준다.
-const buildDummyReports = (targetType) =>
-  Array.from({ length: DUMMY_REPORT_COUNT }, (_, index) => {
+const buildDummyReports = (targetType) => {
+  const boardPattern =
+    targetType === REPORT_TARGET_COMMENT ? COMMENT_BOARD_PATTERN : BOARD_PATTERN;
+
+  return Array.from({ length: DUMMY_REPORT_COUNT }, (_, index) => {
     const reportId = index + 1;
-    const boardName = BOARD_PATTERN[index % BOARD_PATTERN.length];
+    const boardName = boardPattern[index % boardPattern.length];
     const member = MEMBER_POOL[index % MEMBER_POOL.length];
     const date = formatDummyDate(reportId);
     const reports = buildReportLog(reportId, date);
@@ -230,6 +245,7 @@ const buildDummyReports = (targetType) =>
       reports,
     };
   });
+};
 
 export const DUMMY_POST_REPORTS = buildDummyReports(REPORT_TARGET_POST);
 export const DUMMY_COMMENT_REPORTS = buildDummyReports(REPORT_TARGET_COMMENT);

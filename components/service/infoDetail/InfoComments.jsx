@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { createInfoComment, updateInfoComment, deleteInfoComment } from '@/apis/info';
 import { getErrorMessage } from '@/apis/auth';
+import useCommentAnchor from '@/hooks/useCommentAnchor';
 import { getCommentAnchorId } from '@/lib/utils';
 import useAuthStore from '@/stores/useAuthStore';
 import ReportModal from '@/components/shared/board/ReportModal';
@@ -54,30 +55,7 @@ export default function InfoComments({ postId, comments = [], onChanged }) {
   const [alertState, setAlertState] = useState(null);
 
   // URL 해시(#comment-3)로 지목된 댓글. 관리자 신고 관리에서 링크를 타고 들어올 때 쓴다.
-  const [focusedAnchor, setFocusedAnchor] = useState(null);
-  // 해시 이동은 처음 한 번만 한다. 댓글을 쓰거나 지워서 목록이 갱신될 때마다
-  // 다시 스크롤되면 방금 쓴 댓글에서 화면이 튀어버린다.
-  const hashHandledRef = useRef(false);
-
-  // 댓글은 원글을 불러온 뒤에 그려지므로, 브라우저의 기본 해시 이동은
-  // 대상이 아직 없는 시점에 일어나 아무 일도 하지 않는다. 댓글이 채워진 뒤 직접 한 번 옮겨준다.
-  useEffect(() => {
-    if (hashHandledRef.current || comments.length === 0) return;
-
-    const anchor = window.location.hash.slice(1);
-    if (!anchor.startsWith('comment-')) return;
-
-    // 아직 그려지지 않았으면 플래그를 쓰지 않고 다음 갱신에 다시 시도한다.
-    // 여기서 미리 표시해 버리면 댓글이 나중에 붙는 경우(단계적 로딩 등) 영구히 못 찾는다.
-    const target = document.getElementById(anchor);
-    if (!target) return;
-
-    hashHandledRef.current = true;
-
-    // block: 'center'로 옮기면 상단 고정 영역에 가려지지 않는다
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setFocusedAnchor(anchor);
-  }, [comments]);
+  const focusedAnchor = useCommentAnchor(comments);
 
   // 대댓글 구조: 직계 자식을 재귀적으로 렌더링해 깊이에 따라 들여쓴다
   const commentById = new Map(comments.map((c) => [c.commentId, c]));
