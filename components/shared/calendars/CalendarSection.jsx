@@ -31,7 +31,23 @@ function isDateIncludedInSchedule(date, schedule) {
 const LAYER_ACTIVE = 'active';
 const LAYER_OTHER = 'other';
 
-export default function CalendarSection({ response }) {
+// onDateDoubleClick: 달력 날짜를 더블클릭했을 때. (관리자 화면의 '그 날짜로 일정 추가')
+// onUserSelect: 사용자가 볼 일정을 바꿨을 때 — 달력 날짜 클릭 · 목록 카드 클릭.
+//               관리자 화면에서 열려 있던 추가 · 수정 폼을 닫고 상세로 되돌리는 데 쓴다.
+// scheduleListAction: '월별 일정' 라벨 오른쪽에 놓을 버튼 (관리자 화면의 '일정 추가')
+// renderScheduleAction: 월별 일정 카드 오른쪽에 놓을 조작 버튼 (관리자 화면의 ⋮ 메뉴)
+// renderDetail: 목록 아래에 그릴 내용. 기본은 읽기용 일정 상세다.
+//               관리자 화면은 '일정 수정' 폼으로 갈아끼우려고 열어 뒀다.
+export default function CalendarSection({
+  response,
+  renderScheduleAction,
+  renderDetail,
+  scrollableScheduleList = true,
+  scheduleListVisibleCount = null,
+  scheduleListAction = null,
+  onDateDoubleClick,
+  onUserSelect,
+}) {
   // 기존 response prop이 들어오면 그걸 우선 fallback으로 사용
   const fallbackResponse = React.useMemo(() => response ?? calendarMockResponse, [response]);
 
@@ -160,6 +176,8 @@ export default function CalendarSection({ response }) {
   const handleSelectSchedule = (schedule) => {
     const start = parseISO(schedule.startDate);
 
+    onUserSelect?.();
+
     setSelectedScheduleId(schedule.scheduleId);
     setSelectedDate(start);
     setCurrentMonth(start);
@@ -167,6 +185,10 @@ export default function CalendarSection({ response }) {
 
   const handleSelectDate = (d) => {
     if (!d) return;
+
+    // 더블클릭은 단일 클릭 두 번이 먼저 오고 dblclick이 마지막에 온다.
+    // 그래서 여기서 폼을 닫아도 뒤이은 dblclick이 다시 열어 준다.
+    onUserSelect?.();
 
     // 날짜 토글 로직
     // updater 안에서 다른 setState를 호출하면 Strict Mode가 updater를 두 번 부를 때 같이 두 번 돌므로,
@@ -206,18 +228,33 @@ export default function CalendarSection({ response }) {
             onSelect={handleSelectDate}
             // 3. 일정이 있는 기간을 modifiers로 전달 (막대 스타일은 ui/calendar.jsx)
             modifiers={scheduleModifiers}
+            onDayDoubleClick={onDateDoubleClick}
             className="w-full"
           />
         </div>
 
         <div className="flex w-full min-w-0 flex-col gap-3 sm:gap-[12px] min-[960px]:max-w-[404px] min-[960px]:flex-1">
-          <p className="text-[14px] tracking-[-0.32px] text-[#212121] md:text-[16px]">월별 일정</p>
+          {/* 목록은 오른쪽에 여백 6px + 스크롤바 자리 4px을 비워 둔다(MonthlyScheduleList).
+              라벨 줄에도 같은 10px을 줘야 버튼이 일정 카드의 오른쪽 끝과 맞는다. */}
+          <div
+            className={`flex items-center justify-between gap-3 ${
+              scheduleListAction && scrollableScheduleList ? 'pe-[10px]' : ''
+            }`}
+          >
+            <p className="text-[14px] tracking-[-0.32px] text-[#212121] md:text-[16px]">
+              월별 일정
+            </p>
+            {scheduleListAction}
+          </div>
 
           <MonthlyScheduleList
             schedules={schedules}
             selectedId={selectedScheduleId}
             onSelect={handleSelectSchedule}
             isLoading={isLoading}
+            renderAction={renderScheduleAction}
+            scrollable={scrollableScheduleList}
+            visibleCount={scheduleListVisibleCount}
           />
         </div>
       </div>
@@ -225,7 +262,11 @@ export default function CalendarSection({ response }) {
       {/* 4. 고른 일정의 상세
           TODO: API 연동 시 상세(category · content · startTime · endTime)도 함께 내려받을 것.
                 지금은 목 데이터에만 있어 실제 응답에서는 기본값으로 그려진다. */}
-      <ScheduleDetail schedule={selectedSchedule} />
+      {renderDetail ? (
+        renderDetail(selectedSchedule)
+      ) : (
+        <ScheduleDetail schedule={selectedSchedule} />
+      )}
     </section>
   );
 }

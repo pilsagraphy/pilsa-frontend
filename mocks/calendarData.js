@@ -43,7 +43,7 @@ export const calendarMockResponse = {
     {
       scheduleId: 1,
       title: '신입 OT',
-      category: SCHEDULE_CATEGORIES.GENERAL,
+      category: SCHEDULE_CATEGORIES.ETC,
       startDate: '2026-10-05',
       endDate: '2026-10-07',
       content: OT_CONTENT,
@@ -52,7 +52,7 @@ export const calendarMockResponse = {
     {
       scheduleId: 2,
       title: '가을 MT',
-      category: SCHEDULE_CATEGORIES.REGULAR_MEETING,
+      category: SCHEDULE_CATEGORIES.MT,
       startDate: '2026-10-20',
       endDate: '2026-10-21',
       content: MT_CONTENT,
@@ -82,11 +82,12 @@ export const calendarTestMockResponse = {
     {
       scheduleId: 101,
       title: '① 지난 달부터 이어짐',
-      category: SCHEDULE_CATEGORIES.GENERAL,
+      category: SCHEDULE_CATEGORIES.ETC,
       startDate: '2026-07-30',
       endDate: '2026-08-03',
       // 확인: 8/1 칸 왼쪽이 둥글게 끝나야 한다. (7월 칸은 점으로만 표시되므로)
-      content: '- 8월 1일 칸의 왼쪽 끝이 둥근지 확인\n- 8/1(토)에서 한 번 끊기고 8/2(일)부터 다시 이어짐',
+      content:
+        '- 8월 1일 칸의 왼쪽 끝이 둥근지 확인\n- 8/1(토)에서 한 번 끊기고 8/2(일)부터 다시 이어짐',
     },
     {
       scheduleId: 102,
@@ -100,17 +101,18 @@ export const calendarTestMockResponse = {
     {
       scheduleId: 103,
       title: '③ 겹침 A',
-      category: SCHEDULE_CATEGORIES.GENERAL,
+      category: SCHEDULE_CATEGORIES.ETC,
       startDate: '2026-08-12',
       endDate: '2026-08-15',
       // 확인: ④와 8/14~15가 겹친다. 고른 쪽이 진한 막대로 이기고,
       //      겹치는 날 때문에 막대 중간에 둥근 노치가 생기지 않아야 한다.
-      content: '- ④ 겹침 B와 8/14~8/15가 겹침\n- 목록에서 A와 B를 번갈아 눌러 진한 막대가 서로 바뀌는지 확인\n- 진한 막대 중간에 둥근 홈이 파이지 않는지 확인',
+      content:
+        '- ④ 겹침 B와 8/14~8/15가 겹침\n- 목록에서 A와 B를 번갈아 눌러 진한 막대가 서로 바뀌는지 확인\n- 진한 막대 중간에 둥근 홈이 파이지 않는지 확인',
     },
     {
       scheduleId: 104,
       title: '④ 겹침 B',
-      category: SCHEDULE_CATEGORIES.GENERAL,
+      category: SCHEDULE_CATEGORIES.ETC,
       startDate: '2026-08-14',
       endDate: '2026-08-17',
       content: '- ③ 겹침 A와 8/14~8/15가 겹침\n- 8/15(토)에서 끊기고 8/16(일)부터 다시 이어짐',
@@ -124,16 +126,18 @@ export const calendarTestMockResponse = {
       startTime: '19:00',
       endTime: '21:00',
       // 확인: 동그라미 한 개 + 상세 날짜가 '8월 20일 (목) 19:00 ~ 21:00'
-      content: '- 달력에 동그라미 하나로만 표시되는지 확인\n- 날짜 / 시간이 날짜 한 번 + 시간 범위로 표기되는지 확인',
+      content:
+        '- 달력에 동그라미 하나로만 표시되는지 확인\n- 날짜 / 시간이 날짜 한 번 + 시간 범위로 표기되는지 확인',
     },
     {
       scheduleId: 106,
       title: '⑥ 다음 달로 이어짐',
-      category: SCHEDULE_CATEGORIES.GENERAL,
+      category: SCHEDULE_CATEGORIES.ETC,
       startDate: '2026-08-28',
       endDate: '2026-09-02',
       // 확인: 8/31 칸 오른쪽이 둥글게 끝나야 한다.
-      content: '- 8월 31일 칸의 오른쪽 끝이 둥근지 확인\n- 9월로 넘기면 9/1~9/2가 이어져 보이는지 확인',
+      content:
+        '- 8월 31일 칸의 오른쪽 끝이 둥근지 확인\n- 9월로 넘기면 9/1~9/2가 이어져 보이는지 확인',
     },
   ],
 };

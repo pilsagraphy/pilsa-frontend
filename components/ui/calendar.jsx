@@ -43,6 +43,9 @@ export function Calendar({
   modifiers,
   month: controlledMonth,
   onMonthChange,
+  // 날짜 칸 더블클릭. (관리자 화면에서 '그 날짜로 일정 추가'에 쓴다)
+  // 넘기지 않으면 아무 동작도 붙지 않는다.
+  onDayDoubleClick,
   ...props
 }) {
   const [internalMonth, setInternalMonth] = React.useState(() => new Date());
@@ -107,9 +110,16 @@ export function Calendar({
         );
       }
 
-      return <td {...dayProps} />;
+      // 더블클릭은 단일 클릭 두 번도 함께 발생한다. 날짜 선택 토글이 두 번 돌아
+      // 선택이 원래대로 돌아가지만, 이 화면에서는 아래가 폼으로 바뀌므로 그대로 둔다.
+      return (
+        <td
+          {...dayProps}
+          onDoubleClick={onDayDoubleClick ? () => onDayDoubleClick(date) : undefined}
+        />
+      );
     },
-    [currentMonth, currentYear]
+    [currentMonth, currentYear, onDayDoubleClick]
   );
 
   return (
