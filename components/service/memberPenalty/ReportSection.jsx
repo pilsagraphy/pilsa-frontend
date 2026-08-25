@@ -1,5 +1,5 @@
 'use client';
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import ReportRow, { REPORT_GRID } from './ReportRow';
 
 const HEADERS = ['번호', '작성 위치', '처리 사유', '원문 링크', '상태', '처리일'];
@@ -16,12 +16,14 @@ export default function ReportSection({ title, reports = [] }) {
     [reports],
   );
 
-    return (
+  return (
     <div className="w-full font-['Pretendard',sans-serif]">
       <p className="mb-[10px] text-[16px] tracking-[-0.32px] text-black">{title}</p>
 
       {/* 맨 위 헤더 행 (회색 글씨) */}
-      <div className={`${REPORT_GRID} h-[46px] text-[14px] tracking-[-0.28px] text-[#919191] pr-[10px]`}>
+      <div
+        className={`${REPORT_GRID} h-[46px] pr-[10px] text-[14px] tracking-[-0.28px] text-[#919191]`}
+      >
         {HEADERS.map((header) => (
           <div key={header} className="text-center">
             {header}
@@ -35,11 +37,7 @@ export default function ReportSection({ title, reports = [] }) {
       {/* 스크롤 범위: row 1~5 (46px * 5). 6개 이상이면 세로 스크롤 (화살표 없이) */}
       <div className="mp-scroll-y h-[230px] overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable]">
         {ordered.map((report) => (
-          <ReportRow
-            key={report.reportId}
-            report={report}
-            number={report.number}
-          />
+          <ReportRow key={report.reportId} report={report} number={report.number} />
         ))}
       </div>
     </div>
