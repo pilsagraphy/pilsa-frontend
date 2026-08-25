@@ -73,7 +73,8 @@ export const calendarMockResponse = {
 
 // ─────────────────────────────────────────────────────────────
 // 리뷰 반영분 확인용 데이터. /calendar/mock 에서만 쓰인다. (개발 환경 전용 페이지)
-// 실제 화면의 fallback은 위 calendarMockResponse이므로 이 값은 영향이 없다.
+// 실제 화면은 GET /api/event 를 조회하고 실패해도 목 데이터로 메꾸지 않으므로(CalendarSection)
+// 이 파일의 값은 화면에 영향을 주지 않는다. 위 calendarMockResponse 는 현재 쓰이는 곳이 없다.
 // 2026년 8월 기준 — 8/1(토), 8/2(일), 8/9(일), 8/16(일), 8/23(일), 8/30(일)
 // ─────────────────────────────────────────────────────────────
 export const calendarTestMockResponse = {

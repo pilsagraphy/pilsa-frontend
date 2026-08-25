@@ -13,8 +13,7 @@ import {
 import { Calendar } from '@/components/ui/calendar';
 import MonthlyScheduleList from '@/components/shared/calendars/MonthlyScheduleList';
 import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
-import { calendarMockResponse } from '@/mocks/calendarData';
-import { getScheduleList } from '@/apis/schedule';
+import { getEventList } from '@/apis/event';
 
 function isDateIncludedInSchedule(date, schedule) {
   return isWithinInterval(startOfDay(date), {
@@ -47,10 +46,8 @@ export default function CalendarSection({
   scheduleListAction = null,
   onDateDoubleClick,
   onUserSelect,
+  refreshKey = 0,
 }) {
-  // 기존 response prop이 들어오면 그걸 우선 fallback으로 사용
-  const fallbackResponse = React.useMemo(() => response ?? calendarMockResponse, [response]);
-
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
   const [apiResponse, setApiResponse] = React.useState(response ?? null);
   const [isLoading, setIsLoading] = React.useState(!response);
@@ -80,7 +77,7 @@ export default function CalendarSection({
       setHasFetchError(false);
 
       try {
-        const result = await getScheduleList(currentYearMonth, currentYearMonth);
+        const result = await getEventList(currentYearMonth, currentYearMonth);
 
         if (!isMounted) return;
         setApiResponse(result);
@@ -88,6 +85,9 @@ export default function CalendarSection({
         console.error('일정 목록 조회 실패:', error);
 
         if (!isMounted) return;
+        // 지난 조회 결과를 남겨 두면 달력에는 이전 달 막대가, 목록에는 실패 문구가
+        // 같이 뜬다. 실패한 달은 통째로 비우고 실패 문구만 보여준다.
+        setApiResponse(null);
         setHasFetchError(true);
       } finally {
         if (isMounted) {
@@ -101,10 +101,11 @@ export default function CalendarSection({
     return () => {
       isMounted = false;
     };
-  }, [currentYearMonth, response]);
+  }, [currentYearMonth, response, refreshKey]);
 
-  // API 성공 데이터 우선, 실패 시 fallback 사용
-  const data = apiResponse ?? (hasFetchError ? fallbackResponse : null);
+  // 조회에 실패하면 목 데이터로 메꾸지 않는다. 성공한 화면과 구분이 안 되기 때문에
+  // 목록이 실패 문구를 그린다. (hasFetchError → MonthlyScheduleList)
+  const data = apiResponse;
 
   // ?? [] 를 그대로 두면 렌더마다 새 배열이 되어 아래 useEffect가 매번 다시 돈다.
   const schedules = React.useMemo(() => data?.data ?? [], [data]);
@@ -252,6 +253,7 @@ export default function CalendarSection({
             selectedId={selectedScheduleId}
             onSelect={handleSelectSchedule}
             isLoading={isLoading}
+            hasError={hasFetchError}
             renderAction={renderScheduleAction}
             scrollable={scrollableScheduleList}
             visibleCount={scheduleListVisibleCount}

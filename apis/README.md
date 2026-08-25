@@ -33,7 +33,7 @@ apis/
 ├── draft.js              🆕 임시저장(초안)
 ├── report.js             🆕 신고 접수 + 사유 목록
 ├── quote.js              🆕 이 주의 문장 (메인)
-├── event.js              🆕 일정(캘린더) + ICS
+├── event.js              ✅ 연동됨  일정(캘린더) 목록 (ICS 는 axios 미사용)
 ├── donation.js           🆕 명예의 전당
 │
 ├── admin/
@@ -45,14 +45,14 @@ apis/
 │   ├── sanctions.js      🆕 제재 회원
 │   ├── users.js          🆕 회원 목록/정지/차단/강제탈퇴
 │   ├── quotes.js         🆕 문장 관리
-│   └── event.js          🆕 일정 등록/수정/삭제
+│   └── event.js          ✅ 연동됨  일정 등록/수정/삭제
 │
 └── (교체 대상)
     ├── free.js           ❌ /api/stu/free/**     → board.js
     ├── info.js           ❌ /api/stu/info/**     → board.js
     ├── notice.js         ❌ /api/stu/notices/**  → board.js
-    ├── schedule.js       ❌ /api/public/schedules → event.js
     └── honor.js          ❌ /api/public/honor/    → donation.js
+    (schedule.js 는 event.js 로 교체 완료 — 삭제됨)
 ```
 
 ---
@@ -95,4 +95,14 @@ apis/
    함수명도 `findEmailByStudentNo` 로 맞춘다.
 3. **`authApi.js`** — `axiosInstance.js` 와 역할이 겹친다. 토큰 재발급 인터셉터가 없어
    401 처리가 안 되므로 사용처를 `axiosInstance` 로 옮기고 제거한다.
-4. **구 파일 5개** (`free` `info` `notice` `schedule` `honor`) — 화면 전환이 끝나면 삭제.
+4. **구 파일 4개** (`free` `info` `notice` `honor`) — 화면 전환이 끝나면 삭제.
+   `schedule.js` 는 `event.js` 로 교체하고 삭제했다.
+5. **일정 폼의 시각 · 종일 UI** — 서버에 담을 곳이 없어 저장되지 않는다. 마크업은 그대로
+   두기로 했으므로, 카테고리 목록 API(4번 표)와 함께 PM 확인 후 숨기거나 살릴 것.
+   `ScheduleForm` 상단 주석에 같은 내용을 적어 뒀다.
+   근거(2026-08-25 `GET /v3/api-docs` 확인) — 등록 · 수정 요청 본문 필드는
+   `title` `category` `description` `startDate` `endDate` 5개뿐이고 시각 관련 필드가 없다.
+   `/api/event/categories` 와 `GET /api/event/{eventId}` 도 아직 스펙에 없다(planned 유지).
+   덤으로 등록 요청 본문에 `eventId` 가 끼어 있는데(DTO 공용 흔적) 보내지 않는다.
+6. **`mocks/calendarData.js` 의 `calendarMockResponse`** — 조회 실패 시 목 데이터로 메꾸던
+   fallback 을 걷어내서 지금은 쓰이는 곳이 없다. `/calendar/mock` 페이지를 지울 때 함께 정리.

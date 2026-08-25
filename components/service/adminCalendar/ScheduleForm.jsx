@@ -73,10 +73,20 @@ function toTimeParts(value) {
  * schedule이 없으면 '일정 추가', 있으면 '일정 수정'으로 그린다. 입력 항목은 같다.
  * defaultDate('yyyy-MM-dd')는 추가할 때 시작 · 종료일의 초깃값. 없으면 오늘로 채운다.
  *
- * TODO: API 연동 시 확인을 누르면 등록 · 수정 요청을 보내고 목록을 다시 불러올 것.
- *       지금은 마크업 단계라 입력값을 그대로 onSubmit으로 넘기기만 한다.
+ * 확인을 누르면 검증을 통과한 값만 onSubmit으로 올린다. 등록 · 수정 요청과 목록 재조회는
+ * 부모(AdminCalendarSection)가 맡고, 그 동안 isSubmitting으로 버튼을 잠근다.
+ *
+ * ※ 시각(시 · 분)과 종일 체크박스는 서버에 담을 곳이 없어 저장되지 않는다.
+ *   API가 startDate/endDate만 받고 시각은 00:00:00으로 들어간다. UI는 카테고리 목록 API와
+ *   함께 처리하기로 미뤄 둔 상태다. (apis/event.js 5번 · apis/admin/event.js 참고)
  */
-export default function ScheduleForm({ schedule = null, defaultDate = null, onCancel, onSubmit }) {
+export default function ScheduleForm({
+  schedule = null,
+  defaultDate = null,
+  onCancel,
+  onSubmit,
+  isSubmitting = false,
+}) {
   const isCreate = !schedule;
   const [title, setTitle] = React.useState(schedule?.title ?? '');
   const [category, setCategory] = React.useState(schedule?.category ?? DEFAULT_SCHEDULE_CATEGORY);
@@ -121,6 +131,7 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
 
     const startDate = `${start.year}-${start.month}-${start.day}`;
     const endDate = `${end.year}-${end.month}-${end.day}`;
@@ -314,13 +325,15 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
         <button
           type="button"
           onClick={onCancel}
-          className="h-[40px] w-[80px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6]"
+          disabled={isSubmitting}
+          className="h-[40px] w-[80px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6] disabled:opacity-50"
         >
           취소
         </button>
         <button
           type="submit"
-          className="h-[40px] w-[80px] rounded-[4px] bg-[#212121] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242]"
+          disabled={isSubmitting}
+          className="h-[40px] w-[80px] rounded-[4px] bg-[#212121] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242] disabled:opacity-50"
         >
           확인
         </button>

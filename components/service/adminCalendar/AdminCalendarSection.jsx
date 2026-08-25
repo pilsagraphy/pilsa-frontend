@@ -3,13 +3,20 @@
 import * as React from 'react';
 import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
+import { createEvent, deleteEvent, updateEvent } from '@/apis/admin/event';
+import { getErrorMessage } from '@/apis/auth';
 import CalendarSection from '@/components/shared/calendars/CalendarSection';
 import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
 
 import ScheduleActionMenu from './ScheduleActionMenu';
 import ScheduleDeleteModal from './ScheduleDeleteModal';
 import ScheduleForm from './ScheduleForm';
+
+// 404 = 없거나 이미 삭제된 일정. 다른 관리자가 먼저 지운 경우라 목록에 남은 카드가 유령이므로,
+// 요청은 실패했어도 목록을 다시 불러 그 카드를 치운다.
+const isAlreadyGone = (error) => error?.response?.status === 404;
 
 /**
  * 관리자 일정 달력.
@@ -19,6 +26,9 @@ import ScheduleForm from './ScheduleForm';
  *  - '월별 일정' 라벨 오른쪽의 일정 추가 버튼 (달력 날짜 더블클릭도 같은 폼을 연다)
  *  - 월별 일정 카드 오른쪽의 ⋮ 메뉴 (일정 수정 · 일정 삭제)
  *  - 추가 · 수정을 고르면 상세 자리에 뜨는 폼
+ *
+ * 목록 조회는 CalendarSection이 자기 안에서 한다. 등록 · 수정 · 삭제 응답에는 목록이 없어
+ * (신규 eventId · updatedAt 뿐) 재조회가 필요하므로, refreshKey를 올려 그쪽 조회를 다시 부른다.
  */
 export default function AdminCalendarSection({ response }) {
   // 상세 자리에 무엇을 그릴지. null이면 읽기용 상세.
@@ -26,13 +36,85 @@ export default function AdminCalendarSection({ response }) {
   // create의 date는 폼의 시작 · 종료일 초깃값('yyyy-MM-dd'). 없으면 오늘.
   const [formTarget, setFormTarget] = React.useState(null);
   const [deletingSchedule, setDeletingSchedule] = React.useState(null);
+  const [refreshKey, setRefreshKey] = React.useState(0);
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [isDeleting, setIsDeleting] = React.useState(false);
 
   const closeForm = React.useCallback(() => setFormTarget(null), []);
+  const refresh = React.useCallback(() => setRefreshKey((prev) => prev + 1), []);
 
   // 달력 날짜를 더블클릭하면 그 날짜로 일정 추가 폼을 연다.
   const handleDateDoubleClick = React.useCallback((date) => {
     setFormTarget({ mode: 'create', date: format(date, 'yyyy-MM-dd') });
   }, []);
+
+  // 폼의 확인 — 추가면 등록, 수정이면 수정 요청을 보내고 목록을 다시 불러온다.
+  // 날짜 앞뒤 검증은 ScheduleForm이 이미 하고 통과한 값만 올려 준다.
+  // (수정 API에는 서버 검증이 없으므로 그 검증을 지우면 안 된다 — apis/admin/event.js 2번)
+  const handleSubmit = React.useCallback(
+    async (values) => {
+      if (isSaving) return;
+
+      const isEdit = formTarget?.mode === 'edit';
+      setIsSaving(true);
+
+      try {
+        const result = isEdit
+          ? await updateEvent(values.scheduleId, values)
+          : await createEvent(values);
+
+        toast.success(
+          result?.message ?? (isEdit ? '일정이 수정되었습니다.' : '새로운 일정이 등록되었습니다.')
+        );
+        setFormTarget(null);
+        refresh();
+      } catch (error) {
+        toast.error(
+          getErrorMessage(
+            error,
+            isEdit ? '일정을 수정하지 못했습니다.' : '일정을 등록하지 못했습니다.'
+          )
+        );
+
+        if (isEdit && isAlreadyGone(error)) {
+          setFormTarget(null);
+          refresh();
+        }
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [formTarget, isSaving, refresh]
+  );
+
+  // 삭제 확인 — 메서드는 DELETE지만 서버는 소프트 삭제한다.
+  const handleDelete = React.useCallback(async () => {
+    if (!deletingSchedule || isDeleting) return;
+
+    const { scheduleId } = deletingSchedule;
+    setIsDeleting(true);
+
+    try {
+      const result = await deleteEvent(scheduleId);
+      toast.success(result?.message ?? '일정이 정상적으로 삭제되었습니다.');
+      setDeletingSchedule(null);
+
+      // 지운 일정의 수정 폼이 열려 있으면 같이 닫는다. (없는 일정을 수정하게 두면 404가 난다)
+      setFormTarget((prev) =>
+        prev?.mode === 'edit' && prev.schedule.scheduleId === scheduleId ? null : prev
+      );
+      refresh();
+    } catch (error) {
+      toast.error(getErrorMessage(error, '일정을 삭제하지 못했습니다.'));
+
+      if (isAlreadyGone(error)) {
+        setDeletingSchedule(null);
+        refresh();
+      }
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deletingSchedule, isDeleting, refresh]);
 
   const renderScheduleAction = React.useCallback(
     (schedule, isSelected) => (
@@ -70,21 +152,22 @@ export default function AdminCalendarSection({ response }) {
             schedule={formTarget.mode === 'edit' ? formTarget.schedule : null}
             defaultDate={formTarget.mode === 'create' ? formTarget.date : null}
             onCancel={closeForm}
-            // TODO: API 연동 시 등록 · 수정 요청을 보내고 목록을 다시 불러올 것.
-            onSubmit={closeForm}
+            onSubmit={handleSubmit}
+            isSubmitting={isSaving}
           />
         );
       }
 
       return <ScheduleDetail schedule={selectedSchedule} fullWidth />;
     },
-    [formTarget, closeForm]
+    [formTarget, closeForm, handleSubmit, isSaving]
   );
 
   return (
     <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10">
       <CalendarSection
         response={response}
+        refreshKey={refreshKey}
         scheduleListAction={scheduleListAction}
         onDateDoubleClick={handleDateDoubleClick}
         // 달력 날짜나 목록 카드를 누르면 열려 있던 폼을 닫고 그 일정 상세로 돌아간다.
@@ -97,9 +180,9 @@ export default function AdminCalendarSection({ response }) {
 
       <ScheduleDeleteModal
         schedule={deletingSchedule}
-        // TODO: API 연동 시 삭제 요청을 보내고 목록을 다시 불러올 것.
-        onConfirm={() => setDeletingSchedule(null)}
+        onConfirm={handleDelete}
         onCancel={() => setDeletingSchedule(null)}
+        isDeleting={isDeleting}
       />
     </div>
   );
