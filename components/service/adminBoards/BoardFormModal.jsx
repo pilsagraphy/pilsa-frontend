@@ -19,38 +19,76 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import {
-  BOARD_WRITE_ROLE_OPTIONS,
-  fromWriteRoleGroup,
-  toWriteRoleGroup,
+  BOARD_READ_SCOPE_OPTIONS,
+  BOARD_WRITE_LEVEL_OPTIONS,
+  fromWriteLevelValue,
+  toWriteLevelValue,
 } from '@/constants/adminBoards';
+
+// 모달의 권한 드롭박스 (디자인: 높이 40px, 폭 120px, 아래 화살표는 SelectTrigger 기본 아이콘)
+// 열람 · 작성 두 칸이 같은 모양이라 하나로 묶어 쓴다.
+function FormSelect({ label, value, options, onChange }) {
+  return (
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger
+        aria-label={label}
+        className="h-[40px] w-[120px] justify-between rounded-[4px] border-[#b9b9b9] px-[10px] text-[14px] tracking-[-0.28px] text-[#454545] shadow-none data-[placeholder]:text-[#b9b9b9] [&>svg]:size-5 [&>svg]:opacity-100"
+      >
+        <SelectValue placeholder="선택" />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((option) => (
+          <SelectItem
+            key={option.value}
+            value={option.value}
+            className="text-[14px] text-[#454545]"
+          >
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
 
 /**
  * 게시판 수정 / 생성 모달
- * mode에 따라 제목과 초기값만 달라진다. 저장 처리는 부모가 담당.
+ * mode에 따라 제목과 초기값만 달라진다. 저장 처리(API 호출)는 부모가 담당.
+ * onSubmit에는 서버가 받는 형식({ name, readScope, writeLevel })으로 넘긴다.
  */
 export default function BoardFormModal({ open, mode = 'create', board = null, onClose, onSubmit }) {
   const isEdit = mode === 'edit';
 
   const [boardName, setBoardName] = useState('');
-  const [writePermission, setWritePermission] = useState('');
+  const [readScope, setReadScope] = useState('');
+  // select 값은 문자열로 들고 있다가 보낼 때 숫자로 바꾼다 (Radix Select 제약)
+  const [writeLevelValue, setWriteLevelValue] = useState('');
+  // 저장 중에 확인을 두 번 눌러 요청이 겹치는 것을 막는다
+  const [submitting, setSubmitting] = useState(false);
 
   // 열릴 때마다 초기값을 채운다 (수정은 기존 값, 생성은 빈 값)
-  // 작성 권한은 관리 Lv.1~3을 '관리자' 하나로 묶어서 보여준다.
   useEffect(() => {
     if (!open) return;
     setBoardName(isEdit ? (board?.boardName ?? '') : '');
-    setWritePermission(isEdit && board ? toWriteRoleGroup(board.writePermission) : '');
+    setReadScope(isEdit ? (board?.readScope ?? '') : '');
+    setWriteLevelValue(isEdit && board ? toWriteLevelValue(board.writeLevel) : '');
+    setSubmitting(false);
   }, [open, isEdit, board]);
 
-  const canSubmit = boardName.trim().length > 0 && Boolean(writePermission);
+  const canSubmit =
+    boardName.trim().length > 0 && Boolean(readScope) && writeLevelValue !== '' && !submitting;
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (!canSubmit) return;
-    onSubmit?.({
-      boardName: boardName.trim(),
-      // '관리자'를 골랐으면 기존 관리 Lv.N을 유지한 채 저장한다.
-      writePermission: fromWriteRoleGroup(writePermission, board?.writePermission),
+    setSubmitting(true);
+
+    await onSubmit?.({
+      name: boardName.trim(),
+      readScope,
+      writeLevel: fromWriteLevelValue(writeLevelValue),
     });
+
+    setSubmitting(false);
   };
 
   return (
@@ -65,7 +103,7 @@ export default function BoardFormModal({ open, mode = 'create', board = null, on
 
         {/* 디자인상 보이는 설명은 없지만, 스크린리더 안내와 Radix 경고 방지를 위해 넣는다 */}
         <DialogDescription className="sr-only">
-          게시판 이름과 작성 권한을 {isEdit ? '수정' : '입력'}합니다.
+          게시판 이름과 열람 · 작성 권한을 {isEdit ? '수정' : '입력'}합니다.
         </DialogDescription>
 
         <div className="flex flex-col gap-[4px]">
@@ -85,23 +123,27 @@ export default function BoardFormModal({ open, mode = 'create', board = null, on
         </div>
 
         <div className="flex flex-col gap-[4px]">
-          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">권한</span>
-          <Select value={writePermission} onValueChange={setWritePermission}>
-            {/* 모달은 디자인대로 아래 화살표(SelectTrigger 기본 아이콘)를 그대로 쓴다 */}
-            <SelectTrigger
-              aria-label="작성 권한 선택"
-              className="h-[40px] w-[120px] justify-between rounded-[4px] border-[#b9b9b9] px-[10px] text-[14px] tracking-[-0.28px] text-[#454545] shadow-none data-[placeholder]:text-[#b9b9b9] [&>svg]:size-5 [&>svg]:opacity-100"
-            >
-              <SelectValue placeholder="선택" />
-            </SelectTrigger>
-            <SelectContent>
-              {BOARD_WRITE_ROLE_OPTIONS.map((option) => (
-                <SelectItem key={option} value={option} className="text-[14px] text-[#454545]">
-                  {option}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+            열람 권한
+          </span>
+          <FormSelect
+            label="열람 권한 선택"
+            value={readScope}
+            options={BOARD_READ_SCOPE_OPTIONS}
+            onChange={setReadScope}
+          />
+        </div>
+
+        <div className="flex flex-col gap-[4px]">
+          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+            작성 권한
+          </span>
+          <FormSelect
+            label="작성 권한 선택"
+            value={writeLevelValue}
+            options={BOARD_WRITE_LEVEL_OPTIONS}
+            onChange={setWriteLevelValue}
+          />
         </div>
 
         <DialogFooter className="flex flex-row justify-end gap-[12px] sm:space-x-0">

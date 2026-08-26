@@ -1,54 +1,20 @@
 'use client';
 
-import { ChevronUp, Menu } from 'lucide-react';
+import { Menu } from 'lucide-react';
 
-import RowCheckbox from '@/components/shared/admin/RowCheckbox';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import RowActionButton from '@/components/shared/admin/RowActionButton';
 import { TableCell, TableRow } from '@/components/ui/table';
-import {
-  BOARD_READ_ROLE_OPTIONS,
-  BOARD_WRITE_ROLE_OPTIONS,
-  fromWriteRoleGroup,
-  toWriteRoleGroup,
-} from '@/constants/adminBoards';
+import { getReadScopeLabel, getWriteLevelLabel } from '@/constants/adminBoards';
 
-// 권한 변경 드롭박스 (디자인: 높이 36px, 회색 외곽선, 14px, 화살표는 위 방향)
-// SelectTrigger 기본 아이콘(아래 화살표)은 숨기고 디자인대로 위 화살표를 직접 넣는다.
-function PermissionSelect({ label, value, options, onChange }) {
-  return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger
-        aria-label={label}
-        className="mx-auto h-[36px] w-[98px] justify-between rounded-[4px] border-[#b9b9b9] px-[10px] text-[14px] tracking-[-0.28px] text-[#454545] shadow-none [&>svg]:hidden"
-      >
-        <SelectValue placeholder="선택" />
-        <span className="shrink-0">
-          <ChevronUp className="size-5 text-[#212121]" />
-        </span>
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((option) => (
-          <SelectItem key={option} value={option} className="text-[14px] text-[#454545]">
-            {option}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
-// board: id, boardName, postCount, readPermission, writePermission, priority
+// board: 서버 응답 그대로 — boardId, boardName, postCount, readScope, writeLevel, displayOrder
+//
+// 권한은 표에서 바로 바꾸지 않고 읽기 전용으로 보여준다 (시안).
+// 값을 바꾸려면 관리 열의 '수정'으로 모달을 연다.
 export default function BoardRow({
   board,
-  selected = false,
-  onSelectChange,
-  onFieldChange,
+  onEdit,
+  // 저장 중에는 행 버튼을 잠근다 (연달아 눌러 요청이 겹치는 것을 막는다)
+  disabled = false,
   // 드래그로 순서 변경
   isDragging = false,
   isDropTarget = false,
@@ -59,18 +25,16 @@ export default function BoardRow({
   onDragEnd,
 }) {
   return (
-    // 행은 '놓는 곳'만 담당한다.
-    // 행 전체를 draggable로 두면 체크박스·권한 Select를 조작할 때 드래그가 시작되어
-    // 드롭다운이 열리지 않는 문제가 생기므로, 끄는 동작은 오른쪽 핸들에만 건다.
+    // 행은 '놓는 곳'만 담당한다. 끄는 동작은 오른쪽 핸들에만 건다.
     <TableRow
       onDragOver={(e) => {
         // preventDefault를 해줘야 drop이 허용된다
         e.preventDefault();
-        onDragOver?.(board.id);
+        onDragOver?.(board.boardId);
       }}
       onDrop={(e) => {
         e.preventDefault();
-        onDrop?.(board.id);
+        onDrop?.(board.boardId);
       }}
       className={`h-[46px] border-b border-[#b9b9b9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121] ${
         isDragging ? 'opacity-40' : ''
@@ -84,55 +48,39 @@ export default function BoardRow({
           : ''
       }`}
     >
-      {/* 1. 선택 체크박스 */}
-      <TableCell className="text-center">
-        <RowCheckbox
-          checked={selected}
-          onCheckedChange={(checked) => onSelectChange?.(board.id, checked)}
-          label={`${board.boardName} 선택`}
-        />
-      </TableCell>
-
-      {/* 2. 게시판 명 · 게시글 수 */}
+      {/* 1. 게시판 명 · 게시글 수 */}
       <TableCell className="whitespace-nowrap text-center">{board.boardName}</TableCell>
       <TableCell className="whitespace-nowrap text-center">
         {board.postCount?.toLocaleString() ?? 0}
       </TableCell>
 
-      {/* 3. 열람 권한 */}
+      {/* 2. 열람 · 작성 권한 (읽기 전용) */}
       <TableCell className="whitespace-nowrap text-center">
-        <PermissionSelect
-          label={`${board.boardName} 열람 권한`}
-          value={board.readPermission}
-          options={BOARD_READ_ROLE_OPTIONS}
-          onChange={(next) => onFieldChange?.(board.id, 'readPermission', next)}
-        />
+        {getReadScopeLabel(board.readScope)}
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-center">
+        {getWriteLevelLabel(board.writeLevel)}
       </TableCell>
 
-      {/* 4. 작성 권한 (관리 Lv.1~3은 '관리자' 하나로 묶어 보여준다) */}
-      <TableCell className="whitespace-nowrap text-center">
-        <PermissionSelect
-          label={`${board.boardName} 작성 권한`}
-          value={toWriteRoleGroup(board.writePermission)}
-          options={BOARD_WRITE_ROLE_OPTIONS}
-          onChange={(next) =>
-            onFieldChange?.(
-              board.id,
-              'writePermission',
-              fromWriteRoleGroup(next, board.writePermission)
-            )
-          }
-        />
+      {/* 3. 관리 - 수정 모달을 연다 (시안에 삭제 버튼은 없다) */}
+      <TableCell className="text-center">
+        <RowActionButton
+          className="min-w-[44px]"
+          disabled={disabled}
+          onClick={() => onEdit?.(board)}
+        >
+          수정
+        </RowActionButton>
       </TableCell>
 
-      {/* 5. 순서 변경 핸들 - 실제로 끄는 동작은 여기서만 시작된다
+      {/* 4. 순서 변경 핸들 - 실제로 끄는 동작은 여기서만 시작된다
           마우스 드래그 전용이라(키보드·터치 미지원) 보조기기에는 노출하지 않는다.
           TODO: 키보드/터치로도 순서를 바꿔야 하면 방향키 조작이나 위·아래 버튼을 추가할 것 */}
       <TableCell className="text-center">
         <span
           aria-hidden
-          draggable
-          onDragStart={() => onDragStart?.(board.id)}
+          draggable={!disabled}
+          onDragStart={() => onDragStart?.(board.boardId)}
           onDragEnd={() => onDragEnd?.()}
           title="드래그해서 순서 변경"
           className="inline-flex cursor-grab text-[#dedede] active:cursor-grabbing"
