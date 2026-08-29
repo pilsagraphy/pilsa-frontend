@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import NotificationToggle from './NotificationToggle';
+import GoogleIntegrationSection from './GoogleIntegrationSection';
 import WithdrawModal from './WithdrawModal';
 import PasswordChangeModal from './PasswordChangeModal';
 import { canShowPushToggle } from '@/lib/push';
@@ -75,7 +76,15 @@ export default function MyInfoEditModal({ open, onOpenChange, myInfo }) {
             </section>
           )}
 
-          {/* 3. 계정 */}
+          {/* 3. 구글 연동 — 계정 연결(소셜 로그인) + 캘린더 자동 등록.
+                 알림과 마찬가지로 계정(비밀번호·탈퇴)과는 성격이 달라 별도 섹션으로 둔다.
+                 알림 섹션과 달리 PC 에서도 노출한다 — 캘린더 연동은 데스크톱에서도 쓸 수 있다 */}
+          <section className="flex flex-col gap-1">
+            <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-[#919191]">구글 연동</h4>
+            <GoogleIntegrationSection />
+          </section>
+
+          {/* 4. 계정 */}
           <section className="flex flex-col gap-1">
             <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-[#919191]">계정</h4>
             <div className="rounded-[8px] border border-black/10">

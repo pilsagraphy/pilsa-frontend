@@ -1,0 +1,40 @@
+{
+  "packageId": "kr.co.pilsa.app",
+  "host": "pilsa.co.kr",
+  "name": "필사그래피",
+  "launcherName": "필사그래피",
+  "display": "standalone",
+  "themeColor": "#212121",
+  "themeColorDark": "#212121",
+  "navigationColor": "#212121",
+  "navigationColorDark": "#212121",
+  "navigationDividerColor": "#212121",
+  "navigationDividerColorDark": "#212121",
+  "backgroundColor": "#ffffff",
+  "enableNotifications": true,
+  "startUrl": "/",
+  "iconUrl": "https://pilsa.co.kr/icons/icon-512.png",
+  "maskableIconUrl": "https://pilsa.co.kr/icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "../../app-key/v_1_release_key.jks",
+    "alias": "REPLACE_ME_KEY_ALIAS"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://pilsa.co.kr/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://pilsa.co.kr/",
+  "minSdkVersion": 21,
+  "orientation": "portrait",
+  "fingerprints": []
+}

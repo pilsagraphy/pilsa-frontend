@@ -34,6 +34,17 @@ export const withdrawAccount = async (password) => {
   return response.data;
 };
 
+// 위 2번 계약 구현.
+// ★성공하면 서버가 기존 토큰을 전부 무효화하므로(본인 세션 포함) 호출부는 저장한 토큰을 버리고
+//   로그인 화면으로 보내야 한다 — 그대로 두면 다음 요청부터 401 이다.
+export const changePassword = async ({ currentPassword, newPassword }) => {
+  const response = await axiosInstance.patch('/api/user/mypage/password/reset', {
+    currentPassword,
+    newPassword,
+  });
+  return response.data;
+};
+
 // ─────────────────────────── 미구현 (백엔드 대기 · 백로그 C-2) ───────────────────────────
 
 // 5. 내가 쓴 글 (GET /api/user/mypage/posts) [MEMBER] — planned
