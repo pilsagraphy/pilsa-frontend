@@ -20,17 +20,23 @@ export const BOARD_FILTER_OPTIONS = [
   ...BOARD_NAMES.map((name) => ({ value: name, label: name })),
 ];
 
-// 목록에서 제목을 눌렀을 때 이동할 게시글 상세 경로
-// TODO: API 연동 시 게시판 식별자(boardId)로 경로를 만들 것. 지금은 게시판 이름으로 잇는다.
-const BOARD_DETAIL_ROUTES = {
-  자유게시판: ROUTES.FREE_BOARD_DETAIL,
-  공지사항: ROUTES.NOTICE_DETAIL,
-  정보게시판: ROUTES.INFO_BOARD_DETAIL,
+// 게시판별 상세 경로와 댓글 영역 유무.
+// '상세 경로를 안다'와 '그 상세에 댓글이 있다'는 다른 이야기라서 둘 다 필요하고,
+// 따로 두면 서로 어긋나므로 한 객체에 묶는다. (댓글 신고의 앵커 링크가 hasComments를 본다)
+// TODO: API 연동 시 키를 boardId로 바꿀 것. 서버 응답과 필터가 모두 boardId 기준이다.
+//       한 객체에 묶여 있어 경로와 댓글 유무가 함께 옮겨간다.
+const BOARD_DETAIL = {
+  자유게시판: { href: ROUTES.FREE_BOARD_DETAIL, hasComments: true },
+  공지사항: { href: ROUTES.NOTICE_DETAIL, hasComments: false }, // 공지 상세에는 댓글 영역이 없다
+  정보게시판: { href: ROUTES.INFO_BOARD_DETAIL, hasComments: true },
 };
 
 // 경로를 모르는 게시판이면 null을 돌려주고, 행에서는 링크 대신 텍스트로 보여준다.
 export const getPostDetailHref = (boardName, postId) =>
-  BOARD_DETAIL_ROUTES[boardName]?.(postId) ?? null;
+  BOARD_DETAIL[boardName]?.href(postId) ?? null;
+
+// 그 게시판 상세에 댓글 영역이 있는지. 모르는 게시판은 없는 것으로 본다.
+export const boardHasComments = (boardName) => BOARD_DETAIL[boardName]?.hasComments ?? false;
 
 // 디자인 시안의 행 패턴. 게시판 · 상태만 서로 다르다.
 const POST_PATTERN = [

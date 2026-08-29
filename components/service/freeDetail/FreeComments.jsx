@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { createFreeComment, updateFreeComment, deleteFreeComment } from '@/apis/free';
 import { getErrorMessage } from '@/apis/auth';
+import useCommentAnchor from '@/hooks/useCommentAnchor';
+import { getCommentAnchorId } from '@/lib/utils';
 import useAuthStore from '@/stores/useAuthStore';
 import ReportModal from '@/components/shared/board/ReportModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
@@ -51,6 +53,9 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
   const [confirmState, setConfirmState] = useState(null);
   // 안내 모달 { title, description } (null이면 닫힘)
   const [alertState, setAlertState] = useState(null);
+
+  // URL 해시(#comment-3)로 지목된 댓글. 관리자 신고 관리에서 링크를 타고 들어올 때 쓴다.
+  const focusedAnchor = useCommentAnchor(comments);
 
   // 대댓글 구조: 직계 자식을 재귀적으로 렌더링해 깊이에 따라 들여쓴다
   const commentById = new Map(comments.map((c) => [c.commentId, c]));
@@ -202,7 +207,9 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
     const owner = isOwner(comment);
     const replying = replyTo?.commentId === comment.commentId;
     const editing = editingId === comment.commentId;
-    const highlighted = replying || editing;
+    const anchorId = getCommentAnchorId(comment.commentId);
+    // 해시로 지목된 댓글도 답글·수정 중인 댓글과 같은 회색 배경으로 눈에 띄게 한다
+    const highlighted = replying || editing || focusedAnchor === anchorId;
     const displayName = (comment.isAnonymous ?? comment.anonymous) ? '익명' : comment.authorName;
 
     const actionClassName = (active) =>
@@ -213,7 +220,10 @@ export default function FreeComments({ postId, comments = [], onChanged }) {
     return (
       <div
         key={comment.commentId}
-        className={`flex w-full flex-col gap-3 py-4 md:flex-row md:items-start md:justify-between md:py-5 ${indentClass} ${
+        // 댓글 하나를 URL로 가리킬 수 있게 앵커를 붙인다 (예: /students/free/12#comment-3)
+        // scroll-mt는 해시로 바로 들어와 브라우저가 스크롤할 때 위가 잘리지 않게 하는 여백이다
+        id={anchorId}
+        className={`flex w-full scroll-mt-[100px] flex-col gap-3 py-4 md:flex-row md:items-start md:justify-between md:py-5 ${indentClass} ${
           highlighted ? 'bg-[#f5f5f5]' : ''
         }`}
       >
