@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import MyPageIntro from './MyPageIntro';
 import MyPageStats from './MyPageStats';
@@ -8,8 +8,18 @@ import MyPageBoard from './MyPageBoard';
 import MyInfoCard from './MyInfoCard';
 import MyActivityCard from './MyActivityCard';
 
+import useMyPageStore from '@/stores/useMyPageStore';
+
 // 마이페이지 본문 조립 (공통 레이아웃의 Header/Sidebar/Footer는 상위 layout에서 처리)
 export default function MyPageSection() {
+  // 요약 데이터는 여기서 '진입 시 한 번만' 부른다.
+  // 자식(Stats/Intro/InfoCard/ActivityCard)은 스토어를 읽기만 한다.
+  useEffect(() => {
+    const store = useMyPageStore.getState();
+    store.fetchSummary();
+    return () => store.reset(); // 떠날 때 비워서 다음 사용자에게 이전 정보가 안 남게
+  }, []);
+
   return (
     <section className="mx-auto flex w-full max-w-[1016px] flex-col gap-[30px] bg-white p-6 md:p-8">
       {/* 영역 1: 인사말(좌) + 활동 통계(우) 같은 행 */}
