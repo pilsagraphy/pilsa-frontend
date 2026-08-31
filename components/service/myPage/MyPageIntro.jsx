@@ -1,17 +1,13 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { CircleUser } from 'lucide-react';
 
 import useMyPageStore from '@/stores/useMyPageStore';
 
 export default function MyPageIntro() {
-  // 프로필 이름은 마이페이지 요약(useMyPageStore.summary)에서 가져온다
-  const { summary, fetchSummary } = useMyPageStore();
-
-  useEffect(() => {
-    fetchSummary(); // 스토어가 중복 호출은 막아준다
-  }, [fetchSummary]);
+  // 프로필 이름은 스토어에서 읽기만 한다 (호출은 MyPageSection이 담당)
+  const summary = useMyPageStore((s) => s.summary);
 
   const userName = summary?.name || '회원'; // 불러오기 전에는 '회원'
 

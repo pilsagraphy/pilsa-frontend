@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/table';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import SortSelect from '@/components/shared/board/SortSelect';
-import CategorySelect from '@/components/shared/board/CategorySelect';
 import SearchInput from '@/components/shared/board/SearchInput';
 
 import useMyPageBoardStore from '@/stores/useMyPageBoardStore';
@@ -47,8 +46,8 @@ function formatDate(value) {
 export default function MyPageBoard() {
   const [activeTab, setActiveTab] = useState('posts');
   const [sortOrder, setSortOrder] = useState('latest');
-  const [category, setCategory] = useState('all'); // TODO: 게시판(boardId) 필터는 GET /api/user/boards 연동 후 연결
   const [searchQuery, setSearchQuery] = useState('');
+  const [keyword, setKeyword] = useState(''); // 디바운스가 끝난 실제 검색어
   const [currentPage, setCurrentPage] = useState(1);
 
   // 목록 상태/실행 함수는 스토어에서 가져온다
@@ -58,17 +57,24 @@ export default function MyPageBoard() {
   const isComments = activeTab === 'comments';
   const colSpan = isComments ? 4 : 5;
 
-  // 탭/페이지/정렬/검색이 바뀌면 목록을 다시 부른다. (검색 연타 방지용 300ms 디바운스)
+  // 검색어만 디바운스(연타 방지). 탭·정렬·페이지 전환은 즉시 반영해야 빈 행이 안 보인다.
+  useEffect(() => {
+    const timer = setTimeout(() => setKeyword(searchQuery.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // 탭/페이지/정렬/검색어가 바뀌면 목록을 즉시 다시 부른다.
   useEffect(() => {
     const params = { page: currentPage, size: PAGE_SIZE };
-    if (searchQuery.trim()) params.keyword = searchQuery.trim();
+    if (keyword) params.keyword = keyword;
     if (!isComments) params.sort = SORT_MAP[sortOrder] ?? 'created'; // 댓글 탭은 정렬 없음
+    fetchList(activeTab, params);
+  }, [activeTab, currentPage, sortOrder, keyword, isComments, fetchList]);
 
-    const timer = setTimeout(() => {
-      fetchList(activeTab, params);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [activeTab, currentPage, sortOrder, searchQuery, isComments, fetchList]);
+  // 마이페이지를 떠날 때 목록을 비워, 다음 사용자에게 이전 목록이 스쳐 보이지 않게 한다.
+  useEffect(() => {
+    return () => useMyPageBoardStore.getState().reset();
+  }, []);
 
   return (
     <div className="flex w-full flex-col gap-[30px]">
@@ -97,7 +103,7 @@ export default function MyPageBoard() {
         })}
       </div>
 
-      {/* 정렬 · 카테고리 · 검색 */}
+      {/* 정렬 · 검색 (게시판 필터는 GET /api/user/boards 연동 후 추가 예정이라 이번엔 미노출) */}
       <div className="mt-[12px] flex flex-col gap-2 sm:flex-row sm:items-center sm:pl-[40px]">
         <div className="md:[&_button]:!w-[140px]">
           <SortSelect
@@ -106,16 +112,6 @@ export default function MyPageBoard() {
             value={sortOrder}
             onValueChange={(v) => {
               setSortOrder(v);
-              setCurrentPage(1);
-            }}
-          />
-        </div>
-        <div className="md:[&_button]:!w-[140px]">
-          <CategorySelect
-            boardType="free"
-            value={category}
-            onValueChange={(v) => {
-              setCategory(v);
               setCurrentPage(1);
             }}
           />
@@ -181,8 +177,8 @@ export default function MyPageBoard() {
                 const title = isComments ? row.postTitle : row.title;
                 return (
                   <TableRow
-                    key={row.postId ?? row.commentId ?? index}
-                    className="h-[50px] cursor-pointer border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] transition hover:bg-[#F6F6F6] md:text-[16px]"
+                    key={isComments ? row.commentId : row.postId}
+                    className="h-[50px] border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] md:text-[16px]"
                   >
                     <TableCell className="text-center">{no}</TableCell>
                     <TableCell className="truncate pl-[28px] text-left">{title}</TableCell>

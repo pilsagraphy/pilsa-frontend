@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import MyInfoEditModal from './MyInfoEditModal';
 
 import useMyPageStore from '@/stores/useMyPageStore';
@@ -19,12 +19,8 @@ function formatJoinedAt(value) {
 export default function MyInfoCard() {
   const [editOpen, setEditOpen] = useState(false);
 
-  // 내 정보(아이디·가입일)도 마이페이지 요약에서 가져온다
-  const { summary, fetchSummary } = useMyPageStore();
-
-  useEffect(() => {
-    fetchSummary(); // 스토어가 중복 호출은 막아준다
-  }, [fetchSummary]);
+  // 내 정보(아이디·가입일)도 스토어에서 읽기만 한다 (호출은 MyPageSection이 담당)
+  const summary = useMyPageStore((s) => s.summary);
 
   const loginId = summary?.loginId ?? '-';
   const joinedAt = summary ? formatJoinedAt(summary.joinedAt) : '-';
