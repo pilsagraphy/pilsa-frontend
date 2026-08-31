@@ -12,8 +12,8 @@ const useMyPageStore = create((set, get) => ({
 
   // 프로필/활동 요약 불러오기
   fetchSummary: async () => {
-    // 이미 불러왔거나 불러오는 중이면 중복 호출하지 않는다 (여러 컴포넌트가 같은 데이터를 공유)
-    if (get().summary || get().isLoading) return;
+    // '동시 호출'만 막는다(영구 캐시 아님) — 계정을 바꿔 다시 진입하면 새로 불러와야 하기 때문.
+    if (get().isLoading) return;
 
     set({ isLoading: true, error: null }); // 시작: 로딩 켜고 이전 에러 지우기
     try {
@@ -23,6 +23,9 @@ const useMyPageStore = create((set, get) => ({
       set({ error: '마이페이지 정보를 불러오지 못했습니다.', isLoading: false }); // 실패
     }
   },
+
+  // 이전 사용자 정보가 남지 않도록 초기화 (마이페이지를 떠날 때 호출)
+  reset: () => set({ summary: null, isLoading: false, error: null }),
 }));
 
 export default useMyPageStore;

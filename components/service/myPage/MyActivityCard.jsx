@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Info } from 'lucide-react';
 
 import useMyPageStore from '@/stores/useMyPageStore';
@@ -13,11 +13,8 @@ const ACTIVITY_META = [
 ];
 
 export default function MyActivityCard() {
-  const { summary, fetchSummary } = useMyPageStore();
-
-  useEffect(() => {
-    fetchSummary(); // 스토어가 중복 호출은 막아준다
-  }, [fetchSummary]);
+  // 이번 학기 활동도 스토어에서 읽기만 한다 (호출은 MyPageSection이 담당)
+  const summary = useMyPageStore((s) => s.summary);
 
   const semester = summary?.semester ?? null; // 불러오기 전에는 null
 

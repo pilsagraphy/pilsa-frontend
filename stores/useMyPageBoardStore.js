@@ -9,6 +9,9 @@ const FETCHERS = {
   likes: getMyLikes,
 };
 
+// 요청 순번 — 빠르게 탭을 바꿀 때 '먼저 보냈지만 늦게 온 응답'이 최신 화면을 덮지 않게 한다.
+let reqId = 0;
+
 // 마이페이지 활동 목록(내 글/내 댓글/좋아요) 상태
 const useMyPageBoardStore = create((set) => ({
   // 상태 3종 세트 (+ 페이지네이션 정보)
@@ -23,20 +26,35 @@ const useMyPageBoardStore = create((set) => ({
     const fetcher = FETCHERS[tab];
     if (!fetcher) return;
 
-    set({ isLoading: true, error: null }); // 시작: 로딩 켜고 이전 에러 지우기
+    const myId = (reqId += 1); // 이번 요청 순번
+    set({ isLoading: true, error: null });
     try {
       const data = await fetcher(params);
+      if (myId !== reqId) return; // 더 최신 요청이 있으면 이 응답은 버린다
       // 글/좋아요는 data.posts, 댓글은 data.comments 로 내려온다
-      const items = data.posts ?? data.comments ?? [];
       set({
-        items,
+        items: data.posts ?? data.comments ?? [],
         totalPages: data.totalPages ?? 0,
         totalCount: data.totalCount ?? 0,
         isLoading: false,
       });
     } catch (e) {
-      set({ error: '목록을 불러오지 못했습니다.', isLoading: false, items: [] });
+      if (myId !== reqId) return;
+      // 에러면 페이지네이션 정보도 초기화 (이전 페이지 수가 남아있지 않게)
+      set({
+        error: '목록을 불러오지 못했습니다.',
+        isLoading: false,
+        items: [],
+        totalPages: 0,
+        totalCount: 0,
+      });
     }
+  },
+
+  // 이전 사용자의 목록이 남지 않도록 초기화 (마이페이지를 떠날 때 호출)
+  reset: () => {
+    reqId += 1; // 진행 중이던 응답도 무효화
+    set({ items: [], totalPages: 0, totalCount: 0, isLoading: false, error: null });
   },
 }));
 

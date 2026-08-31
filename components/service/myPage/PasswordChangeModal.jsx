@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { passwordSchema } from '@/schemas/auth';
 import { changePassword } from '@/apis/mypage';
 import { getErrorMessage } from '@/apis/auth';
-import { AUTO_LOGIN_KEY } from '@/stores/useAuthStore';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 
 // 검증 규칙은 비밀번호 찾기(FindPwReset)와 동일한 passwordSchema 재사용
@@ -38,6 +38,7 @@ const EMPTY_FORM = { currentPassword: '', newPassword: '', confirmPassword: '' }
 
 // 비밀번호 재설정 모달
 export default function PasswordChangeModal({ open, onOpenChange }) {
+  const router = useRouter();
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
@@ -73,21 +74,15 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
 
     setLoading(true);
     try {
-      const data = await changePassword({
+      await changePassword({
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
-      toast.success(data?.message ?? '비밀번호가 변경되었습니다. 다시 로그인해주세요.');
 
-      // ★비번 변경 성공 시 기존 토큰이 전부 무효화된다(본인 세션 포함).
-      //   자동 로그인 플래그를 끄고 로그인 화면으로 보낸다 — 그대로 두면 다음 요청에서 401.
-      try {
-        localStorage.removeItem(AUTO_LOGIN_KEY);
-      } catch {
-        // localStorage 접근 불가 환경 무시
-      }
-      // 전체 리로드로 인증 상태를 확실히 초기화하며 로그인 화면으로 이동
-      window.location.replace(ROUTES.LOGIN);
+      // ★성공 시 기존 토큰이 전부 무효화된다(본인 세션 포함).
+      //   로그아웃 플로우(/login?logout=1)로 SPA 이동한다 — 인증 상태를 정리하고
+      //   로그인 화면에서 안내 토스트를 띄운다. (전체 리로드가 아니라 토스트가 사라지지 않는다)
+      router.replace(`${ROUTES.LOGIN}?logout=1`);
     } catch (err) {
       // 백엔드 미배포(404) — 계약 확정 전까지 안내만
       if (err.response?.status === 404) {

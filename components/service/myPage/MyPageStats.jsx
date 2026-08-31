@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Pencil, MessageSquare, Heart } from 'lucide-react';
 
 import useMyPageStore from '@/stores/useMyPageStore';
@@ -13,21 +13,27 @@ const STAT_META = [
 ];
 
 export default function MyPageStats() {
-  // 상태와 실행 함수는 전부 스토어에서 가져온다 (컴포넌트 안에서 직접 fetch 하지 않는다)
-  const { summary, isLoading, error, fetchSummary } = useMyPageStore();
+  // 데이터는 스토어에서 읽기만 한다 (호출은 MyPageSection이 담당)
+  const summary = useMyPageStore((s) => s.summary);
+  const isLoading = useMyPageStore((s) => s.isLoading);
+  const error = useMyPageStore((s) => s.error);
 
-  useEffect(() => {
-    fetchSummary(); // 화면이 처음 뜰 때 한 번 요청 (스토어가 중복 호출은 막아준다)
-  }, [fetchSummary]);
+  // 실패 시: 최소한 이유를 보여준다 (숫자 자리에 '-' 만 남기지 않도록)
+  if (error) {
+    return (
+      <div className="flex w-full items-center justify-center bg-white py-[20px] text-[13px] text-[#919191]">
+        {error}
+      </div>
+    );
+  }
 
-  // 이 위젯은 레이아웃(3칸)을 유지해야 하므로, 로딩/에러 시 화면을 통째로 바꾸지 않고
-  // 숫자 자리에만 '-' 를 보여준다. (데이터가 있으면 실제 숫자, 없는 값은 0)
-  const isReady = Boolean(summary) && !isLoading && !error;
+  const isReady = Boolean(summary) && !isLoading;
 
   return (
     <div className="flex w-full items-stretch bg-white py-[9px]">
       {STAT_META.map((stat, index) => {
         const Icon = stat.icon;
+        // 아직 안 불러왔으면 '-', 불러왔으면 해당 숫자(없으면 0)
         const count = isReady ? (summary[stat.key] ?? 0) : null;
         return (
           <div
