@@ -1,20 +1,34 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Pencil, MessageSquare, Heart } from 'lucide-react';
 
-// TODO: API 연결 (내 활동 통계)
-const stats = [
-  { key: 'posts', label: '작성글', count: 24, icon: Pencil },
-  { key: 'comments', label: '작성한 댓글', count: 87, icon: MessageSquare },
-  { key: 'likes', label: '좋아요 누른 글', count: 16, icon: Heart },
+import useMyPageStore from '@/stores/useMyPageStore';
+
+// 활동 요약에 쓸 지표 3개. key 는 요약 응답의 필드명과 맞춘다.
+const STAT_META = [
+  { key: 'postCount', label: '작성글', icon: Pencil },
+  { key: 'commentCount', label: '작성한 댓글', icon: MessageSquare },
+  { key: 'likedCount', label: '좋아요 누른 글', icon: Heart },
 ];
 
 export default function MyPageStats() {
+  // 상태와 실행 함수는 전부 스토어에서 가져온다 (컴포넌트 안에서 직접 fetch 하지 않는다)
+  const { summary, isLoading, error, fetchSummary } = useMyPageStore();
+
+  useEffect(() => {
+    fetchSummary(); // 화면이 처음 뜰 때 한 번 요청 (스토어가 중복 호출은 막아준다)
+  }, [fetchSummary]);
+
+  // 이 위젯은 레이아웃(3칸)을 유지해야 하므로, 로딩/에러 시 화면을 통째로 바꾸지 않고
+  // 숫자 자리에만 '-' 를 보여준다. (데이터가 있으면 실제 숫자, 없는 값은 0)
+  const isReady = Boolean(summary) && !isLoading && !error;
+
   return (
     <div className="flex w-full items-stretch bg-white py-[9px]">
-      {stats.map((stat, index) => {
+      {STAT_META.map((stat, index) => {
         const Icon = stat.icon;
+        const count = isReady ? (summary[stat.key] ?? 0) : null;
         return (
           <div
             key={stat.key}
@@ -29,7 +43,7 @@ export default function MyPageStats() {
               </span>
             </div>
             <span className="text-[22px] font-bold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]">
-              {stat.count}
+              {count === null ? '-' : count}
             </span>
           </div>
         );

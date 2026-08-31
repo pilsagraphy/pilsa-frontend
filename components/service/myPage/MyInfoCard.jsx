@@ -1,16 +1,34 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import MyInfoEditModal from './MyInfoEditModal';
 
-// TODO: API 연결 (내 정보)
-const myInfo = {
-  loginId: 'pilsagraphy',
-  joinedAt: '2026.07.14',
-};
+import useMyPageStore from '@/stores/useMyPageStore';
+
+// 가입일 표시용: '2026-03-01T00:00:00' → '2026.03.01'
+function formatJoinedAt(value) {
+  if (!value) return '-';
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}.${mm}.${dd}`;
+}
 
 export default function MyInfoCard() {
   const [editOpen, setEditOpen] = useState(false);
+
+  // 내 정보(아이디·가입일)도 마이페이지 요약에서 가져온다
+  const { summary, fetchSummary } = useMyPageStore();
+
+  useEffect(() => {
+    fetchSummary(); // 스토어가 중복 호출은 막아준다
+  }, [fetchSummary]);
+
+  const loginId = summary?.loginId ?? '-';
+  const joinedAt = summary ? formatJoinedAt(summary.joinedAt) : '-';
+  const myInfo = { loginId, joinedAt };
 
   return (
     <div className="w-full rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px] lg:shrink-0">
@@ -23,17 +41,13 @@ export default function MyInfoCard() {
           <dt className="pl-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
             아이디
           </dt>
-          <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-black">
-            {myInfo.loginId}
-          </dd>
+          <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-black">{loginId}</dd>
         </div>
         <div className="flex items-center justify-between py-[14px]">
           <dt className="pl-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
             가입일
           </dt>
-          <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-black">
-            {myInfo.joinedAt}
-          </dd>
+          <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-black">{joinedAt}</dd>
         </div>
       </dl>
 
