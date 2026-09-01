@@ -5,6 +5,7 @@ import { ChevronDown } from 'lucide-react';
 import BoardWriteBox from './BoardWriteBox';
 import BoardWriteToolbar from './BoardWriteToolbar';
 import BoardMarkdownEditor from './BoardMarkdownEditor';
+import DraftLoadButton from './DraftLoadButton';
 import useBoardWriteStore from '@/stores/useBoardWriteStore';
 import { getBoardCategories } from '@/apis/board';
 
@@ -13,7 +14,13 @@ import { getBoardCategories } from '@/apis/board';
 //  - categoryMode: 카테고리 셀렉트
 //  - allowAttachment: 첨부파일 입력
 //  - allowAnonymous: 익명 게시 체크박스
-export default function BoardWriteForm({ boardId, board }) {
+//
+// enableDraft 는 글쓰기 화면만 켠다. 초안은 '게시판별 작성 중인 글'이라
+// 특정 글의 수정본을 담는 그릇이 아니므로 수정(Edit) 화면에는 두지 않는다.
+//
+// busy 는 저장·발행이 진행 중인지다. 그동안 다른 초안을 불러오면 화면 내용과
+// 이어쓰는 초안 번호가 어긋나므로 불러오기 버튼을 잠근다.
+export default function BoardWriteForm({ boardId, board, enableDraft = false, busy = false }) {
   const categoryMode = Boolean(board?.categoryMode);
   const allowAttachment = Boolean(board?.allowAttachment);
   const allowAnonymous = Boolean(board?.allowAnonymous);
@@ -25,6 +32,8 @@ export default function BoardWriteForm({ boardId, board }) {
   const isAnonymous = useBoardWriteStore((s) => s.isAnonymous);
   const existingAttachments = useBoardWriteStore((s) => s.existingAttachments);
   const deleteAttachmentIds = useBoardWriteStore((s) => s.deleteAttachmentIds);
+  const draftAttachments = useBoardWriteStore((s) => s.draftAttachments);
+  const removeDraftAttachment = useBoardWriteStore((s) => s.removeDraftAttachment);
   const setTitle = useBoardWriteStore((s) => s.setTitle);
   const setContent = useBoardWriteStore((s) => s.setContent);
   const setCategoryId = useBoardWriteStore((s) => s.setCategoryId);
@@ -111,6 +120,15 @@ export default function BoardWriteForm({ boardId, board }) {
             />
           </BoardWriteBox>
         )}
+
+        {/* 임시저장 불러오기.
+            시안에서 툴바·카테고리는 남은 공간을 반씩 나눠 갖고(flex:1) 이 버튼만 135px 로 고정이다.
+            라벨이 없으므로 옆 칸의 입력 박스 아래쪽에 맞춘다(self-end). */}
+        {enableDraft && (
+          <div className="flex w-full shrink-0 md:w-[135px] md:self-end">
+            <DraftLoadButton boardId={boardId} disabled={busy} />
+          </div>
+        )}
       </div>
 
       {/* 이미 글에 붙어 있는 첨부 (수정 화면).
@@ -140,6 +158,29 @@ export default function BoardWriteForm({ boardId, board }) {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* 임시저장에서 이어받은 첨부 — 이미 서버에 올라가 있어 id 로만 다룬다.
+          여기서 '제거'하면 다음 저장·발행의 attachmentIds 에서 빠지고,
+          그때 서버가 DB 행과 파일까지 정리한다 (별도 삭제 호출 없음). */}
+      {allowAttachment && draftAttachments.length > 0 && (
+        <div className="flex flex-col gap-[6px] px-[4px]">
+          <span className="text-[14px] tracking-[-0.28px] text-[#919191]">임시저장 첨부파일</span>
+          {draftAttachments.map((file) => (
+            <div key={file.attachmentId} className="flex items-center gap-[8px]">
+              <span className="min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] text-[#454545]">
+                {file.originName}
+              </span>
+              <button
+                type="button"
+                onClick={() => removeDraftAttachment(file.attachmentId)}
+                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121]"
+              >
+                제거
+              </button>
+            </div>
+          ))}
         </div>
       )}
 
