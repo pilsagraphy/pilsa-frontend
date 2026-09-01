@@ -14,7 +14,8 @@ export default function PostTable({
   posts,
   boardId,
   board,
-  sortOrder = 'created',
+  // 목록 상태(페이지·검색어 등)를 글 주소에 함께 실어 보낸다 → 목록으로 정확히 되돌아온다
+  listQuery = '',
   loading = false,
   errorMessage = '',
 }) {
@@ -90,7 +91,7 @@ export default function PostTable({
                 post={post}
                 boardId={boardId}
                 board={board}
-                sortOrder={sortOrder}
+                listQuery={listQuery}
               />
             ))
           )}

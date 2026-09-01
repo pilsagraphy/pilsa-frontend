@@ -12,7 +12,7 @@ import ConfirmModal from '@/components/common/ConfirmModal';
 import AlertModal from '@/components/common/AlertModal';
 import { REPORT_SUCCESS_ALERT } from '@/constants/report';
 import { CornerDownRight } from 'lucide-react';
-import { formatSlashDate } from '@/lib/boardDetail';
+import { formatSlashDateTime } from '@/lib/boardDetail';
 
 function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
@@ -285,7 +285,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                 {comment.content}
               </p>
               <span className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[22px]">
-                {formatSlashDate(comment.updated ?? comment.created)}
+                {formatSlashDateTime(comment.updated ?? comment.created)}
               </span>
             </>
           )}

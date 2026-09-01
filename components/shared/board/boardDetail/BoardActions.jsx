@@ -96,16 +96,16 @@ export default function BoardActions({
           type="button"
           onClick={handleLike}
           disabled={likeLoading}
-          className="flex h-12 w-full items-center justify-center gap-[6px] rounded-[4px] border border-[#b9b9b9] text-[15px] tracking-[-0.32px] transition-colors hover:bg-[#f5f5f5] disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px]"
+          aria-pressed={liked}
+          className={`flex h-12 w-full items-center justify-center gap-[6px] rounded-[4px] border text-[15px] tracking-[-0.32px] transition-colors disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px] ${
+            liked
+              ? 'border-[#212121] bg-[#212121] text-white hover:bg-black'
+              : 'border-[#b9b9b9] bg-white text-[#212121] hover:bg-[#f5f5f5]'
+          }`}
         >
-          <ThumbsUp
-            width={18}
-            height={18}
-            stroke={liked ? '#212121' : '#1E1E1E'}
-            strokeWidth={1.5}
-            aria-hidden="true"
-          />
-          <span className="text-[#212121]">좋아요 {likeCount}</span>
+          {/* 색은 버튼의 text 색을 따라간다 (lucide 아이콘 기본 stroke 가 currentColor) */}
+          <ThumbsUp width={18} height={18} strokeWidth={1.5} aria-hidden="true" />
+          <span>좋아요 {likeCount}</span>
         </button>
 
         {afterLikeOnMobile != null && <div className="w-full md:hidden">{afterLikeOnMobile}</div>}

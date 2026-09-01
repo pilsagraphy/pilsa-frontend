@@ -21,11 +21,19 @@ const tabClass = (active) =>
 // 서버가 준 markdown 문자열을 본문에 끼워 넣는다 (GitHub 방식).
 //
 // allowUpload=false 인 게시판(파일 업로드 미사용)에서는 이미지 삽입 UI를 감춘다.
-export default function BoardMarkdownEditor({ boardId, value, onChange, allowUpload = false }) {
+export default function BoardMarkdownEditor({
+  boardId,
+  value,
+  onChange,
+  allowUpload = false,
+  // 위쪽 툴바가 같은 textarea 에 서식을 넣어야 해서 ref 를 밖에서 받을 수 있게 열어둔다
+  textareaRef: externalTextareaRef,
+}) {
   const [tab, setTab] = useState(TAB_WRITE);
   const [uploading, setUploading] = useState(false);
 
-  const textareaRef = useRef(null);
+  const innerTextareaRef = useRef(null);
+  const textareaRef = externalTextareaRef ?? innerTextareaRef;
   const fileInputRef = useRef(null);
 
   // 고른 이미지들의 자리표시자를 커서 위치에 한 번에 넣고,
@@ -78,7 +86,7 @@ export default function BoardMarkdownEditor({ boardId, value, onChange, allowUpl
         setUploading(false);
       }
     },
-    [boardId, onChange]
+    [boardId, onChange, textareaRef]
   );
 
   const pickImageFiles = (fileList) =>

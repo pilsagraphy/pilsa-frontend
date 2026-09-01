@@ -9,35 +9,43 @@ import { ROUTES } from '@/constants/routes';
 
 // 목록 응답 항목: postId, title, authorName, likeCount, viewCount, commentCount,
 //                categoryName, isPinned, isAnonymous, hasAttachment, created
-export default function PostRow({ post, boardId, board, sortOrder = 'created' }) {
+export default function PostRow({ post, boardId, board, listQuery = '' }) {
   const router = useRouter();
 
   const allowComment = Boolean(board?.allowComment);
   const categoryMode = Boolean(board?.categoryMode);
 
-  // 상세 페이지로 이동 (정렬 상태를 이어받아 이전/다음 글 순서 유지)
+  // 상세 페이지로 이동.
+  // 목록 상태(페이지·정렬·검색어·카테고리)를 그대로 달고 가서
+  // 글에서 목록으로 돌아올 때 보던 화면이 복원된다. 정렬은 이전/다음 글 순서에도 쓰인다.
   const handleRowClick = () => {
-    router.push(`${ROUTES.BOARD_POST(boardId, post.postId)}?sort=${encodeURIComponent(sortOrder)}`);
+    const href = ROUTES.BOARD_POST(boardId, post.postId);
+    router.push(listQuery ? `${href}?${listQuery}` : href);
   };
 
   // 날짜 포맷 : YYYY-MM-DD -> YYYY.MM.DD
   const formattedDate = post.created?.slice(0, 10).replace(/-/g, '.');
-  const isPinned = Boolean(post.isPinned);
+
+  // 제목 옆 배지. 상단 고정은 '중요' 카테고리로 결정되므로 보통 categoryName 이 '중요'로 온다.
+  // 카테고리를 쓰지 않는 게시판(공지사항 등)에서 categoryName 이 비어 오는 경우를 대비해
+  // isPinned 로 한 번 더 받쳐준다 (상세 화면과 같은 방식).
+  const badgeLabel = post.categoryName || (post.isPinned ? '중요' : '');
 
   return (
     <TableRow
       onClick={handleRowClick}
       className="h-12 cursor-pointer border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] hover:bg-muted/50 md:h-14 md:text-[16px]"
     >
-      {/* 1. 게시글 번호 (중요글은 배지로 표시). 카테고리 게시판은 모바일에서 번호 숨김 */}
+      {/* 1. 게시글 번호 — 중요글도 번호를 그대로 보여준다 ('중요' 표시는 제목 옆 배지가 담당).
+             카테고리 게시판은 모바일에서 번호 숨김 */}
       <TableCell className={cn('text-center', categoryMode && 'hidden md:table-cell')}>
-        {isPinned ? <CategoryBadge variant="pinned">중요</CategoryBadge> : post.postId}
+        {post.postId}
       </TableCell>
 
-      {/* 2. 제목 (카테고리 배지 + 제목 + 첨부 아이콘) */}
+      {/* 2. 제목 (카테고리/중요 배지 + 제목 + 첨부 아이콘) */}
       <TableCell className="text-left min-w-0">
         <div className="flex items-center gap-2 min-w-0">
-          {post.categoryName != null && <CategoryBadge>{post.categoryName}</CategoryBadge>}
+          {badgeLabel && <CategoryBadge>{badgeLabel}</CategoryBadge>}
           <span className="truncate">{post.title}</span>
           {post.hasAttachment && (
             <span className="flex-shrink-0 text-[#919191]">

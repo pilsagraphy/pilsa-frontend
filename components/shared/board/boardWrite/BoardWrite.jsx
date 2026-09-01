@@ -37,10 +37,7 @@ export default function BoardWrite({ boardId }) {
       alert('내용을 입력해주세요.');
       return;
     }
-    if (board?.categoryMode && !categoryId) {
-      alert('카테고리를 선택해주세요.');
-      return;
-    }
+    // 카테고리는 선택 사항이다 — 고르지 않으면 categoryId 없이 보낸다.
 
     try {
       setSubmitting(true);

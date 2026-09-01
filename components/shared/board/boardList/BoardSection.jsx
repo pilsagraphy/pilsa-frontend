@@ -1,8 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
+import { buildBoardListQuery } from '@/lib/boardDetail';
 import useBoard from '@/hooks/useBoard';
 
 import SortSelect from './SortSelect';
@@ -35,12 +37,21 @@ export default function BoardSection({ boardId }) {
   const [posts, setPosts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [sortOrder, setSortOrder] = useState('created');
+  // 목록 상태는 주소(쿼리)에서 읽어와 시작한다 —
+  // 글을 보고 돌아왔을 때 페이지·검색어가 그대로 복원되고, 목록 주소를 공유할 수도 있다.
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const [currentPage, setCurrentPage] = useState(() => {
+    const page = Number(searchParams.get('page'));
+    return Number.isFinite(page) && page > 0 ? page : 1;
+  });
+  const [sortOrder, setSortOrder] = useState(() => searchParams.get('sort') || 'created');
   // searchInput = 입력창에 보이는 값, searchKeyword = 실제로 조회에 쓰는 값(디바운스 후)
-  const [searchInput, setSearchInput] = useState('');
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [category, setCategory] = useState('all'); // 'all' | String(categoryId)
+  const [searchInput, setSearchInput] = useState(() => searchParams.get('keyword') || '');
+  const [searchKeyword, setSearchKeyword] = useState(() => searchParams.get('keyword') || '');
+  const [category, setCategory] = useState(() => searchParams.get('categoryId') || 'all'); // 'all' | String(categoryId)
 
   const [categories, setCategories] = useState([]);
 
@@ -63,10 +74,29 @@ export default function BoardSection({ boardId }) {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  // 검색어가 바뀌면 첫 페이지부터 다시 본다
+  // 검색어가 바뀌면 첫 페이지부터 다시 본다.
+  // 첫 렌더는 건너뛴다 — 주소에서 읽어온 페이지 번호를 1로 덮어써 버리기 때문이다.
+  const isFirstKeywordRun = useRef(true);
   useEffect(() => {
+    if (isFirstKeywordRun.current) {
+      isFirstKeywordRun.current = false;
+      return;
+    }
     setCurrentPage(1);
   }, [searchKeyword]);
+
+  // 목록 상태를 주소에 반영한다.
+  // 기본값은 주소에 넣지 않아 주소가 깔끔하게 유지되고, replace 라서 뒤로가기 기록도 쌓이지 않는다.
+  const listQuery = buildBoardListQuery({
+    page: currentPage > 1 ? currentPage : '',
+    sort: sortOrder !== 'created' ? sortOrder : '',
+    keyword: searchKeyword.trim(),
+    categoryId: category !== 'all' ? category : '',
+  });
+
+  useEffect(() => {
+    router.replace(listQuery ? `${pathname}?${listQuery}` : pathname, { scroll: false });
+  }, [listQuery, pathname, router]);
 
   const handleCategoryChange = (value) => {
     setCategory(value);
@@ -194,7 +224,7 @@ export default function BoardSection({ boardId }) {
         posts={posts}
         boardId={boardId}
         board={board}
-        sortOrder={sortOrder}
+        listQuery={listQuery}
         loading={loading}
         errorMessage={errorMessage}
       />

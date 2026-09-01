@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import BoardWriteBox from './BoardWriteBox';
+import BoardWriteToolbar from './BoardWriteToolbar';
 import BoardMarkdownEditor from './BoardMarkdownEditor';
 import useBoardWriteStore from '@/stores/useBoardWriteStore';
 import { getBoardCategories } from '@/apis/board';
@@ -31,6 +32,9 @@ export default function BoardWriteForm({ boardId, board }) {
   const setIsAnonymous = useBoardWriteStore((s) => s.setIsAnonymous);
   const removeFileAt = useBoardWriteStore((s) => s.removeFileAt);
   const toggleDeleteAttachment = useBoardWriteStore((s) => s.toggleDeleteAttachment);
+
+  // 툴바가 아래 '내용' 입력창에 서식을 넣어야 해서 ref 를 여기서 만들어 둘에 나눠준다
+  const contentRef = useRef(null);
 
   const [categories, setCategories] = useState([]);
 
@@ -69,48 +73,45 @@ export default function BoardWriteForm({ boardId, board }) {
         />
       </BoardWriteBox>
 
-      {(allowAttachment || categoryMode) && (
-        <div className="flex flex-col md:flex-row gap-[12px] w-full">
-          {allowAttachment && (
-            <BoardWriteBox label="첨부파일" showTooltip={true}>
-              <input
-                type="file"
-                multiple
-                onChange={(e) => setFiles(Array.from(e.target.files ?? []))}
-                className="w-full h-full px-[16px] pt-[12px] bg-transparent text-[16px] tracking-[-0.32px] outline-none cursor-pointer file:mr-4 file:py-1 file:px-4 file:rounded-[4px] file:border-0 file:text-sm file:bg-gray-100 file:text-[#212121] hover:file:bg-gray-200"
-              />
-            </BoardWriteBox>
-          )}
+      <div className="flex flex-col md:flex-row gap-[12px] w-full">
+        <BoardWriteBox label="툴바">
+          <BoardWriteToolbar
+            contentRef={contentRef}
+            value={content}
+            onChange={setContent}
+            files={files}
+            onFilesChange={setFiles}
+            allowAttachment={allowAttachment}
+          />
+        </BoardWriteBox>
 
-          {categoryMode && (
-            <BoardWriteBox label="카테고리">
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full h-full px-[16px] bg-transparent text-[16px] text-[#212121] tracking-[-0.32px] outline-none appearance-none cursor-pointer relative z-10"
-                required
-              >
-                <option value="" disabled>
-                  게시글 카테고리를 선택하세요
+        {categoryMode && (
+          <BoardWriteBox label="카테고리">
+            {/* 카테고리는 선택 사항이다.
+                안내 문구를 고른 채로 두면 categoryId 없이(=null) 저장된다. */}
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="w-full h-full px-[16px] bg-transparent text-[16px] text-[#212121] tracking-[-0.32px] outline-none appearance-none cursor-pointer relative z-10"
+            >
+              <option value="">게시글 카테고리를 선택하세요</option>
+
+              {categories.map((category) => (
+                <option key={category.categoryId} value={String(category.categoryId)}>
+                  {category.name}
                 </option>
+              ))}
+            </select>
 
-                {categories.map((category) => (
-                  <option key={category.categoryId} value={String(category.categoryId)}>
-                    {category.name}
-                  </option>
-                ))}
-              </select>
-
-              <ChevronDown
-                className="absolute right-[16px] pointer-events-none"
-                size={15}
-                strokeWidth={2}
-                color="#212121"
-              />
-            </BoardWriteBox>
-          )}
-        </div>
-      )}
+            <ChevronDown
+              className="absolute right-[16px] pointer-events-none"
+              size={15}
+              strokeWidth={2}
+              color="#212121"
+            />
+          </BoardWriteBox>
+        )}
+      </div>
 
       {/* 이미 글에 붙어 있는 첨부 (수정 화면).
           서버는 증분 방식이라 유지할 첨부는 보내지 않고 지울 것만 보낸다 →
@@ -168,6 +169,7 @@ export default function BoardWriteForm({ boardId, board }) {
           value={content}
           onChange={setContent}
           allowUpload={allowAttachment}
+          textareaRef={contentRef}
         />
       </BoardWriteBox>
 

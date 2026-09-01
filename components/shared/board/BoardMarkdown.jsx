@@ -86,7 +86,8 @@ export default function BoardMarkdown({ content = '' }) {
     <div
       className="w-full break-words text-[15px] leading-[1.65] tracking-[-0.32px] text-[#212121] md:text-[16px] md:leading-[1.6]
         [&_:not(pre)>code]:rounded-[3px] [&_:not(pre)>code]:bg-[#f5f5f5]
-        [&_:not(pre)>code]:px-[5px] [&_:not(pre)>code]:py-[2px] [&_:not(pre)>code]:text-[14px]"
+        [&_:not(pre)>code]:px-[5px] [&_:not(pre)>code]:py-[2px] [&_:not(pre)>code]:text-[14px]
+        [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
