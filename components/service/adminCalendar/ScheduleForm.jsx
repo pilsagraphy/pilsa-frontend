@@ -6,7 +6,7 @@ import { CalendarDays, Pencil, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import { DEFAULT_SCHEDULE_CATEGORY, SCHEDULE_CATEGORY_OPTIONS } from '@/constants/calendar';
+import { DEFAULT_SCHEDULE_CATEGORY } from '@/constants/calendar';
 
 import ScheduleDatePicker from './ScheduleDatePicker';
 import ScheduleSelect from './ScheduleSelect';
@@ -76,20 +76,25 @@ function toTimeParts(value) {
  * 확인을 누르면 검증을 통과한 값만 onSubmit으로 올린다. 등록 · 수정 요청과 목록 재조회는
  * 부모(AdminCalendarSection)가 맡고, 그 동안 isSubmitting으로 버튼을 잠근다.
  *
+ * categories: '일정 구분' 선택지 이름 배열. GET /api/event/categories 를 부모가 받아 넘긴다.
+ *   폼이 열릴 때마다 다시 조회하지 않도록 조회는 AdminCalendarSection에서 한 번만 한다.
+ *
  * ※ 시각(시 · 분)과 종일 체크박스는 서버에 담을 곳이 없어 저장되지 않는다.
- *   API가 startDate/endDate만 받고 시각은 00:00:00으로 들어간다. UI는 카테고리 목록 API와
- *   함께 처리하기로 미뤄 둔 상태다. (apis/event.js 5번 · apis/admin/event.js 참고)
+ *   API가 startDate/endDate만 받고 시각은 00:00:00으로 들어간다.
+ *   (2026-08-28 카테고리 API가 들어온 뒤에도 요청 필드는 그대로였다 — apis/admin/event.js 참고)
  */
 export default function ScheduleForm({
   schedule = null,
   defaultDate = null,
+  categories = [],
   onCancel,
   onSubmit,
   isSubmitting = false,
 }) {
   const isCreate = !schedule;
   const [title, setTitle] = React.useState(schedule?.title ?? '');
-  const [category, setCategory] = React.useState(schedule?.category ?? DEFAULT_SCHEDULE_CATEGORY);
+  // 선택지는 서버에서 오므로 초깃값을 미리 정할 수 없다. 목록이 도착하면 아래 effect가 채운다.
+  const [category, setCategory] = React.useState(schedule?.category ?? '');
   const [content, setContent] = React.useState(schedule?.content ?? '');
   const [isAllDay, setIsAllDay] = React.useState(!schedule?.startTime);
 
@@ -101,6 +106,17 @@ export default function ScheduleForm({
   const datePickerTriggerRef = React.useRef(null);
   const [startTime, setStartTime] = React.useState(() => toTimeParts(schedule?.startTime));
   const [endTime, setEndTime] = React.useState(() => toTimeParts(schedule?.endTime));
+
+  // 선택지가 늦게 도착하면 그때 기본값을 채운다. 이미 값이 있으면(수정이거나 사용자가 골랐으면)
+  // 건드리지 않는다. '기타'가 목록에 있으면 그걸 쓰고, 없으면 목록의 첫 번째를 쓴다 —
+  // 목록 자체를 하드코딩하지는 않되 '구분 없음'에 가까운 기본값을 유지하기 위함이다.
+  React.useEffect(() => {
+    if (category || !categories.length) return;
+
+    setCategory(
+      categories.includes(DEFAULT_SCHEDULE_CATEGORY) ? DEFAULT_SCHEDULE_CATEGORY : categories[0]
+    );
+  }, [categories, category]);
 
   // 세부 사항은 칸 안에서 스크롤하지 않고 내용만큼 늘어난다. (페이지 전체가 길어진다)
   const contentRef = React.useRef(null);
@@ -241,9 +257,11 @@ export default function ScheduleForm({
           <ScheduleSelect
             value={category}
             onChange={setCategory}
-            options={SCHEDULE_CATEGORY_OPTIONS}
+            options={categories}
             ariaLabel="일정 구분"
             variant="field"
+            // 목록을 못 받으면 고를 게 없다. 하드코딩 fallback 은 두지 않는다(apis/README.md 3번).
+            disabled={!categories.length}
             className="w-full md:max-w-[318px]"
           />
         </ScheduleFormRow>

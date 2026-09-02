@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 import { createEvent, deleteEvent, updateEvent } from '@/apis/admin/event';
 import { getErrorMessage } from '@/apis/auth';
+import { getEventCategories } from '@/apis/event';
 import CalendarSection from '@/components/shared/calendars/CalendarSection';
 import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
 
@@ -39,6 +40,29 @@ export default function AdminCalendarSection({ response }) {
   const [refreshKey, setRefreshKey] = React.useState(0);
   const [isSaving, setIsSaving] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
+
+  // '일정 구분' 선택지. 폼이 열릴 때마다 조회하지 않도록 여기서 한 번만 받아 내려준다.
+  // 응답이 { message, data } 가 아니라 맨 배열이므로 언래핑하지 않는다. (apis/event.js 5번)
+  // 순서는 서버의 display_order 를 그대로 쓴다 — 다시 정렬하면 시안 순서가 깨진다.
+  const [categories, setCategories] = React.useState([]);
+
+  React.useEffect(() => {
+    let isMounted = true;
+
+    getEventCategories()
+      .then((rows) => {
+        if (isMounted) setCategories(rows.map((row) => row.name));
+      })
+      .catch((error) => {
+        // 목록을 못 받으면 폼의 구분 셀렉트가 잠긴다. 하드코딩 fallback 은 두지 않는다.
+        console.error('일정 카테고리 목록 조회 실패:', error);
+        if (isMounted) toast.error(getErrorMessage(error, '일정 구분 목록을 불러오지 못했습니다.'));
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const closeForm = React.useCallback(() => setFormTarget(null), []);
   const refresh = React.useCallback(() => setRefreshKey((prev) => prev + 1), []);
@@ -151,6 +175,7 @@ export default function AdminCalendarSection({ response }) {
             }
             schedule={formTarget.mode === 'edit' ? formTarget.schedule : null}
             defaultDate={formTarget.mode === 'create' ? formTarget.date : null}
+            categories={categories}
             onCancel={closeForm}
             onSubmit={handleSubmit}
             isSubmitting={isSaving}
@@ -160,7 +185,7 @@ export default function AdminCalendarSection({ response }) {
 
       return <ScheduleDetail schedule={selectedSchedule} fullWidth />;
     },
-    [formTarget, closeForm, handleSubmit, isSaving]
+    [formTarget, closeForm, handleSubmit, isSaving, categories]
   );
 
   return (

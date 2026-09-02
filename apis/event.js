@@ -58,12 +58,17 @@ export const getEventList = async (from, to) => {
 //    한 번 구독하면 이후 등록/수정/삭제가 자동 반영된다 (구글이 수 시간~하루 주기로 재조회)
 //    iOS 는 webcal://, 데스크톱은 위 render?cid=, 안드로이드는 2번(일정별 담기)
 
-// ─────────────────────────── 미구현 (백엔드 대기) ───────────────────────────
+// 4. 일정 상세 (GET /api/event/{eventId}) [PUBLIC]
+//    2026-08-28 구현됐지만 함수를 만들지 않았다 — 목록(1번)이 description 까지 내려주므로
+//    상세를 따로 부를 화면이 없다. 필요해지면 여기에 추가할 것
 
-// 4. 일정 상세 (GET /api/event/{eventId}) [MEMBER] — planned
-//    현재 코드에 매핑 없음. 목록(1번)이 description 까지 내려주므로 없이도 화면 구성 가능
-
-// 5. 일정 카테고리 목록 - 셀렉트바 (GET /api/event/categories) [PUBLIC] — planned
-//    응답 예상: [{ eventCategoryId, name }] (is_active=1, display_order 순)
-//    도입되면 등록/수정의 category 가 자유 입력에서 이 목록의 값으로 제한된다
-//    그때까지 카테고리 셀렉트바는 그릴 수 없다 (하드코딩 금지 — PM 확인 필요)
+// 5. 일정 카테고리 목록 - 셀렉트바 (GET /api/event/categories) [PUBLIC]
+//    응답: [{ eventCategoryId, name }] — is_active=1 인 것만, display_order 순
+//    ★다른 엔드포인트와 달리 { message, data } 로 감싸지 않은 맨 배열이다. 언래핑하면 안 된다
+//    ★display_order 가 곧 셀렉트바 순서다 (MT → 정기 모임 → 제작 스터디 → 축제 → 기타).
+//      eventCategoryId 는 순서와 무관하므로(2,1,4,3,5) 프론트에서 다시 정렬하지 않는다
+//    등록·수정에 보내는 값은 eventCategoryId 가 아니라 name 문자열이다 (events.category 가 varchar)
+export const getEventCategories = async () => {
+  const response = await axiosInstance.get('/api/event/categories');
+  return response.data;
+};
