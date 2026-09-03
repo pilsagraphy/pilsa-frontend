@@ -33,7 +33,7 @@ apis/
 ├── draft.js              ✅ 연동됨  임시저장(초안) — 화면은 아직 없음
 ├── report.js             🆕 신고 접수 + 사유 목록
 ├── quote.js              🆕 이 주의 문장 (메인)
-├── event.js              🆕 일정(캘린더) + ICS
+├── event.js              ✅ 연동됨  일정(캘린더) 목록 + 카테고리 (ICS 는 axios 미사용)
 ├── donation.js           🆕 명예의 전당
 │
 ├── admin/
@@ -45,14 +45,12 @@ apis/
 │   ├── sanctions.js      🆕 제재 회원
 │   ├── users.js          🆕 회원 목록/정지/차단/강제탈퇴
 │   ├── quotes.js         🆕 문장 관리
-│   └── event.js          🆕 일정 등록/수정/삭제
+│   └── event.js          ✅ 연동됨  일정 등록/수정/삭제
 │
 └── (교체 대상)
-    ├── schedule.js       ❌ /api/public/schedules → event.js
     └── honor.js          ❌ /api/public/honor/    → donation.js
 ```
 
-> `free.js` · `info.js` · `notice.js` 는 삭제됨 (2026-08-26).
 > 게시판 3종 화면이 `board.js` + `comment.js` 로 전환 완료되어 사용처가 사라졌다.
 
 ---
@@ -80,8 +78,6 @@ apis/
 | `GET /api/user/mypage/posts`                | `mypage.js` 5          | planned (백로그 C-2)                                 |
 | `GET /api/user/mypage/comments`             | `mypage.js` 6          | planned (백로그 C-2)                                 |
 | `GET /api/user/mypage/likes`                | `mypage.js` 7          | planned (백로그 C-2)                                 |
-| `GET /api/event/{eventId}`                  | `event.js` 4           | planned — 목록이 description 까지 주므로 없이도 가능 |
-| `GET /api/event/categories`                 | `event.js` 5           | planned — 없으면 일정 카테고리 셀렉트바를 못 그린다  |
 | `POST /api/admin/sanctions/users/{id}/lift` | `admin/sanctions.js` 5 | 3기 진행 예정                                        |
 
 ---
@@ -95,6 +91,10 @@ apis/
    함수명도 `findEmailByStudentNo` 로 맞춘다.
 3. **`authApi.js`** — `axiosInstance.js` 와 역할이 겹친다. 토큰 재발급 인터셉터가 없어
    401 처리가 안 되므로 사용처를 `axiosInstance` 로 옮기고 제거한다.
-4. **구 파일** — `free` `info` `notice` 는 삭제 완료. `schedule` `honor` 는 화면 전환 후 삭제.
+4. **구 파일**  `honor` 는 화면 전환 후 삭제.
 5. **관리자 화면의 게시글 링크** — `constants/adminPosts.js` 의 게시판 이름→`boardId` 매핑은
    목업 전용이다. 관리자 API 가 `boardId` 를 내려주면 그 매핑과 `getBoardIdByName` 은 지운다.
+6. **일정 폼의 시각 · 종일 UI** — 등록 · 수정 요청 본문 필드가 `title` `category`
+   `description` `startDate` `endDate` 5개뿐이라(2026-08-28 `GET /v3/api-docs` 확인)
+   시 · 분과 종일 해제는 저장되지 않는다. `ScheduleForm` 의 `IS_TIME_SUPPORTED` 로 잠가 뒀다.
+   서버에 `startTime` `endTime` 이 생기면 그 상수를 `true` 로 바꾸고 이 항목을 지운다.

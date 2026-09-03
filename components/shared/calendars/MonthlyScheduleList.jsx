@@ -13,6 +13,7 @@ const SCROLLBAR_CLASS = [
 // 카드 사이 간격. 아래 visibleCount 높이 계산에 그대로 쓰이므로 클래스와 값을 맞춰 둔다.
 const ITEM_GAP = 12;
 
+// hasError: 조회 실패. 빈 목록('일정 없음')과 구분해서 실패 문구를 그린다.
 // scrollable: 목록이 길어지면 목록 안에서 스크롤한다. (일반 회원 화면의 기본 동작)
 //             false면 목록이 그대로 늘어나 페이지 전체가 길어진다.
 // visibleCount: 한 번에 보일 카드 수. 그 이상은 스크롤로 본다. (관리자 화면 — 5개)
@@ -22,6 +23,7 @@ export default function MonthlyScheduleList({
   selectedId = null,
   onSelect,
   isLoading = false,
+  hasError = false,
   renderAction,
   scrollable = true,
   visibleCount = null,
@@ -30,6 +32,14 @@ export default function MonthlyScheduleList({
     return (
       <div className="text-[14px] tracking-[-0.32px] text-[#919191] md:text-[16px]">
         일정을 불러오는 중입니다.
+      </div>
+    );
+  }
+
+  if (hasError) {
+    return (
+      <div className="text-[14px] tracking-[-0.32px] text-[#919191] md:text-[16px]">
+        일정을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
       </div>
     );
   }

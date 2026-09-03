@@ -1,6 +1,7 @@
 // 일정 달력 상수
-// 일정 상세의 '일정 구분' · 관리자 일정 폼의 드롭다운에 쓰이는 라벨.
-// TODO: API 연동 시 서버가 내려주는 코드 값과 매핑할 것. (지금은 디자인 시안의 라벨 그대로)
+// 실제 화면의 '일정 구분' 선택지는 GET /api/event/categories 로 받는다 (하드코딩 금지).
+// SCHEDULE_CATEGORIES 는 목 데이터(mocks/calendarData.js)의 라벨 정의용이고,
+// 여기서 파생된 DEFAULT_SCHEDULE_CATEGORY 만 실제 화면에서도 쓴다 (아래 참고).
 export const SCHEDULE_CATEGORIES = {
   MT: 'MT',
   REGULAR_MEETING: '정기 모임',
@@ -9,7 +10,7 @@ export const SCHEDULE_CATEGORIES = {
   ETC: '기타',
 };
 
-export const SCHEDULE_CATEGORY_OPTIONS = Object.values(SCHEDULE_CATEGORIES);
-
 // 구분 값이 없는 일정은 '기타'로 본다.
+// 상세(ScheduleDetailCategory)에서 null 을 대신 표시하고, 관리자 폼에서는
+// 새 일정의 기본 선택값으로 쓴다 — 서버 목록에 이 이름이 있을 때만.
 export const DEFAULT_SCHEDULE_CATEGORY = SCHEDULE_CATEGORIES.ETC;
