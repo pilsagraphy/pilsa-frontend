@@ -2,7 +2,7 @@
 // API 연동 전까지 DUMMY_COMMENTS로 화면을 그린다.
 
 // 상태 라벨(공개 / 블라인드) · 게시판 필터 · 회원 정보는 게시글 관리와 같은 값을 쓰므로 가져온다.
-import { MEMBER_POOL, POST_STATUSES } from './adminPosts';
+import { MEMBER_POOL, POST_STATUSES, getBoardIdByName } from './adminPosts';
 
 export { BOARD_FILTER_ALL, BOARD_FILTER_OPTIONS, getPostDetailHref } from './adminPosts';
 
@@ -59,6 +59,8 @@ export const DUMMY_COMMENTS = Array.from({ length: DUMMY_COMMENT_COUNT }, (_, in
   return {
     commentId,
     boardName,
+    // 원글 링크는 boardId 로 만든다 (연동 후에는 서버가 주는 값)
+    boardId: getBoardIdByName(boardName),
     // author는 목록 '글쓴이' 열용, 나머지 둘은 조치 모달의 '대상 회원'용
     author: member.loginId,
     authorStudentId: member.studentId,

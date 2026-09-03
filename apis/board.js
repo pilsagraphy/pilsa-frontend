@@ -8,10 +8,18 @@ import axiosInstance from '@/apis/axiosInstance';
 // 1. 사이드바 게시판 목록 (GET /api/user/boards) [MEMBER]
 //    응답: [{ boardId, boardName, displayOrder }]
 //    현재 로그인한 사람이 열람 가능한 게시판만 내려온다 — FE 메뉴는 이 API 로 그린다
+export const getBoards = async () => {
+  const response = await axiosInstance.get('/api/user/boards');
+  return response.data;
+};
 
 // 2. 게시판 카테고리 목록 (GET /api/user/boards/{boardId}/categories) [MEMBER]
 //    응답: [{ categoryId, name }]
 //    '중요'(code=PINNED) 카테고리는 관리자에게만 노출된다
+export const getBoardCategories = async (boardId) => {
+  const response = await axiosInstance.get(`/api/user/boards/${boardId}/categories`);
+  return response.data;
+};
 
 // ─────────────────────────── 게시글 목록 ───────────────────────────
 
@@ -22,10 +30,18 @@ import axiosInstance from '@/apis/axiosInstance';
 //           hasAttachment, created }] }
 //    익명글 authorName 은 서버가 '익명'으로 마스킹한다
 //    hasAttachment(클립 아이콘)는 첨부 목록 파일만 기준 — 본문 인라인 이미지는 제외
+export const getBoardPosts = async (boardId, params = {}) => {
+  const response = await axiosInstance.get(`/api/user/boards/${boardId}/posts`, { params });
+  return response.data;
+};
 
 // 4. 상단 N개 게시글 (GET /api/user/boards/{boardId}/posts/top/{num}) [MEMBER]
 //    경로변수: num = 1~50 (범위 밖이면 400)
 //    응답: [{ postId, title, isPinned }] — 중요(isPinned) 글 우선, 그다음 최신순
+export const getTopPosts = async (boardId, num) => {
+  const response = await axiosInstance.get(`/api/user/boards/${boardId}/posts/top/${num}`);
+  return response.data;
+};
 
 // ─────────────────────────── 게시글 상세 / 작성 ───────────────────────────
 
@@ -37,6 +53,12 @@ import axiosInstance from '@/apis/axiosInstance';
 //    prevPost/nextPost 는 첫 글·마지막 글이면 null
 //    attachments 에 본문 삽입 이미지(usage=inline)는 포함되지 않는다
 //    attachments[].fileUrl 은 인증형 API 주소 → file.js 로 fetch 후 blob 표시
+export const getBoardPost = async (boardId, postId, sort = 'created') => {
+  const response = await axiosInstance.get(`/api/user/boards/${boardId}/posts/${postId}`, {
+    params: { sort },
+  });
+  return response.data;
+};
 
 // 6. 게시글 등록 (POST /api/user/boards/{boardId}/posts) [MEMBER]
 //    multipart/form-data: title(필수, 200자), content(필수, 마크다운),
@@ -47,6 +69,12 @@ import axiosInstance from '@/apis/axiosInstance';
 //    응답: { message, postId }
 //    상단 고정은 isPinned 요청이 아니라 '중요' 카테고리 선택으로 서버가 결정한다
 //    draftId 를 보내면 발행 성공과 같은 트랜잭션에서 해당 초안이 삭제된다
+export const createBoardPost = async (boardId, formData) => {
+  const response = await axiosInstance.post(`/api/user/boards/${boardId}/posts`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
 
 // 7. 게시글 수정 (PUT /api/user/boards/{boardId}/posts/{postId}) [MEMBER · 작성자/관리자]
 //    multipart/form-data: title, content, categoryId, isAnonymous,
@@ -56,9 +84,25 @@ import axiosInstance from '@/apis/axiosInstance';
 //    응답: { message } — 수정 후 상세를 다시 GET 하므로 객체를 반환하지 않는다
 //    유지할 기존 첨부는 아무것도 보내지 않는다 (증분 방식)
 //    본문에서 지운 인라인 이미지는 서버가 함께 삭제한다 (마크다운이 기준)
+export const updateBoardPost = async (boardId, postId, formData) => {
+  const response = await axiosInstance.put(
+    `/api/user/boards/${boardId}/posts/${postId}`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' } }
+  );
+  return response.data;
+};
 
 // 8. 게시글 삭제 (PATCH /api/user/boards/{boardId}/posts/{postId}/delete) [MEMBER · 본인만]
 //    응답: { message } — 소프트 삭제
+export const deleteBoardPost = async (boardId, postId) => {
+  const response = await axiosInstance.patch(`/api/user/boards/${boardId}/posts/${postId}/delete`);
+  return response.data;
+};
 
 // 9. 좋아요 토글 (PATCH /api/user/boards/{boardId}/posts/{postId}/like) [MEMBER]
 //    응답: { message } — '좋아요 +1' 또는 '좋아요 취소'
+export const toggleBoardPostLike = async (boardId, postId) => {
+  const response = await axiosInstance.patch(`/api/user/boards/${boardId}/posts/${postId}/like`);
+  return response.data;
+};

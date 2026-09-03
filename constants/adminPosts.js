@@ -20,20 +20,25 @@ export const BOARD_FILTER_OPTIONS = [
   ...BOARD_NAMES.map((name) => ({ value: name, label: name })),
 ];
 
-// 게시판별 상세 경로와 댓글 영역 유무.
+// 게시판별 boardId 와 댓글 영역 유무.
 // '상세 경로를 안다'와 '그 상세에 댓글이 있다'는 다른 이야기라서 둘 다 필요하고,
 // 따로 두면 서로 어긋나므로 한 객체에 묶는다. (댓글 신고의 앵커 링크가 hasComments를 본다)
-// TODO: API 연동 시 키를 boardId로 바꿀 것. 서버 응답과 필터가 모두 boardId 기준이다.
-//       한 객체에 묶여 있어 경로와 댓글 유무가 함께 옮겨간다.
+// TODO: 관리자 API 연동 시 서버 응답이 boardId 를 직접 주므로 이 이름→id 매핑은 사라진다.
+//       그때는 boardHasComments 도 게시판 목록 API 의 allowComment 플래그로 대체한다.
 const BOARD_DETAIL = {
-  자유게시판: { href: ROUTES.FREE_BOARD_DETAIL, hasComments: true },
-  공지사항: { href: ROUTES.NOTICE_DETAIL, hasComments: false }, // 공지 상세에는 댓글 영역이 없다
-  정보게시판: { href: ROUTES.INFO_BOARD_DETAIL, hasComments: true },
+  공지사항: { boardId: 1, hasComments: false }, // 공지 상세에는 댓글 영역이 없다
+  자유게시판: { boardId: 2, hasComments: true },
+  정보게시판: { boardId: 3, hasComments: true },
 };
 
-// 경로를 모르는 게시판이면 null을 돌려주고, 행에서는 링크 대신 텍스트로 보여준다.
-export const getPostDetailHref = (boardName, postId) =>
-  BOARD_DETAIL[boardName]?.href(postId) ?? null;
+// 목업 전용: 게시판 이름 → boardId.
+// 더미 데이터가 서버 응답과 같은 모양(boardId 를 들고 있는 행)이 되도록 채워주는 용도다.
+export const getBoardIdByName = (boardName) => BOARD_DETAIL[boardName]?.boardId ?? null;
+
+// 게시글 상세 경로. 게시판은 boardId 기반 경로(/students/boards/{boardId}/posts/{postId})를 쓴다.
+// boardId 를 모르는 행이면 null 을 돌려주고, 행에서는 링크 대신 텍스트로 보여준다.
+export const getPostDetailHref = (boardId, postId) =>
+  boardId != null && postId != null ? ROUTES.BOARD_POST(boardId, postId) : null;
 
 // 그 게시판 상세에 댓글 영역이 있는지. 모르는 게시판은 없는 것으로 본다.
 export const boardHasComments = (boardName) => BOARD_DETAIL[boardName]?.hasComments ?? false;
@@ -95,6 +100,8 @@ export const DUMMY_POSTS = Array.from({ length: DUMMY_POST_COUNT }, (_, index) =
   return {
     postId,
     boardName,
+    // 상세 링크는 boardId 로 만든다 (연동 후에는 서버가 주는 값)
+    boardId: getBoardIdByName(boardName),
     title: TITLE_POOL[index % TITLE_POOL.length],
     // author는 목록 '글쓴이' 열용, 나머지 둘은 조치 모달의 '대상 회원'용
     author: member.loginId,

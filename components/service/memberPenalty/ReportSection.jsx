@@ -1,6 +1,6 @@
 'use client';
-import React, { useMemo, useState } from 'react';
-import ReportRow, { REPORT_GRID, ReportCheckbox } from './ReportRow';
+import React, { useMemo } from 'react';
+import ReportRow, { REPORT_GRID } from './ReportRow';
 
 const HEADERS = ['번호', '작성 위치', '처리 사유', '원문 링크', '상태', '처리일'];
 
@@ -16,39 +16,14 @@ export default function ReportSection({ title, reports = [] }) {
     [reports],
   );
 
-  // 체크 가능한(블라인드) 행만 대상으로 선택 상태 관리
-  const selectableIds = useMemo(
-    () => ordered.filter((r) => r.status !== '영구삭제').map((r) => r.reportId),
-    [ordered],
-  );
-
-  const [checkedIds, setCheckedIds] = useState(() => new Set());
-
-  const allChecked =
-    selectableIds.length > 0 && selectableIds.every((id) => checkedIds.has(id));
-
-  const toggleAll = (next) => {
-    setCheckedIds(next ? new Set(selectableIds) : new Set());
-  };
-
-  const toggleOne = (id, next) => {
-    setCheckedIds((prev) => {
-      const copy = new Set(prev);
-      if (next) copy.add(id);
-      else copy.delete(id);
-      return copy;
-    });
-  };
-
   return (
     <div className="w-full font-['Pretendard',sans-serif]">
       <p className="mb-[10px] text-[16px] tracking-[-0.32px] text-black">{title}</p>
 
       {/* 맨 위 헤더 행 (회색 글씨) */}
-      <div className={`${REPORT_GRID} h-[46px] text-[14px] tracking-[-0.28px] text-[#919191]`}>
-        <div className="flex justify-center">
-          <ReportCheckbox checked={allChecked} onChange={toggleAll} />
-        </div>
+      <div
+        className={`${REPORT_GRID} h-[46px] pr-[10px] text-[14px] tracking-[-0.28px] text-[#919191]`}
+      >
         {HEADERS.map((header) => (
           <div key={header} className="text-center">
             {header}
@@ -60,32 +35,10 @@ export default function ReportSection({ title, reports = [] }) {
       <div className="border-b border-[#919191]" />
 
       {/* 스크롤 범위: row 1~5 (46px * 5). 6개 이상이면 세로 스크롤 (화살표 없이) */}
-      <div className="mp-scroll-y h-[230px] overflow-x-hidden overflow-y-auto">
+      <div className="mp-scroll-y h-[230px] overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable]">
         {ordered.map((report) => (
-          <ReportRow
-            key={report.reportId}
-            report={report}
-            number={report.number}
-            checked={checkedIds.has(report.reportId)}
-            onCheckedChange={(next) => toggleOne(report.reportId, next)}
-          />
+          <ReportRow key={report.reportId} report={report} number={report.number} />
         ))}
-      </div>
-
-      {/* 우측 하단 버튼: 상태 복원 / 영구 삭제 */}
-      <div className="mt-[12px] flex justify-end gap-[14px]">
-        <button
-          type="button"
-          className="h-[42px] w-[126px] rounded-[4px] border border-[#919191] bg-white text-[16px] tracking-[-0.32px] text-[#212121]"
-        >
-          상태 복원
-        </button>
-        <button
-          type="button"
-          className="h-[42px] w-[126px] rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white"
-        >
-          영구 삭제
-        </button>
       </div>
     </div>
   );

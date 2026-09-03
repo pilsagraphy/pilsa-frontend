@@ -7,7 +7,7 @@ import RowActionButton from '@/components/shared/admin/RowActionButton';
 import RowCheckbox from '@/components/shared/admin/RowCheckbox';
 import { COMMENT_STATUSES, getPostDetailHref } from '@/constants/adminComments';
 
-// comment: commentId, boardName, author, content, createdAt, status, postId, postTitle
+// comment: commentId, boardId, boardName, author, content, createdAt, status, postId, postTitle
 export default function CommentRow({
   comment,
   selected = false,
@@ -17,7 +17,7 @@ export default function CommentRow({
   onMoveToReport,
 }) {
   const isBlinded = comment.status === COMMENT_STATUSES.BLINDED;
-  const postHref = getPostDetailHref(comment.boardName, comment.postId);
+  const postHref = getPostDetailHref(comment.boardId, comment.postId);
 
   return (
     <TableRow className="h-[46px] border-b border-[#b9b9b9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121]">
