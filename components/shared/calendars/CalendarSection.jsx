@@ -37,6 +37,9 @@ const LAYER_OTHER = 'other';
 // renderScheduleAction: 월별 일정 카드 오른쪽에 놓을 조작 버튼 (관리자 화면의 ⋮ 메뉴)
 // renderDetail: 목록 아래에 그릴 내용. 기본은 읽기용 일정 상세다.
 //               관리자 화면은 '일정 수정' 폼으로 갈아끼우려고 열어 뒀다.
+// refreshKey: 값이 바뀌면 지금 보고 있는 달을 다시 조회한다. (관리자 화면의 등록 · 수정 · 삭제)
+// focusDate: refreshKey와 함께 'yyyy-MM-dd'를 주면 그 날짜의 달로 옮겨서 조회한다.
+//            ※ response를 함께 넘기면 조회 자체를 안 하므로 둘 다 무시된다 (아래 early return)
 export default function CalendarSection({
   response,
   renderScheduleAction,
@@ -47,6 +50,7 @@ export default function CalendarSection({
   onDateDoubleClick,
   onUserSelect,
   refreshKey = 0,
+  focusDate = null,
 }) {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
   const [apiResponse, setApiResponse] = React.useState(response ?? null);
@@ -60,6 +64,19 @@ export default function CalendarSection({
   // currentMonth(Date)를 그대로 쓰면 같은 달 안에서 날짜만 바뀌어도 재조회가 돌아,
   // 목록이 잠깐 비는 사이 아래 자동 선택 로직이 고른 일정을 첫 번째로 되돌려 놓는다.
   const currentYearMonth = format(currentMonth, 'yyyy-MM');
+
+  // 저장한 일정이 다른 달이면 달력을 그 달로 옮긴다. 재조회는 늘 화면에 떠 있는 달 기준이라,
+  // 9월을 보면서 12월 일정을 등록하면 성공했는데도 목록이 그대로여서 실패로 읽힌다.
+  // 달이 실제로 바뀌면 아래 조회 effect가 한 번 더 도는데, 먼저 돈 쪽은 cleanup으로 버려진다.
+  // (삭제는 옮길 이유가 없어 부모가 focusDate 없이 refreshKey만 올린다)
+  React.useEffect(() => {
+    if (!focusDate) return;
+
+    const focused = parseISO(focusDate);
+    if (Number.isNaN(focused.getTime())) return;
+
+    setCurrentMonth((prev) => (isSameMonth(prev, focused) ? prev : focused));
+  }, [focusDate, refreshKey]);
 
   React.useEffect(() => {
     // response prop이 들어오면 그 값을 그대로 쓰고 조회하지 않는다.
@@ -262,8 +279,8 @@ export default function CalendarSection({
       </div>
 
       {/* 4. 고른 일정의 상세
-          TODO: API 연동 시 상세(category · content · startTime · endTime)도 함께 내려받을 것.
-                지금은 목 데이터에만 있어 실제 응답에서는 기본값으로 그려진다. */}
+          목록(GET /api/event)이 category · description 까지 주므로 상세를 따로 부르지 않는다.
+          startTime · endTime 은 서버에 없어 '시간 없는 일정'으로 그려진다. (apis/event.js 4번) */}
       {renderDetail ? (
         renderDetail(selectedSchedule)
       ) : (

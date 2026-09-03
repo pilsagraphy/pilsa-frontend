@@ -29,15 +29,16 @@ const isAlreadyGone = (error) => error?.response?.status === 404;
  *  - 추가 · 수정을 고르면 상세 자리에 뜨는 폼
  *
  * 목록 조회는 CalendarSection이 자기 안에서 한다. 등록 · 수정 · 삭제 응답에는 목록이 없어
- * (신규 eventId · updatedAt 뿐) 재조회가 필요하므로, refreshKey를 올려 그쪽 조회를 다시 부른다.
+ * (신규 eventId · updatedAt 뿐) 재조회가 필요하므로, refreshSignal을 올려 그쪽 조회를 다시 부른다.
  */
-export default function AdminCalendarSection({ response }) {
+export default function AdminCalendarSection() {
   // 상세 자리에 무엇을 그릴지. null이면 읽기용 상세.
   // { mode: 'create', date } | { mode: 'edit', schedule }
   // create의 date는 폼의 시작 · 종료일 초깃값('yyyy-MM-dd'). 없으면 오늘.
   const [formTarget, setFormTarget] = React.useState(null);
   const [deletingSchedule, setDeletingSchedule] = React.useState(null);
-  const [refreshKey, setRefreshKey] = React.useState(0);
+  // 재조회 신호. key가 바뀌면 CalendarSection이 목록을 다시 부른다.
+  const [refreshSignal, setRefreshSignal] = React.useState({ key: 0, date: null });
   const [isSaving, setIsSaving] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
 
@@ -45,6 +46,7 @@ export default function AdminCalendarSection({ response }) {
   // 응답이 { message, data } 가 아니라 맨 배열이므로 언래핑하지 않는다. (apis/event.js 5번)
   // 순서는 서버의 display_order 를 그대로 쓴다 — 다시 정렬하면 시안 순서가 깨진다.
   const [categories, setCategories] = React.useState([]);
+  const [hasCategoryError, setHasCategoryError] = React.useState(false);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -55,8 +57,12 @@ export default function AdminCalendarSection({ response }) {
       })
       .catch((error) => {
         // 목록을 못 받으면 폼의 구분 셀렉트가 잠긴다. 하드코딩 fallback 은 두지 않는다.
+        // 토스트는 폼을 열기 전에 사라지므로, 잠긴 이유를 셀렉트에도 적게 실패를 따로 넘긴다.
         console.error('일정 카테고리 목록 조회 실패:', error);
-        if (isMounted) toast.error(getErrorMessage(error, '일정 구분 목록을 불러오지 못했습니다.'));
+        if (!isMounted) return;
+
+        setHasCategoryError(true);
+        toast.error(getErrorMessage(error, '일정 구분 목록을 불러오지 못했습니다.'));
       });
 
     return () => {
@@ -65,7 +71,13 @@ export default function AdminCalendarSection({ response }) {
   }, []);
 
   const closeForm = React.useCallback(() => setFormTarget(null), []);
-  const refresh = React.useCallback(() => setRefreshKey((prev) => prev + 1), []);
+
+  // focusDate('yyyy-MM-dd')를 주면 달력을 그 달로 옮겨서 조회한다. 다른 달에 저장한 일정은
+  // 지금 보고 있는 달을 다시 불러 봐야 나오지 않아, 성공했는데도 실패로 읽히기 때문이다.
+  // 삭제는 옮길 곳이 없으므로 인자 없이 부른다.
+  const refresh = React.useCallback((focusDate = null) => {
+    setRefreshSignal((prev) => ({ key: prev.key + 1, date: focusDate }));
+  }, []);
 
   // 달력 날짜를 더블클릭하면 그 날짜로 일정 추가 폼을 연다.
   const handleDateDoubleClick = React.useCallback((date) => {
@@ -91,7 +103,7 @@ export default function AdminCalendarSection({ response }) {
           result?.message ?? (isEdit ? '일정이 수정되었습니다.' : '새로운 일정이 등록되었습니다.')
         );
         setFormTarget(null);
-        refresh();
+        refresh(values.startDate);
       } catch (error) {
         toast.error(
           getErrorMessage(
@@ -176,6 +188,7 @@ export default function AdminCalendarSection({ response }) {
             schedule={formTarget.mode === 'edit' ? formTarget.schedule : null}
             defaultDate={formTarget.mode === 'create' ? formTarget.date : null}
             categories={categories}
+            categoriesError={hasCategoryError}
             onCancel={closeForm}
             onSubmit={handleSubmit}
             isSubmitting={isSaving}
@@ -185,14 +198,14 @@ export default function AdminCalendarSection({ response }) {
 
       return <ScheduleDetail schedule={selectedSchedule} fullWidth />;
     },
-    [formTarget, closeForm, handleSubmit, isSaving, categories]
+    [formTarget, closeForm, handleSubmit, isSaving, categories, hasCategoryError]
   );
 
   return (
     <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10">
       <CalendarSection
-        response={response}
-        refreshKey={refreshKey}
+        refreshKey={refreshSignal.key}
+        focusDate={refreshSignal.date}
         scheduleListAction={scheduleListAction}
         onDateDoubleClick={handleDateDoubleClick}
         // 달력 날짜나 목록 카드를 누르면 열려 있던 폼을 닫고 그 일정 상세로 돌아간다.

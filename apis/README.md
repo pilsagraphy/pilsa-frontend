@@ -52,7 +52,6 @@ apis/
     ├── info.js           ❌ /api/stu/info/**     → board.js
     ├── notice.js         ❌ /api/stu/notices/**  → board.js
     └── honor.js          ❌ /api/public/honor/    → donation.js
-    (schedule.js 는 event.js 로 교체 완료 — 삭제됨)
 ```
 
 ---
@@ -94,22 +93,7 @@ apis/
 3. **`authApi.js`** — `axiosInstance.js` 와 역할이 겹친다. 토큰 재발급 인터셉터가 없어
    401 처리가 안 되므로 사용처를 `axiosInstance` 로 옮기고 제거한다.
 4. **구 파일 4개** (`free` `info` `notice` `honor`) — 화면 전환이 끝나면 삭제.
-   `schedule.js` 는 `event.js` 로 교체하고 삭제했다.
-5. **일정 폼의 시각 · 종일 UI** — 서버에 담을 곳이 없어 저장되지 않는다. 마크업은 그대로
-   두기로 했으므로 PM 확인 후 숨기거나 살릴 것. `ScheduleForm` 상단 주석에 같은 내용을 적어 뒀다.
-   근거(2026-08-28 `GET /v3/api-docs` 재확인) — 등록 · 수정 요청 본문 필드는
-   `title` `category` `description` `startDate` `endDate` 5개뿐이고 시각 관련 필드가 없다.
-   카테고리 API 가 들어온 뒤에도 이 필드 구성은 그대로였다.
-   덤으로 등록 요청 본문에 `eventId` 가 끼어 있는데(DTO 공용 흔적) 보내지 않는다.
-6. **일정 카테고리 (2026-08-28 해결)** — `GET /api/event/categories` 가 구현됐다.
-   시드는 디자인 시안대로 `MT` `정기 모임` `제작 스터디` `축제` `기타` 5개이고, 기존 일정의
-   값도 여기에 맞춰 마이그레이션됐다(`행사`→`축제` 등). `category` 값이 `null` 인 일정 1건은
-   그대로 남아 있다 — 상세에서 '기타'로 표시된다.
-   ★응답이 `{ message, data }` 가 아니라 **맨 배열**이다. 이 프로젝트의 유일한 예외이므로
-   언래핑하면 안 된다. 순서도 서버 `display_order` 를 그대로 쓴다(다시 정렬 금지).
-   `GET /api/event/{eventId}`(일정 상세)도 함께 올라왔지만 목록이 `description` 까지 주므로
-   함수를 만들지 않았다.
-7. **`mocks/calendarData.js` 의 `calendarMockResponse`** — 조회 실패 시 목 데이터로 메꾸던
-   fallback 을 걷어내서 지금은 쓰이는 곳이 없다. `/calendar/mock` 페이지를 지울 때 함께 정리.
-   같은 파일이 `constants/calendar.js` 의 `SCHEDULE_CATEGORIES` 를 라벨 정의로 쓰고 있어
-   그 상수도 목 데이터 전용으로만 남아 있다.
+5. **일정 폼의 시각 · 종일 UI** — 등록 · 수정 요청 본문 필드가 `title` `category`
+   `description` `startDate` `endDate` 5개뿐이라(2026-08-28 `GET /v3/api-docs` 확인)
+   시 · 분과 종일 해제는 저장되지 않는다. `ScheduleForm` 의 `IS_TIME_SUPPORTED` 로 잠가 뒀다.
+   서버에 `startTime` `endTime` 이 생기면 그 상수를 `true` 로 바꾸고 이 항목을 지운다.

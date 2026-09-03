@@ -1,6 +1,7 @@
 // 일정 달력 상수
-// SCHEDULE_CATEGORIES 는 목 데이터(mocks/calendarData.js)의 라벨 정의용으로만 남아 있다.
 // 실제 화면의 '일정 구분' 선택지는 GET /api/event/categories 로 받는다 (하드코딩 금지).
+// SCHEDULE_CATEGORIES 는 목 데이터(mocks/calendarData.js)의 라벨 정의용이고,
+// 여기서 파생된 DEFAULT_SCHEDULE_CATEGORY 만 실제 화면에서도 쓴다 (아래 참고).
 export const SCHEDULE_CATEGORIES = {
   MT: 'MT',
   REGULAR_MEETING: '정기 모임',

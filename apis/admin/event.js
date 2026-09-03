@@ -8,10 +8,12 @@ import axiosInstance from '@/apis/axiosInstance';
 // description 은 DB NOT NULL 이라 빈 문자열이라도 채워 보낸다.
 // 시각(startTime/endTime)·종일 여부는 서버에 담을 곳이 없어 여기서 버린다 —
 // startDate/endDate 를 YYYY-MM-DD 그대로 datetime 컬럼에 넣으므로 시각은 00:00:00 이 된다.
-// (폼의 시/분 셀렉트와 종일 체크박스는 카테고리 API 와 함께 PM 확인 대기 중)
+// (폼의 시/분 셀렉트와 종일 체크박스는 마크업만 남긴 상태 — PM 확인 대기, apis/README.md 5번)
 const toEventPayload = ({ title, category, content, startDate, endDate }) => ({
   title,
-  category,
+  // 카테고리 목록 조회가 실패하면 폼의 구분 셀렉트가 빈 값('')으로 잠긴 채 제출될 수 있다.
+  // '' 를 그대로 넣으면 '구분 없음'을 IS NULL 로 세는 쪽에서 새므로 NULL 로 보낸다.
+  category: category || null,
   description: content ?? '',
   startDate,
   endDate,
@@ -20,7 +22,7 @@ const toEventPayload = ({ title, category, content, startDate, endDate }) => ({
 // 1. 일정 등록 (POST /api/admin/event) [ADMIN]
 //    요청: { title, category, description, startDate, endDate }  // YYYY-MM-DD
 //      description 은 DB NOT NULL — 빈 문자열이라도 채워 보낸다
-//      category 는 varchar(50) 자유 입력 (선택지 목록 API 없음, NULL 허용)
+//      category 는 varchar(50) — GET /api/event/categories 의 name 문자열을 보낸다 (NULL 허용)
 //    응답: 201 { message, data: { eventId, title } }  ← 200 아님
 //    실패: 400 시작일/종료일 필수 / 400 시작일 > 종료일 / 403 관리자 권한 필요
 // 응답에 목록이 없으므로(신규 eventId·title 뿐) 호출한 화면이 목록을 다시 불러야 한다
