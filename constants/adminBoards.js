@@ -28,8 +28,6 @@ export const BOARD_READ_SCOPE_OPTIONS = Object.entries(BOARD_READ_SCOPE_LABELS).
 
 // ── 작성 권한 (writeLevel) ────────────────────────────────────────────
 // 서버는 0~3 숫자다. 시안의 네 단계와 1:1로 맞아서 그대로 보여준다.
-export const GENERAL_WRITE_LEVEL = 0;
-
 export const BOARD_WRITE_LEVEL_LABELS = {
   0: '일반회원',
   1: '관리 Lv.1',
@@ -49,5 +47,10 @@ export const BOARD_WRITE_LEVEL_OPTIONS = Object.entries(BOARD_WRITE_LEVEL_LABELS
 
 // Radix Select 는 값으로 문자열만 받는다. 서버의 writeLevel(숫자)과 오갈 때 변환한다.
 // 숫자를 그대로 넘기면 select 가 선택된 항목을 못 찾아 빈칸으로 보인다.
-export const toWriteLevelValue = (writeLevel) => String(writeLevel ?? GENERAL_WRITE_LEVEL);
+//
+// 값이 없으면 빈 문자열로 둔다. 0(일반회원)으로 채우면 작성 권한을 모르는 채로 모달을 열었을 때
+// select 가 '일반회원'을 고른 것처럼 보이고, 이름만 고치고 확인을 눌러도 writeLevel: 0 이 함께
+// 저장돼 관리자 전용 게시판이 전체 작성 가능으로 낮아진다. 열람 권한(readScope)과 똑같이
+// 빈 값으로 두어 canSubmit 이 저장을 막게 한다.
+export const toWriteLevelValue = (writeLevel) => (writeLevel == null ? '' : String(writeLevel));
 export const fromWriteLevelValue = (value) => Number(value);

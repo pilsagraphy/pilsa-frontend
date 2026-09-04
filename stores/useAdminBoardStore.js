@@ -7,6 +7,7 @@ import {
   getAdminBoards,
   updateAdminBoard,
 } from '@/apis/admin/boards';
+import useBoardStore from '@/stores/useBoardStore';
 
 // 관리자 - 게시판 관리 상태
 //
@@ -22,6 +23,20 @@ const FALLBACK_MESSAGES = {
   create: '게시판을 만들지 못했습니다.',
   update: '게시판 정보를 수정하지 못했습니다.',
   remove: '게시판을 삭제하지 못했습니다.',
+};
+
+// 여기서 게시판을 바꾸면 사용자 게시판 목록(GET /api/user/boards)도 함께 낡는다.
+// 사이드바 · 게시판 화면이 쓰는 useBoardStore 는 계정이 바뀔 때만 캐시를 버리므로,
+// 알려주지 않으면 새로고침 전까지 옛 이름 · 옛 순서가 그대로 남는다.
+//
+// reset() 이 아니라 fetchBoards() 를 부른다. reset() 은 data 를 null 로 만드는데
+// 사이드바의 재조회 useEffect 가 [isLoggedIn, ensureBoards] 에만 걸려 있어 다시 돌지 않아,
+// 사이드바가 빈 채로 남는다. fetchBoards() 는 값을 제자리에서 갈아끼워 깜빡임이 없다.
+//
+// 관리자 화면이 이 갱신을 기다릴 이유가 없어 await 하지 않는다.
+// 실패는 fetchBoards 가 안에서 잡으므로 처리되지 않은 rejection 도 생기지 않는다.
+const refreshUserBoards = () => {
+  useBoardStore.getState().fetchBoards();
 };
 
 const useAdminBoardStore = create((set, get) => ({
@@ -55,6 +70,7 @@ const useAdminBoardStore = create((set, get) => ({
     try {
       const created = await createAdminBoard(payload);
       set({ data: [...get().data, created] });
+      refreshUserBoards();
       return created;
     } catch (err) {
       set({ error: getErrorMessage(err, FALLBACK_MESSAGES.create) });
@@ -73,6 +89,8 @@ const useAdminBoardStore = create((set, get) => ({
       set({
         data: get().data.map((board) => (board.boardId === boardId ? updated : board)),
       });
+      // 이름 · 열람 권한 · 순서 어느 쪽이 바뀌어도 사용자 목록에 그대로 드러난다
+      refreshUserBoards();
       return updated;
     } catch (err) {
       set({ error: getErrorMessage(err, FALLBACK_MESSAGES.update) });
@@ -91,6 +109,7 @@ const useAdminBoardStore = create((set, get) => ({
     try {
       const result = await deleteAdminBoard(boardId);
       set({ data: get().data.filter((board) => board.boardId !== boardId) });
+      refreshUserBoards();
       return result;
     } catch (err) {
       set({ error: getErrorMessage(err, FALLBACK_MESSAGES.remove) });

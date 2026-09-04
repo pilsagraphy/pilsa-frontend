@@ -55,8 +55,19 @@ function FormSelect({ label, value, options, onChange }) {
  * 게시판 수정 / 생성 모달
  * mode에 따라 제목과 초기값만 달라진다. 저장 처리(API 호출)는 부모가 담당.
  * onSubmit에는 서버가 받는 형식({ name, readScope, writeLevel })으로 넘긴다.
+ *
+ * 저장에 실패해도 모달은 열어 둔다. 이름 중복(409)처럼 한 글자만 고치면 되는 실패가 흔한데
+ * 닫아 버리면 이름 · 열람 권한 · 작성 권한을 처음부터 다시 채워야 한다.
+ * 실패 사유는 부모가 errorMessage로 내려주고, 여기서는 확인 버튼 위에 보여주기만 한다.
  */
-export default function BoardFormModal({ open, mode = 'create', board = null, onClose, onSubmit }) {
+export default function BoardFormModal({
+  open,
+  mode = 'create',
+  board = null,
+  errorMessage = '',
+  onClose,
+  onSubmit,
+}) {
   const isEdit = mode === 'edit';
 
   const [boardName, setBoardName] = useState('');
@@ -145,6 +156,17 @@ export default function BoardFormModal({ open, mode = 'create', board = null, on
             onChange={setWriteLevelValue}
           />
         </div>
+
+        {/* 저장 실패 사유 (예: 이미 존재하는 게시판 이름입니다.)
+            role="alert"로 넣어 스크린리더가 뜨는 즉시 읽어 주게 한다. */}
+        {errorMessage && (
+          <p
+            role="alert"
+            className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#f44336]"
+          >
+            {errorMessage}
+          </p>
+        )}
 
         <DialogFooter className="flex flex-row justify-end gap-[12px] sm:space-x-0">
           <Button
