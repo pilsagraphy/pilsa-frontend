@@ -102,7 +102,7 @@ export default function MemberList({ member, selected = false, dimmed = false, o
     resetScroll(); // 마우스를 떼면 즉시 중단 + 첫 글자로 복귀
   };
 
-  const label = `${member.name} (${member.loginId}, ${member.nickname})`;
+  const label = `${member.name} (${member.loginId})`;
   const textColor = selected ? 'text-[#212121]' : dimmed ? 'text-[#b9b9b9]' : 'text-[#454545]';
 
   return (
