@@ -41,7 +41,7 @@ apis/
 │   ├── boards.js         ✅ 연동됨   게시판 관리
 │   ├── posts.js          ✅ 연동됨   게시글 관리
 │   ├── comments.js       ✅ 연동됨   댓글 관리
-│   ├── reports.js        🔨 일부     신고 목록은 미연동 / 일괄 조치(select-blind·select-delete)만 연동됨
+│   ├── reports.js        ✅ 연동됨  신고 관리 + 일괄 조치(select-*)
 │   ├── sanctions.js      🆕 제재 회원
 │   ├── users.js          🆕 회원 목록/정지/차단/강제탈퇴
 │   ├── quotes.js         🆕 문장 관리
@@ -73,12 +73,23 @@ apis/
 
 ## 4. 백엔드 대기 (연동 불가 — 화면만 준비)
 
-| 엔드포인트                                  | 파일                   | 상태          |
+<<<<<<< HEAD
+| 엔드포인트 | 파일 | 상태 |
 | ------------------------------------------- | ---------------------- | ------------- |
 | `POST /api/admin/sanctions/users/{id}/lift` | `admin/sanctions.js` 5 | 3기 진행 예정 |
 
 > 마이페이지 활동 목록 3종(`posts` · `comments` · `likes`)은 명세서 2026-08-26 기준으로
 > 서버 구현이 끝나 연동 완료됐다. 이 표에 있던 'planned (백로그 C-2)' 항목은 그래서 지웠다.
+> =======
+> | 엔드포인트 | 파일 | 상태 |
+> | ------------------------------------------- | ---------------------- | ---------------------------------------------------- |
+> | `GET /api/user/mypage/posts` | `mypage.js` 5 | planned (백로그 C-2) |
+> | `GET /api/user/mypage/comments` | `mypage.js` 6 | planned (백로그 C-2) |
+> | `GET /api/user/mypage/likes` | `mypage.js` 7 | planned (백로그 C-2) |
+> | `POST /api/admin/sanctions/users/{id}/lift` | `admin/sanctions.js` 5 | 3기 진행 예정 |
+> | `GET /api/admin/reports/{posts\|comments}/{targetId}` | `admin/reports.js` 하단 | 미명세 — 요청함 (아래 6번) |
+>
+> > > > > > > 5c93ed6 (🔗 [FE] 관리자 신고 관리 API 연동)
 
 ---
 
@@ -98,3 +109,16 @@ apis/
    `description` `startDate` `endDate` 5개뿐이라(2026-08-28 `GET /v3/api-docs` 확인)
    시 · 분과 종일 해제는 저장되지 않는다. `ScheduleForm` 의 `IS_TIME_SUPPORTED` 로 잠가 뒀다.
    서버에 `startTime` `endTime` 이 생기면 그 상수를 `true` 로 바꾸고 이 항목을 지운다.
+7. **신고 관리 - 조치 모달의 '신고자 목록'** — 목록 API 는 대상 단위로 그룹핑해 대표 사유와
+   `reportCount` 만 준다. 한 대상에 사유가 다른 신고가 여러 건 있으면 관리자가 삭제 사유를
+   판단할 근거가 없어, 시안의 신고자 목록 표를 채울 수 없다.
+   `ReportActionModal` 은 `item.reports` 가 있으면 표, 없으면 한 줄 요약을 그리도록 해 뒀다 —
+   API 가 나오면 마크업 수정 없이 표가 살아난다.
+   요청한 형태: `GET /api/admin/reports/{posts|comments}/{targetId}`
+   → `[{ reportId, reasonLabel, detail, createdAt }]` (createdAt 오름차순, 신고자 정보는 받지 않음)
+8. **신고 접수 시 자동 블라인드 미적용** — 기획은 '신고가 들어오면 그 글이 사용자 게시판에서
+   가려지고, 관리자는 복원 또는 삭제만 선택'인데 서버는 `state=normal` 로 둔다
+   (명세도 `pending(미조치)·blind·deleted` 를 모두 내려준다고 되어 있다).
+   `getReportStatusLabel` 이 삭제가 아닌 것을 '블라인드'로 보여 화면만 기획에 맞춰 둔 상태다 —
+   자동 블라인드가 적용되면 그 분기는 자연히 정리된다. 백엔드 확인 대기.
+   ★상태 필터도 `blind` · `deleted` 만 인식한다('복원'만 골라 보는 값이 없다).
