@@ -1,5 +1,7 @@
 'use client';
 
+import { useMemo } from 'react';
+
 import SelectAllCheckbox from '@/components/shared/admin/SelectAllCheckbox';
 import {
   Table,
@@ -10,6 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { REPORT_TARGET_LABELS } from '@/constants/adminReports';
+import useBoardStore from '@/stores/useBoardStore';
 
 import ReportRow from './ReportRow';
 
@@ -51,6 +54,15 @@ export default function ReportTable({
 }) {
   const allSelected = reports?.length > 0 && selectedIds.length === reports.length;
   const targetLabel = REPORT_TARGET_LABELS[targetType] ?? '게시글';
+
+  // 댓글 신고의 앵커 링크(#comment-{id})는 그 게시판 상세에 댓글 영역이 있어야 의미가 있다.
+  // 게시판마다 다르므로 게시판 목록 API 의 allowComment 를 본다 (행마다 스토어를 읽지 않도록
+  // 여기서 한 번 만들어 넘긴다). 목록을 못 받았으면 링크를 걸어 두는 쪽을 기본으로 한다.
+  const boards = useBoardStore((state) => state.data);
+  const allowCommentByBoardId = useMemo(
+    () => new Map((boards ?? []).map(({ boardId, allowComment }) => [boardId, allowComment])),
+    [boards]
+  );
 
   // 로딩 · 에러 · 빈 목록일 때 body에 보여줄 안내문
   const emptyMessage = loading
@@ -98,9 +110,10 @@ export default function ReportTable({
           ) : (
             reports.map((report) => (
               <ReportRow
-                key={report.reportId}
+                key={report.targetId}
                 report={report}
-                selected={selectedIds.includes(report.reportId)}
+                selected={selectedIds.includes(report.targetId)}
+                allowComment={allowCommentByBoardId.get(report.boardId) ?? true}
                 onSelectChange={onSelectOne}
                 onRestore={onRestore}
                 onDelete={onDelete}
