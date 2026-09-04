@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import SortSelect from '@/components/shared/board/boardList/SortSelect';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
@@ -13,9 +13,18 @@ import {
 } from '@/components/shared/admin/CommunityListStyles';
 
 import useAuthStore from '@/stores/useAuthStore';
+import useAdminUsersStore from '@/stores/useAdminUsersStore';
 import MemberTable from './MemberTable';
 import MemberWithdrawModal from './MemberWithdrawModal';
-import { DUMMY_MEMBERS, MEMBER_SORT_OPTIONS } from '@/constants/adminMembers';
+import MemberSuspendModal from './MemberSuspendModal';
+import MemberBanModal from './MemberBanModal';
+import {
+  LABEL_TO_MEMBER_TYPE,
+  MEMBER_SORT_MAP,
+  MEMBER_SORT_OPTIONS,
+  ROLE_TO_ADMIN_LEVEL,
+  mapApiMemberToRow,
+} from '@/constants/adminMembers';
 
 const PAGE_SIZE = 10;
 
@@ -26,37 +35,37 @@ export default function MemberListSection({ title = '회원 목록' }) {
   const [selectedIds, setSelectedIds] = useState([]);
   // 강제 탈퇴 확인 모달의 대상 회원 (null이면 닫힘)
   const [withdrawTarget, setWithdrawTarget] = useState(null);
+  // 회원 정지 모달의 대상 회원 (null이면 닫힘) — 정지 API는 단건이라 한 명만 담는다
+  const [suspendTarget, setSuspendTarget] = useState(null);
+  // 영구 차단 모달 열림 여부 (대상은 selectedIds)
+  const [banOpen, setBanOpen] = useState(false);
   // 강제 탈퇴는 되돌릴 수 없어 관리 레벨 3 전용 (명세 140)
   const canWithdraw = useAuthStore((s) => s.adminLevel) >= 3;
 
-  // 행에서 재학상태·권한을 바꾼 결과가 화면에 남아야 해서 목록을 상태로 들고 간다.
-  const [members, setMembers] = useState(DUMMY_MEMBERS);
+  const { data, isLoading, error, fetchUsers, updateUser, suspendUser, banUsers, withdrawUser } =
+    useAdminUsersStore();
 
-  // TODO: API 연동 시 DUMMY_MEMBERS 대신 서버 응답(목록·totalPages)을 사용하고,
-  //       검색·정렬·페이지네이션도 서버에 위임할 것. (BoardSection.jsx 참고)
-  const filteredMembers = useMemo(() => {
-    const keyword = searchQuery.trim().toLowerCase();
+  // 서버 응답을 화면(MemberRow)이 쓰는 형태로 변환한다.
+  const members = useMemo(() => (data?.members ?? []).map(mapApiMemberToRow), [data]);
+  const totalPages = Math.max(1, Number(data?.totalPages) || 1);
 
-    const matched = keyword
-      ? members.filter(
-          (member) =>
-            member.loginId.toLowerCase().includes(keyword) ||
-            member.name.toLowerCase().includes(keyword)
-        )
-      : members;
+  // 현재 페이지 목록을 서버에서 다시 불러온다. (검색·정렬·페이지 변경 / 조치 성공 후 재조회)
+  const loadUsers = useCallback(async () => {
+    try {
+      await fetchUsers({
+        page: currentPage,
+        size: PAGE_SIZE,
+        keyword: searchQuery.trim(),
+        sort: MEMBER_SORT_MAP[sortOrder] ?? sortOrder,
+      });
+    } catch {
+      // 실패 문구는 스토어 error로 노출된다
+    }
+  }, [fetchUsers, currentPage, searchQuery, sortOrder]);
 
-    // memberId가 클수록 최근 가입 → 최신순은 내림차순, 오래된순은 오름차순.
-    return [...matched].sort((a, b) =>
-      sortOrder === 'oldest' ? a.memberId - b.memberId : b.memberId - a.memberId
-    );
-  }, [members, searchQuery, sortOrder]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredMembers.length / PAGE_SIZE));
-
-  const pagedMembers = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return filteredMembers.slice(start, start + PAGE_SIZE);
-  }, [filteredMembers, currentPage]);
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   // 목록이 바뀌면 화면에 없는 회원이 선택된 채로 남지 않도록 선택을 비운다.
   const resetToFirstPage = () => {
@@ -87,26 +96,75 @@ export default function MemberListSection({ title = '회원 목록' }) {
 
   // 전체 선택은 현재 페이지에 보이는 회원만 대상으로 한다.
   const handleSelectAll = (checked) => {
-    setSelectedIds(checked ? pagedMembers.map((member) => member.memberId) : []);
+    setSelectedIds(checked ? members.map((member) => member.memberId) : []);
   };
 
-  // 행에서 재학상태·권한 select로 값을 바꿨을 때
-  // TODO: API 연동 시 서버에 변경 요청을 보내고 응답으로 목록을 갱신할 것
-  const handleFieldChange = (memberId, field, value) => {
-    setMembers((prev) =>
-      prev.map((member) =>
-        member.memberId === memberId ? { ...member, [field]: value } : member
-      )
-    );
+  // 행에서 재학상태·권한 select로 값을 바꿨을 때 → 서버에 부분 수정 요청 후 목록 갱신
+  const handleFieldChange = async (memberId, field, value) => {
+    const payload =
+      field === 'role'
+        ? { adminLevel: ROLE_TO_ADMIN_LEVEL[value] }
+        : { memberType: LABEL_TO_MEMBER_TYPE[value] };
+    try {
+      await updateUser(memberId, payload);
+      await loadUsers();
+    } catch {
+      // 실패 문구는 스토어 error로 노출된다
+    }
+  };
+
+  // 회원 정지 — 단건 처리라 정확히 한 명 선택했을 때만 열린다 (버튼 disabled로 보장)
+  const handleSuspendClick = () => {
+    const target = members.find((member) => member.memberId === selectedIds[0]);
+    if (target) setSuspendTarget(target);
+  };
+
+  const handleSuspendSubmit = async ({ endDate }) => {
+    if (!suspendTarget) return;
+    try {
+      await suspendUser(suspendTarget.memberId, endDate);
+      setSuspendTarget(null);
+      setSelectedIds([]);
+      await loadUsers();
+    } catch {
+      // 실패 문구는 스토어 error로 노출된다
+    }
+  };
+
+  // 영구 차단 — all-or-nothing 다중 처리 (선택된 회원 전체)
+  const handleBanSubmit = async () => {
+    try {
+      await banUsers(selectedIds);
+      setBanOpen(false);
+      setSelectedIds([]);
+      await loadUsers();
+    } catch {
+      // 실패 문구는 스토어 error로 노출된다
+    }
   };
 
   // 강제 탈퇴 — 되돌릴 수 없는 처리(개인정보 즉시 파기)라 확인 모달을 거친다
-  // TODO: API 연동 시 PATCH /api/admin/users/{userId}/withdraw 호출 (관리 레벨 3 전용)
-  const handleWithdrawConfirm = () => {
-    setMembers((prev) => prev.filter((member) => member.memberId !== withdrawTarget?.memberId));
-    setSelectedIds((prev) => prev.filter((id) => id !== withdrawTarget?.memberId));
-    setWithdrawTarget(null);
+  const handleWithdrawConfirm = async () => {
+    if (!withdrawTarget) return;
+    try {
+      await withdrawUser(withdrawTarget.memberId);
+      setSelectedIds((prev) => prev.filter((id) => id !== withdrawTarget.memberId));
+      setWithdrawTarget(null);
+      await loadUsers();
+    } catch {
+      // 실패 문구는 스토어 error로 노출된다
+    }
   };
+
+  // 영구 차단 모달에 넘길 선택 회원 객체들
+  const selectedMembers = useMemo(
+    () => members.filter((member) => selectedIds.includes(member.memberId)),
+    [members, selectedIds]
+  );
+
+  // 목록이 비었을 때(초기 로딩·조회 실패)만 테이블 본문에 안내를 띄운다.
+  // 조치 중(isLoading)에는 이미 그려진 목록을 로딩 문구로 덮지 않는다.
+  const isListEmpty = members.length === 0;
 
   return (
     <div className={listSectionClass}>
@@ -130,29 +188,57 @@ export default function MemberListSection({ title = '회원 목록' }) {
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          {/* TODO: 선택한 회원(selectedIds)에 대한 정지 · 차단 처리 연결.
-                    선택이 없을 때 막는 처리도 이때 함께 넣을 것. */}
+          {/* 회원 정지는 단건 처리 → 한 명 선택했을 때만 활성화 */}
           <Button
             type="button"
             variant="outline"
+            disabled={isLoading || selectedIds.length !== 1}
+            onClick={handleSuspendClick}
             className={`${actionButtonClass} border-[#212121] text-[#212121]`}
           >
             회원 정지
           </Button>
-          <Button type="button" className={`${actionButtonClass} bg-[#212121] text-white`}>
+          {/* 영구 차단은 다중 처리 → 한 명 이상 선택했을 때 활성화 */}
+          <Button
+            type="button"
+            disabled={isLoading || selectedIds.length === 0}
+            onClick={() => setBanOpen(true)}
+            className={`${actionButtonClass} bg-[#212121] text-white`}
+          >
             영구 차단
           </Button>
         </div>
       </div>
 
+      {/* 목록이 남아 있는 상태에서의 조치 실패는 목록을 지우지 않고 위에 문구로 알린다 */}
+      {error && !isListEmpty && (
+        <p className="mb-2 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#e02d2d]">{error}</p>
+      )}
+
       <MemberTable
-        members={pagedMembers}
+        members={members}
         selectedIds={selectedIds}
         onSelectOne={handleSelectOne}
         onSelectAll={handleSelectAll}
         onFieldChange={handleFieldChange}
         onWithdraw={setWithdrawTarget}
         canWithdraw={canWithdraw}
+        loading={isLoading && isListEmpty}
+        errorMessage={!isLoading && isListEmpty ? (error ?? '') : ''}
+      />
+
+      <MemberSuspendModal
+        open={Boolean(suspendTarget)}
+        member={suspendTarget}
+        onClose={() => setSuspendTarget(null)}
+        onSubmit={handleSuspendSubmit}
+      />
+
+      <MemberBanModal
+        open={banOpen}
+        members={selectedMembers}
+        onClose={() => setBanOpen(false)}
+        onSubmit={handleBanSubmit}
       />
 
       <MemberWithdrawModal
