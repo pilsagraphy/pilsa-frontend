@@ -38,7 +38,7 @@ apis/
 │
 ├── admin/
 │   ├── dashboard.js      🆕 통계 / 최근 신고 / 최근 가입
-│   ├── boards.js         🆕 게시판 관리
+│   ├── boards.js         ✅ 연동됨   게시판 관리
 │   ├── posts.js          🆕 게시글 관리
 │   ├── comments.js       🆕 댓글 관리
 │   ├── reports.js        🆕 신고 관리 + 일괄 조치(select-*)
@@ -73,12 +73,12 @@ apis/
 
 ## 4. 백엔드 대기 (연동 불가 — 화면만 준비)
 
-| 엔드포인트                                  | 파일                   | 상태                                                 |
-| ------------------------------------------- | ---------------------- | ---------------------------------------------------- |
-| `GET /api/user/mypage/posts`                | `mypage.js` 5          | planned (백로그 C-2)                                 |
-| `GET /api/user/mypage/comments`             | `mypage.js` 6          | planned (백로그 C-2)                                 |
-| `GET /api/user/mypage/likes`                | `mypage.js` 7          | planned (백로그 C-2)                                 |
-| `POST /api/admin/sanctions/users/{id}/lift` | `admin/sanctions.js` 5 | 3기 진행 예정                                        |
+| 엔드포인트                                  | 파일                   | 상태                 |
+| ------------------------------------------- | ---------------------- | -------------------- |
+| `GET /api/user/mypage/posts`                | `mypage.js` 5          | planned (백로그 C-2) |
+| `GET /api/user/mypage/comments`             | `mypage.js` 6          | planned (백로그 C-2) |
+| `GET /api/user/mypage/likes`                | `mypage.js` 7          | planned (백로그 C-2) |
+| `POST /api/admin/sanctions/users/{id}/lift` | `admin/sanctions.js` 5 | 3기 진행 예정        |
 
 ---
 
@@ -91,7 +91,7 @@ apis/
    함수명도 `findEmailByStudentNo` 로 맞춘다.
 3. **`authApi.js`** — `axiosInstance.js` 와 역할이 겹친다. 토큰 재발급 인터셉터가 없어
    401 처리가 안 되므로 사용처를 `axiosInstance` 로 옮기고 제거한다.
-4. **구 파일**  `honor` 는 화면 전환 후 삭제.
+4. **구 파일** `honor` 는 화면 전환 후 삭제.
 5. **관리자 화면의 게시글 링크** — `constants/adminPosts.js` 의 게시판 이름→`boardId` 매핑은
    목업 전용이다. 관리자 API 가 `boardId` 를 내려주면 그 매핑과 `getBoardIdByName` 은 지운다.
 6. **일정 폼의 시각 · 종일 UI** — 등록 · 수정 요청 본문 필드가 `title` `category`

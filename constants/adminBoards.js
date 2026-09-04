@@ -1,88 +1,56 @@
-// 관리자 - 게시판 관리 마크업용 상수
-// API 연동 전까지 DUMMY_BOARDS로 화면을 그린다.
+// 관리자 - 게시판 관리 상수
+//
+// 서버가 주는 값과 화면에 보여줄 한글 라벨을 잇는 곳이다.
+// 서버 응답: { boardId, boardName, postCount, readScope, writeLevel, displayOrder }
+// 목록은 GET /api/admin/boards 응답을 쓴다 (더미 데이터 없음).
 
-// 회원 권한 라벨(일반회원 / 관리 Lv.1~3)은 회원 관리와 같은 값을 쓰므로 가져온다.
-import { MEMBER_ROLES } from './adminMembers';
-
-export { MEMBER_ROLES };
-
-// 열람 권한 라벨
-export const BOARD_READ_ROLES = {
-  STUDENT: '재학생',
-  ALUMNI: '동문회',
+// ── 열람 권한 (readScope) ─────────────────────────────────────────────
+export const BOARD_READ_SCOPES = {
+  MEMBER: 'MEMBER',
+  STUDENT: 'STUDENT',
+  ALUMNI: 'ALUMNI',
 };
 
-// 작성 권한은 두 단계로만 고른다.
-// '관리자'는 관리 Lv.1 · Lv.2 · Lv.3을 모두 포함하는 개념이다.
-export const BOARD_WRITE_ROLES = {
-  GENERAL: '일반회원',
-  ADMIN: '관리자',
+// 라벨은 시안 문구를 그대로 쓴다. API 명세의 설명(MEMBER=재학생+졸업생)과도 일치한다.
+export const BOARD_READ_SCOPE_LABELS = {
+  [BOARD_READ_SCOPES.MEMBER]: '전체',
+  [BOARD_READ_SCOPES.STUDENT]: '재학생',
+  [BOARD_READ_SCOPES.ALUMNI]: '졸업생',
 };
 
-// 행 안에서 권한을 바꾸는 select의 선택지
-export const BOARD_READ_ROLE_OPTIONS = Object.values(BOARD_READ_ROLES);
-export const BOARD_WRITE_ROLE_OPTIONS = Object.values(BOARD_WRITE_ROLES);
+// 서버에 프론트가 모르는 값이 새로 생겨도 칸이 비지 않도록 코드를 그대로 보여준다.
+export const getReadScopeLabel = (scope) => BOARD_READ_SCOPE_LABELS[scope] ?? scope;
 
-// 저장된 권한(관리 Lv.N 포함) → select에 보여줄 두 단계 값
-export const toWriteRoleGroup = (role) =>
-  role === MEMBER_ROLES.GENERAL ? BOARD_WRITE_ROLES.GENERAL : BOARD_WRITE_ROLES.ADMIN;
+// select 선택지 - 서버로 보낼 값(value)과 보여줄 글자(label)가 다르다
+export const BOARD_READ_SCOPE_OPTIONS = Object.entries(BOARD_READ_SCOPE_LABELS).map(
+  ([value, label]) => ({ value, label })
+);
 
-// select에서 고른 두 단계 값 → 저장할 권한
-// '관리자'를 골랐을 때 이미 관리 Lv.N이면 그 레벨을 유지하고, 아니면 Lv.1로 둔다.
-export const fromWriteRoleGroup = (group, currentRole) => {
-  if (group === BOARD_WRITE_ROLES.GENERAL) return MEMBER_ROLES.GENERAL;
-  return currentRole && currentRole !== MEMBER_ROLES.GENERAL ? currentRole : MEMBER_ROLES.ADMIN_LV1;
+// ── 작성 권한 (writeLevel) ────────────────────────────────────────────
+// 서버는 0~3 숫자다. 시안의 네 단계와 1:1로 맞아서 그대로 보여준다.
+export const BOARD_WRITE_LEVEL_LABELS = {
+  0: '일반회원',
+  1: '관리 Lv.1',
+  2: '관리 Lv.2',
+  3: '관리 Lv.3',
 };
 
-// 게시판 목록 더미 데이터
-// priority가 작을수록 위에 표시된다 (드래그로 순서 변경 시 이 값이 재정렬된다).
-export const DUMMY_BOARDS = [
-  {
-    id: 1,
-    boardName: '자유게시판',
-    postCount: 3,
-    readPermission: BOARD_READ_ROLES.STUDENT,
-    writePermission: MEMBER_ROLES.GENERAL,
-    priority: 1,
-  },
-  {
-    id: 2,
-    boardName: '공지사항',
-    postCount: 5,
-    readPermission: BOARD_READ_ROLES.STUDENT,
-    writePermission: MEMBER_ROLES.ADMIN_LV1,
-    priority: 2,
-  },
-  {
-    id: 3,
-    boardName: '필사 작품 공유',
-    postCount: 12,
-    readPermission: BOARD_READ_ROLES.STUDENT,
-    writePermission: MEMBER_ROLES.GENERAL,
-    priority: 3,
-  },
-  {
-    id: 4,
-    boardName: '정기모임 후기',
-    postCount: 8,
-    readPermission: BOARD_READ_ROLES.STUDENT,
-    writePermission: MEMBER_ROLES.GENERAL,
-    priority: 4,
-  },
-  {
-    id: 5,
-    boardName: '운영진 게시판',
-    postCount: 6,
-    readPermission: BOARD_READ_ROLES.STUDENT,
-    writePermission: MEMBER_ROLES.ADMIN_LV2,
-    priority: 5,
-  },
-  {
-    id: 6,
-    boardName: '동문회 게시판',
-    postCount: 10,
-    readPermission: BOARD_READ_ROLES.ALUMNI,
-    writePermission: MEMBER_ROLES.GENERAL,
-    priority: 6,
-  },
-];
+// 프론트가 모르는 값이 와도 'Lv.undefined' 같은 글자가 표에 찍히지 않도록
+// 열람 권한(getReadScopeLabel)과 같이 받은 값을 그대로 되돌린다.
+export const getWriteLevelLabel = (writeLevel) =>
+  BOARD_WRITE_LEVEL_LABELS[writeLevel] ?? writeLevel;
+
+// Object.entries 의 키는 문자열이라 select 값으로 바로 쓸 수 있다.
+export const BOARD_WRITE_LEVEL_OPTIONS = Object.entries(BOARD_WRITE_LEVEL_LABELS).map(
+  ([value, label]) => ({ value, label })
+);
+
+// Radix Select 는 값으로 문자열만 받는다. 서버의 writeLevel(숫자)과 오갈 때 변환한다.
+// 숫자를 그대로 넘기면 select 가 선택된 항목을 못 찾아 빈칸으로 보인다.
+//
+// 값이 없으면 빈 문자열로 둔다. 0(일반회원)으로 채우면 작성 권한을 모르는 채로 모달을 열었을 때
+// select 가 '일반회원'을 고른 것처럼 보이고, 이름만 고치고 확인을 눌러도 writeLevel: 0 이 함께
+// 저장돼 관리자 전용 게시판이 전체 작성 가능으로 낮아진다. 열람 권한(readScope)과 똑같이
+// 빈 값으로 두어 canSubmit 이 저장을 막게 한다.
+export const toWriteLevelValue = (writeLevel) => (writeLevel == null ? '' : String(writeLevel));
+export const fromWriteLevelValue = (value) => Number(value);
