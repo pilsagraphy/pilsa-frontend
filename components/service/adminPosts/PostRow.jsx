@@ -7,7 +7,7 @@ import RowActionButton from '@/components/shared/admin/RowActionButton';
 import RowCheckbox from '@/components/shared/admin/RowCheckbox';
 import { POST_STATUSES, getPostDetailHref } from '@/constants/adminPosts';
 
-// post: postId, boardName, title, author, commentCount, likeCount,
+// post: postId, boardId, boardName, title, author, commentCount, likeCount,
 //       viewCount, createdAt, status
 export default function PostRow({
   post,
@@ -18,7 +18,7 @@ export default function PostRow({
   onMoveToReport,
 }) {
   const isBlinded = post.status === POST_STATUSES.BLINDED;
-  const detailHref = getPostDetailHref(post.boardName, post.postId);
+  const detailHref = getPostDetailHref(post.boardId, post.postId);
 
   return (
     <TableRow className="h-[46px] border-b border-[#b9b9b9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121]">

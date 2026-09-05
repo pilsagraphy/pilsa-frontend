@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from 'react';
 
-import SortSelect from '@/components/shared/board/SortSelect';
-import SearchInput from '@/components/shared/board/SearchInput';
+import SortSelect from '@/components/shared/board/boardList/SortSelect';
+import SearchInput from '@/components/shared/board/boardList/SearchInput';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import AlertModal from '@/components/common/AlertModal';
 import ModerationModal from '@/components/shared/admin/ModerationModal';

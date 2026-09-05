@@ -47,6 +47,7 @@ export default function ScheduleSelect({
   variant = 'compact',
   width,
   disabled = false,
+  placeholder = '',
   className = '',
 }) {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -96,7 +97,8 @@ export default function ScheduleSelect({
           disabled ? 'cursor-not-allowed bg-[#f6f6f6] text-[#b9b9b9]' : 'hover:border-[#919191]',
         ].join(' ')}
       >
-        <span className="truncate">{value}</span>
+        {/* 값이 없으면(선택지를 못 받아 잠긴 경우) 빈 회색 박스만 남으므로 이유를 적어 둔다. */}
+        <span className={`truncate ${value ? '' : 'text-[#b9b9b9]'}`}>{value || placeholder}</span>
         <ChevronDown
           aria-hidden="true"
           strokeWidth={1.5}

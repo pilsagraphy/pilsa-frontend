@@ -6,7 +6,7 @@ import { CalendarDays, Pencil, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Checkbox } from '@/components/ui/checkbox';
-import { DEFAULT_SCHEDULE_CATEGORY, SCHEDULE_CATEGORY_OPTIONS } from '@/constants/calendar';
+import { DEFAULT_SCHEDULE_CATEGORY } from '@/constants/calendar';
 
 import ScheduleDatePicker from './ScheduleDatePicker';
 import ScheduleSelect from './ScheduleSelect';
@@ -67,21 +67,49 @@ function toTimeParts(value) {
   return { hour: pad2(Number(matched[1])), minute: matched[2] };
 }
 
+// 등록 · 수정 요청 본문에 시각 필드가 없어 시 · 분과 '종일 해제'는 저장되지 않는다.
+// (2026-08-28 `GET /v3/api-docs` 확인 — title/category/description/startDate/endDate 5개뿐)
+// 시안의 마크업은 그대로 두되 조작만 막는다. 그냥 열어 두면 관리자가 14:00~16:00을 고르고
+// 성공 토스트까지 본 뒤 종일로 저장되는, 화면이 거짓말하는 상태가 된다.
+// 서버에 startTime/endTime 이 생기면 이 상수를 true 로 바꾸는 것만으로 되돌아간다.
+// (보내는 쪽은 apis/admin/event.js 의 toEventPayload)
+const IS_TIME_SUPPORTED = false;
+
 /**
  * 관리자 일정 추가 · 수정 폼.
  *
  * schedule이 없으면 '일정 추가', 있으면 '일정 수정'으로 그린다. 입력 항목은 같다.
  * defaultDate('yyyy-MM-dd')는 추가할 때 시작 · 종료일의 초깃값. 없으면 오늘로 채운다.
  *
- * TODO: API 연동 시 확인을 누르면 등록 · 수정 요청을 보내고 목록을 다시 불러올 것.
- *       지금은 마크업 단계라 입력값을 그대로 onSubmit으로 넘기기만 한다.
+ * 확인을 누르면 검증을 통과한 값만 onSubmit으로 올린다. 등록 · 수정 요청과 목록 재조회는
+ * 부모(AdminCalendarSection)가 맡고, 그 동안 isSubmitting으로 버튼을 잠근다.
+ *
+ * categories: '일정 구분' 선택지 이름 배열. GET /api/event/categories 를 부모가 받아 넘긴다.
+ *   폼이 열릴 때마다 다시 조회하지 않도록 조회는 AdminCalendarSection에서 한 번만 한다.
+ *   categoriesError는 그 조회가 실패했다는 뜻이다. 둘 다 비어 있는 상태가 '조회 중'과 '실패'로
+ *   갈리므로, 잠긴 셀렉트에 띄울 문구를 가리는 데만 쓴다.
+ *
+ * ※ 시각(시 · 분)과 종일 체크박스는 서버에 담을 곳이 없어 IS_TIME_SUPPORTED로 잠가 뒀다.
+ *   모든 일정이 종일로 저장되고, 폼에도 그렇게 적힌다. 위 상수 주석 참고.
  */
-export default function ScheduleForm({ schedule = null, defaultDate = null, onCancel, onSubmit }) {
+export default function ScheduleForm({
+  schedule = null,
+  defaultDate = null,
+  categories = [],
+  categoriesError = false,
+  onCancel,
+  onSubmit,
+  isSubmitting = false,
+}) {
   const isCreate = !schedule;
   const [title, setTitle] = React.useState(schedule?.title ?? '');
-  const [category, setCategory] = React.useState(schedule?.category ?? DEFAULT_SCHEDULE_CATEGORY);
+  // 선택지는 서버에서 오므로 초깃값을 미리 정할 수 없다. 목록이 도착하면 아래 effect가 채운다.
+  const [category, setCategory] = React.useState(schedule?.category ?? '');
   const [content, setContent] = React.useState(schedule?.content ?? '');
-  const [isAllDay, setIsAllDay] = React.useState(!schedule?.startTime);
+  // 시각을 저장할 수 없는 동안에는 종일 고정이다. 체크박스가 disabled라 값도 바뀌지 않는다.
+  const [isAllDay, setIsAllDay] = React.useState(
+    IS_TIME_SUPPORTED ? !schedule?.startTime : true
+  );
 
   const [start, setStart] = React.useState(() => toDateParts(schedule?.startDate ?? defaultDate));
   const [end, setEnd] = React.useState(() =>
@@ -91,6 +119,17 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
   const datePickerTriggerRef = React.useRef(null);
   const [startTime, setStartTime] = React.useState(() => toTimeParts(schedule?.startTime));
   const [endTime, setEndTime] = React.useState(() => toTimeParts(schedule?.endTime));
+
+  // 선택지가 늦게 도착하면 그때 기본값을 채운다. 이미 값이 있으면(수정이거나 사용자가 골랐으면)
+  // 건드리지 않는다. '기타'가 목록에 있으면 그걸 쓰고, 없으면 목록의 첫 번째를 쓴다 —
+  // 목록 자체를 하드코딩하지는 않되 '구분 없음'에 가까운 기본값을 유지하기 위함이다.
+  React.useEffect(() => {
+    if (category || !categories.length) return;
+
+    setCategory(
+      categories.includes(DEFAULT_SCHEDULE_CATEGORY) ? DEFAULT_SCHEDULE_CATEGORY : categories[0]
+    );
+  }, [categories, category]);
 
   // 세부 사항은 칸 안에서 스크롤하지 않고 내용만큼 늘어난다. (페이지 전체가 길어진다)
   const contentRef = React.useRef(null);
@@ -121,6 +160,16 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
 
   const handleSubmit = (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
+
+    // 제목은 서버 400 에 기대지 않고 여기서 막는다. 빈 제목이 통과하면 월별 일정에 글자 없는
+    // 카드가 생기고, 삭제 모달도 '　일정을 삭제할까요?'가 된다.
+    const trimmedTitle = title.trim();
+
+    if (!trimmedTitle) {
+      toast.error('제목을 입력해 주세요.');
+      return;
+    }
 
     const startDate = `${start.year}-${start.month}-${start.day}`;
     const endDate = `${end.year}-${end.month}-${end.day}`;
@@ -146,7 +195,7 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
 
     onSubmit?.({
       ...schedule,
-      title,
+      title: trimmedTitle,
       category,
       content,
       startDate,
@@ -230,9 +279,14 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
           <ScheduleSelect
             value={category}
             onChange={setCategory}
-            options={SCHEDULE_CATEGORY_OPTIONS}
+            options={categories}
             ariaLabel="일정 구분"
             variant="field"
+            // 목록을 못 받으면 고를 게 없다. 서버 시드가 바뀌면 어긋나므로 하드코딩 fallback 은
+            // 두지 않는다. 잠긴 셀렉트가 빈 칸으로만 보이면 왜 못 고르는지 알 수 없어 문구를 남긴다.
+            // 목록이 도착하면 위 effect가 값을 채우므로 placeholder는 잠긴 동안에만 보인다.
+            disabled={!categories.length}
+            placeholder={categoriesError ? '불러오지 못했습니다' : '불러오는 중입니다'}
             className="w-full md:max-w-[318px]"
           />
         </ScheduleFormRow>
@@ -286,14 +340,25 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
               {renderTimeGroup(endTime, setEndTimeField, '종료')}
             </div>
 
-            <label className="flex w-fit cursor-pointer items-center gap-[6px] md:ms-[2px]">
+            <label
+              className={`flex w-fit items-center gap-[6px] md:ms-[2px] ${
+                IS_TIME_SUPPORTED ? 'cursor-pointer' : 'cursor-not-allowed'
+              }`}
+            >
               <Checkbox
                 checked={isAllDay}
                 onCheckedChange={(next) => setIsAllDay(next === true)}
+                disabled={!IS_TIME_SUPPORTED}
                 className="size-5 rounded-[2px] border-[#dedede] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
               />
               <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-black">종일</span>
             </label>
+
+            {!IS_TIME_SUPPORTED && (
+              <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191] md:ms-[2px]">
+                시각은 아직 저장되지 않습니다. 모든 일정이 종일로 등록됩니다.
+              </p>
+            )}
           </div>
         </ScheduleFormRow>
 
@@ -314,13 +379,15 @@ export default function ScheduleForm({ schedule = null, defaultDate = null, onCa
         <button
           type="button"
           onClick={onCancel}
-          className="h-[40px] w-[80px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6]"
+          disabled={isSubmitting}
+          className="h-[40px] w-[80px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6] disabled:opacity-50"
         >
           취소
         </button>
         <button
           type="submit"
-          className="h-[40px] w-[80px] rounded-[4px] bg-[#212121] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242]"
+          disabled={isSubmitting}
+          className="h-[40px] w-[80px] rounded-[4px] bg-[#212121] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242] disabled:opacity-50"
         >
           확인
         </button>

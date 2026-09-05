@@ -2,7 +2,7 @@
 // API 연동 전까지 DUMMY_POST_REPORTS · DUMMY_COMMENT_REPORTS로 화면을 그린다.
 
 import { getCommentAnchorId } from '@/lib/utils';
-import { MEMBER_POOL, boardHasComments, getPostDetailHref } from './adminPosts';
+import { MEMBER_POOL, boardHasComments, getBoardIdByName, getPostDetailHref } from './adminPosts';
 import { REPORT_REASONS } from './report';
 
 // 게시판 필터는 게시글 · 댓글 관리와 같은 목록을 쓴다.
@@ -88,7 +88,7 @@ export const isDeletable = (report) => report.status !== REPORT_STATUSES.DELETED
 // 댓글은 별도 상세 페이지가 없어서 해시로만 특정할 수 있다.
 // 갈 곳이 없으면 null → 행에서는 링크 대신 텍스트로 보여준다.
 export const getReportTargetHref = (report) => {
-  const postHref = getPostDetailHref(report.boardName, report.postId);
+  const postHref = getPostDetailHref(report.boardId, report.postId);
   if (!postHref) return null;
 
   if (report.targetType !== REPORT_TARGET_COMMENT) return postHref;
@@ -227,6 +227,8 @@ const buildDummyReports = (targetType) => {
       // 링크로 이동할 원글. 댓글이면 댓글이 달린 글이다.
       postId: isComment ? ((reportId * 7) % 40) + 1 : reportId,
       boardName,
+      // 대상 링크는 boardId 로 만든다 (연동 후에는 서버가 주는 값)
+      boardId: getBoardIdByName(boardName),
       // 목록 '대상 미리보기' 열 (15자로 잘라 보여준다)
       preview,
       // 모달 '신고 상세' 줄에 들어가는 대상 요약 (게시글이면 제목, 댓글이면 댓글 내용)

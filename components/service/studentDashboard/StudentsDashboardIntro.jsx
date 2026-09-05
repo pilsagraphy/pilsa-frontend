@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { format, isWithinInterval, parseISO, startOfDay } from 'date-fns';
 
 import useAuthStore from '@/stores/useAuthStore';
-import { getScheduleList } from '@/apis/schedule';
+import { getEventList } from '@/apis/event';
 
 const cheeringMessages = [
   '오늘, 무언가 고민하던 것이 있다면 꼭 시작하세요.',
@@ -41,7 +41,7 @@ export default function StudentsDashboardIntro() {
     const fetchTodaySchedules = async () => {
       try {
         const yearMonth = format(new Date(), 'yyyy-MM');
-        const result = await getScheduleList(yearMonth, yearMonth);
+        const result = await getEventList(yearMonth, yearMonth);
         if (!isMounted) return;
 
         const today = startOfDay(new Date());

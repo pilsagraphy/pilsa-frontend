@@ -4,8 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import AlertModal from '@/components/common/AlertModal';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
-import SearchInput from '@/components/shared/board/SearchInput';
-import SortSelect from '@/components/shared/board/SortSelect';
+import SearchInput from '@/components/shared/board/boardList/SearchInput';
+import SortSelect from '@/components/shared/board/boardList/SortSelect';
 import {
   actionButtonClass,
   listSectionClass,
