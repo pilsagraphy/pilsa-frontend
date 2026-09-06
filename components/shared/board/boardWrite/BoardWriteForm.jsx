@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import BoardWriteBox from './BoardWriteBox';
 import BoardWriteToolbar from './BoardWriteToolbar';
 import BoardMarkdownEditor from './BoardMarkdownEditor';
@@ -62,58 +62,45 @@ export default function BoardWriteForm({ boardId, board }) {
     };
   }, [boardId, categoryMode]);
 
-  // 첨부파일 목록(기존/신규)은 데스크톱·모바일이 동일 로직이라 한 번만 만들어 재사용한다.
-  const attachmentLists = (
-    <>
-      {/* 이미 글에 붙어 있는 첨부 (수정 화면). 삭제 표시한 것만 서버로 보낸다. */}
-      {allowAttachment && existingAttachments.length > 0 && (
-        <div className="flex flex-col gap-[6px] px-[4px]">
-          <span className="text-[14px] tracking-[-0.28px] text-[#919191]">기존 첨부파일</span>
-          {existingAttachments.map((file) => {
-            const marked = deleteAttachmentIds.includes(file.attachmentId);
-            return (
-              <div key={file.attachmentId} className="flex items-center gap-[8px]">
-                <span
-                  className={`min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] ${
-                    marked ? 'text-[#b9b9b9] line-through' : 'text-[#454545]'
-                  }`}
-                >
-                  {file.originName}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => toggleDeleteAttachment(file.attachmentId)}
-                  className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121]"
-                >
-                  {marked ? '복원' : '삭제'}
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      )}
+  // 모바일 전용 첨부 칩(피그마): 파일/이미지 첨부 시 회색 알약 + X 로 표시.
+  // 기존 첨부(수정 화면)는 X 로 삭제 표시(토글), 표시된 건 흐리게 + 취소선.
+  const hasAttachments =
+    allowAttachment &&
+    (existingAttachments.length > 0 || (Array.isArray(files) && files.length > 0));
 
-      {/* 이번에 새로 고른 파일 (개별 제거 가능) */}
-      {allowAttachment && Array.isArray(files) && files.length > 0 && (
-        <div className="flex flex-col gap-[6px] px-[4px]">
-          {files.map((file, index) => (
-            <div key={`${file?.name}-${index}`} className="flex items-center gap-[8px]">
-              <span className="min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] text-[#666666]">
-                {file?.name}
-              </span>
-              <button
-                type="button"
-                onClick={() => removeFileAt(index)}
-                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121]"
-              >
-                제거
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </>
-  );
+  const attachmentChips = hasAttachments ? (
+    <div className="flex w-full flex-row flex-wrap items-center gap-[6px]">
+      {existingAttachments.map((file) => {
+        const marked = deleteAttachmentIds.includes(file.attachmentId);
+        return (
+          <button
+            key={`exist-${file.attachmentId}`}
+            type="button"
+            onClick={() => toggleDeleteAttachment(file.attachmentId)}
+            className={`flex h-[27px] items-center gap-[8px] rounded-full bg-[#DEDEDE] px-[12px] text-[13px] text-[#212121] ${
+              marked ? 'line-through opacity-50' : ''
+            }`}
+          >
+            <span className="max-w-[180px] truncate">{file.originName}</span>
+            <X size={10} strokeWidth={2} className="shrink-0" />
+          </button>
+        );
+      })}
+
+      {Array.isArray(files) &&
+        files.map((file, index) => (
+          <button
+            key={`new-${file?.name}-${index}`}
+            type="button"
+            onClick={() => removeFileAt(index)}
+            className="flex h-[27px] items-center gap-[8px] rounded-full bg-[#DEDEDE] px-[12px] text-[13px] text-[#212121]"
+          >
+            <span className="max-w-[180px] truncate">{file?.name}</span>
+            <X size={10} strokeWidth={2} className="shrink-0" />
+          </button>
+        ))}
+    </div>
+  ) : null;
 
   // ── 모바일 폼 (#183 피그마 리디자인) ─────────────────────────────
   // 라벨 14px/#454545, 입력 40px, 카테고리 옆 120px 저장 버튼(역할 미정 → 표시만).
@@ -182,7 +169,7 @@ export default function BoardWriteForm({ boardId, board }) {
           />
         </div>
 
-        {attachmentLists}
+        {attachmentChips}
 
         {/* 본문 (라벨 없는 박스) */}
         <div className="relative flex h-[330px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
