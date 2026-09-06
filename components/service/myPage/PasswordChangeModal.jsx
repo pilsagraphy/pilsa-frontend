@@ -15,6 +15,8 @@ import { Input } from '@/components/ui/input';
 import { passwordSchema } from '@/schemas/auth';
 import { changePassword } from '@/apis/mypage';
 import { getErrorMessage } from '@/apis/auth';
+import { useRouter } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
 
 // 검증 규칙은 비밀번호 찾기(FindPwReset)와 동일한 passwordSchema 재사용
 const changePwSchema = z
@@ -36,6 +38,7 @@ const EMPTY_FORM = { currentPassword: '', newPassword: '', confirmPassword: '' }
 
 // 비밀번호 재설정 모달
 export default function PasswordChangeModal({ open, onOpenChange }) {
+  const router = useRouter();
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState(EMPTY_FORM);
   const [loading, setLoading] = useState(false);
@@ -71,23 +74,23 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
 
     setLoading(true);
     try {
-      const data = await changePassword({
+      await changePassword({
         currentPassword: form.currentPassword,
         newPassword: form.newPassword,
       });
-      toast.success(data?.message ?? '비밀번호가 변경되었습니다.');
 
+      // ★성공 시 기존 토큰이 전부 무효화된다(본인 세션 포함).
+      //   로그아웃 플로우(/login?logout=1)로 SPA 이동한다 — 인증 상태를 정리하고
+      //   로그인 화면에서 안내 토스트를 띄운다. (전체 리로드가 아니라 토스트가 사라지지 않는다)
+      //   reason=pw: 로그인 화면 토스트를 '로그아웃' 대신 '비밀번호 변경' 안내로 바꾼다
+      //   이동 전에 모달을 닫아둔다 — 전환이 늦거나 실패해도 '변경 중...' 상태로 갇히지 않게
       setLoading(false);
       setForm(EMPTY_FORM);
       setErrors(EMPTY_FORM);
       onOpenChange(false);
+      router.replace(`${ROUTES.LOGIN}?logout=1&reason=pw`);
     } catch (err) {
-      // 백엔드 미배포(404) — 계약 확정 전까지 안내만
-      if (err.response?.status === 404) {
-        toast.info('비밀번호 변경 기능은 준비 중이에요. 조금만 기다려주세요.');
-      } else {
-        toast.error(getErrorMessage(err, '비밀번호 변경에 실패했습니다.'));
-      }
+      toast.error(getErrorMessage(err, '비밀번호 변경에 실패했습니다.'));
       setLoading(false);
     }
   };

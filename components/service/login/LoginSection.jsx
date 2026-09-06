@@ -76,6 +76,10 @@ export default function LoginSection() {
     logoutHandled.current = true;
     setLoggingOut(true);
 
+    // reason=pw: 비밀번호 변경으로 토큰이 무효화돼 넘어온 경우 — 변경 성공을 여기서 알린다
+    // (변경 API 성공 응답은 곧바로 화면을 떠나기 때문에 마이페이지에서는 띄울 자리가 없다)
+    const isPasswordChanged = searchParams.get('reason') === 'pw';
+
     const runLogout = async () => {
       try {
         // 이 기기의 알림 수신을 서버에서 해제 — 로그아웃 API보다 먼저 (토큰 필요).
@@ -87,14 +91,19 @@ export default function LoginSection() {
       } finally {
         logout();
         setLoggingOut(false);
-        toast.success('로그아웃되었습니다!', {
-          id: LOGOUT_TOAST_ID,
-          duration: Infinity,
-          action: {
-            label: '홈으로',
-            onClick: () => router.push(BASE_PATH),
-          },
-        });
+        toast.success(
+          isPasswordChanged
+            ? '비밀번호가 변경되었습니다. 새 비밀번호로 다시 로그인해주세요.'
+            : '로그아웃되었습니다!',
+          {
+            id: LOGOUT_TOAST_ID,
+            duration: Infinity,
+            action: {
+              label: '홈으로',
+              onClick: () => router.push(BASE_PATH),
+            },
+          }
+        );
       }
     };
 

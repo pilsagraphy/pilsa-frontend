@@ -3,14 +3,21 @@
 import React from 'react';
 import { Info } from 'lucide-react';
 
-// TODO: API 연결 (이번 학기 활동 요약)
-const summary = [
-  { key: 'posts', label: '작성한 글', value: '0개' },
-  { key: 'comments', label: '작성한 댓글', value: '0개' },
-  { key: 'likes', label: '받은 좋아요', value: '0개' },
+import useMyPageStore from '@/stores/useMyPageStore';
+
+// 이번 학기 활동. key 는 요약 응답의 semester 필드명과 맞춘다.
+const ACTIVITY_META = [
+  { key: 'posts', label: '작성한 글' },
+  { key: 'comments', label: '작성한 댓글' },
+  { key: 'receivedLikes', label: '받은 좋아요' },
 ];
 
 export default function MyActivityCard() {
+  // 이번 학기 활동도 스토어에서 읽기만 한다 (호출은 MyPageSection이 담당)
+  const summary = useMyPageStore((s) => s.summary);
+
+  const semester = summary?.semester ?? null; // 불러오기 전에는 null
+
   return (
     <div className="w-full rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px] lg:flex-1">
       <div className="flex items-center gap-[8px]">
@@ -22,18 +29,18 @@ export default function MyActivityCard() {
 
       {/* 선을 '작성한 글' 바로 위(목록 상단)에 붙임 */}
       <dl className="-mx-[12px] mt-[40px] flex flex-col border-t border-[#BDBDBD] px-[12px]">
-        {summary.map((item, index) => (
+        {ACTIVITY_META.map((item, index) => (
           <div
             key={item.key}
             className={`-mx-[12px] flex items-center justify-between px-[12px] py-[14px] ${
-              index !== summary.length - 1 ? 'border-b border-[#BDBDBD]' : ''
+              index !== ACTIVITY_META.length - 1 ? 'border-b border-[#BDBDBD]' : ''
             }`}
           >
             <dt className="text-[13px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
               {item.label}
             </dt>
             <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-black">
-              {item.value}
+              {semester ? `${semester[item.key] ?? 0}개` : '-'}
             </dd>
           </div>
         ))}
