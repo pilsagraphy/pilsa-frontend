@@ -7,6 +7,10 @@ import { toggleBoardPostLike, deleteBoardPost } from '@/apis/board';
 import { getErrorMessage } from '@/apis/auth';
 import useAuthStore from '@/stores/useAuthStore';
 import { ROUTES } from '@/constants/routes';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
+import ReportModal from '@/components/shared/board/boardList/ReportModal';
+import AlertModal from '@/components/common/AlertModal';
+import { REPORT_SUCCESS_ALERT } from '@/constants/report';
 
 // 좋아요 + (권한이 있을 때만) 수정/삭제 버튼
 //  - 수정: 작성자 또는 관리자
@@ -15,12 +19,16 @@ export default function BoardActions({
   boardId,
   postId,
   authorId,
+  authorName = '',
+  postTitle = '',
+  boardLabel = '',
   likeCount: initialLikeCount = 0,
   liked: initialLiked = false,
   onDeleted,
   afterLikeOnMobile = null,
 }) {
   const router = useRouter();
+  const isMdUp = useMinWidthMd();
 
   const [likeCount, setLikeCount] = useState(
     typeof initialLikeCount === 'number' ? initialLikeCount : 0
@@ -28,6 +36,10 @@ export default function BoardActions({
   const [liked, setLiked] = useState(Boolean(initialLiked));
   const [likeLoading, setLikeLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // 게시글 신고 (모바일 전용) — 댓글 신고처럼 접수 완료 안내만 (백엔드 신고 API 확정 후 연동)
+  const [reportOpen, setReportOpen] = useState(false);
+  const [alertState, setAlertState] = useState(null);
 
   const user = useAuthStore((s) => s.user);
   const adminLevel = useAuthStore((s) => s.adminLevel);
@@ -87,6 +99,84 @@ export default function BoardActions({
       setDeleteLoading(false);
     }
   };
+
+  // 신고 - 모달에서 사유 선택 후 확인 (지금은 접수완료 안내만)
+  const handleReportSubmit = () => {
+    setReportOpen(false);
+    setAlertState(REPORT_SUCCESS_ALERT);
+  };
+
+  // 모바일(#183): 좋아요 + (작성자) 수정/삭제 · (그 외) 신고하기 를 한 줄로. 데스크톱은 아래 return 그대로.
+  if (!isMdUp) {
+    return (
+      <>
+        <div className="flex w-full items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={handleLike}
+            disabled={likeLoading}
+            aria-pressed={liked}
+            className={`flex h-[40px] w-[100px] items-center justify-center gap-[6px] rounded-[4px] border text-[14px] tracking-[-0.28px] transition-colors disabled:opacity-60 ${
+              liked
+                ? 'border-[#212121] bg-[#212121] text-white'
+                : 'border-[#b9b9b9] bg-white text-[#212121]'
+            }`}
+          >
+            <ThumbsUp width={18} height={18} strokeWidth={1.5} aria-hidden="true" />
+            <span>{likeCount}</span>
+          </button>
+
+          {canEdit || canDelete ? (
+            <div className="flex items-center gap-[4px]">
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={handleEdit}
+                  className="h-[40px] w-[100px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] tracking-[-0.28px] text-[#212121]"
+                >
+                  수정하기
+                </button>
+              )}
+              {canDelete && (
+                <button
+                  type="button"
+                  disabled={deleteLoading}
+                  onClick={handleDelete}
+                  className="h-[40px] w-[100px] rounded-[4px] bg-[#212121] text-[14px] tracking-[-0.28px] text-white disabled:opacity-60"
+                >
+                  {deleteLoading ? '삭제 중...' : '삭제하기'}
+                </button>
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setReportOpen(true)}
+              className="h-[40px] w-[100px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] tracking-[-0.28px] text-[#212121]"
+            >
+              신고하기
+            </button>
+          )}
+        </div>
+
+        <ReportModal
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          onSubmit={handleReportSubmit}
+          targetLabel="게시글"
+          targetUser={authorName ? { name: authorName } : null}
+          targetContent={boardLabel ? `${boardLabel} / ${postTitle}` : postTitle}
+        />
+
+        <AlertModal
+          open={Boolean(alertState)}
+          title={alertState?.title ?? ''}
+          description={alertState?.description ?? ''}
+          onClose={() => setAlertState(null)}
+        />
+      </>
+    );
+  }
 
   return (
     <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
