@@ -114,6 +114,9 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
               boardId={boardId}
               postId={post.postId}
               authorId={post.userId}
+              authorName={post.authorName}
+              postTitle={post.title}
+              boardLabel={board?.boardName ?? ''}
               likeCount={post.likeCount}
               liked={post.isLiked}
               onDeleted={() => router.push(listPath)}

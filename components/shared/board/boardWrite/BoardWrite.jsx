@@ -6,8 +6,10 @@ import BoardWriteForm from './BoardWriteForm';
 import useBoard from '@/hooks/useBoard';
 import useBoardWriteStore from '@/stores/useBoardWriteStore';
 import { createBoardPost } from '@/apis/board';
+import { createDraft } from '@/apis/draft';
 import { getErrorMessage } from '@/apis/auth';
 import { ROUTES } from '@/constants/routes';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
 
 const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base';
 
@@ -15,6 +17,7 @@ const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md
 // 게시판 정책(플래그)에 따라 카테고리·첨부·익명 입력 노출 여부가 달라진다.
 export default function BoardWrite({ boardId }) {
   const router = useRouter();
+  const isMdUp = useMinWidthMd();
   const { board, boards, error: boardError } = useBoard(boardId);
 
   const { title, content, categoryId, isAnonymous, files, resetForm } = useBoardWriteStore();
@@ -65,6 +68,30 @@ export default function BoardWrite({ boardId }) {
     }
   };
 
+  // 임시저장: 발행 전 초안 저장. 첨부(files)는 발행 시 업로드되는 구조라 초안엔 미포함(후속).
+  const handleSaveDraft = async () => {
+    if (!title.trim() && !content.trim()) {
+      alert('제목이나 내용을 입력해주세요.');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      await createDraft(boardId, {
+        title: title.trim(),
+        content: content.trim(),
+        categoryId: board?.categoryMode && categoryId ? Number(categoryId) : null,
+        isAnonymous: board?.allowAnonymous ? Boolean(isAnonymous) : false,
+        attachmentIds: [],
+      });
+      alert('임시저장되었습니다.');
+    } catch (error) {
+      alert(getErrorMessage(error, '임시저장에 실패했습니다.'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleCancel = () => {
     if (window.confirm('작성을 취소하시겠습니까? 작성 중인 내용은 저장되지 않습니다.')) {
       resetForm();
@@ -101,23 +128,55 @@ export default function BoardWrite({ boardId }) {
         <BoardWriteForm boardId={boardId} board={board} />
       </div>
 
-      <div className="mt-4 flex w-full flex-col gap-[12px]">
-        <button
-          type="submit"
-          disabled={submitting}
-          className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white transition-colors hover:bg-black disabled:opacity-60"
-        >
-          {submitting ? '작성 중...' : '글 작성하기'}
-        </button>
+      {/* 데스크톱: 기존 2버튼(작성/취소) 그대로 유지. 모바일: 피그마 3버튼(작성/임시저장/취소).
+          #183 모바일 리디자인 — 데스크톱 렌더는 절대 변경하지 않는다. */}
+      {isMdUp ? (
+        <div className="mt-4 flex w-full flex-col gap-[12px]">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white transition-colors hover:bg-black disabled:opacity-60"
+          >
+            {submitting ? '작성 중...' : '글 작성하기'}
+          </button>
 
-        <button
-          type="button"
-          onClick={handleCancel}
-          className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white text-[16px] tracking-[-0.32px] text-[#212121] transition-colors hover:bg-gray-50"
-        >
-          취소
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={handleCancel}
+            className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white text-[16px] tracking-[-0.32px] text-[#212121] transition-colors hover:bg-gray-50"
+          >
+            취소
+          </button>
+        </div>
+      ) : (
+        <div className="mt-4 flex w-full flex-col gap-[12px]">
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex h-[40px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white transition-colors hover:bg-black disabled:opacity-60"
+          >
+            {submitting ? '처리 중...' : '글 작성하기'}
+          </button>
+
+          <button
+            type="button"
+            onClick={handleSaveDraft}
+            disabled={submitting}
+            className="flex h-[40px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-[#919191] text-[16px] tracking-[-0.32px] text-white transition-colors hover:bg-[#7d7d7d] disabled:opacity-60"
+          >
+            글 임시저장하기
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCancel}
+            disabled={submitting}
+            className="flex h-[40px] w-full cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white text-[16px] tracking-[-0.32px] text-[#212121] transition-colors hover:bg-gray-50 disabled:opacity-60"
+          >
+            취소
+          </button>
+        </div>
+      )}
     </form>
   );
 }

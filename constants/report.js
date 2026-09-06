@@ -25,14 +25,17 @@ export const REPORT_REASON_ETC = 'ETC';
 export const REPORT_DETAIL_MAX_LENGTH = 500;
 
 // 신고 접수 완료 안내
+// mobileBodyMinHeightClass: 모바일에서 피그마 모달 높이(362×270)를 맞추기 위한 본문 영역 최소 높이
 export const REPORT_SUCCESS_ALERT = {
   title: '신고가 접수되었습니다.',
   description:
-    '운영진이 확인 후 조치하며,\n결과는 별도로 안내되지 않습니다.\n신고자 정보는 공개되지 않습니다.',
+    '운영진이 확인 후 조치하며,\n결과는 홈페이지 알림으로 안내합니다.\n신고자 정보는 공개되지 않습니다.',
+  mobileBodyMinHeight: 160,
 };
 
-// 이미 신고한 대상일 때 안내 (서버에서 중복 신고를 차단함)
+// 이미 신고한 대상일 때 안내 (서버에서 중복 신고를 차단함) — 피그마 모달 362×197
 export const REPORT_DUPLICATE_ALERT = {
   title: '이미 신고한 게시물입니다.',
   description: '중복 신고는 접수되지 않습니다.',
+  mobileBodyMinHeight: 87,
 };

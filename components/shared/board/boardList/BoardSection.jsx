@@ -3,19 +3,22 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
-import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { buildBoardListQuery } from '@/lib/boardDetail';
 import useBoard from '@/hooks/useBoard';
 
 import SortSelect from './SortSelect';
 import CategorySelect from './CategorySelect';
 import SearchInput from './SearchInput';
+import BoardControlsMobile from './BoardControlsMobile';
 import PostTable from './PostTable';
 import WriteButton from './WriteButton';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
+import Link from 'next/link';
+import { PenLine } from 'lucide-react';
 
 import { getBoardPosts, getBoardCategories } from '@/apis/board';
 import { getErrorMessage } from '@/apis/auth';
+import { ROUTES } from '@/constants/routes';
 
 const PAGE_SIZE = 10;
 
@@ -26,8 +29,6 @@ const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md
 
 // 새 API 정렬값: created(최신) | viewCount(조회수)
 export default function BoardSection({ boardId }) {
-  const isMdUp = useMinWidthMd();
-
   // 게시판 정책(플래그)·이름은 목록 API(useBoardStore)에서 가져온다
   const { board, boards, error: boardError } = useBoard(boardId);
   const title = board?.boardName ?? '';
@@ -102,12 +103,6 @@ export default function BoardSection({ boardId }) {
     setCategory(value);
     setCurrentPage(1);
   };
-
-  // 모바일(768px 미만)에서는 조회순 미노출 → 정렬을 최신순으로 고정
-  useEffect(() => {
-    if (isMdUp) return;
-    if (sortOrder === 'viewCount') setSortOrder('created');
-  }, [isMdUp, sortOrder]);
 
   // 카테고리 목록 (카테고리를 쓰는 게시판만)
   useEffect(() => {
@@ -194,17 +189,18 @@ export default function BoardSection({ boardId }) {
 
   return (
     <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10">
-      <h2 className="font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] my-[15px] text-[#212121] sm:text-[20px] md:text-[24px]">
+      <h2 className="font-['Pretendard',sans-serif] text-[24px] font-bold leading-[1.5] tracking-[-0.02em] my-[15px] text-[#212121] md:font-semibold">
         {title}
       </h2>
 
-      <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:items-end md:justify-between md:gap-10">
-        <span className="hidden shrink-0 text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121] md:block md:text-[18px]">
+      {/* 데스크톱 컨트롤 (기존) */}
+      <div className="mb-4 mt-[10px] hidden gap-10 md:flex md:flex-row md:items-end md:justify-between">
+        <span className="shrink-0 text-[18px] leading-[1.6] tracking-[-0.02em] text-[#212121]">
           목록
         </span>
 
-        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-stretch sm:justify-end">
-          <SortSelect value={sortOrder} onValueChange={handleSortChange} compactSort={!isMdUp} />
+        <div className="flex min-w-0 flex-row flex-wrap items-stretch justify-end gap-2">
+          <SortSelect value={sortOrder} onValueChange={handleSortChange} />
 
           {categoryMode && (
             <CategorySelect
@@ -214,10 +210,24 @@ export default function BoardSection({ boardId }) {
             />
           )}
 
-          <div className="mb-[5px] min-w-0 sm:min-w-[200px] md:mb-0 sm:flex-1">
+          <div className="min-w-[200px] flex-1">
             <SearchInput value={searchInput} onChange={handleSearchChange} />
           </div>
         </div>
+      </div>
+
+      {/* 모바일 컨트롤 (피그마: 정렬·카테고리 버튼 + 검색, 한 줄) */}
+      <div className="mb-3 mt-2 md:hidden">
+        <BoardControlsMobile
+          sortOrder={sortOrder}
+          onSortChange={handleSortChange}
+          categoryMode={categoryMode}
+          categories={categories}
+          category={category}
+          onCategoryChange={handleCategoryChange}
+          searchInput={searchInput}
+          onSearchChange={handleSearchChange}
+        />
       </div>
 
       <PostTable
@@ -229,17 +239,29 @@ export default function BoardSection({ boardId }) {
         errorMessage={errorMessage}
       />
 
-      <div className="mt-6 mb-16 flex justify-end md:mt-[34px] md:mb-[120px]">
+      {/* 데스크톱: 기존 사각형 글쓰기 버튼 */}
+      <div className="mb-16 mt-6 hidden justify-end md:mb-[120px] md:mt-[34px] md:flex">
         <WriteButton boardId={boardId} canWrite={canWrite} />
       </div>
 
-      <div className="flex justify-center">
+      <div className="mt-6 flex justify-center md:mt-0">
         <PaginationWithEllipsis
           currentPage={currentPage}
           totalPages={Math.max(1, totalPages)}
           onPageChange={setCurrentPage}
         />
       </div>
+
+      {/* 모바일: 플로팅 글쓰기 버튼 (우측 하단, 60px 원형). 권한 있을 때만 노출 */}
+      {canWrite && (
+        <Link
+          href={ROUTES.BOARD_WRITE(boardId)}
+          aria-label="글 작성하기"
+          className="fixed bottom-6 right-4 z-40 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[#212121] text-white shadow-lg md:hidden"
+        >
+          <PenLine size={26} strokeWidth={1.8} />
+        </Link>
+      )}
     </div>
   );
 }
