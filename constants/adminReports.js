@@ -33,7 +33,12 @@ export const getReportPanelId = (targetType) => `report-panel-${targetType}`;
 //  - 신고 접수 직후  → '블라인드' (사용자에게 안 보임)
 //  - 관리자가 복원    → '복원'     (블라인드가 풀려 사용자에게 다시 보인다)
 //  - 관리자가 삭제    → '삭제'     (소프트 삭제. 다시 복원하면 되살아난다)
-// '미조치' 같은 중간 상태는 기획에 없다.
+//
+// ★기획상 '공개'는 이 목록에 나올 수 없지만, 서버가 아직 자동 블라인드를 적용하지 않아
+//  신고가 접수된 채로 state=normal 인 대상이 내려온다(확인 2026-09-06: 157·140번 게시글).
+//  그 행을 '블라인드'로 보여주면 관리자는 가려진 줄 알지만 실제로는 사용자에게 계속 보인다.
+//  화면이 서버 상태를 있는 그대로 말하도록 '공개'로 표시한다 — 자동 블라인드가 적용되면
+//  state 가 blind 로 내려와 '공개' 행은 자연히 사라진다. → 백엔드 협의 항목 (README 7번)
 //
 // 서버가 주는 값은 두 종류다. 상태 하나를 정하려면 둘을 함께 봐야 한다.
 //  - state        : 대상(글·댓글) 자체의 표시 상태. normal | blind | deleted
@@ -50,29 +55,24 @@ export const REPORT_STATES = {
 const CLOSED_REPORT_STATUSES = ['resolved', 'rejected'];
 
 export const REPORT_STATUSES = {
+  PUBLIC: '공개',
   BLINDED: '블라인드',
   RESTORED: '복원',
   DELETED: '삭제',
 };
 
-// 목록 '상태' 열에 보여줄 이름.
-//   삭제됨                        → '삭제'
-//   글은 보이는데 신고는 종료됨   → '복원' (블라인드가 풀린 상태)
-//   그 밖                         → '블라인드'
-//
-// ★서버가 아직 '신고 접수 시 자동 블라인드'를 적용하지 않아, 처리 전 신고가
-//  state=normal 로 내려온다(확인: 신고 3건 중 2건이 normal·pending).
-//  기획상 처리 전 신고는 블라인드 상태이므로 마지막 분기에서 '블라인드'로 보여준다.
-//  서버가 자동 블라인드를 적용하면 state 가 blind 로 내려와 이 분기는 자연히 정리된다.
-//  → 백엔드 협의 항목
+// 목록 '상태' 열에 보여줄 이름. state(글이 보이는지)와 reportStatus(신고를 처리했는지)를 함께 본다.
+//   삭제됨                          → '삭제'
+//   글은 공개인데 신고는 종료됨      → '복원'   (관리자가 되돌린 것)
+//   글은 공개인데 신고는 처리 전     → '공개'   (자동 블라인드 미적용 — 위 ★ 참고)
+//   그 밖(blind)                    → '블라인드'
 export const getReportStatusLabel = (report) => {
   if (report?.state === REPORT_STATES.DELETED) return REPORT_STATUSES.DELETED;
 
-  if (
-    report?.state === REPORT_STATES.NORMAL &&
-    CLOSED_REPORT_STATUSES.includes(report?.reportStatus)
-  ) {
-    return REPORT_STATUSES.RESTORED;
+  if (report?.state === REPORT_STATES.NORMAL) {
+    return CLOSED_REPORT_STATUSES.includes(report?.reportStatus)
+      ? REPORT_STATUSES.RESTORED
+      : REPORT_STATUSES.PUBLIC;
   }
 
   return REPORT_STATUSES.BLINDED;
