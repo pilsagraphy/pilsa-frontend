@@ -7,6 +7,7 @@ import BoardWriteToolbar from './BoardWriteToolbar';
 import BoardMarkdownEditor from './BoardMarkdownEditor';
 import useBoardWriteStore from '@/stores/useBoardWriteStore';
 import { getBoardCategories } from '@/apis/board';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
 
 // 공통게시판 글쓰기/수정 공용 폼.
 // 노출 항목은 게시판 플래그(board)로 결정한다:
@@ -14,6 +15,7 @@ import { getBoardCategories } from '@/apis/board';
 //  - allowAttachment: 첨부파일 입력
 //  - allowAnonymous: 익명 게시 체크박스
 export default function BoardWriteForm({ boardId, board }) {
+  const isMdUp = useMinWidthMd();
   const categoryMode = Boolean(board?.categoryMode);
   const allowAttachment = Boolean(board?.allowAttachment);
   const allowAnonymous = Boolean(board?.allowAnonymous);
@@ -59,6 +61,157 @@ export default function BoardWriteForm({ boardId, board }) {
       isIgnore = true;
     };
   }, [boardId, categoryMode]);
+
+  // 첨부파일 목록(기존/신규)은 데스크톱·모바일이 동일 로직이라 한 번만 만들어 재사용한다.
+  const attachmentLists = (
+    <>
+      {/* 이미 글에 붙어 있는 첨부 (수정 화면). 삭제 표시한 것만 서버로 보낸다. */}
+      {allowAttachment && existingAttachments.length > 0 && (
+        <div className="flex flex-col gap-[6px] px-[4px]">
+          <span className="text-[14px] tracking-[-0.28px] text-[#919191]">기존 첨부파일</span>
+          {existingAttachments.map((file) => {
+            const marked = deleteAttachmentIds.includes(file.attachmentId);
+            return (
+              <div key={file.attachmentId} className="flex items-center gap-[8px]">
+                <span
+                  className={`min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] ${
+                    marked ? 'text-[#b9b9b9] line-through' : 'text-[#454545]'
+                  }`}
+                >
+                  {file.originName}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => toggleDeleteAttachment(file.attachmentId)}
+                  className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121]"
+                >
+                  {marked ? '복원' : '삭제'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 이번에 새로 고른 파일 (개별 제거 가능) */}
+      {allowAttachment && Array.isArray(files) && files.length > 0 && (
+        <div className="flex flex-col gap-[6px] px-[4px]">
+          {files.map((file, index) => (
+            <div key={`${file?.name}-${index}`} className="flex items-center gap-[8px]">
+              <span className="min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] text-[#666666]">
+                {file?.name}
+              </span>
+              <button
+                type="button"
+                onClick={() => removeFileAt(index)}
+                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121]"
+              >
+                제거
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </>
+  );
+
+  // ── 모바일 폼 (#183 피그마 리디자인) ─────────────────────────────
+  // 라벨 14px/#454545, 입력 40px, 카테고리 옆 120px 저장 버튼(역할 미정 → 표시만).
+  // 데스크톱 렌더는 아래 return 그대로 유지하고, 모바일만 이 분기로 대체한다.
+  if (!isMdUp) {
+    return (
+      <div className="flex w-full flex-col gap-[16px]">
+        {/* 제목 */}
+        <div className="flex flex-col gap-[8px]">
+          <label className="text-[14px] tracking-[-0.28px] text-[#454545]">제목</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="제목을 입력하세요."
+            required
+            className="h-[40px] w-full rounded-[4px] border border-[#b9b9b9] bg-white px-[14px] text-[14px] tracking-[-0.28px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-black"
+          />
+        </div>
+
+        {/* 카테고리 + 저장 버튼 */}
+        {categoryMode && (
+          <div className="flex flex-col gap-[8px]">
+            <label className="text-[14px] tracking-[-0.28px] text-[#454545]">카테고리</label>
+            <div className="flex items-center gap-[8px]">
+              <div className="relative flex h-[40px] flex-1 items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="h-full w-full cursor-pointer appearance-none bg-transparent px-[14px] text-[14px] tracking-[-0.28px] text-[#212121] outline-none"
+                >
+                  <option value="">카테고리 선택</option>
+                  {categories.map((category) => (
+                    <option key={category.categoryId} value={String(category.categoryId)}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  className="pointer-events-none absolute right-[12px]"
+                  size={15}
+                  strokeWidth={2}
+                  color="#212121"
+                />
+              </div>
+              {/* TODO(#183): 저장 버튼 역할 미정 — 피그마 매칭용으로 표시만(동작 없음) */}
+              <button
+                type="button"
+                className="flex h-[40px] w-[120px] shrink-0 cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] text-[14px] tracking-[-0.28px] text-white"
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* 툴바 (라벨 없는 42px 박스) */}
+        <div className="relative flex h-[42px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+          <BoardWriteToolbar
+            contentRef={contentRef}
+            value={content}
+            onChange={setContent}
+            files={files}
+            onFilesChange={setFiles}
+            allowAttachment={allowAttachment}
+          />
+        </div>
+
+        {attachmentLists}
+
+        {/* 본문 (라벨 없는 박스) */}
+        <div className="relative flex h-[330px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+          <BoardMarkdownEditor
+            boardId={boardId}
+            value={content}
+            onChange={setContent}
+            allowUpload={allowAttachment}
+            textareaRef={contentRef}
+          />
+        </div>
+
+        {/* 익명 게시 */}
+        {allowAnonymous && (
+          <div className="flex items-center pt-[4px]">
+            <label className="flex cursor-pointer items-center gap-[8px]">
+              <input
+                type="checkbox"
+                checked={isAnonymous}
+                onChange={(e) => setIsAnonymous(e.target.checked)}
+                className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+              />
+              <span className="text-[14px] tracking-[-0.28px] text-[#212121]">익명으로 게시</span>
+            </label>
+          </div>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-[12px] w-full">
