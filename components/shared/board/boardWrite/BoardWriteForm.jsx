@@ -5,8 +5,11 @@ import { ChevronDown, X } from 'lucide-react';
 import BoardWriteBox from './BoardWriteBox';
 import BoardWriteToolbar from './BoardWriteToolbar';
 import BoardMarkdownEditor from './BoardMarkdownEditor';
+import DraftLoadModal from './DraftLoadModal';
 import useBoardWriteStore from '@/stores/useBoardWriteStore';
 import { getBoardCategories } from '@/apis/board';
+import { getDraft, getDrafts } from '@/apis/draft';
+import { getErrorMessage } from '@/apis/auth';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
 
 // 공통게시판 글쓰기/수정 공용 폼.
@@ -39,6 +42,40 @@ export default function BoardWriteForm({ boardId, board }) {
   const contentRef = useRef(null);
 
   const [categories, setCategories] = useState([]);
+
+  // 임시저장 글 불러오기 모달 (모바일 '저장' 버튼)
+  const [draftModalOpen, setDraftModalOpen] = useState(false);
+  // '저장 | N' 배지용 임시저장 개수 (모달을 열면 최신 개수로 동기화된다)
+  const [draftCount, setDraftCount] = useState(0);
+
+  // 진입 시 임시저장 개수 조회 (실패해도 조용히 0 유지)
+  useEffect(() => {
+    if (!boardId) return;
+    let ignore = false;
+    getDrafts(boardId)
+      .then((data) => {
+        if (!ignore) setDraftCount(Array.isArray(data?.drafts) ? data.drafts.length : 0);
+      })
+      .catch(() => {});
+    return () => {
+      ignore = true;
+    };
+  }, [boardId]);
+
+  // 선택한 초안을 폼에 채운다 (제목·본문·카테고리·익명).
+  // 첨부는 발행 방식(파일 업로드)과 초안 첨부 모델이 달라 이번엔 텍스트 위주로 불러온다.
+  const handleLoadDraft = async (draftId) => {
+    try {
+      const draft = await getDraft(boardId, draftId);
+      setTitle(draft?.title ?? '');
+      setContent(draft?.content ?? '');
+      setCategoryId(draft?.categoryId != null ? String(draft.categoryId) : '');
+      setIsAnonymous(Boolean(draft?.isAnonymous));
+      setDraftModalOpen(false);
+    } catch (error) {
+      alert(getErrorMessage(error, '임시저장 글을 불러오지 못했습니다.'));
+    }
+  };
 
   useEffect(() => {
     if (!boardId || !categoryMode) return;
@@ -132,7 +169,7 @@ export default function BoardWriteForm({ boardId, board }) {
                   onChange={(e) => setCategoryId(e.target.value)}
                   className="h-full w-full cursor-pointer appearance-none bg-transparent px-[14px] text-[14px] tracking-[-0.28px] text-[#212121] outline-none"
                 >
-                  <option value="">카테고리 선택</option>
+                  <option value="">카테고리</option>
                   {categories.map((category) => (
                     <option key={category.categoryId} value={String(category.categoryId)}>
                       {category.name}
@@ -146,12 +183,15 @@ export default function BoardWriteForm({ boardId, board }) {
                   color="#212121"
                 />
               </div>
-              {/* TODO(#183): 저장 버튼 역할 미정 — 피그마 매칭용으로 표시만(동작 없음) */}
+              {/* 저장 버튼 → 임시저장 글 불러오기 모달 ('저장 | N' 으로 개수 표시) */}
               <button
                 type="button"
-                className="flex h-[40px] w-[120px] shrink-0 cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] text-[14px] tracking-[-0.28px] text-white"
+                onClick={() => setDraftModalOpen(true)}
+                className="flex h-[40px] w-[120px] shrink-0 cursor-pointer items-center justify-center gap-[8px] rounded-[4px] bg-[#212121] text-[14px] tracking-[-0.28px] text-white"
               >
-                저장
+                <span>저장</span>
+                <span className="text-white/40" aria-hidden="true">|</span>
+                <span>{draftCount}</span>
               </button>
             </div>
           </div>
@@ -196,6 +236,14 @@ export default function BoardWriteForm({ boardId, board }) {
             </label>
           </div>
         )}
+
+        <DraftLoadModal
+          open={draftModalOpen}
+          boardId={boardId}
+          onClose={() => setDraftModalOpen(false)}
+          onSelect={handleLoadDraft}
+          onCountChange={setDraftCount}
+        />
       </div>
     );
   }
