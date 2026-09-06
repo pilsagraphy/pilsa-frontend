@@ -13,6 +13,7 @@ import AlertModal from '@/components/common/AlertModal';
 import { REPORT_SUCCESS_ALERT } from '@/constants/report';
 import { CornerDownRight, ArrowBigRight } from 'lucide-react';
 import { formatSlashDateTime } from '@/lib/boardDetail';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
 
 function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
@@ -31,6 +32,7 @@ const MAX_RENDER_DEPTH = 20;
 // 익명·비밀 마스킹(익명 authorName='익명', 비밀 content='비밀댓글입니다.')은 서버가 처리하므로
 // 프론트는 받은 값을 그대로 그린다 (다시 마스킹하지 않는다).
 export default function BoardComments({ boardId, postId, board, commentCount }) {
+  const isMdUp = useMinWidthMd();
   const boardLabel = board?.boardName ?? '';
   const allowAnonymous = Boolean(board?.allowAnonymous);
   const allowPrivateComment = Boolean(board?.allowPrivateComment);
@@ -258,6 +260,85 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         active ? 'font-medium text-[#212121]' : 'text-[#919191] hover:text-[#212121]'
       }`;
 
+    // 답글/수정/삭제·신고 버튼 (모바일·데스크톱 공용)
+    const actionButtons = deleted ? null : (
+      <>
+        <button type="button" className={actionClassName(replying)} onClick={() => toggleReply(comment)}>
+          답글
+        </button>
+
+        {owner ? (
+          <>
+            <button type="button" className={actionClassName(editing)} onClick={() => toggleEdit(comment)}>
+              수정
+            </button>
+            <button
+              type="button"
+              className={actionClassName(false)}
+              onClick={() => handleDelete(comment.commentId)}
+            >
+              삭제
+            </button>
+          </>
+        ) : (
+          canReport(comment) && (
+            <button
+              type="button"
+              className={actionClassName(false)}
+              onClick={() => handleReport(comment)}
+            >
+              신고
+            </button>
+          )
+        )}
+      </>
+    );
+
+    // 대댓글 꺾쇠(└) 마커 — 피그마 Rectangle 147 (좌·하 테두리)
+    const replyMarker = <span className="h-3 w-3 shrink-0 border-b border-l border-[#B9B9B9]" aria-hidden />;
+
+    // 모바일(#183 피그마): 이름+액션이 한 줄(space-between), 내용·날짜는 아래 전체폭.
+    // 답글은 꺾쇠 마커 + 내용 30px 들여쓰기, 하이라이트 #F6F6F6. 데스크톱은 아래 return 그대로.
+    if (!isMdUp) {
+      return (
+        <div
+          key={comment.commentId}
+          id={anchorId}
+          className={`flex w-full scroll-mt-[100px] flex-col gap-[6px] px-[20px] py-[10px] ${
+            highlighted ? 'bg-[#F6F6F6]' : ''
+          }`}
+        >
+          {deleted ? (
+            <p className="flex items-center gap-[16px] text-[16px] leading-[19px] text-[#919191]">
+              {isReply && replyMarker}
+              삭제된 댓글입니다.
+            </p>
+          ) : (
+            <>
+              <div className="flex items-start justify-between gap-4">
+                <span className="flex min-w-0 items-center gap-[16px] text-[16px] leading-[19px] text-[#454545]">
+                  {isReply && replyMarker}
+                  <span className="truncate">{comment.authorName}</span>
+                </span>
+                <div className="flex shrink-0 items-center gap-[10px] px-[4px] py-[2px]">
+                  {actionButtons}
+                </div>
+              </div>
+
+              <div className={`flex flex-col gap-[4px] ${isReply ? 'pl-[30px]' : ''}`}>
+                <p className="whitespace-pre-line text-[16px] leading-[19px] text-[#454545]">
+                  {comment.content}
+                </p>
+                <span className="text-[12px] leading-[14px] text-[#919191]">
+                  {formatSlashDateTime(comment.updated ?? comment.created)}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
+
     return (
       <div
         key={comment.commentId}
@@ -292,46 +373,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         </div>
 
         {/* 액션: 삭제된 댓글에는 표시하지 않는다 */}
-        {!deleted && (
-          <div className="flex shrink-0 items-center gap-3 md:ml-5">
-            <button
-              type="button"
-              className={actionClassName(replying)}
-              onClick={() => toggleReply(comment)}
-            >
-              답글
-            </button>
-
-            {owner ? (
-              <>
-                <button
-                  type="button"
-                  className={actionClassName(editing)}
-                  onClick={() => toggleEdit(comment)}
-                >
-                  수정
-                </button>
-                <button
-                  type="button"
-                  className={actionClassName(false)}
-                  onClick={() => handleDelete(comment.commentId)}
-                >
-                  삭제
-                </button>
-              </>
-            ) : (
-              canReport(comment) && (
-                <button
-                  type="button"
-                  className={actionClassName(false)}
-                  onClick={() => handleReport(comment)}
-                >
-                  신고
-                </button>
-              )
-            )}
-          </div>
-        )}
+        {!deleted && <div className="flex shrink-0 items-center gap-3 md:ml-5">{actionButtons}</div>}
       </div>
     );
   };
@@ -380,8 +422,12 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder={replyTo ? '답글을 작성하세요.' : '댓글을 작성하세요.'}
-            className="h-[40px] w-full flex-1 rounded-[4px] border border-[#b9b9b9] bg-white px-4 text-[16px] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#919191] md:h-[52px]"
+            placeholder={
+              isMdUp ? (replyTo ? '답글을 작성하세요.' : '댓글을 작성하세요.') : '내용을 입력하세요.'
+            }
+            className={`h-[40px] w-full flex-1 rounded-[4px] border bg-white px-4 text-[16px] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#212121] md:h-[52px] md:border-[#b9b9b9] md:focus:border-[#919191] ${
+              editingId || replyTo ? 'border-[#212121]' : 'border-[#919191]'
+            }`}
             onKeyDown={(e) => {
               if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
               handleSubmit();
