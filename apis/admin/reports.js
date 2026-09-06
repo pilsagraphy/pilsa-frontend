@@ -25,12 +25,20 @@ import axiosInstance from '@/apis/axiosInstance';
 // 3. 선택 블라인드 (PATCH /api/admin/reports/select-blind) [ADMIN]
 //    요청: { targetType: 'post'|'comment', targetIds: [], reasonId, detail }
 //    가리기만 하고 벌점은 부과하지 않는다. 최종 판단 전 임시 조치라 신고는 pending 으로 남는다
+export const selectBlind = async (body) => {
+  const response = await axiosInstance.patch('/api/admin/reports/select-blind', body);
+  return response.data;
+};
 
 // 4. 선택 삭제 (PATCH /api/admin/reports/select-delete) [ADMIN]
 //    요청: { targetType, targetIds: [], reasonId, detail }
 //    소프트 삭제 + 작성자 주의 +2 + 경고/정지 에스컬레이션
 //    대상별 pending 신고를 resolved 로 일괄 종료한다 (중복 신고 이중 벌점 차단)
 //    reasonId 를 안 보내면 대표(최신) 신고 사유를 쓰므로 신고 없는 글도 이 API 로 삭제 가능
+export const selectDelete = async (body) => {
+  const response = await axiosInstance.patch('/api/admin/reports/select-delete', body);
+  return response.data;
+};
 
 // 5. 선택 복원 (PATCH /api/admin/reports/select-restore) [ADMIN]
 //    요청: { targetType, targetIds: [] } — 복원은 사유를 받지 않는다

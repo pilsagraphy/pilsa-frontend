@@ -1,19 +1,66 @@
-// 관리자 - 게시글 관리 마크업용 상수
-// API 연동 전까지 DUMMY_POSTS로 화면을 그린다.
+// 관리자 - 게시글 관리 상수
+//
+// 목록은 GET /api/admin/posts 응답을 쓴다 (더미 데이터 없음).
+// 서버 응답: { postId, boardId, boardName, title, authorName,
+//             commentCount, likeCount, viewCount, created, state }
 
 import { ROUTES } from './routes';
 
-// 게시글 상태 라벨
-export const POST_STATUSES = {
-  PUBLIC: '공개',
-  BLINDED: '블라인드',
+// ── 게시글 상태 (state) ───────────────────────────────────────────────
+// 서버가 주는 값을 그대로 쓰고 화면 라벨만 여기서 붙인다.
+// 목록에는 normal · blind 만 내려온다 (deleted 는 제외). 상세에서는 deleted 도 볼 수 있다.
+export const POST_STATES = {
+  NORMAL: 'normal',
+  BLIND: 'blind',
+  DELETED: 'deleted',
 };
 
-// 게시판 필터 선택지
-// TODO: API 연동 시 게시판 목록(관리자 - 게시판 관리)을 받아서 채울 것
-export const BOARD_NAMES = ['자유게시판', '공지사항', '정보게시판'];
+export const POST_STATE_LABELS = {
+  [POST_STATES.NORMAL]: '공개',
+  [POST_STATES.BLIND]: '블라인드',
+  [POST_STATES.DELETED]: '삭제',
+};
 
+// 프론트가 모르는 상태가 새로 생겨도 칸이 비지 않도록 받은 값을 그대로 보여준다.
+export const getPostStateLabel = (state) => POST_STATE_LABELS[state] ?? state;
+
+// ── 게시판 필터 ───────────────────────────────────────────────────────
 export const BOARD_FILTER_ALL = 'all';
+
+// 관리자 게시판 목록(GET /api/admin/boards) 응답으로 선택지를 만든다.
+// API 는 이름이 아니라 boardId 로 걸러주므로 값도 boardId 를 쓴다.
+// Radix Select 는 문자열만 다루므로 숫자를 문자열로 바꿔 담는다.
+export const buildBoardFilterOptions = (boards) => [
+  { value: BOARD_FILTER_ALL, label: '전체 게시판' },
+  ...(Array.isArray(boards)
+    ? boards.map((board) => ({
+        value: String(board.boardId),
+        label: board.boardName,
+      }))
+    : []),
+];
+
+// ── 이동 경로 ─────────────────────────────────────────────────────────
+// 관리자 전용 게시글 상세. 상태와 상관없이 제목 링크는 모두 이곳으로 보낸다.
+// 사용자 상세는 블라인드·삭제 글을 보여주지 않고 익명글의 실작성자도 가리므로,
+// 조치를 판단해야 하는 관리자에게는 쓸 수 없다.
+export const getAdminPostDetailHref = (postId) =>
+  postId != null ? ROUTES.ADMIN_POST_DETAIL(postId) : null;
+
+// 상세에서 '돌아가기'가 어디를 가리킬지.
+// 게시글 관리에서 제목을 눌러 들어왔는지, 댓글 관리에서 원글을 눌러 들어왔는지에 따라
+// 돌아갈 곳이 다르다. 주소에 실어 보내므로 새로고침·새 탭에서도 유지된다.
+export const DETAIL_FROM_PARAM = 'from';
+export const DETAIL_FROM_POSTS = 'posts';
+export const DETAIL_FROM_COMMENTS = 'comments';
+
+// ─────────────────────────────────────────────────────────────────────
+// 아래는 신고 관리(constants/adminReports.js) 마크업이 아직 쓰는 값이다.
+// 신고 관리 API 연동(브랜치 182)에서 서버 응답으로 대체되면 함께 지운다.
+// ─────────────────────────────────────────────────────────────────────
+
+// 게시판 필터 선택지 (이름 기준) — 신고 관리 마크업 전용
+export const BOARD_NAMES = ['자유게시판', '공지사항', '정보게시판'];
 
 export const BOARD_FILTER_OPTIONS = [
   { value: BOARD_FILTER_ALL, label: '전체 게시판' },
@@ -23,58 +70,25 @@ export const BOARD_FILTER_OPTIONS = [
 // 게시판별 boardId 와 댓글 영역 유무.
 // '상세 경로를 안다'와 '그 상세에 댓글이 있다'는 다른 이야기라서 둘 다 필요하고,
 // 따로 두면 서로 어긋나므로 한 객체에 묶는다. (댓글 신고의 앵커 링크가 hasComments를 본다)
-// TODO: 관리자 API 연동 시 서버 응답이 boardId 를 직접 주므로 이 이름→id 매핑은 사라진다.
-//       그때는 boardHasComments 도 게시판 목록 API 의 allowComment 플래그로 대체한다.
 const BOARD_DETAIL = {
   공지사항: { boardId: 1, hasComments: false }, // 공지 상세에는 댓글 영역이 없다
   자유게시판: { boardId: 2, hasComments: true },
   정보게시판: { boardId: 3, hasComments: true },
 };
 
-// 목업 전용: 게시판 이름 → boardId.
-// 더미 데이터가 서버 응답과 같은 모양(boardId 를 들고 있는 행)이 되도록 채워주는 용도다.
 export const getBoardIdByName = (boardName) => BOARD_DETAIL[boardName]?.boardId ?? null;
-
-// 게시글 상세 경로. 게시판은 boardId 기반 경로(/students/boards/{boardId}/posts/{postId})를 쓴다.
-// boardId 를 모르는 행이면 null 을 돌려주고, 행에서는 링크 대신 텍스트로 보여준다.
-export const getPostDetailHref = (boardId, postId) =>
-  boardId != null && postId != null ? ROUTES.BOARD_POST(boardId, postId) : null;
 
 // 그 게시판 상세에 댓글 영역이 있는지. 모르는 게시판은 없는 것으로 본다.
 export const boardHasComments = (boardName) => BOARD_DETAIL[boardName]?.hasComments ?? false;
 
-// 디자인 시안의 행 패턴. 게시판 · 상태만 서로 다르다.
-const POST_PATTERN = [
-  { boardName: '자유게시판', status: POST_STATUSES.PUBLIC },
-  { boardName: '자유게시판', status: POST_STATUSES.BLINDED },
-  { boardName: '공지사항', status: POST_STATUSES.PUBLIC },
-  { boardName: '정보게시판', status: POST_STATUSES.PUBLIC },
-  { boardName: '자유게시판', status: POST_STATUSES.PUBLIC },
-  { boardName: '정보게시판', status: POST_STATUSES.BLINDED },
-  { boardName: '공지사항', status: POST_STATUSES.PUBLIC },
-  { boardName: '자유게시판', status: POST_STATUSES.PUBLIC },
-  { boardName: '정보게시판', status: POST_STATUSES.PUBLIC },
-  { boardName: '자유게시판', status: POST_STATUSES.PUBLIC },
-];
+// 사용자 게시판 상세 경로 (신고 관리의 대상 미리보기 링크가 쓴다)
+export const getPostDetailHref = (boardId, postId) =>
+  boardId != null && postId != null ? ROUTES.BOARD_POST(boardId, postId) : null;
 
-// 검색(제목 · 글쓴이) 동작을 눈으로 확인할 수 있도록 글마다 제목·글쓴이를 다르게 준다.
-const TITLE_POOL = [
-  '필사 엠티 넘 재밌어요!!',
-  '이번 주 정기모임 후기 남깁니다',
-  '신입 부원 모집 안내드립니다',
-  '필사 도구 추천 좀 해주세요',
-  '동아리방 청소 같이 하실 분',
-  '작품 공유합니다 (첫 필사)',
-  '시험 기간 스터디 모집',
-  '지난 전시 사진 올려요',
-  '펜 추천 질문 있습니다',
-  '방학 중 활동 일정 문의',
-];
-
-// 글쓴이 정보. 목록의 '글쓴이' 열에는 loginId만 쓰지만,
-// 조치 모달의 '대상 회원'은 로그인ID / 학번 / 이름을 함께 보여줘서 셋을 다 들고 있는다.
-// 댓글 관리(adminComments.js)에서도 같은 회원을 쓰도록 여기서 내보낸다.
-// TODO: API 연동 시 서버가 주는 작성자 정보로 대체할 것
+// 신고 관리 더미의 '대상 회원' 정보.
+// 게시글·댓글 관리는 서버가 주는 authorLoginId · authorStudentNo 를 쓰므로 더 쓰지 않는다.
+// 신고 목록 API 에는 아직 그 두 필드가 없어(authorName 만 내려온다) 신고 관리 마크업이
+// 이 목록을 쓰고 있다 → 신고 관리 API 연동(브랜치 182)에서 함께 정리된다.
 export const MEMBER_POOL = [
   { loginId: 'ch400', studentId: '2026000001', name: '김철수' },
   { loginId: 'younghee', studentId: '2025000042', name: '이영희' },
@@ -87,30 +101,3 @@ export const MEMBER_POOL = [
   { loginId: 'yerin', studentId: '2022000061', name: '장예린' },
   { loginId: 'jaehyun', studentId: '2023000150', name: '임재현' },
 ];
-
-// 페이지네이션을 확인할 수 있도록 시안대로 5페이지 분량(10건씩 4페이지 + 7건)을 만든다.
-const DUMMY_POST_COUNT = 47;
-
-// postId가 클수록 최근 글로 본다. → 목록은 postId 내림차순(최신순)으로 보여준다.
-export const DUMMY_POSTS = Array.from({ length: DUMMY_POST_COUNT }, (_, index) => {
-  const postId = index + 1;
-  const { boardName, status } = POST_PATTERN[index % POST_PATTERN.length];
-  const member = MEMBER_POOL[index % MEMBER_POOL.length];
-
-  return {
-    postId,
-    boardName,
-    // 상세 링크는 boardId 로 만든다 (연동 후에는 서버가 주는 값)
-    boardId: getBoardIdByName(boardName),
-    title: TITLE_POOL[index % TITLE_POOL.length],
-    // author는 목록 '글쓴이' 열용, 나머지 둘은 조치 모달의 '대상 회원'용
-    author: member.loginId,
-    authorStudentId: member.studentId,
-    authorName: member.name,
-    commentCount: (postId * 3) % 17,
-    likeCount: (postId * 5) % 29,
-    viewCount: (postId * 13) % 241,
-    createdAt: `26.05.${String((index % 28) + 1).padStart(2, '0')}`,
-    status,
-  };
-});

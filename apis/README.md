@@ -39,9 +39,9 @@ apis/
 ├── admin/
 │   ├── dashboard.js      🆕 통계 / 최근 신고 / 최근 가입
 │   ├── boards.js         ✅ 연동됨   게시판 관리
-│   ├── posts.js          🆕 게시글 관리
-│   ├── comments.js       🆕 댓글 관리
-│   ├── reports.js        🆕 신고 관리 + 일괄 조치(select-*)
+│   ├── posts.js          ✅ 연동됨   게시글 관리
+│   ├── comments.js       ✅ 연동됨   댓글 관리
+│   ├── reports.js        🔨 일부     신고 목록은 미연동 / 일괄 조치(select-blind·select-delete)만 연동됨
 │   ├── sanctions.js      🆕 제재 회원
 │   ├── users.js          🆕 회원 목록/정지/차단/강제탈퇴
 │   ├── quotes.js         🆕 문장 관리

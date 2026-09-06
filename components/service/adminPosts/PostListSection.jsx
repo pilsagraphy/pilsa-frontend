@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import SortSelect from '@/components/shared/board/boardList/SortSelect';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
@@ -14,25 +15,43 @@ import {
   listSubtitleClass,
   listTitleClass,
 } from '@/components/shared/admin/CommunityListStyles';
+import useDebouncedValue from '@/hooks/useDebouncedValue';
+import useAdminBoardStore from '@/stores/useAdminBoardStore';
+import useAdminPostStore from '@/stores/useAdminPostStore';
+import { getReasonId } from '@/constants/report';
+import { ROUTES } from '@/constants/routes';
+// 신고 관리의 탭 값. 문자열을 손으로 적으면 한쪽이 바뀔 때 조용히 어긋난다.
+import { REPORT_TARGET_POST } from '@/constants/adminReports';
 
 import PostTable from './PostTable';
-import {
-  BOARD_FILTER_ALL,
-  BOARD_FILTER_OPTIONS,
-  DUMMY_POSTS,
-  POST_STATUSES,
-} from '@/constants/adminPosts';
+import { BOARD_FILTER_ALL, buildBoardFilterOptions } from '@/constants/adminPosts';
 
 const PAGE_SIZE = 10;
 
 export default function PostListSection({ title = '게시글 관리' }) {
+  const router = useRouter();
+
   const [currentPage, setCurrentPage] = useState(1);
   const [boardFilter, setBoardFilter] = useState(BOARD_FILTER_ALL);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState([]);
 
-  // 블라인드 · 삭제 결과가 화면에 남아야 해서 목록을 상태로 들고 간다.
-  const [posts, setPosts] = useState(DUMMY_POSTS);
+  // 글자를 칠 때마다 조회하지 않도록 서버에 보낼 검색어만 늦춘다 (입력창은 즉시 반응)
+  const searchKeyword = useDebouncedValue(searchQuery);
+
+  const posts = useAdminPostStore((s) => s.data);
+  const totalPages = useAdminPostStore((s) => s.totalPages);
+  const isLoading = useAdminPostStore((s) => s.isLoading);
+  const error = useAdminPostStore((s) => s.error);
+  const fetchPosts = useAdminPostStore((s) => s.fetchPosts);
+  const moderatePosts = useAdminPostStore((s) => s.moderatePosts);
+  const takeError = useAdminPostStore((s) => s.takeError);
+
+  // 게시판 필터 선택지는 관리자 게시판 목록에서 받아온다 (이름 하드코딩 금지).
+  // 필터는 목록만 있으면 되므로 ensureBoards 로 부른다 —
+  // 이미 받아둔 게 있으면 화면을 옮겨 다녀도 다시 받지 않는다.
+  const boards = useAdminBoardStore((s) => s.data);
+  const ensureBoards = useAdminBoardStore((s) => s.ensureBoards);
 
   // 블라인드 · 삭제 조치 모달 { action, ids, items }
   // Radix Dialog는 open이 false가 돼도 퇴장 애니메이션 동안 화면에 남는다.
@@ -41,35 +60,35 @@ export default function PostListSection({ title = '게시글 관리' }) {
   const [moderationState, setModerationState] = useState(null);
   const [moderationOpen, setModerationOpen] = useState(false);
   const [alertState, setAlertState] = useState(null); // { title, description }
+  const [submitting, setSubmitting] = useState(false);
 
-  // TODO: API 연동 시 DUMMY_POSTS 대신 서버 응답(목록·totalPages)을 사용하고,
-  //       게시판 필터·검색·페이지네이션도 서버에 위임할 것. (BoardSection.jsx 참고)
-  const filteredPosts = useMemo(() => {
-    const keyword = searchQuery.trim().toLowerCase();
+  const boardFilterOptions = useMemo(() => buildBoardFilterOptions(boards), [boards]);
 
-    const matched = posts.filter((post) => {
-      if (boardFilter !== BOARD_FILTER_ALL && post.boardName !== boardFilter) return false;
-      if (!keyword) return true;
+  useEffect(() => {
+    ensureBoards();
+  }, [ensureBoards]);
 
-      return (
-        post.title.toLowerCase().includes(keyword) || post.author.toLowerCase().includes(keyword)
-      );
-    });
+  // 조회 조건을 한 곳에서 만든다 (첫 조회와 조치 후 재조회가 같은 조건을 써야 한다)
+  const listParams = useMemo(
+    () => ({
+      page: currentPage,
+      size: PAGE_SIZE,
+      ...(boardFilter !== BOARD_FILTER_ALL ? { boardId: Number(boardFilter) } : {}),
+      ...(searchKeyword.trim() ? { keyword: searchKeyword.trim() } : {}),
+    }),
+    [currentPage, boardFilter, searchKeyword]
+  );
 
-    // postId가 클수록 최근 글 → 최신순(내림차순)으로 보여준다.
-    return [...matched].sort((a, b) => b.postId - a.postId);
-  }, [posts, boardFilter, searchQuery]);
+  // 필터·검색·페이지네이션 모두 서버가 처리하므로 화면에서 자르지 않는다.
+  useEffect(() => {
+    fetchPosts(listParams);
+  }, [fetchPosts, listParams]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / PAGE_SIZE));
-
-  // 삭제로 목록이 줄어 currentPage가 사라진 페이지를 가리키면 빈 목록이 보인다.
-  // 렌더 시점에 잘라 마지막 페이지를 보여준다.
-  const page = Math.min(currentPage, totalPages);
-
-  const pagedPosts = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE;
-    return filteredPosts.slice(start, start + PAGE_SIZE);
-  }, [filteredPosts, page]);
+  // 삭제로 목록이 줄어 보던 페이지가 사라지면 빈 표에 갇힌다
+  // (마지막 페이지의 글을 모두 지운 경우). 남아 있는 마지막 페이지로 되돌린다.
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [currentPage, totalPages]);
 
   // 목록이 바뀌면 화면에 없는 게시글이 선택된 채로 남지 않도록 선택을 비운다.
   const resetToFirstPage = () => {
@@ -92,29 +111,40 @@ export default function PostListSection({ title = '게시글 관리' }) {
     setSelectedIds([]);
   };
 
+  // 이미 담긴 id 는 다시 붙이지 않는다.
+  // 체크박스가 같은 값으로 두 번 발화하면 선택 목록에 중복이 쌓이고,
+  // 그대로 조치 요청에 실리면 작성자 벌점이 두 번 붙을 수 있다.
   const handleSelectOne = (postId, checked) => {
-    setSelectedIds((prev) => (checked ? [...prev, postId] : prev.filter((id) => id !== postId)));
+    setSelectedIds((prev) => {
+      if (!checked) return prev.filter((id) => id !== postId);
+      return prev.includes(postId) ? prev : [...prev, postId];
+    });
   };
 
   // 전체 선택은 현재 페이지에 보이는 게시글만 대상으로 한다.
   const handleSelectAll = (checked) => {
-    setSelectedIds(checked ? pagedPosts.map((post) => post.postId) : []);
+    setSelectedIds(checked ? posts.map((post) => post.postId) : []);
   };
 
   // ── 블라인드 · 삭제 ───────────────────────────────────────────────────
   // 조치 모달에 넘길 대상 목록을 만든다.
   // 삭제하면 목록에서 사라지므로 열 때 한 번 떠서 들고 있는다.
-  // 선택한 순서가 아니라 목록에 보이는 순서(최신순)로 번호가 매겨지도록 filteredPosts에서 추린다.
+  // 선택한 순서가 아니라 목록에 보이는 순서로 번호가 매겨지도록 posts에서 추린다.
+  //
+  // 대상 회원은 시안대로 '로그인ID / 학번 / 이름' 으로 보여준다.
+  // 조립은 모달이 formatMemberLabel 로 처리하고, 값이 없는 필드는 알아서 빠진다
+  // (탈퇴 회원처럼 로그인ID·학번이 null 로 오면 이름만 남는다).
   const buildModerationItems = (ids) => {
     const targetIds = new Set(ids);
 
-    return filteredPosts
+    return posts
       .filter((post) => targetIds.has(post.postId))
       .map((post) => ({
         id: post.postId,
+        // 모달(formatMemberLabel)이 쓰는 이름은 studentId 지만 서버 필드는 authorStudentNo 다
         user: {
-          loginId: post.author,
-          studentId: post.authorStudentId,
+          loginId: post.authorLoginId,
+          studentId: post.authorStudentNo,
           name: post.authorName,
         },
         boardName: post.boardName,
@@ -145,34 +175,56 @@ export default function PostListSection({ title = '게시글 관리' }) {
     openModeration(action, [post.postId]);
   };
 
-  // 모달이 넘겨주는 { reason, detail }은 마크업 단계라 아직 쓰지 않는다.
-  // TODO: API 연동 시 { action, ids, reason, detail }로 서버에 요청을 보내고 응답으로 목록을 갱신할 것
-  const handleConfirm = () => {
-    if (!moderationState) return;
+  // 모달이 넘겨주는 { reason, detail } 로 조치를 요청한다.
+  // 항목마다 독립 트랜잭션이라 일부만 실패할 수 있어(부분 성공) 응답을 보고 안내를 나눈다.
+  const handleConfirm = async ({ reason, detail }) => {
+    if (!moderationState || submitting) return;
 
     const { action, ids } = moderationState;
+    const actionLabel = action === 'delete' ? '삭제' : '블라인드';
 
-    setPosts((prev) =>
-      action === 'delete'
-        ? prev.filter((post) => !ids.includes(post.postId))
-        : prev.map((post) =>
-            ids.includes(post.postId) ? { ...post, status: POST_STATUSES.BLINDED } : post
-          )
-    );
+    setSubmitting(true);
+    try {
+      const result = await moderatePosts(action, ids, { reasonId: getReasonId(reason), detail });
 
-    setModerationOpen(false);
-    // 처리한 게시글만 선택에서 뺀다. 행 단위 액션 때문에 다른 선택이 풀리면 안 된다.
-    // (선택 액션일 땐 ids가 곧 selectedIds라 결과가 같다)
-    setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
+      // 요청 자체가 실패한 경우 (권한 · 네트워크 등) — 모달은 닫지 않는다
+      if (!result) {
+        setAlertState({
+          title: `${actionLabel} 처리에 실패했습니다.`,
+          description: takeError() ?? '잠시 후 다시 시도해 주세요.',
+        });
+        return;
+      }
+
+      setModerationOpen(false);
+      // 처리한 게시글만 선택에서 뺀다. 행 단위 액션 때문에 다른 선택이 풀리면 안 된다.
+      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
+
+      // 삭제된 글은 목록에서 빠지고 블라인드는 상태가 바뀐다 → 서버 목록을 다시 받는다
+      await fetchPosts(listParams);
+
+      // 일부만 실패했으면 어떤 항목이 왜 실패했는지 서버 문구를 그대로 보여준다
+      const failures = Array.isArray(result.failures) ? result.failures : [];
+      if (failures.length > 0) {
+        setAlertState({
+          title: `${result.successCount}건은 ${actionLabel} 처리했고 ${result.failCount}건은 실패했습니다.`,
+          description: failures.map((failure) => `· ${failure.message}`).join('\n'),
+        });
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  // TODO: 신고 관리 페이지가 만들어지면 해당 게시글의 신고 내역으로 이동시킬 것
+  // 블라인드된 글은 신고 내역을 확인해 최종 판단(삭제 또는 복원)한다 → 신고 관리로 넘긴다.
+  // 게시글 신고 탭으로 열리게 ?tab=post 를 달아 보낸다.
   const handleMoveToReport = () => {
-    setAlertState({
-      title: '신고 관리 페이지는 준비 중입니다.',
-      description: '페이지가 준비되면 해당 게시글의 신고 내역으로 이동합니다.',
-    });
+    router.push(ROUTES.ADMIN_REPORTS_TAB(REPORT_TARGET_POST));
   };
+
+  // 첫 조회 중에만 안내문으로 덮는다. 이미 목록이 있으면 그대로 두고 버튼만 잠근다
+  // (페이지를 넘길 때마다 표가 비었다 다시 차면 깜빡인다).
+  const isEmpty = posts.length === 0;
 
   return (
     <div className={listSectionClass}>
@@ -188,11 +240,15 @@ export default function PostListSection({ title = '게시글 관리' }) {
           <SortSelect
             value={boardFilter}
             onValueChange={handleBoardFilterChange}
-            options={BOARD_FILTER_OPTIONS}
+            options={boardFilterOptions}
           />
           <div className="min-w-0 sm:w-[296px]">
             {/* 검색 대상은 제목 · 글쓴이지만 안내 문구는 시안대로 '검색어 입력'으로 둔다. */}
-            <SearchInput value={searchQuery} onChange={handleSearchChange} placeholder="검색어 입력" />
+            <SearchInput
+              value={searchQuery}
+              onChange={handleSearchChange}
+              placeholder="검색어 입력"
+            />
           </div>
         </div>
 
@@ -200,6 +256,7 @@ export default function PostListSection({ title = '게시글 관리' }) {
           <Button
             type="button"
             variant="outline"
+            disabled={submitting}
             onClick={() => openBulkConfirm('blind')}
             className={`${actionButtonClass} border-[#212121] text-[#212121]`}
           >
@@ -207,6 +264,7 @@ export default function PostListSection({ title = '게시글 관리' }) {
           </Button>
           <Button
             type="button"
+            disabled={submitting}
             onClick={() => openBulkConfirm('delete')}
             className={`${actionButtonClass} bg-[#212121] text-white`}
           >
@@ -216,18 +274,21 @@ export default function PostListSection({ title = '게시글 관리' }) {
       </div>
 
       <PostTable
-        posts={pagedPosts}
+        posts={posts}
         selectedIds={selectedIds}
         onSelectOne={handleSelectOne}
         onSelectAll={handleSelectAll}
         onBlind={(post) => openRowConfirm('blind', post)}
         onDelete={(post) => openRowConfirm('delete', post)}
         onMoveToReport={handleMoveToReport}
+        loading={isLoading && isEmpty}
+        saving={submitting || isLoading}
+        errorMessage={isEmpty && error ? error : ''}
       />
 
       <div className="mt-6 mb-16 flex justify-center md:mt-[34px] md:mb-[120px]">
         <PaginationWithEllipsis
-          currentPage={page}
+          currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
         />

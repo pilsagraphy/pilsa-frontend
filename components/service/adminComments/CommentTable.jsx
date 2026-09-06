@@ -17,11 +17,14 @@ const COLUMN_COUNT = 8;
 // 열 너비는 디자인(표 전체 915px)의 열 중심 좌표에서 역산한 비율을 기준으로 잡되,
 // 댓글 내용은 20자 안팎이 들어가야 하고 관리 열은 버튼 두 개(60 + 37 + 간격)가 필요해서
 // 그만큼 넓히고 나머지 열에서 덜어냈다.
+// 게시판 이름은 관리자가 자유롭게 짓는 값이라 '자유게시판'보다 길 수 있다.
+// 10%(약 75px)로는 다섯 글자가 들어가지 않아 넓혔고, 대신 작성일을
+// 26.05.08(두 자리 연도)로 줄이고 댓글 내용에서 조금 덜어냈다.
 const COLUMNS = [
-  { key: 'boardName', label: '게시판 명', width: 'w-[10%]' },
+  { key: 'boardName', label: '게시판 명', width: 'w-[13%]' },
   { key: 'author', label: '글쓴이', width: 'w-[10%]' },
-  { key: 'content', label: '댓글 내용', width: 'w-[31%]' },
-  { key: 'createdAt', label: '댓글 작성일', width: 'w-[10%]' },
+  { key: 'content', label: '댓글 내용', width: 'w-[29%]' },
+  { key: 'createdAt', label: '댓글 작성일', width: 'w-[9%]' },
   { key: 'status', label: '상태', width: 'w-[7%]' },
   { key: 'post', label: '원글', width: 'w-[7%]' },
   { key: 'actions', label: '관리', width: 'w-[17%]' },
@@ -36,6 +39,8 @@ export default function CommentTable({
   onDelete,
   onMoveToReport,
   loading = false,
+  // 목록은 그대로 두고 조치·재조회만 진행 중일 때 (행 버튼만 잠근다)
+  saving = false,
   errorMessage = '',
 }) {
   const allSelected = comments?.length > 0 && selectedIds.length === comments.length;
@@ -94,6 +99,7 @@ export default function CommentTable({
                 onBlind={onBlind}
                 onDelete={onDelete}
                 onMoveToReport={onMoveToReport}
+                disabled={saving}
               />
             ))
           )}
