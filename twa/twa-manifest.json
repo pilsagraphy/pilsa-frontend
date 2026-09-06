@@ -17,8 +17,8 @@
   "maskableIconUrl": "https://pilsa.co.kr/icons/icon-maskable-512.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
-    "path": "../../app-key/v_1_release_key.jks",
-    "alias": "REPLACE_ME_KEY_ALIAS"
+    "path": "../../app-key/pilsa-upload.jks",
+    "alias": "pilsa-upload"
   },
   "appVersionName": "1.0.0",
   "appVersionCode": 1,
