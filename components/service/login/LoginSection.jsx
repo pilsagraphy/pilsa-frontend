@@ -8,12 +8,18 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import useAuthStore from '@/stores/useAuthStore';
 import { ROUTES, BASE_PATH, SANCTION_POLICY_URL } from '@/constants/routes';
-import { logout as logoutApi, refreshAccessToken } from '@/apis/auth';
-import { getGoogleLoginUrl } from '@/apis/google';
+import { logout as logoutApi, refreshAccessToken, getErrorMessage } from '@/apis/auth';
+import {
+  getGoogleLoginUrl,
+  completeGoogleLink,
+  getGooglePendingLink,
+  discardGooglePendingLink,
+} from '@/apis/google';
 import { disablePushForLogout, restorePushAfterLogin } from '@/lib/push';
 import { JUST_LOGGED_IN_KEY } from '@/components/service/notification/PushPromptBottomSheet';
 import LoginBannedSection from './LoginBannedSection';
 import LoginRestrictedSection from './LoginRestrictedSection';
+import GoogleLinkDialog from './GoogleLinkDialog';
 
 // 아이디 저장(로컬 스토리지) 키 — 아이디만 채워둘 뿐 세션과는 무관
 const SAVED_LOGIN_ID_KEY = 'savedLoginId';
@@ -65,9 +71,16 @@ export default function LoginSection() {
   const [loggingOut, setLoggingOut] = useState(false);
   // 구글 동의 화면으로 나가는 중 (버튼 중복 클릭 방지)
   const [googleBusy, setGoogleBusy] = useState(false);
+  // [구글로 로그인] 했는데 연결된 회원이 없어 돌아온 상태 — 서버가 그 구글 계정을 10분간 보관 중이다.
+  // GET /api/auth/google/pending 응답: { googleEmail, maskedEmail, emailMatched, maskedLoginId }
+  // 지금 아이디로 로그인하면 그 구글 계정을 붙인다.
+  const [pendingGoogleLink, setPendingGoogleLink] = useState(null);
+  // "연결할까요 / 회원가입할까요" 모달 — 구글에서 막 돌아온 순간(?googleLink=1)에만 띄운다
+  const [googleDialogOpen, setGoogleDialogOpen] = useState(false);
   const { login, logout, applyAuthResponse } = useAuthStore();
   const logoutHandled = useRef(false);
   const googleHandled = useRef(false);
+  const pendingChecked = useRef(false);
 
   // 아이디 저장: 마운트 시 저장된 아이디가 있으면 자동 입력 + 체크박스 활성화
   useEffect(() => {
@@ -122,12 +135,45 @@ export default function LoginSection() {
     runLogout();
   }, [searchParams, logout, router]);
 
+  // 연결 대기 중인 구글 계정이 있는지 서버에 묻는다 (보관 토큰은 HttpOnly 쿠키라 여기서 못 읽는다).
+  // 회원가입 화면에 들렀다 돌아오거나 새로 고침해도 안내가 유지되도록 마운트마다 확인한다.
+  //  ?googleLink=1     — 구글에서 막 돌아온 것: "연결할까요 / 회원가입할까요" 모달을 띄운다
+  //  ?googleLink=login — 회원가입 화면에서 "로그인해서 연결하기" 로 넘어온 것: 이미 정한 사람이라 배너만
+  useEffect(() => {
+    if (pendingChecked.current) return;
+    pendingChecked.current = true;
+    const justReturned = searchParams.get('googleLink') === '1';
+
+    getGooglePendingLink()
+      .then((info) => {
+        if (!info?.pending) {
+          if (justReturned) {
+            toast.error('구글 계정 연결 정보가 만료되었어요. 구글 로그인을 다시 시도해주세요.');
+          }
+          return;
+        }
+        setPendingGoogleLink(info);
+        if (justReturned) setGoogleDialogOpen(true);
+      })
+      .catch(() => {
+        // 확인에 실패하면 안내 없이 일반 로그인 화면으로 둔다
+      });
+  }, [searchParams]);
+
   // 구글 로그인 콜백 복귀 처리: /login?login=google (실패 시 /login?error=코드)
   //
   // 백엔드는 accessToken 을 쿼리로 넘기지 않는다(히스토리·리퍼러에 남는다).
   // refreshToken 쿠키만 심어 보내므로 여기서 재발급 API 로 accessToken 을 받아 세션을 세운다.
   useEffect(() => {
     if (googleHandled.current) return;
+
+    // 연결된 회원이 없는 구글 계정으로 들어온 경우 — 안내에 필요한 내용은 위 effect 가 서버에 묻는다.
+    // 여기서는 쿼리만 정리한다 (matched/hint 는 백엔드가 참고용으로 붙이는 값이라 쓰지 않는다).
+    if (searchParams.get('googleLink')) {
+      googleHandled.current = true;
+      router.replace(ROUTES.LOGIN);
+      return;
+    }
 
     const errorCode = searchParams.get('error');
     if (errorCode) {
@@ -180,6 +226,26 @@ export default function LoginSection() {
     }
   };
 
+  // 모달에서 연결하기로 정함 → 모달만 닫고 대기는 유지한다 (아래 handleLogin 이 로그인 직후 붙인다)
+  const acceptGoogleLink = () => setGoogleDialogOpen(false);
+
+  // 모달·배너에서 연결하지 않겠다 → 서버의 대기 정보도 지운다 (다른 아이디로 로그인할 때 붙지 않게)
+  const declineGoogleLink = async () => {
+    setGoogleDialogOpen(false);
+    setPendingGoogleLink(null);
+    try {
+      await discardGooglePendingLink();
+    } catch {
+      // 지우지 못해도 10분이면 사라진다. 안내는 이미 내렸으니 조용히 넘어간다
+    }
+  };
+
+  // 모달에서 가입된 회원이 없을 때 → 회원가입으로. 대기 쿠키가 따라가 가입 폼의 이메일 칸을 채운다
+  const goSignupWithGoogle = () => {
+    setGoogleDialogOpen(false);
+    router.push(ROUTES.SIGNUP);
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     if (loggingOut) return;
@@ -187,6 +253,23 @@ export default function LoginSection() {
     toast.dismiss(LOGOUT_TOAST_ID);
     try {
       await login(loginId, password, autoLogin);
+
+      // 구글 계정 연결 대기 중이었으면 지금 로그인한 계정에 붙인다.
+      // 실패해도 로그인 자체는 성공이므로 흐름을 막지 않고 마이페이지에서 다시 할 수 있다고만 알린다.
+      if (pendingGoogleLink) {
+        try {
+          const linked = await completeGoogleLink();
+          toast.success(
+            `구글 계정${linked?.googleEmail ? `(${linked.googleEmail})` : ''}을 연결했어요. 다음부터 구글로 바로 로그인할 수 있어요.`
+          );
+        } catch (linkErr) {
+          toast.error(
+            getErrorMessage(linkErr, '구글 계정 연결에 실패했어요. 마이페이지에서 다시 연결할 수 있어요.')
+          );
+        } finally {
+          setPendingGoogleLink(null);
+        }
+      }
 
       // 아이디 저장: 체크 시 저장, 해제 시 삭제
       try {
@@ -242,6 +325,41 @@ export default function LoginSection() {
     <section className="mx-auto w-full max-w-[616px]">
       <div className="rounded-[6px] bg-white p-6">
         <form onSubmit={handleLogin} className="flex flex-col gap-5">
+          {/* 구글 계정 연결 — [구글로 로그인] 했는데 연결된 회원이 없어 돌아온 경우.
+              막 돌아온 순간엔 모달로 묻고(연결할까요 / 회원가입할까요), 연결하기로 했으면 배너만 남긴다 */}
+          <GoogleLinkDialog
+            open={googleDialogOpen}
+            pending={pendingGoogleLink}
+            onAccept={acceptGoogleLink}
+            onSignup={goSignupWithGoogle}
+            onDecline={declineGoogleLink}
+          />
+          {pendingGoogleLink && !googleDialogOpen && (
+            <div
+              role="status"
+              className="flex items-start justify-between gap-3 rounded-[6px] border border-[#dedede] bg-[#f8f8f8] px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] [word-break:keep-all]"
+            >
+              <p>
+                <span className="font-bold">구글 계정 연결 대기 중</span>
+                <br />
+                <span className="text-[#454545]">
+                  {pendingGoogleLink.emailMatched
+                    ? `아이디 ${pendingGoogleLink.maskedLoginId} 로 로그인하면 `
+                    : '아이디·비밀번호로 로그인하면 '}
+                  <span className="font-medium text-[#212121]">{pendingGoogleLink.maskedEmail}</span>{' '}
+                  계정이 연결돼요.
+                </span>
+              </p>
+              <button
+                type="button"
+                onClick={declineGoogleLink}
+                className="shrink-0 text-[13px] text-[#919191] underline-offset-2 hover:underline"
+              >
+                연결 취소
+              </button>
+            </div>
+          )}
+
           {/* 제목 + (아이디 저장·자동 로그인 / 아이디 찾기·이메일 찾기·비밀번호 재설정) */}
           <div className="flex flex-col gap-3">
             <h2 className="text-[24px] font-semibold tracking-[-0.48px] text-black">로그인</h2>
