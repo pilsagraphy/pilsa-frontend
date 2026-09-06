@@ -82,14 +82,15 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
       // ★성공 시 기존 토큰이 전부 무효화된다(본인 세션 포함).
       //   로그아웃 플로우(/login?logout=1)로 SPA 이동한다 — 인증 상태를 정리하고
       //   로그인 화면에서 안내 토스트를 띄운다. (전체 리로드가 아니라 토스트가 사라지지 않는다)
-      router.replace(`${ROUTES.LOGIN}?logout=1`);
+      //   reason=pw: 로그인 화면 토스트를 '로그아웃' 대신 '비밀번호 변경' 안내로 바꾼다
+      //   이동 전에 모달을 닫아둔다 — 전환이 늦거나 실패해도 '변경 중...' 상태로 갇히지 않게
+      setLoading(false);
+      setForm(EMPTY_FORM);
+      setErrors(EMPTY_FORM);
+      onOpenChange(false);
+      router.replace(`${ROUTES.LOGIN}?logout=1&reason=pw`);
     } catch (err) {
-      // 백엔드 미배포(404) — 계약 확정 전까지 안내만
-      if (err.response?.status === 404) {
-        toast.info('비밀번호 변경 기능은 준비 중이에요. 조금만 기다려주세요.');
-      } else {
-        toast.error(getErrorMessage(err, '비밀번호 변경에 실패했습니다.'));
-      }
+      toast.error(getErrorMessage(err, '비밀번호 변경에 실패했습니다.'));
       setLoading(false);
     }
   };
