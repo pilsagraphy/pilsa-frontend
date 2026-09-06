@@ -172,6 +172,7 @@ export default function BoardActions({
           open={Boolean(alertState)}
           title={alertState?.title ?? ''}
           description={alertState?.description ?? ''}
+          mobileBodyMinHeight={alertState?.mobileBodyMinHeight}
           onClose={() => setAlertState(null)}
         />
       </>
