@@ -2,6 +2,7 @@
 
 import React, { useEffect } from 'react';
 import { toast } from 'sonner';
+import useMyPageStore from '@/stores/useMyPageStore';
 
 import MyPageIntro from './MyPageIntro';
 import MyPageStats from './MyPageStats';
@@ -30,7 +31,15 @@ const GOOGLE_CALLBACK_MESSAGES = {
 
 // 마이페이지 본문 조립 (공통 레이아웃의 Header/Sidebar/Footer는 상위 layout에서 처리)
 export default function MyPageSection() {
-  // 연동 콜백 결과 안내.
+  // 요약 데이터는 여기서 '진입 시 한 번만' 부른다.
+  // 자식(Stats/Intro/InfoCard/ActivityCard)은 스토어를 읽기만 한다.
+  useEffect(() => {
+    const store = useMyPageStore.getState();
+    store.fetchSummary();
+    return () => store.reset(); // 떠날 때 비워서 다음 사용자에게 이전 정보가 안 남게
+  }, []);
+
+  // 구글 연동 콜백 결과 안내.
   // useSearchParams 대신 window.location 을 쓴다 — 이 값은 마운트 직후 한 번만 필요하고,
   // 훅을 쓰면 이 페이지 전체가 Suspense 경계를 요구하게 된다.
   useEffect(() => {

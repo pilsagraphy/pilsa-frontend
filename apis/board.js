@@ -8,9 +8,11 @@ import axiosInstance from '@/apis/axiosInstance';
 // 1. 사이드바 게시판 목록 (GET /api/user/boards) [MEMBER]
 //    응답: [{ boardId, boardName, displayOrder }]
 //    현재 로그인한 사람이 열람 가능한 게시판만 내려온다 — FE 메뉴는 이 API 로 그린다
+//    displayOrder 오름차순으로 정렬해서 돌려준다 (서버 순서에 기대지 않는다)
 export const getBoards = async () => {
   const response = await axiosInstance.get('/api/user/boards');
-  return response.data;
+  const boards = Array.isArray(response.data) ? response.data : [];
+  return [...boards].sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
 };
 
 // 2. 게시판 카테고리 목록 (GET /api/user/boards/{boardId}/categories) [MEMBER]

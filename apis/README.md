@@ -25,7 +25,7 @@ apis/
 ├── auth.js               ✅ 연동됨  로그인/회원가입/토큰/아이디·비번 찾기
 ├── mail.js               ✅ 연동됨  이메일 인증번호
 ├── notification.js       ✅ 연동됨  알림함 + 알림 수신 기기 (수정 금지)
-├── mypage.js             🔨 일부     마이페이지 (탈퇴만 연동됨)
+├── mypage.js             ✅ 연동됨  마이페이지 — 요약/비번변경/전체 로그아웃/탈퇴/내 글·댓글·좋아요
 │
 ├── board.js              ✅ 연동됨  공통게시판 — 게시판 목록/카테고리/게시글 CRUD/좋아요
 ├── comment.js            ✅ 연동됨  댓글·대댓글
@@ -73,12 +73,12 @@ apis/
 
 ## 4. 백엔드 대기 (연동 불가 — 화면만 준비)
 
-| 엔드포인트                                  | 파일                   | 상태                 |
-| ------------------------------------------- | ---------------------- | -------------------- |
-| `GET /api/user/mypage/posts`                | `mypage.js` 5          | planned (백로그 C-2) |
-| `GET /api/user/mypage/comments`             | `mypage.js` 6          | planned (백로그 C-2) |
-| `GET /api/user/mypage/likes`                | `mypage.js` 7          | planned (백로그 C-2) |
-| `POST /api/admin/sanctions/users/{id}/lift` | `admin/sanctions.js` 5 | 3기 진행 예정        |
+| 엔드포인트                                  | 파일                   | 상태          |
+| ------------------------------------------- | ---------------------- | ------------- |
+| `POST /api/admin/sanctions/users/{id}/lift` | `admin/sanctions.js` 5 | 3기 진행 예정 |
+
+> 마이페이지 활동 목록 3종(`posts` · `comments` · `likes`)은 명세서 2026-08-26 기준으로
+> 서버 구현이 끝나 연동 완료됐다. 이 표에 있던 'planned (백로그 C-2)' 항목은 그래서 지웠다.
 
 ---
 
