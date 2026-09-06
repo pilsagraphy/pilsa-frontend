@@ -28,13 +28,14 @@ const Sidebar = () => {
   const boardData = useBoardStore((state) => state.data);
   const ensureBoards = useBoardStore((state) => state.ensureBoards);
 
-  // 로그아웃 상태에서는 이전 계정의 메뉴가 남지 않도록 아예 쓰지 않는다
-  const boards = isLoggedIn ? boardData : null;
+  // 비로그인에게도 메뉴는 보여준다 — 서버가 이름·순서까지만 주고 canWrite 는 false 로 내려온다.
+  // 메뉴를 누르면 checkBoardAccess 가 로그인 화면으로 보낸다.
+  const boards = boardData;
 
-  // 로그인 상태에서 게시판 목록을 불러온다
-  // (스토어가 동시 요청을 단일화하고, 계정이 바뀌면 캐시를 버리고 새로 받는다)
+  // 게시판 목록을 불러온다. 로그인 여부가 바뀌면 스토어가 캐시를 버리고 다시 받는다
+  // (ownerUserId 비교 — 비로그인은 null 이라 로그인 직후 자동으로 갱신된다).
   useEffect(() => {
-    if (isLoggedIn) ensureBoards();
+    ensureBoards();
   }, [isLoggedIn, ensureBoards]);
 
   // 페이지 이동 시 모바일 메뉴 닫기
