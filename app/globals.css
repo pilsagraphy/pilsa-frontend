@@ -111,3 +111,101 @@
     transform: translate(-50%, -50%) translateY(0px);
   }
 }
+
+/* ─────────────── 게이트 화면 시계 (Lottie 대체) ─────────────── */
+/* 원본(Lottie) 캔버스 1280×900 에서 다이얼 지름은 796.7px, 격자 한 칸은 50.09px 였다.
+   다이얼을 화면 짧은 변 기준(88vmin)으로 잡고 격자 한 칸(--cell)을 거기서 파생시키면
+   화면비가 달라도 다이얼·격자·장식의 비율이 원본과 같게 유지된다. 도형 수치는 clockShapes.js 참고. */
+
+.clockScene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #fff;
+  --dial: min(88vmin, 900px);
+  --cell: calc(var(--dial) / 15.9);
+}
+
+/* 격자선. 원본에서 다이얼 중심은 격자 교차점이 아니라 (0.03, -0.30)칸 비껴 있어 그대로 맞춘다 */
+.clockGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+  background-position: calc(50% + var(--cell) * 0.03) calc(50% - var(--cell) * 0.3);
+}
+
+/* 회색으로 칠해진 격자 칸들 (clockShapes.js BAND_CELLS). 다이얼 중심에 맞춰 칸 단위로 그린다 */
+.clockBands {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--cell) * 32);
+  height: calc(var(--cell) * 22);
+  transform: translate(-50%, -50%);
+}
+
+.clockDial {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--dial);
+  height: var(--dial);
+  overflow: visible; /* 초침이 다이얼 밖까지 뻗는다 (원본 그대로) */
+}
+
+/* 바늘. --hand-dur 는 각 바늘의 한 바퀴 시간, --clock-speed 는 게이트 통과 시 배속 */
+/* 바늘은 (50,50) 에 그려져 있고 여기서는 그 자리에서 돌리기만 한다.
+   transform-box: view-box 로 원점 기준을 viewBox(0 0 100 100) 에 두어야 50% 가 다이얼 중심이 된다 */
+.clockHand {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: clockSpin var(--hand-dur, 20s) linear infinite;
+  animation-duration: calc(var(--hand-dur, 20s) / var(--clock-speed, 1));
+  /* 음수 딜레이 — 원본 첫 프레임의 각도에서 출발시킨다 */
+  animation-delay: var(--hand-delay, 0s);
+  will-change: transform;
+}
+
+@keyframes clockSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 모서리 장식. 위치·크기는 원본 캔버스 가장자리 기준을 칸 단위로 옮긴 것.
+   좌우 물결은 다이얼과 겹치지 않게 중심에서 최소 원본 간격(8.35칸)만큼 떨어지도록 막아 둔다 —
+   좁은 화면에서는 그만큼 가장자리 밖으로 밀려난다. */
+.clockDeco {
+  position: absolute;
+  overflow: visible;
+}
+.clockDeco--cross    { left: calc(var(--cell) * 0.8);    top: calc(var(--cell) * -0.9);   width: calc(var(--cell) * 5);     height: calc(var(--cell) * 6); }
+.clockDeco--trDark   { right: calc(var(--cell) * 1.093); top: calc(var(--cell) * -1.081); width: calc(var(--cell) * 1.487); height: calc(var(--cell) * 5.861); }
+.clockDeco--trLight  { right: calc(var(--cell) * 1.335); top: calc(var(--cell) * -1.257); width: calc(var(--cell) * 0.884); height: calc(var(--cell) * 5.25); }
+.clockDeco--lDark    { left: min(calc(var(--cell) * -0.824), calc(50% - var(--cell) * 9.837)); top: calc(50% - var(--cell) * 1.742); width: calc(var(--cell) * 1.487); height: calc(var(--cell) * 5.861); }
+.clockDeco--lLight   { left: min(calc(var(--cell) * -0.521), calc(50% - var(--cell) * 9.234)); top: calc(50% - var(--cell) * 1.421); width: calc(var(--cell) * 0.884); height: calc(var(--cell) * 5.25); }
+.clockDeco--rWave    { left: max(calc(100% - var(--cell) * 3.973), calc(50% + var(--cell) * 8.35)); top: calc(50% + var(--cell) * 2.052); width: calc(var(--cell) * 7.518); height: calc(var(--cell) * 1.266); }
+.clockDeco--blWave   { left: calc(var(--cell) * 3.04);   bottom: calc(var(--cell) * 0.417); width: calc(var(--cell) * 5.25); height: calc(var(--cell) * 0.884); }
+.clockDeco--brSquare {
+  right: calc(var(--cell) * 1.219);
+  bottom: calc(var(--cell) * -0.74);
+  width: calc(var(--cell) * 2.786);
+  height: calc(var(--cell) * 2.786);
+  box-sizing: border-box;
+  background: #cdcdcd;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+}
+
+/* 움직임을 줄여 달라는 설정이면 바늘을 세워 둔다 */
+@media (prefers-reduced-motion: reduce) {
+  .clockHand {
+    animation: none;
+  }
+}
