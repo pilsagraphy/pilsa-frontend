@@ -32,7 +32,7 @@ const bodyTextClass = `${bodyTypeClass} text-[#454545]`;
  */
 function ReportTargetBlock({ item }) {
   // 시안에서 게시글과 댓글의 '신고 상세' 줄이 서로 다르다.
-  //   게시글 - [자유게시판] 게시글 제목 / 작성자 / 날짜
+  //   게시글 - [자유게시판] 본문 앞부분 / 작성자 / 날짜
   //   댓글   - 댓글 내용 / 작성자 / 날짜          ← 게시판 이름을 넣지 않는다
   // 게시판은 목록의 '게시판' 열에서 이미 확인할 수 있다.
   const isComment = item.targetType === REPORT_TARGET_COMMENT;
@@ -40,7 +40,8 @@ function ReportTargetBlock({ item }) {
   return (
     <div className="flex flex-col gap-[16px]">
       {/* 신고 상세 - 무엇을 처리하는지.
-          서버는 제목을 주지 않으므로(본문 앞 30자만) 미리보기를 그대로 쓴다 */}
+          게시글도 제목이 아니라 본문을 보여주는 것이 시안이다(2026-09-06 확인) —
+          서버가 주는 preview(본문 앞 30자)를 그대로 쓴다. title 은 받을 필요가 없다 */}
       <div className="flex flex-col gap-[4px]">
         <span className={sectionLabelClass}>신고 상세</span>
         <p className={bodyTextClass}>
