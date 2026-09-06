@@ -470,6 +470,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         open={Boolean(alertState)}
         title={alertState?.title ?? ''}
         description={alertState?.description ?? ''}
+        mobileBodyMinHeight={alertState?.mobileBodyMinHeight}
         onClose={() => setAlertState(null)}
       />
     </section>
