@@ -16,12 +16,21 @@ export const SCHEDULE_CATEGORIES = {
 export const DEFAULT_SCHEDULE_CATEGORY = SCHEDULE_CATEGORIES.ETC;
 
 // ─────────────────── 캘린더 구독 (iCalendar/ICS) ───────────────────
-// 백엔드가 같은 오리진(/api/**)에 붙어 있으므로 현재 오리진을 그대로 쓴다 — 환경별 주소를 따로 둘 필요가 없다.
+// 피드 주소는 다른 API 와 같은 백엔드 주소(NEXT_PUBLIC_BASE_URL)로 만든다.
+// 프론트 오리진(window.location.origin)을 쓰면 로컬(:3000)에서는 백엔드(:8080)가 아니라
+// Next 에 요청이 가서 404 가 난다. 배포처럼 /api 가 프록시된 환경에서는 둘이 같으니 문제없다.
+//
+// 이 주소는 구글·애플 캘린더 서버가 직접 읽어 가므로 **공개 인터넷에서 닿아야** 한다 —
+// localhost 피드는 브라우저에선 열려도 구글이 가져오지 못해 로컬에서는 구독이 성립하지 않는다.
 export const CALENDAR_FEED_PATH = '/api/event/calendar.ics';
 
-export const getCalendarFeedUrl = () =>
-  typeof window === 'undefined' ? CALENDAR_FEED_PATH : window.location.origin + CALENDAR_FEED_PATH;
+const apiBase = () => {
+  const base = process.env.NEXT_PUBLIC_BASE_URL;
+  if (base) return base.replace(/\/$/, '');
+  return typeof window === 'undefined' ? '' : window.location.origin;
+};
+
+export const getCalendarFeedUrl = () => `${apiBase()}${CALENDAR_FEED_PATH}`;
 
 // 일정 1건짜리 ICS — 안드로이드는 URL 구독이 불가능해서 "이 일정만 담기"로 대신한다.
-export const getEventIcsUrl = (eventId) =>
-  `${typeof window === 'undefined' ? '' : window.location.origin}/api/event/${eventId}.ics`;
+export const getEventIcsUrl = (eventId) => `${apiBase()}/api/event/${eventId}.ics`;

@@ -56,9 +56,10 @@ export const getEventList = async (from, to) => {
 // 3. 구글 캘린더 구독 피드 (GET /api/event/calendar.ics) [PUBLIC]
 //    axios 로 호출하지 않는다 — [구독하기] 버튼에서 새 창을 띄운다
 //    window.open('https://calendar.google.com/calendar/render?cid='
-//      + encodeURIComponent(`${도메인}/api/event/calendar.ics`))
+//      + encodeURIComponent(`webcal://${도메인}/api/event/calendar.ics`))
+//    cid 는 반드시 webcal:// 스킴 — https:// 를 넘기면 구글이 무시하고 달력만 연다 (2026-09 pilsa.co.kr 에서 확인)
 //    한 번 구독하면 이후 등록/수정/삭제가 자동 반영된다 (구글이 수 시간~하루 주기로 재조회)
-//    iOS 는 webcal://, 데스크톱은 위 render?cid=, 안드로이드는 2번(일정별 담기)
+//    iOS 는 webcal:// 을 직접 열고, 데스크톱은 위 render?cid=, 안드로이드는 2번(일정별 담기)
 
 // 4. 일정 상세 (GET /api/event/{eventId}) [PUBLIC]
 //    2026-08-28 구현됐지만 함수를 만들지 않았다 — 목록(1번)이 description 까지 내려주므로

@@ -10,7 +10,7 @@ import { isAndroid, isIOS } from '@/lib/platform';
 //
 // 플랫폼마다 되는 경로가 달라서 한 버튼으로 세 갈래로 나눈다.
 //  - iOS      : webcal:// → 네이티브 캘린더가 구독 다이얼로그를 띄운다. 진짜 구독(자동 갱신)이고 갱신 주기도 고를 수 있다.
-//  - 데스크톱  : 구글 캘린더 "URL로 추가" 화면. 역시 진짜 구독.
+//  - 데스크톱  : 구글 캘린더 "캘린더 추가" 확인창 (render?cid=webcal://…). 역시 진짜 구독.
 //  - 안드로이드 : 원탭 경로가 없다. 구글 캘린더 앱에는 URL 구독 기능 자체가 없고(웹 전용),
 //                webcal:// 을 받아주는 기본 앱도 없다. 그래서 주소 복사 + 안내로 보낸다.
 export default function CalendarSubscribeButton() {
@@ -19,6 +19,8 @@ export default function CalendarSubscribeButton() {
 
   const handleSubscribe = () => {
     const feed = getCalendarFeedUrl();
+    // 구독 주소는 두 경로 모두 webcal:// 스킴으로 넘긴다. 캘린더 쪽이 http 로 붙어도 nginx 가 301 로 https 에 넘겨준다.
+    const webcalFeed = feed.replace(/^https?:/, 'webcal:');
 
     if (isAndroid()) {
       setGuideOpen(true);
@@ -27,13 +29,14 @@ export default function CalendarSubscribeButton() {
 
     if (isIOS()) {
       // window.open 은 커스텀 스킴에서 팝업 차단에 걸린다. location.href 여야 한다.
-      // http 로 붙어도 nginx 가 301 로 https 에 넘겨주므로 스킴만 갈아끼우면 된다.
-      window.location.href = feed.replace(/^https?:/, 'webcal:');
+      window.location.href = webcalFeed;
       return;
     }
 
+    // cid 에 https:// 주소를 넣으면 구글이 말없이 무시하고 달력만 열어 준다 — pilsa.co.kr 에서 그렇게 "안 되던" 원인.
+    // webcal:// 로 넘겨야 "캘린더 추가" 확인창이 뜬다 (2026-09 확인).
     window.open(
-      `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(feed)}`,
+      `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcalFeed)}`,
       '_blank',
       'noopener,noreferrer'
     );
