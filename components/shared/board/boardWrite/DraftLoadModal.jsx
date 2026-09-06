@@ -8,20 +8,16 @@ import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/u
 import { formatDraftDate } from '@/lib/draft';
 
 // 체크박스 색은 시안 지정값을 쓴다 — 기본 #FFFFFF / 호버 #919191 / 선택 #212121.
-// 기본 Checkbox 는 border-primary·bg-primary 를 갖고 있어 cn(twMerge) 으로 덮어써야 한다.
 const CHECKBOX_CLASS = [
-  'h-[20px] w-[20px] shrink-0 rounded-[2px] border-[#b9b9b9] bg-white shadow-none',
+  'h-[24px] w-[24px] shrink-0 rounded-[2px] border-[#919191] bg-white shadow-none',
   'hover:border-[#919191] hover:bg-[#919191]',
   'data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121] data-[state=checked]:text-white',
   'focus-visible:ring-2 focus-visible:ring-[#212121]',
 ].join(' ');
 
-const ROW_CLASS =
-  'flex cursor-pointer items-center gap-[12px] border-b border-[#dedede] px-[24px] py-[14px] transition-colors hover:bg-[#fafafa]';
-
 // 임시저장 글 불러오기 모달.
-// 한 번에 한 개만 고를 수 있다 (중복선택 불가) — 지금 폼을 그 초안으로 갈아끼우는 동작이라
-// 여러 개를 동시에 이어쓸 수가 없다. 모양은 시안대로 체크박스를 쓰고 선택은 하나로 묶는다.
+// 데이터 조회/삭제/선택 상태는 부모에서 관리하고,
+// 이 컴포넌트는 모바일 시안에 맞춘 UI와 단일 선택만 담당한다.
 export default function DraftLoadModal({
   open,
   drafts = [],
@@ -30,111 +26,103 @@ export default function DraftLoadModal({
   onCancel,
   onSelect,
   onDelete,
-  // 삭제 요청이 도는 중인 초안. 그동안 다른 행의 삭제도 잠근다 (연달아 눌러 404 가 나는 것을 막는다)
   deletingId = null,
 }) {
   const [selectedId, setSelectedId] = useState(null);
 
-  // 닫았다 다시 열면 이전 선택이 남아 있지 않게 비운다
+  // 모달을 다시 열면 이전 선택 초기화
   useEffect(() => {
     if (open) setSelectedId(null);
   }, [open]);
 
-  // 고른 초안이 목록에서 사라졌으면(삭제·다른 기기에서 정리) 선택을 놓는다.
-  // 안 놓으면 체크는 안 보이는데 '선택' 버튼만 살아 있어 없는 초안을 불러오려 한다.
+  // 선택했던 초안이 삭제 등으로 목록에서 사라지면 선택 해제
   useEffect(() => {
     if (selectedId == null) return;
-    if (!drafts.some((draft) => draft.draftId === selectedId)) setSelectedId(null);
+    if (!drafts.some((draft) => draft.draftId === selectedId)) {
+      setSelectedId(null);
+    }
   }, [drafts, selectedId]);
 
-  // 불러오는 중 · 실패 · 빈 목록일 때 목록 자리에 보여줄 안내문.
-  // 이미 목록이 있는데 다시 받는 중이라면(모달을 다시 열었을 때) 안내문으로 덮지 않는다 —
-  // 있던 줄이 사라졌다 나타나며 깜빡인다.
   const isEmpty = drafts.length === 0;
   const emptyMessage = !isEmpty
     ? ''
     : loading
-      ? '불러오는 중입니다.'
+      ? '불러오는 중…'
       : error
         ? error
-        : '임시저장한 글이 없습니다.';
+        : '임시저장한 글이 없어요.';
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onCancel?.()}>
       <DialogContent
         hideCloseButton
-        className="max-w-[560px] gap-0 rounded-[4px] border-[#dedede] p-0"
+        overlayClassName="bg-black/30"
+        className="flex max-w-[362px] flex-col items-center gap-[12px] rounded-[4px] border-[#212121] px-[16px] py-[20px]"
       >
-        <DialogTitle className="px-[24px] pb-[16px] pt-[24px] text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-[#212121]">
-          임시저장 글
+        <DialogTitle className="text-[16px] font-semibold leading-[19px] tracking-tight text-[#454545]">
+          임시저장 글 불러오기
         </DialogTitle>
 
-        <div className="border-t border-[#dedede]">
+        <div className="flex w-full flex-col">
           {emptyMessage ? (
-            <p className="px-[24px] py-[32px] text-center text-[14px] tracking-[-0.28px] text-[#919191]">
-              {emptyMessage}
-            </p>
+            <div className="py-6 text-center text-[14px] text-[#919191]">{emptyMessage}</div>
           ) : (
-            drafts.map((draft) => (
-              <label key={draft.draftId} className={ROW_CLASS}>
-                <Checkbox
-                  className={CHECKBOX_CLASS}
-                  checked={selectedId === draft.draftId}
-                  // 하나만 고를 수 있다 — 다른 것을 누르면 이전 선택이 풀린다
-                  onCheckedChange={(next) => setSelectedId(next ? draft.draftId : null)}
-                  aria-label={`${draft.title || '제목 없음'} 임시저장 글 선택`}
-                />
+            drafts.map((draft, index) => (
+              <label
+                key={draft.draftId}
+                className={`flex min-h-[52px] w-full cursor-pointer items-center justify-between gap-[10px] px-[10px] ${
+                  index > 0 ? 'border-t border-[#B9B9B9]' : ''
+                }`}
+              >
+                <span className="flex min-w-0 flex-1 items-center gap-[10px]">
+                  <Checkbox
+                    className={CHECKBOX_CLASS}
+                    checked={selectedId === draft.draftId}
+                    onCheckedChange={(next) => setSelectedId(next ? draft.draftId : null)}
+                    aria-label={`${draft.title || '제목 없음'} 임시저장 글 선택`}
+                  />
 
-                {/* 제목이 길면 잘라 보여준다 (시안) */}
-                <span className="w-[130px] shrink-0 truncate text-[14px] tracking-[-0.28px] text-[#212121]">
-                  {draft.title || '(제목 없음)'}
+                  <span className="min-w-0 truncate text-[16px] leading-[19px] text-[#454545]">
+                    {draft.title || '(제목 없음)'}
+                  </span>
                 </span>
 
-                {/* preview 는 서버가 본문 앞 20자까지만 잘라 보내준다 */}
-                <span className="min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] text-[#919191]">
-                  {draft.preview}
-                </span>
-
-                <span className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191]">
+                <span className="shrink-0 text-[14px] leading-[17px] text-[#919191]">
                   {formatDraftDate(draft.updatedAt)}
                 </span>
 
-                {/* 삭제. 보관 상한(5개)에 닿으면 지우지 않고는 더 저장할 수 없어서 둔다.
-                    모양은 게시판 관리 표의 '수정'과 같은 행 버튼(RowActionButton)을 쓴다.
-                    label 안의 button 이라 label 이 클릭을 체크박스로 넘기지 않게 막는다. */}
-                <RowActionButton
-                  className="ml-[18px] min-w-[44px]"
-                  disabled={deletingId !== null}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onDelete?.(draft);
-                  }}
-                >
-                  삭제
-                </RowActionButton>
+                {onDelete && (
+                  <RowActionButton
+                    className="min-w-[44px]"
+                    disabled={deletingId !== null}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      onDelete(draft);
+                    }}
+                  >
+                    삭제
+                  </RowActionButton>
+                )}
               </label>
             ))
           )}
         </div>
 
-        <DialogFooter className="flex flex-row justify-end gap-[12px] px-[24px] pb-[24px] pt-[20px] sm:justify-end sm:space-x-0">
+        <DialogFooter className="flex w-full flex-row justify-center gap-[12px] sm:justify-center sm:space-x-0">
           <button
             type="button"
             onClick={onCancel}
-            className="h-[44px] w-[80px] cursor-pointer rounded-[4px] border border-[#b9b9b9] bg-white text-[15px] tracking-[-0.3px] text-[#212121] transition-colors hover:bg-gray-50"
+            className="h-[48px] w-[87px] cursor-pointer rounded-[4px] border border-[#b9b9b9] bg-white text-[16px] text-[#212121]"
           >
             취소
           </button>
 
-          {/* loading 은 목록 조회 전용이다(저장·삭제는 별도 상태).
-              목록이 이미 그려진 상태에서 다시 받는 중이라면 고른 것을 그대로 불러도 되므로
-              여기서는 선택 여부만 본다. */}
           <button
             type="button"
             disabled={!selectedId}
             onClick={() => onSelect?.(selectedId)}
-            className="h-[44px] w-[80px] cursor-pointer rounded-[4px] bg-[#212121] text-[15px] tracking-[-0.3px] text-white transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-40"
+            className="h-[48px] w-[87px] cursor-pointer rounded-[4px] bg-[#212121] text-[16px] text-white transition-colors hover:bg-[#424242] disabled:cursor-not-allowed disabled:opacity-60"
           >
             선택
           </button>
