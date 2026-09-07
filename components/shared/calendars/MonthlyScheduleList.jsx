@@ -60,8 +60,8 @@ export default function MonthlyScheduleList({
   const scrollClass = scrollable
     ? `overflow-y-auto pr-[6px] [scrollbar-gutter:stable] ${SCROLLBAR_CLASS} ${
         isCapped
-          ? // 카드 높이: 모바일 62px · md 이상 70px (MonthlyScheduleItem과 같은 값)
-            '[--item-h:62px] md:[--item-h:70px]'
+          ? // 카드 높이: 모바일 62px · md 이상 89px (MonthlyScheduleItem과 같은 값)
+            '[--item-h:62px] md:[--item-h:89px]'
           : 'max-h-[min(45vh,262px)] sm:max-h-[min(52vh,344px)] lg:max-h-[450px]'
       }`
     : '';
