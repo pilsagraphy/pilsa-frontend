@@ -4,6 +4,7 @@ import ScheduleDetailTitle from '@/components/shared/calendars/ScheduleDetailTit
 import ScheduleDetailCategory from '@/components/shared/calendars/ScheduleDetailCategory';
 import ScheduleDetailDateTime from '@/components/shared/calendars/ScheduleDetailDateTime';
 import ScheduleDetailContent from '@/components/shared/calendars/ScheduleDetailContent';
+import { CALENDAR_DETAIL_MAX_W } from '@/components/shared/calendars/calendarLayout';
 
 // 월별 일정에서 고른 일정 하나의 상세.
 // 고른 일정이 없으면(목록에서 다시 눌러 접었을 때) 아무것도 그리지 않는다.
@@ -15,7 +16,7 @@ export default function ScheduleDetail({ schedule, fullWidth = false }) {
 
   return (
     <section
-      className={`w-full border-t border-[#DEDEDE] pt-6 md:pt-[30px] ${fullWidth ? '' : 'max-w-[785px]'}`}
+      className={`w-full border-t border-[#DEDEDE] pt-6 md:pt-[30px] ${fullWidth ? '' : CALENDAR_DETAIL_MAX_W}`}
     >
       <ScheduleDetailTitle title={schedule.title} />
 
