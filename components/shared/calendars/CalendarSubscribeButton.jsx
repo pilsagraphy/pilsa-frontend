@@ -1,121 +1,158 @@
 'use client';
 
-import { useState } from 'react';
-import { CalendarPlus, Check, Copy } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { CalendarPlus } from 'lucide-react';
 import { toast } from 'sonner';
-import { getCalendarFeedUrl } from '@/constants/calendar';
-import { isAndroid, isIOS } from '@/lib/platform';
+import useAuthStore from '@/stores/useAuthStore';
+import { ROUTES } from '@/constants/routes';
+import { getCalendarLinkStatus, getCalendarLinkUrl } from '@/apis/google';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
-// 일정 구독 버튼.
+// 일정 구독 버튼 — 구글 캘린더 자동 등록 하나로 간다.
 //
-// 플랫폼마다 되는 경로가 달라서 한 버튼으로 세 갈래로 나눈다.
-//  - iOS      : webcal:// → 네이티브 캘린더가 구독 다이얼로그를 띄운다. 진짜 구독(자동 갱신)이고 갱신 주기도 고를 수 있다.
-//  - 데스크톱  : 구글 캘린더 "캘린더 추가" 확인창 (render?cid=webcal://…). 역시 진짜 구독.
-//  - 안드로이드 : 원탭 경로가 없다. 구글 캘린더 앱에는 URL 구독 기능 자체가 없고(웹 전용),
-//                webcal:// 을 받아주는 기본 앱도 없다. 그래서 주소 복사 + 안내로 보낸다.
+//  1) 비로그인 → 로그인부터 하라고 안내한다.
+//  2) 로그인 → 플랫폼(안드로이드·아이폰·PC)을 가리지 않고 구글 캘린더 API 연동으로 구독한다.
+//     서버가 동아리 일정을 각자 구글 캘린더에 넣어 주고 등록·수정·삭제를 그대로 반영한다.
+//  3) 아직 연동 동의가 없으면 마이페이지로 보내지 않고 이 자리에서 동의 화면으로 보낸다.
+//     동의가 끝나면 백엔드 콜백이 이 페이지(?calendar=linked)로 돌려보내고 첫 동기화가 이어진다.
+//
+// ICS 주소 구독(webcal)은 화면에서 뺐다. 주소(/api/event/calendar.ics) 자체는 이미 구독한 사람들이
+// 쓰고 있으므로 백엔드에 그대로 남겨 둔다 — 없애면 그 사람들 캘린더 갱신이 끊긴다.
+const CALENDAR_RESULT = {
+  linked: ['success', '구글 캘린더 구독이 시작됐어요. 동아리 일정이 곧 내 캘린더에 들어옵니다.'],
+  failed: ['error', '구글 캘린더 연동에 실패했어요. 잠시 후 다시 시도해주세요.'],
+  cancelled: ['info', '구글 캘린더 연동을 취소했어요.'],
+};
+
 export default function CalendarSubscribeButton() {
-  const [guideOpen, setGuideOpen] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const router = useRouter();
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+  // 구글 캘린더 연동 상태. undefined = 조회 중, null = 조회 실패, 그 외 { linked, googleEmail, ... }
+  const [status, setStatus] = useState(undefined);
 
-  const handleSubscribe = () => {
-    const feed = getCalendarFeedUrl();
-    // 구독 주소는 두 경로 모두 webcal:// 스킴으로 넘긴다. 캘린더 쪽이 http 로 붙어도 nginx 가 301 로 https 에 넘겨준다.
-    const webcalFeed = feed.replace(/^https?:/, 'webcal:');
+  // 동의 화면에서 돌아온 결과 안내 (?calendar=linked|failed|cancelled). 읽은 뒤 쿼리는 지운다.
+  // useSearchParams 대신 window.location 을 쓴다 — 마운트 직후 한 번만 필요한 값이고,
+  // 훅을 쓰면 이 버튼을 품은 페이지 전체가 Suspense 경계를 요구하게 된다 (MyPageSection 과 같은 이유).
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const entry = CALENDAR_RESULT[params.get('calendar')];
+    if (!entry) return;
 
-    if (isAndroid()) {
-      setGuideOpen(true);
-      return;
-    }
+    toast[entry[0]](entry[1]);
+    params.delete('calendar');
+    const query = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (query ? `?${query}` : ''));
+  }, []);
 
-    if (isIOS()) {
-      // window.open 은 커스텀 스킴에서 팝업 차단에 걸린다. location.href 여야 한다.
-      window.location.href = webcalFeed;
-      return;
-    }
-
-    // cid 에 https:// 주소를 넣으면 구글이 말없이 무시하고 달력만 열어 준다 — pilsa.co.kr 에서 그렇게 "안 되던" 원인.
-    // webcal:// 로 넘겨야 "캘린더 추가" 확인창이 뜬다 (2026-09 확인).
-    window.open(
-      `https://calendar.google.com/calendar/render?cid=${encodeURIComponent(webcalFeed)}`,
-      '_blank',
-      'noopener,noreferrer'
-    );
-  };
-
-  const handleCopy = async () => {
+  const handleOpen = async () => {
+    setOpen(true);
+    if (!isLoggedIn) return;
+    setStatus(undefined);
     try {
-      await navigator.clipboard.writeText(getCalendarFeedUrl());
-      setCopied(true);
-      toast.success('주소를 복사했어요');
-      setTimeout(() => setCopied(false), 2000);
+      setStatus(await getCalendarLinkStatus());
     } catch {
-      toast.error('복사에 실패했어요. 주소를 길게 눌러 직접 복사해주세요.');
+      setStatus(null);
     }
   };
+
+  // 동의 화면으로. 돌아올 곳을 함께 보내 콜백이 마이페이지가 아니라 이 캘린더 페이지로 돌려보내게 한다
+  const startConsent = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const url = await getCalendarLinkUrl(ROUTES.CALENDAR);
+      if (!url) throw new Error('authorizeUrl 없음');
+      window.location.href = url;
+    } catch {
+      toast.error('구글 연동을 시작하지 못했어요. 잠시 후 다시 시도해주세요.');
+      setBusy(false);
+    }
+  };
+
+  const linked = !!status?.linked;
+  const checking = isLoggedIn && status === undefined;
+
+  let title;
+  let description;
+  if (!isLoggedIn) {
+    title = '로그인이 필요해요';
+    description = '동아리 일정을 내 구글 캘린더에 자동으로 넣어 드려요. 로그인한 뒤 다시 눌러주세요.';
+  } else if (checking) {
+    title = '연동 상태를 확인하는 중이에요…';
+    description = '';
+  } else if (linked) {
+    title = '이미 구독 중이에요';
+    description = `${status.googleEmail ? `${status.googleEmail} ` : ''}구글 캘린더에 새 일정·변경·삭제가 자동으로 반영돼요. 연동 관리는 마이페이지 → 정보 수정에서 할 수 있어요.`;
+  } else {
+    title = '구글 캘린더에 구독할까요?';
+    description =
+      '구글 계정 동의 화면이 열려요. 캘린더 권한을 허용하면 동아리 일정이 내 구글 캘린더에 자동 등록되고, 등록·수정·삭제가 그대로 반영돼요. 휴대폰 구글 캘린더 앱에서도 바로 보여요.';
+  }
+
+  const primaryBtn =
+    'h-[48px] w-full rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242] disabled:opacity-60';
+  const outlineBtn = 'h-[48px] w-full rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]';
 
   return (
     <>
       <button
         type="button"
-        onClick={handleSubscribe}
+        onClick={handleOpen}
         className="inline-flex h-[36px] shrink-0 items-center gap-1.5 rounded-[8px] border border-[#E0E0E0] px-3 text-[13px] font-medium text-[#454545] transition hover:border-[#BDBDBD] hover:text-[#212121] sm:h-[40px] sm:px-4 sm:text-[14px]"
       >
         <CalendarPlus size={16} />내 캘린더에 구독
       </button>
 
-      {guideOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px]"
-            onClick={() => setGuideOpen(false)}
-          />
+      <Dialog open={open} onOpenChange={(next) => !busy && setOpen(next)}>
+        <DialogContent
+          hideCloseButton
+          className="max-w-[380px] gap-[20px] rounded-[4px] border-[#dedede] p-[24px]"
+        >
+          <DialogTitle className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121] [word-break:keep-all]">
+            {title}
+          </DialogTitle>
+          <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-[#454545] [word-break:keep-all]">
+            {description}
+          </DialogDescription>
 
-          <div className="fixed inset-x-0 bottom-0 z-[90] mx-auto max-w-[480px] rounded-t-[20px] bg-white px-6 pb-8 pt-5 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
-            <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-[#E0E0E0]" />
-
-            <div className="flex flex-col items-center gap-3 text-center">
-              <span className="grid size-14 place-items-center rounded-full bg-[#F5F5F5]">
-                <CalendarPlus size={28} className="text-[#212121]" />
-              </span>
-              <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-black">
-                PC에서 한 번만 등록하면 됩니다
-              </h3>
-              <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#757575] [word-break:keep-all]">
-                구글 캘린더 앱에는 주소로 구독하는 기능이 없어요. PC 브라우저에서{' '}
-                <span className="text-[#454545]">calendar.google.com</span> → 다른 캘린더{' '}
-                <span className="text-[#454545]">+</span> → <span className="text-[#454545]">URL로 추가</span>에 아래
-                주소를 넣어주세요. 한 번 등록하면 휴대폰 앱에도 자동으로 나타납니다.
-              </p>
-            </div>
-
-            <div className="mt-5 rounded-[8px] bg-[#F5F5F5] px-3 py-3">
-              <p className="break-all text-[12px] leading-[1.5] text-[#454545]">{getCalendarFeedUrl()}</p>
-            </div>
-
-            <div className="mt-4 flex flex-col gap-2">
-              <button
+          <DialogFooter className="flex flex-col gap-[8px] sm:flex-col sm:space-x-0">
+            {!isLoggedIn ? (
+              <Button type="button" onClick={() => router.push(ROUTES.LOGIN)} className={primaryBtn}>
+                로그인하기
+              </Button>
+            ) : linked ? (
+              <Button type="button" onClick={() => setOpen(false)} className={primaryBtn}>
+                확인
+              </Button>
+            ) : (
+              <Button type="button" onClick={startConsent} disabled={checking || busy} className={primaryBtn}>
+                {busy ? '구글로 이동 중…' : '구글로 연동하고 구독하기'}
+              </Button>
+            )}
+            {!linked && (
+              <Button
                 type="button"
-                onClick={handleCopy}
-                className="flex h-[52px] w-full items-center justify-center gap-2 rounded-[8px] bg-[#212121] text-[16px] font-semibold text-white transition hover:bg-black"
-              >
-                {copied ? <Check size={18} /> : <Copy size={18} />}
-                {copied ? '복사됨' : '주소 복사'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setGuideOpen(false)}
-                className="h-[44px] w-full rounded-[8px] text-[15px] font-medium text-[#919191] transition hover:text-[#454545]"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                disabled={busy}
+                className={outlineBtn}
               >
                 닫기
-              </button>
-            </div>
-
-            <p className="mt-4 text-center text-[12px] leading-[1.6] text-[#BDBDBD] [word-break:keep-all]">
-              모바일 크롬에서 ⋮ → 데스크톱 사이트를 켜면 휴대폰에서도 등록할 수 있어요.
-            </p>
-          </div>
-        </>
-      )}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

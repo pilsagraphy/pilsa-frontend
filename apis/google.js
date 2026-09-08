@@ -77,9 +77,13 @@ export const getCalendarLinkStatus = async () => {
   return response.data;
 };
 
-// 연동 동의 URL (GET /api/user/mypage/calendar/google/authorize)
-export const getCalendarLinkUrl = async () => {
-  const response = await axiosInstance.get('/api/user/mypage/calendar/google/authorize');
+// 연동 동의 URL (GET /api/user/mypage/calendar/google/authorize?returnTo=/calendar)
+// returnTo: 동의가 끝난 뒤 돌아올 프론트 경로. 생략하면 /user/myPage. 같은 사이트 안 경로('/...')만 받는다.
+// 캘린더 페이지의 [내 캘린더에 구독]이 그 자리에서 동의를 받고 다시 캘린더로 돌아오는 데 쓴다.
+export const getCalendarLinkUrl = async (returnTo) => {
+  const response = await axiosInstance.get('/api/user/mypage/calendar/google/authorize', {
+    params: returnTo ? { returnTo } : undefined,
+  });
   return response.data?.authorizeUrl;
 };
 
