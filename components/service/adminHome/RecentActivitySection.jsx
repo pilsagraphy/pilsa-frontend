@@ -86,17 +86,22 @@ function RecentMembers({ members, isLoading, error }) {
               key={member.userId}
               className="flex h-[44px] items-center border-b border-[#B9B9B9] pl-[10px] pr-[8px]"
             >
-              <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]">
+              <span className="text-[18px] font-bold leading-[1.6] tracking-[-0.36px] text-[#212121]">
                 {MEMBER_TYPE_LABELS[member.memberType] ?? member.memberType}
               </span>
+
               <span className="mx-[10px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9]" />
+
               <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]">
                 {member.loginId}
               </span>
+
               <span className="mx-[10px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9]" />
+
               <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]">
                 {member.name}
               </span>
+
               <span className="ml-auto text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
                 {formatDotDate(member.joinedAt)} 가입
               </span>
@@ -107,7 +112,6 @@ function RecentMembers({ members, isLoading, error }) {
     </div>
   );
 }
-
 // 최근 신고 / 최근 가입 회원을 합치는 섹션
 export default function RecentActivitySection({
   reports = [],
