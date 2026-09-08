@@ -63,3 +63,20 @@ pilsa-app/
 
 # Claude Code 로컬 설정
 .claude/
+
+# TWA(Bubblewrap) 생성물 — twa/twa-manifest.json 만 있으면
+# `bubblewrap update --skipVersionUpgrade` 로 언제든 다시 만들어진다
+twa/.gradle/
+twa/build/
+twa/app/
+twa/gradle/
+twa/gradlew
+twa/gradlew.bat
+twa/build.gradle
+twa/settings.gradle
+twa/gradle.properties
+twa/manifest-checksum.txt
+twa/store_icon.png
+twa/*.aab
+twa/*.apk
+twa/*.idsig
