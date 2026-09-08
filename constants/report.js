@@ -21,6 +21,12 @@ export const REPORT_REASONS = [
 // 이 사유를 선택한 경우에만 상세 사유(detail)를 입력받는다
 export const REPORT_REASON_ETC = 'ETC';
 
+// 화면은 코드(ETC)로 고르지만 서버는 reasonId(숫자)를 받는다.
+// 모르는 코드면 null 을 돌려준다 — 관리자 조치 API 는 reasonId 를 안 보내면
+// 대표(최신) 신고 사유를 대신 쓰므로, 값을 추측해 넣기보다 빼는 편이 안전하다.
+export const getReasonId = (code) =>
+  REPORT_REASONS.find((reason) => reason.code === code)?.reasonId ?? null;
+
 // detail 최대 길이 (DB varchar(500))
 export const REPORT_DETAIL_MAX_LENGTH = 500;
 

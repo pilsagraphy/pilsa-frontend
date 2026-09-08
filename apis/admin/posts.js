@@ -5,8 +5,14 @@ import axiosInstance from '@/apis/axiosInstance';
 // 1. 게시글 목록 - 전 게시판 (GET /api/admin/posts) [ADMIN]
 //    쿼리: page, size, boardId, keyword(제목 또는 글쓴이)
 //    응답: { totalPages, totalCount, posts: [{ postId, boardId, boardName, title,
-//           authorName, commentCount, likeCount, viewCount, created, state }] }
+//           authorName, authorLoginId, authorStudentNo,
+//           commentCount, likeCount, viewCount, created, state }] }
 //    state: normal | blind (deleted 는 목록에서 제외)
+//    authorLoginId · authorStudentNo 는 조치 확인 모달의 '대상 회원' 표기에 쓴다
+export const getAdminPosts = async (params = {}) => {
+  const response = await axiosInstance.get('/api/admin/posts', { params });
+  return response.data;
+};
 
 // 2. 게시글 상세 (GET /api/admin/posts/{postId}) [ADMIN]
 //    응답: { postId, boardId, boardName, categoryName, title, content,
@@ -14,3 +20,7 @@ import axiosInstance from '@/apis/axiosInstance';
 //           commentCount, state, created, updated, attachments[], comments[] }
 //    익명글도 실작성자가 노출된다. 모든 state 의 댓글이 포함되고 조회수는 증가하지 않는다
 //    블라인드/삭제 글의 첨부도 GET /api/user/files/{id} 로 열람 가능 (file.js)
+export const getAdminPost = async (postId) => {
+  const response = await axiosInstance.get(`/api/admin/posts/${postId}`);
+  return response.data;
+};
