@@ -48,9 +48,13 @@ const SORT_OPTIONS = [{ value: SORT_LATEST, label: '최신순' }];
 // 화면 전체가 클릭되지 않는 일이 생긴다. ui/dialog.jsx의 퇴장 애니메이션(duration-200)만큼 띄운다.
 const DIALOG_HANDOFF_MS = 200;
 
-export default function ReportListSection({ title = '신고 관리' }) {
+// initialTab: 처음 열 탭. 게시글 관리 · 댓글 관리에서 '신고 관리로 이동'으로 들어올 때
+// 페이지(page.js)가 주소의 ?tab= 값을 읽어 넘겨준다. 없거나 모르는 값이면 게시글 신고를 연다.
+export default function ReportListSection({ title = '신고 관리', initialTab }) {
   // 게시글 신고 / 댓글 신고 탭
-  const [targetType, setTargetType] = useState(REPORT_TARGET_POST);
+  const [targetType, setTargetType] = useState(
+    initialTab === REPORT_TARGET_COMMENT ? REPORT_TARGET_COMMENT : REPORT_TARGET_POST
+  );
 
   const [currentPage, setCurrentPage] = useState(1);
   const [boardFilter, setBoardFilter] = useState(BOARD_FILTER_ALL);

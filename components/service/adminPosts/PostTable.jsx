@@ -17,14 +17,17 @@ const COLUMN_COUNT = 10;
 // 열 너비는 디자인(표 전체 915px)의 열 중심 좌표에서 역산한 비율을 기준으로 잡되,
 // 제목은 글자가 길어 실제로 더 필요하고 관리 열은 버튼 두 개(60 + 44 + 간격)가 들어가야 해서
 // 그만큼 넓히고 나머지 열에서 덜어냈다.
+// 게시판 이름은 관리자가 자유롭게 짓는 값이라 '자유게시판'보다 길 수 있다.
+// 11%(약 84px)로는 다섯 글자도 겨우 들어가 평범한 이름까지 잘리므로 넓혔고,
+// 대신 작성일을 26.05.08(두 자리 연도)로 줄여 그만큼 덜어냈다.
 const COLUMNS = [
-  { key: 'boardName', label: '게시판 명', width: 'w-[11%]' },
+  { key: 'boardName', label: '게시판 명', width: 'w-[13%]' },
   { key: 'title', label: '제목', width: 'w-[20%]' },
   { key: 'author', label: '글쓴이', width: 'w-[9%]' },
   { key: 'commentCount', label: '댓글', width: 'w-[7%]' },
   { key: 'likeCount', label: '좋아요', width: 'w-[7%]' },
-  { key: 'viewCount', label: '조회수', width: 'w-[7%]' },
-  { key: 'createdAt', label: '작성일', width: 'w-[8%]' },
+  { key: 'viewCount', label: '조회수', width: 'w-[6%]' },
+  { key: 'createdAt', label: '작성일', width: 'w-[7%]' },
   { key: 'status', label: '상태', width: 'w-[7%]' },
   { key: 'actions', label: '관리', width: 'w-[16%]' },
 ];
@@ -38,6 +41,8 @@ export default function PostTable({
   onDelete,
   onMoveToReport,
   loading = false,
+  // 목록은 그대로 두고 조치·재조회만 진행 중일 때 (행 버튼만 잠근다)
+  saving = false,
   errorMessage = '',
 }) {
   const allSelected = posts?.length > 0 && selectedIds.length === posts.length;
@@ -96,6 +101,7 @@ export default function PostTable({
                 onBlind={onBlind}
                 onDelete={onDelete}
                 onMoveToReport={onMoveToReport}
+                disabled={saving}
               />
             ))
           )}

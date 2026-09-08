@@ -44,8 +44,17 @@ export const ROUTES = {
   ADMIN_MEMBER_PENALTY: `${BASE_PATH}admin/members/penalty`,
   ADMIN_BOARDS: `${BASE_PATH}admin/community/boards`,
   ADMIN_POSTS: `${BASE_PATH}admin/community/posts`,
+  // 관리자 전용 게시글 상세.
+  // 사용자 상세(BOARD_POST)는 블라인드·삭제 글을 보여주지 않고 익명글의 실작성자도 가리므로,
+  // 관리자는 조치 판단에 필요한 정보를 이 화면에서 본다.
+  ADMIN_POST_DETAIL: (postId) =>
+    `${BASE_PATH}admin/community/posts/${encodeURIComponent(postId)}`,
   ADMIN_COMMENTS: `${BASE_PATH}admin/community/comments`,
   ADMIN_REPORTS: `${BASE_PATH}admin/community/reports`,
+  // 신고 관리를 특정 탭으로 열기. 게시글 관리 · 댓글 관리의 '신고 관리로 이동'이 쓴다.
+  // targetType: 'post' | 'comment' (신고 관리의 탭 값과 같다)
+  ADMIN_REPORTS_TAB: (targetType) =>
+    `${BASE_PATH}admin/community/reports?tab=${encodeURIComponent(targetType)}`,
   ADMIN_CALENDAR: `${BASE_PATH}admin/calendar`,
 };
 

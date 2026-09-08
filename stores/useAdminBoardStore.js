@@ -39,21 +39,35 @@ const refreshUserBoards = () => {
   useBoardStore.getState().fetchBoards();
 };
 
+// ensureBoards 가 재사용할 진행 중인 조회.
+// 게시글·댓글 관리의 게시판 필터가 화면에 들어올 때 목록을 부르는데, 같은 조회가
+// 여러 번 나가지 않도록 한 요청을 함께 기다린다.
+// (개발 모드의 Strict Mode 는 useEffect 를 두 번 실행한다)
+let inflight = null;
+
 const useAdminBoardStore = create((set, get) => ({
   isLoading: false,
   data: [],
   error: null,
 
+  // 목록을 한 번이라도 받아봤는지. data.length 로는 '아직 안 받음'과
+  // '받았는데 게시판이 없음'을 구분할 수 없어 따로 둔다.
+  hasFetched: false,
+
   clearError: () => set({ error: null }),
 
-  reset: () => set({ isLoading: false, data: [], error: null }),
+  reset: () => {
+    inflight = null;
+    set({ isLoading: false, data: [], error: null, hasFetched: false });
+  },
 
-  // 1. 게시판 목록 조회
+  // 1. 게시판 목록 조회 — 언제나 서버에 다시 묻는다.
+  // 게시판 관리 화면이 생성·수정·삭제 뒤에 부르므로 캐시를 쓰면 안 된다.
   fetchBoards: async () => {
     set({ isLoading: true, error: null });
     try {
       const boards = await getAdminBoards();
-      set({ data: boards });
+      set({ data: boards, hasFetched: true });
       return boards;
     } catch (err) {
       set({ error: getErrorMessage(err, FALLBACK_MESSAGES.fetch) });
@@ -61,6 +75,21 @@ const useAdminBoardStore = create((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  // 1-1. 필요할 때만 조회하는 진입점.
+  // 게시글·댓글 관리의 게시판 필터처럼 '목록만 있으면 되는' 화면이 쓴다.
+  // 이미 받아뒀으면 다시 받지 않고, 진행 중인 요청이 있으면 그것을 함께 기다린다.
+  ensureBoards: () => {
+    const { hasFetched, data, fetchBoards } = get();
+
+    if (hasFetched) return Promise.resolve(data);
+    if (inflight) return inflight;
+
+    inflight = fetchBoards().finally(() => {
+      inflight = null;
+    });
+    return inflight;
   },
 
   // 2. 게시판 생성 - payload: { name, readScope, writeLevel }

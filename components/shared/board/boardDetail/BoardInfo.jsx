@@ -3,6 +3,8 @@
 import React from 'react';
 import { formatKoreanDate } from '@/lib/boardDetail';
 
+import StateChip from './StateChip';
+
 function Divider({ dark = false }) {
   return <div className={['w-full h-px', dark ? 'bg-[#B9B9B9]' : 'bg-[#DEDEDE]'].join(' ')} />;
 }
@@ -21,7 +23,11 @@ function Badge({ label }) {
 }
 
 // 제목 · 배지 · 등록일 · 작성자 영역
-export default function BoardInfo({ badgeLabel, title, date, author }) {
+//
+// stateLabel: 게시글 상태(공개 · 블라인드 · 삭제). 관리자 상세만 넘긴다.
+//   넘기지 않으면 그리지 않으므로 사용자 상세의 모양은 그대로다.
+//   게시판 이름 옆에 붙이면 '게시판이 공개'라는 뜻으로 읽히므로 제목 옆에 둔다.
+export default function BoardInfo({ badgeLabel, title, date, author, stateLabel }) {
   const safeTitle = title ?? '';
   const safeAuthor = author ?? '';
   const safeDate = formatKoreanDate(date);
@@ -33,9 +39,17 @@ export default function BoardInfo({ badgeLabel, title, date, author }) {
       <div className="flex min-h-0 items-center py-3 md:h-[56px] md:py-0">
         <div className="flex min-w-0 flex-wrap items-center gap-2 md:gap-[12px]">
           {badgeLabel && <Badge label={badgeLabel} />}
-          <h2 className="min-w-0 flex-1 text-[16px] leading-snug tracking-[-0.36px] text-[#212121] md:text-[18px] md:leading-none">
+          {/* 상태를 붙일 때만 flex-1 을 뺀다. flex-1 이면 제목이 남은 폭을 다 차지해
+              상태가 오른쪽 끝으로 밀려 '제목 옆'이 아니게 된다.
+              상태가 없는 사용자 상세는 지금까지와 똑같이 flex-1 을 유지한다. */}
+          <h2
+            className={`min-w-0 text-[16px] leading-snug tracking-[-0.36px] text-[#212121] md:text-[18px] md:leading-none ${
+              stateLabel ? '' : 'flex-1'
+            }`}
+          >
             {safeTitle}
           </h2>
+          {stateLabel && <StateChip label={stateLabel} />}
         </div>
       </div>
 
