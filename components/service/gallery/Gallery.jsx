@@ -1,5 +1,6 @@
 import { GALLERY_PHOTOS } from '@/constants/gallery';
 import GalleryTile from './GalleryTile';
+import GalleryMobile from './GalleryMobile';
 
 const Gallery = () => {
   const [
@@ -17,15 +18,20 @@ const Gallery = () => {
   ] = GALLERY_PHOTOS;
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-[51px] bg-white p-8">
-      <header className="pb-[40px] border-b-[1.5px]">
-        <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.02em] text-[#212121]">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-[34px] bg-white p-5 md:gap-[51px] md:p-8">
+      <header className="border-b-[1.5px] pb-[16px] md:pb-[40px]">
+        <h2 className="font-['Pretendard',sans-serif] text-[18px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]">
           활동 사진
         </h2>
       </header>
 
-      {/* 전체 하나의 큰 직사각형(2:1) 안을 여백 없이 채우는 구조 */}
-      <div className="flex flex-col w-full aspect-[2/1] overflow-hidden">
+      {/* 모바일: 피그마 전용 레이아웃 (768px 미만에서만 노출) */}
+      <div className="md:hidden">
+        <GalleryMobile />
+      </div>
+
+      {/* 데스크톱: 전체 하나의 큰 직사각형(2:1) 안을 여백 없이 채우는 구조 */}
+      <div className="hidden w-full aspect-[2/1] flex-col overflow-hidden md:flex">
         {/* 1, 2, 3번: 가로 3장, 여백 없이 붙여서 */}
         <div className="flex flex-1">
           <div className="relative flex-1">
