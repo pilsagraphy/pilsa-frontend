@@ -59,7 +59,7 @@ function RecentMembers({ members = RECENT_MEMBERS }) {
             key={member.id}
             className="flex h-[44px] items-center border-b border-[#B9B9B9] pl-[10px] pr-[8px]"
           >
-            <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]">
+            <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121] font-bold">
               {member.role}
             </span>
             <span className="mx-[10px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9]" />
