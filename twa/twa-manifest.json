@@ -1,5 +1,5 @@
 {
-  "packageId": "kr.co.pilsa.app",
+  "packageId": "kr.co.pilsa.pilsagraphy",
   "host": "pilsa.co.kr",
   "name": "필사그래피",
   "launcherName": "필사그래피",
@@ -15,6 +15,7 @@
   "startUrl": "/",
   "iconUrl": "https://pilsa.co.kr/icons/icon-512.png",
   "maskableIconUrl": "https://pilsa.co.kr/icons/icon-maskable-512.png",
+  "monochromeIconUrl": "https://pilsa.co.kr/icons/icon-monochrome-512.png",
   "splashScreenFadeOutDuration": 300,
   "signingKey": {
     "path": "../../app-key/pilsa-upload.jks",

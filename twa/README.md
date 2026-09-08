@@ -12,14 +12,16 @@ TWA 는 `https://pilsa.co.kr` 을 그대로 여는 껍데기라 **웹 코드가 
 
 | 항목 | 값 |
 |---|---|
-| `packageId` | `kr.co.pilsa.app` |
+| `packageId` | `kr.co.pilsa.pilsagraphy` — **Play Console 에 2026-08-16 에 만들어 둔 앱의 패키지명.** 다른 값으로 빌드하면 업로드가 거부된다 |
 | `host` · `iconUrl` · `webManifestUrl` · `fullScopeUrl` | `pilsa.co.kr` |
-| `signingKey` | `../../app-key/pilsa-upload.jks`, alias `pilsa-upload` |
+| `signingKey` | `../../app-key/pilsa-upload.jks`, alias `pilsa-upload` (2026-09-09 재생성) |
 | `appVersionName` / `appVersionCode` | `1.0.0` / `1` (아직 Play 업로드 전) |
-| `assetlinks.json` 지문 | 업로드 키 SHA-256 반영됨 — **Play 앱 서명 키 지문은 아직 없다** (4번) |
+| `assetlinks.json` 지문 | 업로드 키 `20:7E:A7:E9:…:9B:8A` + Play 앱 서명 키 `95:08:85:FC:…:46:38` 두 개 |
 
 > 업로드 키는 `pilsa-upload.jks` 다. 예전 `v_1_release_key.jks` 는 비밀번호를 아는 사람이 없어
-> 열 수 없었고 스토어에 올린 적도 없어서 새 키로 교체했다 (52ac55e).
+> 열 수 없었고 스토어에 올린 적도 없어서 새 키로 교체했다 (52ac55e). 그 키도 Play 에 올리기 전에
+> 비밀번호가 노출돼 2026-09-09 에 다시 만들었다 (옛 파일은 `app-key/old/`). 비밀번호는 키스토어 옆
+> 파일·비밀번호 관리자에만 두고 **레포·채팅·로그에 쓰지 않는다.**
 
 ## 1. 사전 준비
 
@@ -89,11 +91,12 @@ bubblewrap update --skipVersionUpgrade
 
 ## 3. 빌드
 
-비밀번호는 명령줄에 쓰지 말고 같은 셸의 환경변수로 넘긴다:
+비밀번호는 명령줄에 쓰지 말고 같은 셸의 환경변수로 넘긴다 (키스토어 옆에 둔 비밀번호 파일을 읽어서):
 
 ```powershell
-$env:BUBBLEWRAP_KEYSTORE_PASSWORD = '<pilsa-upload.jks 비밀번호>'
-$env:BUBBLEWRAP_KEY_PASSWORD      = '<같은 값>'
+$pw = (Get-Content "..\..\app-key\pilsa-upload.password.txt" -Raw).Trim()
+$env:BUBBLEWRAP_KEYSTORE_PASSWORD = $pw
+$env:BUBBLEWRAP_KEY_PASSWORD      = $pw
 bubblewrap build
 ```
 
@@ -103,30 +106,41 @@ bubblewrap build
 > 이 걸려 있어 cmd 가 현재 디렉터리의 배치 파일을 못 찾는 것이다. 그 셸에서만 지우고 다시 실행한다:
 > `Remove-Item Env:\NoDefaultCurrentDirectoryInExePath`
 
-## 4. Play Console 업로드 → **여기서 앱 서명 키 지문이 나온다**
+빌드가 끝나면 패키지명과 서명이 맞는지 확인한다 (`~/.bubblewrap/android_sdk/build-tools/36.1.0/`):
 
-Play 신규 앱은 AAB + Play App Signing 이 강제된다. 그래서 로컬 `pilsa-upload.jks` 는
-**업로드 키**로만 쓰이고, 실제 배포되는 앱은 Play 가 만든 **앱 서명 키**로 재서명된다.
-`assetlinks.json` 에는 **두 지문이 다 들어가야 한다** — 업로드 키로 서명한 로컬 APK 도,
-Play 를 통해 설치된 앱도 검증에 통과해야 하기 때문이다. 뒤쪽 값은 한 번 올리기 전에는 존재하지 않는다.
+```powershell
+aapt2 dump badging app-release-signed.apk | Select-String "package:"       # kr.co.pilsa.pilsagraphy
+apksigner verify --print-certs app-release-signed.apk | Select-String SHA-256  # assetlinks 의 업로드 키 지문과 같아야 한다
+```
 
-1. Play Console → 앱 만들기 (패키지명 `kr.co.pilsa.app`)
-2. 내부 테스트 트랙에 `app-release-bundle.aab` 업로드
-3. **설정 → 앱 서명 → 앱 서명 키 인증서 → SHA-256 인증서 지문** 복사
+## 4. Play Console 업로드
 
-## 5. assetlinks.json 반영
+Play 신규 앱은 AAB + Play App Signing 이 강제된다. 로컬 `pilsa-upload.jks` 는 **업로드 키**로만 쓰이고,
+실제 배포되는 앱은 Play 가 만든 **앱 서명 키**로 재서명된다. 그래서 `assetlinks.json` 에는
+**두 지문이 다 들어가 있다** — 업로드 키로 서명한 로컬 APK 도, Play 를 통해 설치된 앱도 검증에 통과해야 한다.
 
-`public/.well-known/assetlinks.json` 의 `sha256_cert_fingerprints` 배열에
-4번에서 복사한 지문을 **두 번째 항목으로 추가**한다. 기존 업로드 키 지문은 지우지 않는다.
+Play Console 의 앱(`kr.co.pilsa.pilsagraphy`)은 이미 만들어져 있고 앱 서명 키도 발급돼 있다
+(설정 → 앱 서명 → 앱 서명 키 인증서 SHA-256 = `95:08:85:FC:…:46:38`). 남은 것은 업로드뿐이다:
+
+1. 테스트 및 출시 → 테스트 → 내부(또는 비공개) 테스트 → 새 버전 만들기
+2. `app-release-bundle.aab` 업로드 — 첫 업로드 때 업로드 키 인증서가 자동 등록된다
+3. 테스터 목록에 본인 계정을 넣고 참여 링크로 설치한다
+
+다음 버전을 올릴 때는 `appVersionCode` 를 올려야 한다 (2번의 `--skipVersionUpgrade` 를 빼거나 `--appVersionName` 지정).
+
+## 5. assetlinks.json
+
+`public/.well-known/assetlinks.json` 의 `package_name` 은 `kr.co.pilsa.pilsagraphy`,
+`sha256_cert_fingerprints` 는 업로드 키와 Play 앱 서명 키 두 개다. 키를 다시 만들었거나 Play 서명 키가 바뀌면 여기를 고치고 프론트를 재배포한다.
 
 ```json
 "sha256_cert_fingerprints": [
-  "F3:67:61:67:...:EB:14",
-  "<Play 앱 서명 키 지문>"
+  "20:7E:A7:E9:DE:CD:BD:F9:08:41:FC:85:6E:0C:4C:28:3E:FA:AC:46:F7:BF:14:1E:BD:CB:05:47:F5:78:9B:8A",
+  "95:08:85:FC:4E:2A:97:B9:93:BF:46:7B:44:76:64:47:53:1B:E4:A7:8F:8F:FD:5B:8E:98:D4:43:5A:F6:46:38"
 ]
 ```
 
-고친 뒤 프론트를 재배포한다. 배포 후 반드시 확인 — 리다이렉트 없이 `200` 과 `application/json` 이어야 한다:
+배포 후 반드시 확인 — 리다이렉트 없이 `200` 과 `application/json` 이어야 한다:
 
 ```bash
 curl -sSIL https://pilsa.co.kr/.well-known/assetlinks.json
@@ -147,6 +161,10 @@ https://developers.google.com/digital-asset-links/tools/generator
   원인은 대부분 (a) 지문 불일치 (b) assetlinks.json 이 리다이렉트됨 (c) 패키지명 불일치.
 
 > 검증은 앱 설치 시점에 캐시된다. assetlinks 를 고친 뒤에는 **앱을 지웠다 다시 설치**해야 반영된다.
+> 로컬 APK(업로드 키 서명)를 깔아 둔 폰에 Play 버전을 설치하려면 서명이 달라 먼저 지워야 한다.
+
+> 앱 안에서 화면이 **PC 레이아웃**으로 보이면 Chrome 의 "데스크톱 사이트" 모드가 켜진 것이다.
+> TWA 는 폰의 Chrome 으로 렌더링되므로 Chrome 설정(사이트 설정 → 데스크톱 사이트)을 따른다. 앱 문제가 아니다.
 
 ## 웹 푸시에 대해
 

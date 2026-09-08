@@ -3,9 +3,10 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "kr.co.pilsa.app",
+      "package_name": "kr.co.pilsa.pilsagraphy",
       "sha256_cert_fingerprints": [
-        "F3:67:61:67:2C:1E:37:6B:0E:02:ED:5A:34:CD:4C:5C:9B:52:FF:59:DD:C2:9D:AB:FE:D3:88:FC:CF:C6:EB:14"
+        "20:7E:A7:E9:DE:CD:BD:F9:08:41:FC:85:6E:0C:4C:28:3E:FA:AC:46:F7:BF:14:1E:BD:CB:05:47:F5:78:9B:8A",
+        "95:08:85:FC:4E:2A:97:B9:93:BF:46:7B:44:76:64:47:53:1B:E4:A7:8F:8F:FD:5B:8E:98:D4:43:5A:F6:46:38"
       ]
     }
   }
