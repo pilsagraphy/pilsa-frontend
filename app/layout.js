@@ -1,5 +1,6 @@
 import './globals.css';
 import AuthBootstrap from '@/components/common/AuthBootstrap';
+import DesktopSiteNotice from '@/components/shared/DesktopSiteNotice';
 
 export const metadata = {
   title: 'pilsa-homepage',
@@ -31,6 +32,8 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ko">
       <body className="min-h-screen bg-white text-neutral-900 flex flex-col">
+        {/* 휴대폰인데 크롬 '데스크톱 사이트' 모드로 PC 화면이 그려질 때만 뜬다 (설치형 앱에서는 끌 방법이 없어 안내가 필요하다) */}
+        <DesktopSiteNotice />
         <AuthBootstrap>{children}</AuthBootstrap>
       </body>
     </html>
