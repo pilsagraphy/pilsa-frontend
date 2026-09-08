@@ -31,7 +31,7 @@ const OFFLINE_URL = '/offline.html';
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(OFFLINE_CACHE).then((cache) => cache.addAll([OFFLINE_URL, '/icons/icon-192.png']))
+    caches.open(OFFLINE_CACHE).then((cache) => cache.addAll([OFFLINE_URL, '/icons/icon-192.png', '/icons/badge-96.png']))
   );
   self.skipWaiting();
 });
@@ -85,7 +85,10 @@ self.addEventListener('push', (event) => {
       // 받은 푸시는 반드시 알림으로 표시 (userVisibleOnly 계약)
       await self.registration.showNotification(data.title || '필사그래피', {
         body: data.body || '',
-        icon: '/images/brandCI/logo.png',
+        // icon 은 알림 본문 옆 큰 아이콘, badge 는 안드로이드 상태바의 작은 단색 아이콘(알파만 쓰고 색은 시스템이 입힌다).
+        // badge 가 없으면 크롬 기본 아이콘이 상태바에 뜬다.
+        icon: '/icons/icon-192.png',
+        badge: '/icons/badge-96.png',
         data,
       });
     })()
@@ -95,19 +98,31 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const data = event.notification.data || {};
-  const url = resolveNotificationUrl(data);
+  // 상대 경로를 절대 URL 로 — TWA(안드로이드 앱)로 넘어갈 때는 절대 URL 이어야 앱이 그 화면을 연다
+  const url = new URL(resolveNotificationUrl(data), self.location.origin).href;
 
   event.waitUntil(
     (async () => {
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
-      // 이미 열린 창이 있으면 그 창을 포커스하고 이동
+
+      // 이미 열린 창이 있으면 그 창을 게시글로 이동시킨다.
+      // focus() 와 navigate() 는 환경(특히 TWA)에 따라 각각 거부될 수 있어 따로 감싼다 —
+      // 예전엔 focus() 가 던지면 navigate 까지 못 가서 앱은 뜨는데 첫 화면에 머물렀다.
       for (const client of windows) {
-        if ('focus' in client) {
-          await client.focus();
+        try {
           if ('navigate' in client) {
-            await client.navigate(url);
+            const moved = await client.navigate(url);
+            if (moved) {
+              try {
+                await moved.focus();
+              } catch {
+                // 포커스 실패는 무시 — 이동은 이미 됐다
+              }
+              return;
+            }
           }
-          return;
+        } catch {
+          // 이 창으로는 이동 불가 → 다음 창 또는 새 창
         }
       }
       await self.clients.openWindow(url);

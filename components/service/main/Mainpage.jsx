@@ -28,15 +28,21 @@ export default function Page() {
     if (isAccelerating) return;
     setIsAccelerating(true);
 
-    // 게이트 통과 표시 (세션 쿠키). 지울 때는 max-age=0
-    document.cookie = 'pilsa_gate_passed=1; path=/';
+    // 게이트 통과 표시. 세션 쿠키였을 때는 설치형 앱(TWA)을 콜드 스타트할 때마다 쿠키가 사라져
+    // 매번 게이트가 다시 떴다 — 1년짜리로 둔다. 지울 때는 max-age=0
+    document.cookie = 'pilsa_gate_passed=1; path=/; max-age=31536000';
+
+    // middleware 가 게이트로 돌려보내며 붙인 원래 목적지(?from=/students/...). 알림을 눌러 들어온
+    // 사람이 게시글 대신 소개 페이지로 떨어지지 않게 그쪽으로 보낸다. 같은 사이트 안 경로만 허용한다.
+    const from = new URLSearchParams(window.location.search).get('from');
+    const next = from && from.startsWith('/') && !from.startsWith('//') ? from : '/about/intro';
 
     // 바늘을 10배로 돌리고 화면을 한 번 번쩍인 뒤 넘어간다
     setFlashOn(true);
     requestAnimationFrame(() => setFlashOn(false));
 
     timeoutRef.current = setTimeout(() => {
-      router.push('/about/intro');
+      router.push(next);
     }, 1000);
   };
 
