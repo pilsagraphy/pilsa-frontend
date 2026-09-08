@@ -13,7 +13,12 @@ export const listTitleClass =
 export const listSubtitleClass = 'text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]';
 
 // 오른쪽 위 액션 버튼 두 개 (예: 선택 블라인드 · 선택 삭제)
-export const actionButtonClass = 'h-[52px] w-[180px] rounded-[4px] text-[16px] font-normal';
+//
+// 180px 은 넉넉할 때의 너비다. 폭이 모자라면 여기서부터 줄어들어 글자가 들어갈
+// 만큼(약 132px)까지 좁아진다 — 왼쪽 검색창에는 최소 너비가 걸려 있어서
+// 줄어드는 몫을 이 버튼들이 먼저 받는다.
+// px-3 은 좁아졌을 때의 하한을 조금 낮춘다. 180px 일 때는 글자가 가운데 정렬이라 표시에 차이가 없다.
+export const actionButtonClass = 'h-[52px] w-[180px] shrink px-3 rounded-[4px] text-[16px] font-normal';
 
 // 목록 표의 체크박스 (헤더 · 행 공용)
 export const checkboxClass =

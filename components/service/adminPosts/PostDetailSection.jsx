@@ -45,14 +45,22 @@ export default function PostDetailSection({ postId, from }) {
   const post = useAdminPostStore((s) => s.detail);
   const isLoading = useAdminPostStore((s) => s.isDetailLoading);
   const error = useAdminPostStore((s) => s.detailError);
+  const detailPostId = useAdminPostStore((s) => s.detailPostId);
   const fetchPost = useAdminPostStore((s) => s.fetchPost);
 
   useEffect(() => {
     if (postId) fetchPost(postId);
   }, [postId, fetchPost]);
 
-  // 댓글 관리에서 #comment-{id} 를 달고 들어오면 그 댓글로 옮겨 강조한다
-  const focusedAnchor = useCommentAnchor(post?.comments ?? []);
+  // 스토어에 담긴 결과가 지금 보려는 글의 것인지.
+  // fetchPost 는 effect(첫 paint 뒤)에서 돌고 스토어는 싱글턴이라, 이 확인이 없으면
+  // 첫 프레임에 '게시글을 찾을 수 없습니다'가 스치거나 직전에 보던 글이 잠깐 그려진다.
+  // 경로 파라미터는 문자열, 서버 값은 숫자라 문자열로 맞춰 비교한다.
+  const isCurrent = detailPostId != null && String(detailPostId) === String(postId);
+
+  // 댓글 관리에서 #comment-{id} 를 달고 들어오면 그 댓글로 옮겨 강조한다.
+  // 이전 글의 댓글로는 찾지 않도록 지금 글의 결과일 때만 넘긴다.
+  const focusedAnchor = useCommentAnchor(isCurrent ? (post?.comments ?? []) : []);
 
   const back = BACK_TARGETS[from] ?? BACK_TARGETS[DETAIL_FROM_POSTS];
 
@@ -66,7 +74,8 @@ export default function PostDetailSection({ postId, from }) {
     </Link>
   );
 
-  if (isLoading && !post) {
+  // 아직 이 글을 요청하지 않았거나(첫 프레임) 받아오는 중
+  if (!isCurrent || isLoading) {
     return (
       <section className="mx-auto w-full max-w-[920px] px-4 md:px-0">
         {backLink}

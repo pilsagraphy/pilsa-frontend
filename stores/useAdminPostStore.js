@@ -2,39 +2,28 @@ import { create } from 'zustand';
 
 import { getErrorMessage } from '@/apis/auth';
 import { getAdminPost, getAdminPosts } from '@/apis/admin/posts';
-import { selectBlind, selectDelete } from '@/apis/admin/reports';
+
+import createModerationListSlice from './createModerationListSlice';
 
 // 관리자 - 게시글 관리 상태
 //
-// isLoading / data / error 세 개를 한 세트로 관리한다.
-//  - isLoading : 요청 시작에 true, 끝나면 성공·실패 상관없이 finally 에서 반드시 false
-//  - data      : 게시글 목록. 서버가 준 값을 그대로 담는다
-//  - error     : 화면에 그대로 띄울 한국어 문장 (요청 시작 시 null 로 비운다)
-//
-// 목록 · 검색 · 페이지네이션은 서버가 처리한다 (쿼리: page, size, boardId, keyword).
-// 블라인드 · 삭제 조치는 신고 관리와 같은 API(select-*)를 targetType='post' 로 부른다.
-const FALLBACK_MESSAGES = {
-  fetch: '게시글 목록을 불러오지 못했습니다.',
-  detail: '게시글을 불러오지 못했습니다.',
-  blind: '블라인드 처리에 실패했습니다.',
-  remove: '삭제 처리에 실패했습니다.',
-};
+// 목록 조회 · 블라인드 · 삭제는 댓글 관리와 하는 일이 같아 공용 슬라이스를 쓴다.
+// 게시글에만 있는 상세 화면(관리자 전용 게시글 상세)만 여기서 덧붙인다.
+const DETAIL_FALLBACK_MESSAGE = '게시글을 불러오지 못했습니다.';
 
-const TARGET_TYPE = 'post';
-
-// 마지막으로 보낸 목록 조회의 번호.
-// 페이지를 빨리 넘기거나 검색어를 고치면 요청이 여럿 겹치는데, 먼저 보낸 것이
-// 늦게 도착하면 화면과 다른 페이지의 목록이 표시된다. 응답을 쓰기 직전에 번호를 확인한다.
-let listSeq = 0;
+const listSlice = createModerationListSlice({
+  targetType: 'post',
+  fetchPage: getAdminPosts,
+  listKey: 'posts',
+  messages: {
+    fetch: '게시글 목록을 불러오지 못했습니다.',
+    blind: '블라인드 처리에 실패했습니다.',
+    remove: '삭제 처리에 실패했습니다.',
+  },
+});
 
 const useAdminPostStore = create((set, get) => ({
-  isLoading: false,
-  data: [],
-  error: null,
-
-  // 목록 응답에 실린 값을 그대로 쓴다 (직접 계산하지 않는다)
-  totalPages: 1,
-  totalCount: 0,
+  ...listSlice(set, get),
 
   // 상세 화면용. 목록과 요청이 겹치지 않도록 상태를 따로 둔다
   // (상세를 보는 동안 목록의 로딩 표시가 켜지면 안 된다)
@@ -42,104 +31,27 @@ const useAdminPostStore = create((set, get) => ({
   detail: null,
   detailError: null,
 
-  reset: () =>
-    set({
-      isLoading: false,
-      data: [],
-      error: null,
-      totalPages: 1,
-      totalCount: 0,
-      isDetailLoading: false,
-      detail: null,
-      detailError: null,
-    }),
+  // detail · detailError 가 어느 글의 결과인지.
+  // 스토어가 싱글턴이라 화면을 옮겨도 이전 글의 결과가 남아 있어, 화면이
+  // '지금 보려는 글의 결과가 맞는지' 확인할 수 있어야 한다.
+  detailPostId: null,
 
-  // 1. 목록 조회 (GET /api/admin/posts)
-  // params: { page, size, boardId, keyword } — 빈 값은 부르는 쪽에서 빼고 넘긴다
-  fetchPosts: async (params = {}) => {
-    const seq = ++listSeq;
-    // 이 요청이 아직 최신인지. 뒤처진 응답은 화면에 쓰지 않고 버린다.
-    const isStale = () => seq !== listSeq;
-
-    set({ isLoading: true, error: null });
-    try {
-      const result = await getAdminPosts(params);
-      if (isStale()) return result;
-
-      set({
-        data: Array.isArray(result?.posts) ? result.posts : [],
-        totalPages: Math.max(1, Number(result?.totalPages) || 1),
-        totalCount: Number(result?.totalCount) || 0,
-      });
-      return result;
-    } catch (err) {
-      if (isStale()) return null;
-
-      set({ error: getErrorMessage(err, FALLBACK_MESSAGES.fetch) });
-      return null;
-    } finally {
-      // 뒤처진 요청이 최신 요청의 로딩 표시를 끄지 않게 한다
-      if (!isStale()) set({ isLoading: false });
-    }
-  },
-
-  // 2. 상세 조회 (GET /api/admin/posts/{postId})
+  // 상세 조회 (GET /api/admin/posts/{postId})
   // 익명글도 실작성자가 나오고 모든 상태의 댓글이 함께 온다. 조회수는 늘지 않는다.
   fetchPost: async (postId) => {
     // 이전 글을 비우고 시작한다. 안 비우면 다른 글로 옮겼을 때
     // 새 글을 받아오는 동안 이전 글의 제목·본문이 잠깐 그려진다.
-    set({ isDetailLoading: true, detail: null, detailError: null });
+    set({ isDetailLoading: true, detail: null, detailError: null, detailPostId: postId });
     try {
       const detail = await getAdminPost(postId);
       set({ detail });
       return detail;
     } catch (err) {
-      set({ detail: null, detailError: getErrorMessage(err, FALLBACK_MESSAGES.detail) });
+      set({ detail: null, detailError: getErrorMessage(err, DETAIL_FALLBACK_MESSAGE) });
       return null;
     } finally {
       set({ isDetailLoading: false });
     }
-  },
-
-  // 3. 블라인드 · 삭제 조치 (PATCH /api/admin/reports/select-blind | select-delete)
-  //
-  // 항목마다 독립 트랜잭션이라 일부만 실패할 수 있다 (부분 성공).
-  // 응답 { successCount, failCount, failures: [{ id, message }] } 를 그대로 돌려주고,
-  // 어떻게 알릴지는 화면이 판단한다.
-  //
-  // reasonId 가 null 이면 키를 넣지 않는다 — 서버가 대표(최신) 신고 사유를 대신 쓴다.
-  // detail 은 '기타' 사유일 때만 보낸다.
-  moderatePosts: async (action, postIds, { reasonId, detail } = {}) => {
-    const request = action === 'delete' ? selectDelete : selectBlind;
-    const fallback = action === 'delete' ? FALLBACK_MESSAGES.remove : FALLBACK_MESSAGES.blind;
-
-    const body = {
-      targetType: TARGET_TYPE,
-      // 중복은 보내지 않는다. 서버가 한 번만 처리한다고 명세에 적혀 있지만,
-      // 삭제는 작성자에게 주의 +2 를 붙이므로 같은 id 가 여러 번 실린 요청은
-      // 애초에 만들지 않는 편이 안전하다 (여기가 네트워크로 나가기 전 마지막 관문이다).
-      targetIds: [...new Set(postIds)],
-      ...(reasonId != null ? { reasonId } : {}),
-      ...(detail ? { detail } : {}),
-    };
-
-    set({ isLoading: true, error: null });
-    try {
-      return await request(body);
-    } catch (err) {
-      set({ error: getErrorMessage(err, fallback) });
-      return null;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
-
-  // 실패 문구를 꺼내면서 비운다.
-  // 안 비우면 빈 목록 안내문 자리에 지난 조치의 실패 문구가 남는다.
-  takeError: () => {
-    const { error } = get();
-    if (error) set({ error: null });
-    return error;
   },
 }));
 

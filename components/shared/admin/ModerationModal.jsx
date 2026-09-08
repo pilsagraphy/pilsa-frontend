@@ -40,6 +40,9 @@ export default function ModerationModal({
   // content는 게시판 이름을 뺀 제목 · 댓글 내용만 넘긴다 ([게시판명]은 여기서 붙인다).
   // 12자 말줄임을 게시판 이름까지 포함해서 세면 안 되기 때문이다.
   items = [],
+  // 조치 요청이 오가는 중. 확인 버튼을 잠가 같은 요청이 두 번 나가지 않게 한다
+  // (삭제는 작성자에게 주의 +2 를 붙이므로 중복 요청이 그냥 넘어갈 일이 아니다).
+  submitting = false,
   onClose,
   onSubmit,
 }) {
@@ -49,7 +52,9 @@ export default function ModerationModal({
       onClose={onClose}
       onSubmit={onSubmit}
       // 대상이 하나도 없으면 조치할 것이 없으므로 확인을 막는다
-      disabled={items.length === 0}
+      disabled={items.length === 0 || submitting}
+      // 버튼이 잠긴 이유를 보여준다. 그냥 잠그기만 하면 눌러도 아무 일 없는 것처럼 보인다
+      confirmLabel={submitting ? '처리 중' : '확인'}
       // 폭은 표 내용에 따라 늘어난다. 짧으면 시안 크기(505px)를 지키고,
       // 대상 회원 · 게시글이 길면 그만큼 넓어지되 화면을 넘지 않도록 상한을 둔다.
       // min-width는 max-width보다 우선하므로 하한에도 92vw를 걸어야

@@ -3,7 +3,8 @@
 // 목록은 GET /api/admin/comments 응답을 쓴다 (더미 데이터 없음).
 // 서버 응답: { commentId, postId, boardId, boardName, authorName, content, created, state }
 //
-// 상태 라벨 · 게시판 필터는 게시글 관리와 같은 값이라 가져다 쓴다.
+// 상태 라벨은 게시글 관리와 같은 값이라 가져다 쓴다.
+// (게시판 필터는 두 화면이 공유하는 useAdminModerationList 가 직접 adminPosts 에서 가져간다)
 import {
   DETAIL_FROM_COMMENTS,
   DETAIL_FROM_PARAM,
@@ -12,8 +13,6 @@ import {
 } from './adminPosts';
 import { ROUTES } from './routes';
 import { getCommentAnchorId } from '@/lib/utils';
-
-export { BOARD_FILTER_ALL, buildBoardFilterOptions } from './adminPosts';
 
 // 호출부에서 어색하지 않도록 댓글 쪽 이름으로도 내보낸다.
 export const COMMENT_STATES = POST_STATES;

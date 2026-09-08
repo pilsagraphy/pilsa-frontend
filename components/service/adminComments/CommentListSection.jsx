@@ -1,8 +1,5 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
-
 import SortSelect from '@/components/shared/board/boardList/SortSelect';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
@@ -15,218 +12,23 @@ import {
   listSubtitleClass,
   listTitleClass,
 } from '@/components/shared/admin/CommunityListStyles';
-import useDebouncedValue from '@/hooks/useDebouncedValue';
-import useAdminBoardStore from '@/stores/useAdminBoardStore';
+import useAdminModerationList from '@/hooks/useAdminModerationList';
 import useAdminCommentStore from '@/stores/useAdminCommentStore';
-import { getReasonId } from '@/constants/report';
-import { ROUTES } from '@/constants/routes';
 // 신고 관리의 탭 값. 문자열을 손으로 적으면 한쪽이 바뀔 때 조용히 어긋난다.
 import { REPORT_TARGET_COMMENT } from '@/constants/adminReports';
 
 import CommentTable from './CommentTable';
-import { BOARD_FILTER_ALL, buildBoardFilterOptions } from '@/constants/adminComments';
 
-const PAGE_SIZE = 10;
-
+// 필터 · 검색 · 페이지네이션 · 선택 · 조치는 게시글 관리와 동작이 같아 훅에 모아 뒀다.
+// 여기 남는 것은 댓글 표에 무엇을 어떻게 그리느냐뿐이다.
 export default function CommentListSection({ title = '댓글 관리' }) {
-  const router = useRouter();
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [boardFilter, setBoardFilter] = useState(BOARD_FILTER_ALL);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedIds, setSelectedIds] = useState([]);
-
-  // 글자를 칠 때마다 조회하지 않도록 서버에 보낼 검색어만 늦춘다 (입력창은 즉시 반응)
-  const searchKeyword = useDebouncedValue(searchQuery);
-
-  const comments = useAdminCommentStore((s) => s.data);
-  const totalPages = useAdminCommentStore((s) => s.totalPages);
-  const isLoading = useAdminCommentStore((s) => s.isLoading);
-  const error = useAdminCommentStore((s) => s.error);
-  const fetchComments = useAdminCommentStore((s) => s.fetchComments);
-  const moderateComments = useAdminCommentStore((s) => s.moderateComments);
-  const takeError = useAdminCommentStore((s) => s.takeError);
-
-  // 게시판 필터 선택지는 관리자 게시판 목록에서 받아온다 (이름 하드코딩 금지).
-  // 필터는 목록만 있으면 되므로 ensureBoards 로 부른다 —
-  // 이미 받아둔 게 있으면 화면을 옮겨 다녀도 다시 받지 않는다.
-  const boards = useAdminBoardStore((s) => s.data);
-  const ensureBoards = useAdminBoardStore((s) => s.ensureBoards);
-
-  // 블라인드 · 삭제 조치 모달 { action, ids, items }
-  // Radix Dialog는 open이 false가 돼도 퇴장 애니메이션 동안 화면에 남는다.
-  // 그때 대상 정보가 사라지면 제목이 '영구 삭제' → '블라인드'로 바뀌거나 표가 비어 보이므로,
-  // 열림 여부만 따로 두고 대상 정보는 다음에 열 때까지 그대로 남겨둔다.
-  const [moderationState, setModerationState] = useState(null);
-  const [moderationOpen, setModerationOpen] = useState(false);
-  const [alertState, setAlertState] = useState(null); // { title, description }
-  const [submitting, setSubmitting] = useState(false);
-
-  const boardFilterOptions = useMemo(() => buildBoardFilterOptions(boards), [boards]);
-
-  useEffect(() => {
-    ensureBoards();
-  }, [ensureBoards]);
-
-  // 조회 조건을 한 곳에서 만든다 (첫 조회와 조치 후 재조회가 같은 조건을 써야 한다)
-  const listParams = useMemo(
-    () => ({
-      page: currentPage,
-      size: PAGE_SIZE,
-      ...(boardFilter !== BOARD_FILTER_ALL ? { boardId: Number(boardFilter) } : {}),
-      ...(searchKeyword.trim() ? { keyword: searchKeyword.trim() } : {}),
-    }),
-    [currentPage, boardFilter, searchKeyword]
-  );
-
-  // 필터·검색·페이지네이션 모두 서버가 처리하므로 화면에서 자르지 않는다.
-  useEffect(() => {
-    fetchComments(listParams);
-  }, [fetchComments, listParams]);
-
-  // 삭제로 목록이 줄어 보던 페이지가 사라지면 빈 표에 갇힌다
-  // (마지막 페이지의 댓글을 모두 지운 경우). 남아 있는 마지막 페이지로 되돌린다.
-  useEffect(() => {
-    if (currentPage > totalPages) setCurrentPage(totalPages);
-  }, [currentPage, totalPages]);
-
-  // 목록이 바뀌면 화면에 없는 댓글이 선택된 채로 남지 않도록 선택을 비운다.
-  const resetToFirstPage = () => {
-    setCurrentPage(1);
-    setSelectedIds([]);
-  };
-
-  const handleBoardFilterChange = (value) => {
-    setBoardFilter(value);
-    resetToFirstPage();
-  };
-
-  const handleSearchChange = (value) => {
-    setSearchQuery(value);
-    resetToFirstPage();
-  };
-
-  const handlePageChange = (page) => {
-    setCurrentPage(page);
-    setSelectedIds([]);
-  };
-
-  // 이미 담긴 id 는 다시 붙이지 않는다.
-  // 체크박스가 같은 값으로 두 번 발화하면 선택 목록에 중복이 쌓이고,
-  // 그대로 조치 요청에 실리면 작성자 벌점이 두 번 붙을 수 있다.
-  const handleSelectOne = (commentId, checked) => {
-    setSelectedIds((prev) => {
-      if (!checked) return prev.filter((id) => id !== commentId);
-      return prev.includes(commentId) ? prev : [...prev, commentId];
-    });
-  };
-
-  // 전체 선택은 현재 페이지에 보이는 댓글만 대상으로 한다.
-  const handleSelectAll = (checked) => {
-    setSelectedIds(checked ? comments.map((comment) => comment.commentId) : []);
-  };
-
-  // ── 블라인드 · 삭제 ───────────────────────────────────────────────────
-  // 조치 모달에 넘길 대상 목록을 만든다.
-  // 삭제하면 목록에서 사라지므로 열 때 한 번 떠서 들고 있는다.
-  //
-  // 대상 회원은 시안대로 '로그인ID / 학번 / 이름' 으로 보여준다.
-  // 조립은 모달이 formatMemberLabel 로 처리하고, 값이 없는 필드는 알아서 빠진다
-  // (탈퇴 회원처럼 로그인ID·학번이 null 로 오면 이름만 남는다).
-  const buildModerationItems = (ids) => {
-    const targetIds = new Set(ids);
-
-    return comments
-      .filter((comment) => targetIds.has(comment.commentId))
-      .map((comment) => ({
-        id: comment.commentId,
-        // 모달(formatMemberLabel)이 쓰는 이름은 studentId 지만 서버 필드는 authorStudentNo 다
-        user: {
-          loginId: comment.authorLoginId,
-          studentId: comment.authorStudentNo,
-          name: comment.authorName,
-        },
-        boardName: comment.boardName,
-        // 게시판 이름은 모달이 [게시판명]으로 따로 붙이므로 댓글 내용만 넘긴다
-        content: comment.content,
-      }));
-  };
-
-  const openModeration = (action, ids) => {
-    setModerationState({ action, ids, items: buildModerationItems(ids) });
-    setModerationOpen(true);
-  };
-
-  // 선택 액션은 고른 댓글이 없으면 안내만 하고 끝낸다.
-  const openBulkConfirm = (action) => {
-    if (selectedIds.length === 0) {
-      setAlertState({
-        title: `${action === 'blind' ? '블라인드' : '삭제'}할 댓글을 선택해 주세요.`,
-        description: '목록에서 댓글을 선택한 뒤 다시 시도해 주세요.',
-      });
-      return;
-    }
-
-    openModeration(action, selectedIds);
-  };
-
-  const openRowConfirm = (action, comment) => {
-    openModeration(action, [comment.commentId]);
-  };
-
-  // 모달이 넘겨주는 { reason, detail } 로 조치를 요청한다.
-  // 항목마다 독립 트랜잭션이라 일부만 실패할 수 있어(부분 성공) 응답을 보고 안내를 나눈다.
-  const handleConfirm = async ({ reason, detail }) => {
-    if (!moderationState || submitting) return;
-
-    const { action, ids } = moderationState;
-    const actionLabel = action === 'delete' ? '삭제' : '블라인드';
-
-    setSubmitting(true);
-    try {
-      const result = await moderateComments(action, ids, {
-        reasonId: getReasonId(reason),
-        detail,
-      });
-
-      // 요청 자체가 실패한 경우 (권한 · 네트워크 등) — 모달은 닫지 않는다
-      if (!result) {
-        setAlertState({
-          title: `${actionLabel} 처리에 실패했습니다.`,
-          description: takeError() ?? '잠시 후 다시 시도해 주세요.',
-        });
-        return;
-      }
-
-      setModerationOpen(false);
-      // 처리한 댓글만 선택에서 뺀다. 행 단위 액션 때문에 다른 선택이 풀리면 안 된다.
-      setSelectedIds((prev) => prev.filter((id) => !ids.includes(id)));
-
-      // 삭제된 댓글은 목록에서 빠지고 블라인드는 상태가 바뀐다 → 서버 목록을 다시 받는다
-      await fetchComments(listParams);
-
-      // 일부만 실패했으면 어떤 항목이 왜 실패했는지 서버 문구를 그대로 보여준다
-      const failures = Array.isArray(result.failures) ? result.failures : [];
-      if (failures.length > 0) {
-        setAlertState({
-          title: `${result.successCount}건은 ${actionLabel} 처리했고 ${result.failCount}건은 실패했습니다.`,
-          description: failures.map((failure) => `· ${failure.message}`).join('\n'),
-        });
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // 블라인드된 댓글은 신고 내역을 확인해 최종 판단(삭제 또는 복원)한다 → 신고 관리로 넘긴다.
-  // 댓글 신고 탭으로 열리게 ?tab=comment 를 달아 보낸다.
-  const handleMoveToReport = () => {
-    router.push(ROUTES.ADMIN_REPORTS_TAB(REPORT_TARGET_COMMENT));
-  };
-
-  // 첫 조회 중에만 안내문으로 덮는다. 이미 목록이 있으면 그대로 두고 버튼만 잠근다
-  // (페이지를 넘길 때마다 표가 비었다 다시 차면 깜빡인다).
-  const isEmpty = comments.length === 0;
+  const list = useAdminModerationList({
+    store: useAdminCommentStore,
+    idKey: 'commentId',
+    // 조치 모달의 '대상 댓글' 칸에는 댓글 내용을 보여준다
+    contentKey: 'content',
+    reportTarget: REPORT_TARGET_COMMENT,
+  });
 
   return (
     <div className={listSectionClass}>
@@ -234,20 +36,26 @@ export default function CommentListSection({ title = '댓글 관리' }) {
 
       <span className={listSubtitleClass}>목록</span>
 
-      {/* 게시판 필터 · 검색 (왼쪽) / 선택 블라인드 · 선택 삭제 (오른쪽) */}
-      <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:items-center md:justify-between">
-        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+      {/* 게시판 필터 · 검색 (왼쪽) / 선택 블라인드 · 선택 삭제 (오른쪽)
+          폭이 좁아질 때 순서: ① 검색창이 게시판 셀렉트 너비까지 줄고 ② 그 뒤로는 버튼이 줄고
+          ③ 그래도 모자라면 버튼 묶음이 아랫줄로 내려간다 (겹치게 두지 않는다). */}
+      <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:flex-wrap md:items-center md:justify-between">
+        {/* min-w-0 을 주면 이 묶음이 0까지 찌그러지고 안의 셀렉트·검색창이 밖으로 넘쳐
+            오른쪽 버튼 위에 겹쳐 그려진다. 자식들의 최소 너비가 이 묶음의 하한이 되게 둔다. */}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           {/* 정렬이 아니라 게시판 필터지만, 디자인상 트리거가 같아 SortSelect를 그대로 쓴다. */}
           <SortSelect
-            value={boardFilter}
-            onValueChange={handleBoardFilterChange}
-            options={boardFilterOptions}
+            value={list.boardFilter}
+            onValueChange={list.handleBoardFilterChange}
+            options={list.boardFilterOptions}
           />
-          <div className="min-w-0 sm:w-[296px]">
+          {/* 검색창은 게시판 셀렉트(sm 120px · md 135px)보다 좁아지지 않는다.
+              그보다 좁아지면 검색어가 두세 글자밖에 안 보여 검색창 구실을 못 한다. */}
+          <div className="min-w-0 sm:w-[296px] sm:min-w-[120px] md:min-w-[135px]">
             {/* 검색 대상은 댓글 내용 · 글쓴이지만 안내 문구는 시안대로 '검색어 입력'으로 둔다. */}
             <SearchInput
-              value={searchQuery}
-              onChange={handleSearchChange}
+              value={list.searchQuery}
+              onChange={list.handleSearchChange}
               placeholder="검색어 입력"
             />
           </div>
@@ -257,16 +65,16 @@ export default function CommentListSection({ title = '댓글 관리' }) {
           <Button
             type="button"
             variant="outline"
-            disabled={submitting}
-            onClick={() => openBulkConfirm('blind')}
+            disabled={list.isBusy || !list.hasSelection}
+            onClick={() => list.openBulkConfirm('blind')}
             className={`${actionButtonClass} border-[#212121] text-[#212121]`}
           >
             선택 블라인드
           </Button>
           <Button
             type="button"
-            disabled={submitting}
-            onClick={() => openBulkConfirm('delete')}
+            disabled={list.isBusy || !list.hasSelection}
+            onClick={() => list.openBulkConfirm('delete')}
             className={`${actionButtonClass} bg-[#212121] text-white`}
           >
             선택 삭제
@@ -275,42 +83,43 @@ export default function CommentListSection({ title = '댓글 관리' }) {
       </div>
 
       <CommentTable
-        comments={comments}
-        selectedIds={selectedIds}
-        onSelectOne={handleSelectOne}
-        onSelectAll={handleSelectAll}
-        onBlind={(comment) => openRowConfirm('blind', comment)}
-        onDelete={(comment) => openRowConfirm('delete', comment)}
-        onMoveToReport={handleMoveToReport}
-        loading={isLoading && isEmpty}
-        saving={submitting || isLoading}
-        errorMessage={isEmpty && error ? error : ''}
+        comments={list.items}
+        selectedIds={list.selectedIds}
+        onSelectOne={list.handleSelectOne}
+        onSelectAll={list.handleSelectAll}
+        onBlind={(comment) => list.openRowConfirm('blind', comment)}
+        onDelete={(comment) => list.openRowConfirm('delete', comment)}
+        onMoveToReport={list.handleMoveToReport}
+        loading={list.isFirstLoad}
+        saving={list.isBusy}
+        errorMessage={list.errorMessage}
       />
 
       <div className="mt-6 mb-16 flex justify-center md:mt-[34px] md:mb-[120px]">
         <PaginationWithEllipsis
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
+          currentPage={list.currentPage}
+          totalPages={list.totalPages}
+          onPageChange={list.handlePageChange}
         />
       </div>
 
       {/* 블라인드 · 삭제 조치 모달 - 대상 목록을 다시 보여주고 사유를 받는다 */}
       <ModerationModal
-        open={moderationOpen}
-        actionLabel={moderationState?.action === 'delete' ? '영구 삭제' : '블라인드'}
+        open={list.moderationOpen}
+        actionLabel={list.moderationState?.action === 'delete' ? '영구 삭제' : '블라인드'}
         targetLabel="댓글"
-        items={moderationState?.items ?? []}
-        onClose={() => setModerationOpen(false)}
-        onSubmit={handleConfirm}
+        items={list.moderationState?.items ?? []}
+        submitting={list.isSubmitting}
+        onClose={list.closeModeration}
+        onSubmit={list.handleConfirm}
       />
 
       {/* 안내 모달 */}
       <AlertModal
-        open={Boolean(alertState)}
-        title={alertState?.title ?? ''}
-        description={alertState?.description ?? ''}
-        onClose={() => setAlertState(null)}
+        open={Boolean(list.alertState)}
+        title={list.alertState?.title ?? ''}
+        description={list.alertState?.description ?? ''}
+        onClose={list.closeAlert}
       />
     </div>
   );
