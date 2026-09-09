@@ -6,8 +6,8 @@ import { advisors, chairman, teams } from "@/constants/organization";
 
 export default function OrganizationChart() {
   const horizontalBarGap = Number(100 / (teams.length * 2)).toFixed(1);
+  // 폰에서는 OrgChartFit 이 T 자 모양 그대로 폭에 맞게 축소한다 (모양 유지 · 가로 스크롤 없음)
   return (
-    {/* 폰에서는 OrgChartFit 이 T 자 모양 그대로 폭에 맞게 축소한다 (모양 유지 · 가로 스크롤 없음) */}
     <div className="w-full overflow-x-auto">
       <OrgChartFit>
       <section className="relative min-w-[600px] max-w-[1200px] mx-auto py-8 px-10">
