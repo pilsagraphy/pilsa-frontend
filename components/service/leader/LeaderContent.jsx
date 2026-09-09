@@ -3,9 +3,9 @@ import Image from 'next/image';
 const LeaderContent = ({ order, name, period, imageSrc }) => {
   return (
     // 전체 너비를 부모 그리드에 맡기고, 내부 요소들만 중앙 정렬
-    <div className="flex flex-col items-center gap-[25px] w-full max-w-[227px] mx-auto">
+    <div className="mx-auto flex w-full max-w-[227px] flex-col items-center gap-3 md:gap-[25px]">
       {/* 순서 레이블: 01, 02 처럼 보일 수 있게 스타일링 */}
-      <span className="font-['Pretendard',sans-serif] font-bold text-[32px] leading-normal tracking-[-0.64px] text-black text-center whitespace-nowrap">
+      <span className="whitespace-nowrap text-center font-['Pretendard',sans-serif] text-[20px] font-bold leading-normal tracking-[-0.64px] text-black md:text-[32px]">
         {order}
       </span>
       {/* 사진 영역: Next.js Image 최적화 적용 */}
@@ -16,7 +16,7 @@ const LeaderContent = ({ order, name, period, imageSrc }) => {
             alt={`${name} 회장`}
             fill // 부모 컨테이너를 꽉 채우도록
             className="object-cover transition-transform duration-300 hover:scale-105" // 살짝 확대 효과 서비스!
-            sizes="(max-width: 768px) 100vw, 33vw"
+            sizes="(max-width: 768px) 50vw, 33vw"
           />
         ) : (
           <div className="flex items-center justify-center w-full h-full text-[#919191] text-sm">
@@ -26,8 +26,8 @@ const LeaderContent = ({ order, name, period, imageSrc }) => {
       </div>
       {/* 이름 & 재임기간 */}
       <div className="flex flex-col items-center font-['Pretendard',sans-serif] text-black">
-        <span className="text-[30px] font-semibold leading-tight">{name}</span>
-        <span className="text-[20px] font-medium text-[#454545] mt-1">{period}</span>
+        <span className="text-[18px] font-semibold leading-tight md:text-[30px]">{name}</span>
+        <span className="mt-1 text-[13px] font-medium text-[#454545] md:text-[20px]">{period}</span>
       </div>
     </div>
   );

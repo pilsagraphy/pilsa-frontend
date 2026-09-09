@@ -31,7 +31,10 @@ export default function BrandCIContent() {
           ))}
         </BrandCIText>
 
-        <BrandColor />
+        {/* 로고 섹션과 같은 규칙 — md 미만에서는 색상 견본도 가운데 */}
+        <div className="flex w-full items-start justify-center md:w-auto md:justify-start">
+          <BrandColor />
+        </div>
       </section>
     </div>
   );
