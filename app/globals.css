@@ -209,3 +209,15 @@
     animation: none;
   }
 }
+
+/* 모바일 전체 축소 — 휴대폰에서 UI 가 너무 커서 요청된 값(60%). 값은 이 변수 하나만 바꾸면 된다.
+   zoom 은 미디어 쿼리에 영향이 없어 sm/md 분기는 그대로 모바일 레이아웃을 탄다 (DesktopSiteNotice 주석 참고).
+   768px 이상(태블릿·PC)은 손대지 않는다. */
+:root {
+  --mobile-ui-zoom: 0.6;
+}
+@media (max-width: 767px) {
+  html {
+    zoom: var(--mobile-ui-zoom);
+  }
+}
