@@ -62,7 +62,8 @@ export default function MonthlyScheduleList({
         isCapped
           ? // 카드 높이: 모바일 62px · md 이상 70px (MonthlyScheduleItem과 같은 값)
             '[--item-h:62px] md:[--item-h:70px]'
-          : 'max-h-[min(45vh,262px)] sm:max-h-[min(52vh,344px)] lg:max-h-[450px]'
+          : // 모바일은 옆에 선 달력 높이(머리줄+6주 ≈ 330px)에 맞춘다
+            'max-h-[330px] sm:max-h-[min(52vh,344px)] lg:max-h-[450px]'
       }`
     : '';
 
