@@ -240,11 +240,9 @@ export default function CalendarSection({
           사이드바가 tablet(768px)부터 240px를 가져가므로 본문 폭은 늘 뷰포트보다 240px 좁다.
           lg(1024px)로 나누면 본문이 784px뿐이라 두 칸이 안 들어가서, 본문 기준으로 min-[960px]에 나눈다.
           달력은 443px로 고정하고 월별 일정이 남는 폭을 가져간다. (디자인 최대 폭 404px) */}
-      {/* 모바일에서도 달력 왼쪽 · 월별 일정 오른쪽으로 나란히 둔다 (세로로 쌓으면 목록까지 스크롤이 길다).
-          달력은 칸 40px×7=280px 로 고정하고 목록이 남는 폭을 가져간다. */}
-      <div className="flex w-full flex-row items-start gap-3 sm:gap-5 min-[960px]:justify-between min-[960px]:gap-[29px]">
-        {/* 960px 미만은 안쪽 여백 없이 280px 고정 — 격자(40px×7)가 상자 폭을 꽉 채운다 */}
-        {/* 상자 폭 = 칸 폭 × 7 (36×7=252, sm 48×7=336). 어긋나면 날짜 원(버튼)이 칸 밖으로 삐져나온다 */}
+      {/* 960px 미만에서는 달력 위 · 월별 일정 아래로 쌓는다. 옆에 세우면 폰 실폭에서 목록이 100px 남짓이라 못 쓴다.
+          달력 상자 폭은 칸 폭 × 7 에 맞춘다 (36×7=252, sm 48×7=336) — 어긋나면 날짜 원이 칸 밖으로 삐져나온다. */}
+      <div className="flex w-full flex-col items-center gap-4 sm:gap-5 min-[960px]:flex-row min-[960px]:items-start min-[960px]:justify-between min-[960px]:gap-[29px]">
         <div className="w-[252px] shrink-0 bg-white p-0 sm:w-[336px] min-[960px]:w-[443px] min-[960px]:p-[24px]">
           <Calendar
             mode="single"
@@ -259,7 +257,7 @@ export default function CalendarSection({
           />
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col gap-3 sm:gap-[12px] min-[960px]:max-w-[404px]">
+        <div className="flex w-full min-w-0 flex-col gap-3 sm:gap-[12px] min-[960px]:max-w-[404px] min-[960px]:flex-1">
           {/* 목록은 오른쪽에 여백 6px + 스크롤바 자리 4px을 비워 둔다(MonthlyScheduleList).
               라벨 줄에도 같은 10px을 줘야 버튼이 일정 카드의 오른쪽 끝과 맞는다. */}
           <div
