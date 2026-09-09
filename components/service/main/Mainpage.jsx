@@ -50,8 +50,9 @@ export default function Page() {
     <main
       onClick={handleClick}
       style={{
-        width: '100vw',
-        height: '100dvh',
+        // 모바일 zoom(globals.css) 이 vw/vh 도 줄이므로 배율로 나눠 화면을 꽉 채운다 (PC 는 변수가 1)
+        width: 'calc(100vw / var(--mobile-ui-zoom, 1))',
+        height: 'calc(100dvh / var(--mobile-ui-zoom, 1))',
         display: 'grid',
         placeItems: 'center',
         cursor: isAccelerating ? 'default' : 'pointer',
@@ -73,7 +74,7 @@ export default function Page() {
           pointerEvents: 'none',
           // 다이얼과 같은 vmin 기준이라 화면비가 바뀌어도 항상 원 안에 들어온다
           // (다이얼 지름이 88vmin 이므로 그 70% 남짓)
-          width: 'min(64vmin, 660px)',
+          width: 'min(calc(64vmin / var(--mobile-ui-zoom, 1)), 660px)',
           height: 'auto',
           zIndex: 5,
         }}

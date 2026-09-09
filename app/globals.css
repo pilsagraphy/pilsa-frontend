@@ -122,7 +122,8 @@
   inset: 0;
   overflow: hidden;
   background: #fff;
-  --dial: min(88vmin, 900px);
+  /* 모바일 zoom 이 vmin 도 줄이므로 배율로 나눈다 (PC 는 --mobile-ui-zoom 이 1) */
+  --dial: min(calc(88vmin / var(--mobile-ui-zoom, 1)), 900px);
   --cell: calc(var(--dial) / 15.9);
 }
 
@@ -210,13 +211,17 @@
   }
 }
 
-/* 모바일 전체 축소 — 휴대폰에서 UI 가 너무 커서 요청된 값(60%). 값은 이 변수 하나만 바꾸면 된다.
+/* 모바일 전체 축소 — 휴대폰에서 UI 가 너무 커서 줄인다(75%). 값은 미디어 쿼리 안의 변수 하나만 바꾸면 된다.
    zoom 은 미디어 쿼리에 영향이 없어 sm/md 분기는 그대로 모바일 레이아웃을 탄다 (DesktopSiteNotice 주석 참고).
-   768px 이상(태블릿·PC)은 손대지 않는다. */
+   768px 이상(태블릿·PC)은 손대지 않는다(변수 1 = 축소 없음).
+   주의: 이 크롬은 vw/vh/vmin 도 zoom 배율로 줄인다 — 화면을 꽉 채워야 하는 값은 calc(100dvh / var(--mobile-ui-zoom)) 처럼 나눠 쓴다. */
 :root {
-  --mobile-ui-zoom: 0.6;
+  --mobile-ui-zoom: 1;
 }
 @media (max-width: 767px) {
+  :root {
+    --mobile-ui-zoom: 0.75;
+  }
   html {
     zoom: var(--mobile-ui-zoom);
   }
