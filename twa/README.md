@@ -13,15 +13,30 @@ TWA 는 `https://pilsa.co.kr` 을 그대로 여는 껍데기라 **웹 코드가 
 | 항목 | 값 |
 |---|---|
 | `packageId` | `kr.co.pilsa.pilsagraphy` — **Play Console 에 2026-08-16 에 만들어 둔 앱의 패키지명.** 다른 값으로 빌드하면 업로드가 거부된다 |
-| `host` · `iconUrl` · `webManifestUrl` · `fullScopeUrl` | `pilsa.co.kr` |
+| `name` · `launcherName` | `Pilsagraphy` — 설치된 앱·홈 화면에 보이는 이름 (스토어 등록정보 이름과 맞춤) |
+| `host` · `webManifestUrl` · `fullScopeUrl` | `pilsa.co.kr` |
+| `iconUrl` | `/icons/icon-splash-512.png` — **스플래시 전용** (흰 바탕에 검정 로고, 배경 투명). 아래 '스플래시' 참고 |
+| `maskableIconUrl` · `monochromeIconUrl` | `/icons/icon-maskable-512.png` · `/icons/icon-monochrome-512.png` — 홈 화면 아이콘(검정 네모) |
 | `signingKey` | `../../app-key/pilsa-upload.jks`, alias `pilsa-upload` (2026-09-09 재생성) |
-| `appVersionName` / `appVersionCode` | `1.0.0` / `1` (아직 Play 업로드 전) |
+| `appVersionName` / `appVersionCode` | `1.0.1` / `2` — v1(`1.0.0`/`1`)은 2026-09-09 비공개 테스트 Alpha 에 올려 검토 중. v2 는 그 검토가 끝난 뒤 올린다 |
 | `assetlinks.json` 지문 | 업로드 키 `20:7E:A7:E9:…:9B:8A` + Play 앱 서명 키 `95:08:85:FC:…:46:38` 두 개 |
 
 > 업로드 키는 `pilsa-upload.jks` 다. 예전 `v_1_release_key.jks` 는 비밀번호를 아는 사람이 없어
 > 열 수 없었고 스토어에 올린 적도 없어서 새 키로 교체했다 (52ac55e). 그 키도 Play 에 올리기 전에
 > 비밀번호가 노출돼 2026-09-09 에 다시 만들었다 (옛 파일은 `app-key/old/`). 비밀번호는 키스토어 옆
 > 파일·비밀번호 관리자에만 두고 **레포·채팅·로그에 쓰지 않는다.**
+
+## 스플래시 (앱 켤 때 뜨는 화면)
+
+Bubblewrap 은 `iconUrl` 이미지를 **스플래시와 (API 25 이하) 레거시 런처 아이콘** 양쪽에 쓰고,
+API 26+ 의 홈 화면 아이콘은 `maskableIconUrl` 로 따로 만든다. 그래서 `iconUrl` 만 바꾸면
+홈 화면 아이콘(검정 네모)은 그대로 두고 스플래시만 바꿀 수 있다.
+
+- `public/icons/icon-splash-512.png` — 검정 로고만 있고 배경은 투명. 스플래시는 이걸 `backgroundColor`(흰색) 위에 그린다.
+- 이 파일은 프론트 배포에 포함돼야 한다. `bubblewrap update` 가 `https://pilsa.co.kr/icons/icon-splash-512.png` 를
+  **실제로 내려받아** 5개 해상도 `splash.png` 를 만들기 때문에, **프론트를 먼저 배포하고 나서** 2번을 돌린다.
+- Android 12+ 는 앱이 뜨기 전에 OS 가 런처 아이콘(검정 네모)을 잠깐 먼저 보여준다. 이건 OS 동작이라
+  `iconUrl` 로는 안 바뀐다 — 그것까지 없애려면 홈 화면 아이콘 자체를 바꿔야 한다.
 
 ## 1. 사전 준비
 
@@ -122,11 +137,15 @@ Play 신규 앱은 AAB + Play App Signing 이 강제된다. 로컬 `pilsa-upload
 Play Console 의 앱(`kr.co.pilsa.pilsagraphy`)은 이미 만들어져 있고 앱 서명 키도 발급돼 있다
 (설정 → 앱 서명 → 앱 서명 키 인증서 SHA-256 = `95:08:85:FC:…:46:38`). 남은 것은 업로드뿐이다:
 
-1. 테스트 및 출시 → 테스트 → 내부(또는 비공개) 테스트 → 새 버전 만들기
-2. `app-release-bundle.aab` 업로드 — 첫 업로드 때 업로드 키 인증서가 자동 등록된다
+1. 테스트 및 출시 → 테스트 → **비공개 테스트**(내부 테스트는 프로덕션 조건인 12명/14일 카운트에 안 잡힌다) → 새 버전 만들기
+2. `app-release-bundle.aab` 업로드 — 첫 업로드 때 업로드 키 인증서가 자동 등록된다 (2026-09-09 v1 로 완료, 지문 `20:7E:…:9B:8A` 확인)
 3. 테스터 목록에 본인 계정을 넣고 참여 링크로 설치한다
 
-다음 버전을 올릴 때는 `appVersionCode` 를 올려야 한다 (2번의 `--skipVersionUpgrade` 를 빼거나 `--appVersionName` 지정).
+다음 버전을 올릴 때는 `appVersionCode` 를 올려야 한다. `twa-manifest.json` 의 `appVersionCode`/`appVersionName` 을
+직접 올린 뒤 `bubblewrap update --skipVersionUpgrade` → `bubblewrap build` 순서면 된다 (v2 는 이미 `2`/`1.0.1` 로 올려 뒀다).
+
+> 검토 중인 버전이 있을 때 새 버전을 올리면 앞 검토가 대체돼 다시 기다린다.
+> 비공개 테스트 중 새 버전을 올려도 12명/14일 카운터는 리셋되지 않는다 — 리셋되는 건 **트랙 일시중지** 뿐이다.
 
 ## 5. assetlinks.json
 

@@ -1,8 +1,8 @@
 {
   "packageId": "kr.co.pilsa.pilsagraphy",
   "host": "pilsa.co.kr",
-  "name": "필사그래피",
-  "launcherName": "필사그래피",
+  "name": "Pilsagraphy",
+  "launcherName": "Pilsagraphy",
   "display": "standalone",
   "themeColor": "#212121",
   "themeColorDark": "#212121",
@@ -13,7 +13,7 @@
   "backgroundColor": "#FFFFFF",
   "enableNotifications": true,
   "startUrl": "/",
-  "iconUrl": "https://pilsa.co.kr/icons/icon-512.png",
+  "iconUrl": "https://pilsa.co.kr/icons/icon-splash-512.png",
   "maskableIconUrl": "https://pilsa.co.kr/icons/icon-maskable-512.png",
   "monochromeIconUrl": "https://pilsa.co.kr/icons/icon-monochrome-512.png",
   "splashScreenFadeOutDuration": 300,
@@ -21,8 +21,8 @@
     "path": "../../app-key/pilsa-upload.jks",
     "alias": "pilsa-upload"
   },
-  "appVersionName": "1.0.0",
-  "appVersionCode": 1,
+  "appVersionName": "1.0.1",
+  "appVersionCode": 2,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://pilsa.co.kr/manifest.json",
@@ -41,5 +41,5 @@
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "1.0.0"
+  "appVersion": "1.0.1"
 }
