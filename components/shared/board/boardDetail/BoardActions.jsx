@@ -30,13 +30,13 @@ export default function BoardActions({
   const [deleteLoading, setDeleteLoading] = useState(false);
 
   const user = useAuthStore((s) => s.user);
-  const adminLevel = useAuthStore((s) => s.adminLevel);
 
   const currentUserId = Number(user?.userId ?? user?.id ?? user?.user_id);
-  const isAdmin = adminLevel >= 1;
   const isAuthor = Number.isFinite(currentUserId) && currentUserId === Number(authorId);
 
-  const canEdit = isAdmin || isAuthor;
+  // 수정은 작성자 본인만 — 관리자가 남의 글 내용을 고치는 건 관리가 아니다.
+  // 관리자의 블라인드·삭제는 관리자 페이지(게시글·댓글 관리)에서 한다.
+  const canEdit = isAuthor;
   const canDelete = isAuthor;
 
   useEffect(() => {
