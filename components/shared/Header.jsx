@@ -1,5 +1,6 @@
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
+import { ROUTES } from '@/constants/routes';
 import { Zen_Dots } from 'next/font/google';
 
 const zenDots = Zen_Dots({
@@ -29,7 +30,8 @@ export default function Header() {
             fontSize: 'clamp(24px, 9vw, 48px)',
           }}
         >
-          <Link href="/" aria-label="홈으로 이동" className="inline-block">
+          {/* 시계 게이트(/)가 아니라 소개 페이지로. 첫 실행 때는 middleware 가 게이트로 돌려보낸다 */}
+          <Link href={ROUTES.ABOUT_INTRO} aria-label="필사그래피 소개로 이동" className="inline-block">
             PILSAGRAPHY
           </Link>
         </h1>

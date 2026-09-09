@@ -16,7 +16,17 @@ export function middleware(req) {
 
   // ✅ 게이트 통과 여부(쿠키)
   const passed = req.cookies.get('pilsa_gate_passed')?.value === '1';
-  if (passed) return NextResponse.next();
+  if (passed) {
+    // 이미 통과한 사람에게 / 는 시계 게이트가 아니라 소개 페이지다.
+    // 헤더 로고(href="/")와 설치형 앱의 start_url 이 / 라서, 이게 없으면 누를 때마다·켤 때마다 시계가 다시 나온다.
+    if (pathname === '/') {
+      const url = req.nextUrl.clone();
+      url.pathname = '/about/intro';
+      url.search = '';
+      return NextResponse.redirect(url);
+    }
+    return NextResponse.next();
+  }
 
   // ✅ 알림 딥링크(?toastId=)는 게이트를 건너뛴다.
   // 설치형 앱(TWA)을 알림으로 콜드 스타트하면 통과 쿠키가 없는데, 그때 게이트로 보내면
