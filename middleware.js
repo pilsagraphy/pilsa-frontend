@@ -33,7 +33,7 @@ export function middleware(req) {
   // 알림이 가리키던 게시글이 사라지고 소개 페이지에 떨어진다. 통과 쿠키를 여기서 심어 이후 이동도 막히지 않게 한다.
   if (req.nextUrl.searchParams.has('toastId')) {
     const res = NextResponse.next();
-    res.cookies.set('pilsa_gate_passed', '1', { path: '/', maxAge: 60 * 60 * 24 * 365 });
+    res.cookies.set('pilsa_gate_passed', '1', { path: '/' }); // 세션 쿠키 — 앱을 껐다 켜면 시계부터 다시
     return res;
   }
 

@@ -28,9 +28,10 @@ export default function Page() {
     if (isAccelerating) return;
     setIsAccelerating(true);
 
-    // 게이트 통과 표시. 세션 쿠키였을 때는 설치형 앱(TWA)을 콜드 스타트할 때마다 쿠키가 사라져
-    // 매번 게이트가 다시 떴다 — 1년짜리로 둔다. 지울 때는 max-age=0
-    document.cookie = 'pilsa_gate_passed=1; path=/; max-age=31536000';
+    // 게이트 통과 표시 — max-age 없는 "세션 쿠키"다. 설치형 앱(TWA)을 껐다 켜면 사라지므로
+    // 시계는 앱을 실행할 때마다 한 번 보이고, 그 뒤 앱 안에서 로고를 눌러 / 로 오면
+    // middleware 가 통과 쿠키를 보고 소개 페이지로 넘긴다. 지울 때는 max-age=0
+    document.cookie = 'pilsa_gate_passed=1; path=/';
 
     // middleware 가 게이트로 돌려보내며 붙인 원래 목적지(?from=/students/...). 알림을 눌러 들어온
     // 사람이 게시글 대신 소개 페이지로 떨어지지 않게 그쪽으로 보낸다. 같은 사이트 안 경로만 허용한다.
