@@ -79,7 +79,8 @@ export default function MyPageSection() {
         </div>
 
         {/* 우측: 내 정보 / 활동 요약 (상단=좌측 탭 아래 선, 하단=좌측 표 마지막 게시글 선에 맞춤) */}
-        <aside className="flex w-full flex-col gap-[7px] lg:mt-[34px] lg:h-[472px] lg:w-[264px] lg:shrink-0">
+        {/* lg 미만: 두 카드를 한 줄에 나란히(2열). 세로로 쌓으면 카드 폭이 남아 라벨과 값 사이가 텅 비어 보인다. lg 이상은 예전처럼 오른쪽 세로 열 */}
+        <aside className="grid w-full grid-cols-2 items-start gap-[7px] lg:mt-[34px] lg:flex lg:h-[472px] lg:w-[264px] lg:shrink-0 lg:flex-col">
           <MyInfoCard />
           <MyActivityCard />
         </aside>

@@ -241,7 +241,8 @@ export default function CalendarSection({
           lg(1024px)로 나누면 본문이 784px뿐이라 두 칸이 안 들어가서, 본문 기준으로 min-[960px]에 나눈다.
           달력은 443px로 고정하고 월별 일정이 남는 폭을 가져간다. (디자인 최대 폭 404px) */}
       <div className="flex w-full flex-col gap-4 sm:gap-5 min-[960px]:flex-row min-[960px]:justify-between min-[960px]:gap-[29px]">
-        <div className="w-full bg-white p-4 sm:p-5 min-[960px]:w-[443px] min-[960px]:shrink-0 min-[960px]:p-[24px]">
+        {/* 세로로 쌓이는 폭(<960px)에서는 안쪽 여백을 없애 달력 격자가 아래 월별 일정 카드와 같은 폭·같은 끝선에 맞는다 */}
+        <div className="w-full bg-white p-0 min-[960px]:w-[443px] min-[960px]:shrink-0 min-[960px]:p-[24px]">
           <Calendar
             mode="single"
             month={currentMonth}

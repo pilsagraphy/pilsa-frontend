@@ -191,12 +191,13 @@ export function Calendar({
         }
       `}</style>
 
-      <div className="relative mx-auto w-full max-w-[272px] pb-2 pt-1 sm:max-w-[336px]">
+      {/* 960px 미만에서는 달력이 컨테이너 폭을 다 쓰므로 머리줄도 같은 폭 — 화살표가 격자 양 끝에 온다 */}
+      <div className="relative mx-auto w-full pb-2 pt-1 min-[960px]:max-w-[336px]">
         <button
           type="button"
           onClick={goPrev}
           aria-label="이전 달"
-          className="absolute left-0 top-1/2 -translate-y-1/2 p-0.5 text-neutral-900 hover:opacity-70 sm:left-[-10px] sm:p-1"
+          className="absolute left-0 top-1/2 -translate-y-1/2 p-0.5 text-neutral-900 hover:opacity-70 sm:p-1 min-[960px]:left-[-10px]"
         >
           <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.25} />
         </button>
@@ -223,7 +224,7 @@ export function Calendar({
           type="button"
           onClick={goNext}
           aria-label="다음 달"
-          className="absolute right-0 top-1/2 -translate-y-1/2 p-0.5 text-neutral-900 hover:opacity-70 sm:right-[-10px] sm:p-1"
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-0.5 text-neutral-900 hover:opacity-70 sm:p-1 min-[960px]:right-[-10px]"
         >
           <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.25} />
         </button>
@@ -248,9 +249,10 @@ export function Calendar({
         classNames={{
           caption_label: 'hidden',
           nav: 'hidden',
-          months: 'flex flex-col items-center',
-          month: 'space-y-2',
-          month_grid: 'mx-auto border-collapse',
+          // 960px 미만: 달력이 컨테이너 폭을 다 쓴다(칸이 균등하게 늘어남). 이상: 예전처럼 고정 칸 폭으로 가운데 정렬
+          months: 'flex flex-col items-stretch min-[960px]:items-center',
+          month: 'w-full space-y-2 min-[960px]:w-auto',
+          month_grid: 'w-full table-fixed border-collapse min-[960px]:mx-auto min-[960px]:w-auto min-[960px]:table-auto',
           // weekdays(구 head_row)에는 flex를 주지 않는다. <tr>이 flex가 되면
           // <th>가 table-cell을 잃어 본문 칸과 열이 어긋난다.
           weekday:
