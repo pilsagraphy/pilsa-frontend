@@ -114,13 +114,15 @@ export default function MemberListSection({ title = '회원 목록' }) {
 
       {/* 정렬 · 검색 (왼쪽) / 회원 정지 · 영구 차단 (오른쪽) */}
       <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:items-center md:justify-between">
-        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
-          <SortSelect
-            value={sortOrder}
-            onValueChange={handleSortChange}
-            options={MEMBER_SORT_OPTIONS}
-          />
-          <div className="min-w-0 sm:w-[296px]">
+        <div className="flex min-w-0 flex-row items-center gap-2">
+          <div className="w-[110px] shrink-0 sm:w-auto">
+            <SortSelect
+              value={sortOrder}
+              onValueChange={handleSortChange}
+              options={MEMBER_SORT_OPTIONS}
+            />
+          </div>
+          <div className="min-w-0 flex-1 sm:w-[296px] sm:flex-none">
             <SearchInput
               value={searchQuery}
               onChange={handleSearchChange}

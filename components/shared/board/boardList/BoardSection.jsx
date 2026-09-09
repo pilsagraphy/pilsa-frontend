@@ -203,18 +203,23 @@ export default function BoardSection({ boardId }) {
           목록
         </span>
 
-        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-stretch sm:justify-end">
-          <SortSelect value={sortOrder} onValueChange={handleSortChange} compactSort={!isMdUp} />
+        {/* 모바일에서도 정렬·카테고리·검색을 한 줄에 둔다 — 셀렉트는 고정폭, 검색창이 남는 폭을 채운다 */}
+        <div className="flex min-w-0 flex-row items-stretch gap-2 sm:flex-wrap sm:justify-end">
+          <div className="w-[96px] shrink-0 sm:w-auto">
+            <SortSelect value={sortOrder} onValueChange={handleSortChange} compactSort={!isMdUp} />
+          </div>
 
           {categoryMode && (
-            <CategorySelect
-              categories={categories}
-              value={category}
-              onValueChange={handleCategoryChange}
-            />
+            <div className="w-[96px] shrink-0 sm:w-auto">
+              <CategorySelect
+                categories={categories}
+                value={category}
+                onValueChange={handleCategoryChange}
+              />
+            </div>
           )}
 
-          <div className="mb-[5px] min-w-0 sm:min-w-[200px] md:mb-0 sm:flex-1">
+          <div className="mb-[5px] min-w-0 flex-1 sm:min-w-[200px] md:mb-0">
             <SearchInput value={searchInput} onChange={handleSearchChange} />
           </div>
         </div>

@@ -42,16 +42,18 @@ export default function CommentListSection({ title = '댓글 관리' }) {
       <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:flex-wrap md:items-center md:justify-between">
         {/* min-w-0 을 주면 이 묶음이 0까지 찌그러지고 안의 셀렉트·검색창이 밖으로 넘쳐
             오른쪽 버튼 위에 겹쳐 그려진다. 자식들의 최소 너비가 이 묶음의 하한이 되게 둔다. */}
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-row items-center gap-2">
           {/* 정렬이 아니라 게시판 필터지만, 디자인상 트리거가 같아 SortSelect를 그대로 쓴다. */}
-          <SortSelect
-            value={list.boardFilter}
-            onValueChange={list.handleBoardFilterChange}
-            options={list.boardFilterOptions}
-          />
+          <div className="w-[110px] shrink-0 sm:w-auto">
+            <SortSelect
+              value={list.boardFilter}
+              onValueChange={list.handleBoardFilterChange}
+              options={list.boardFilterOptions}
+            />
+          </div>
           {/* 검색창은 게시판 셀렉트(sm 120px · md 135px)보다 좁아지지 않는다.
               그보다 좁아지면 검색어가 두세 글자밖에 안 보여 검색창 구실을 못 한다. */}
-          <div className="min-w-0 sm:w-[296px] sm:min-w-[120px] md:min-w-[135px]">
+          <div className="min-w-0 flex-1 sm:w-[296px] sm:min-w-[120px] sm:flex-none md:min-w-[135px]">
             {/* 검색 대상은 댓글 내용 · 글쓴이지만 안내 문구는 시안대로 '검색어 입력'으로 둔다. */}
             <SearchInput
               value={list.searchQuery}

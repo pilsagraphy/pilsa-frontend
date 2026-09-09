@@ -374,31 +374,23 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
       </div>
 
       {/* 댓글 입력 (댓글 작성 / 답글 작성 / 댓글 수정 공용) */}
-      <div className="flex w-full flex-col gap-4 md:gap-5">
-        <div className="flex w-full flex-col gap-2 md:flex-row md:items-center md:gap-5">
-          <input
-            type="text"
-            value={commentText}
-            onChange={(e) => setCommentText(e.target.value)}
-            placeholder={replyTo ? '답글을 작성하세요.' : '댓글을 작성하세요.'}
-            className="h-12 w-full flex-1 rounded-[4px] border border-[#b9b9b9] bg-white px-4 text-[15px] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#919191] md:h-[52px] md:text-[16px]"
-            onKeyDown={(e) => {
-              if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
-              handleSubmit();
-            }}
-          />
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting || !commentText.trim()}
-            className="h-12 w-full shrink-0 rounded-[4px] bg-[#212121] text-[15px] tracking-[-0.32px] text-white disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px]"
-          >
-            {isSubmitting ? '등록 중...' : replyTo ? '답글 작성' : '댓글 작성'}
-          </button>
-        </div>
+      <div className="flex w-full flex-col gap-3 md:gap-4">
+        {/* 여러 줄 입력. 줄바꿈은 Enter, 등록은 버튼 또는 Ctrl/Cmd+Enter —
+            한 줄 input 시절의 "Enter = 등록"은 줄바꿈과 충돌해서 뺐다. 본문은 whitespace-pre-line 으로 그려진다. */}
+        <textarea
+          value={commentText}
+          onChange={(e) => setCommentText(e.target.value)}
+          placeholder={replyTo ? '답글을 작성하세요.' : '댓글을 작성하세요.'}
+          rows={3}
+          className="min-h-[96px] w-full resize-none rounded-[4px] border border-[#b9b9b9] bg-white px-4 py-3 text-[15px] leading-[1.6] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#919191] md:min-h-[112px] md:text-[16px]"
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || e.nativeEvent.isComposing) return;
+            handleSubmit();
+          }}
+        />
 
-        {/* 익명 / 비밀댓글 체크박스 (게시판이 허용할 때만) */}
-        {(allowAnonymous || allowPrivateComment) && (
+        {/* 아래 줄: 왼쪽 익명/비밀댓글 체크박스(게시판이 허용할 때만), 오른쪽 등록 버튼 */}
+        <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-[20px]">
             {allowAnonymous && (
               <div className="flex items-center gap-[8px]">
@@ -436,7 +428,16 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
               </div>
             )}
           </div>
-        )}
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isSubmitting || !commentText.trim()}
+            className="h-11 w-[120px] shrink-0 rounded-[4px] bg-[#212121] text-[15px] tracking-[-0.32px] text-white disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px]"
+          >
+            {isSubmitting ? '등록 중...' : replyTo ? '답글 작성' : '댓글 작성'}
+          </button>
+        </div>
       </div>
 
       {/* 댓글 신고 모달 */}

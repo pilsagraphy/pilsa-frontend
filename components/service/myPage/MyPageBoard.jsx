@@ -113,10 +113,10 @@ export default function MyPageBoard() {
       </div>
 
       {/* 정렬 · 게시판 · 검색 — 라인 왼쪽 시작을 아래 표 번호↔제목 경계(≈64px)에 맞추고, 검색창이 오른쪽 경계까지 채움 */}
-      <div className="mt-[12px] flex flex-col gap-2 sm:flex-row sm:items-center sm:pl-[40px]">
+      <div className="mt-[12px] flex flex-row items-center gap-2 sm:pl-[40px]">
         {/* 정렬·게시판: 트리거 폭 135px → 138px (검색창은 flex-1이라 그만큼 자동 축소) */}
         {/* 댓글 탭은 서버가 최신순 고정이라 고를 수 있게 두면 안 된다 → compactSort(읽기 전용 '최신순') */}
-        <div className="md:[&>div]:!w-[140px] md:[&_button]:!w-[140px]">
+        <div className="w-[96px] shrink-0 sm:w-auto md:[&>div]:!w-[140px] md:[&_button]:!w-[140px]">
           <SortSelect
             compactSort={isComments}
             value={sortOrder}
@@ -126,7 +126,7 @@ export default function MyPageBoard() {
             }}
           />
         </div>
-        <div className="md:[&_button]:!w-[140px]">
+        <div className="w-[96px] shrink-0 sm:w-auto md:[&_button]:!w-[140px]">
           <BoardSelect
             boards={boards}
             value={boardFilter}
@@ -136,7 +136,7 @@ export default function MyPageBoard() {
             }}
           />
         </div>
-        <div className="min-w-0 sm:flex-1 [&>*]:!max-w-none [&_svg]:!size-[17px]">
+        <div className="min-w-0 flex-1 [&>*]:!max-w-none [&_svg]:!size-[17px]">
           <SearchInput
             value={searchQuery}
             onChange={(v) => {
