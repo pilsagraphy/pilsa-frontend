@@ -281,7 +281,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                 )}
                 {comment.authorName}
               </span>
-              <p className="text-[16px] tracking-[-0.32px] text-[#454545] leading-[26px] whitespace-pre-line">
+              <p className="select-text text-[16px] tracking-[-0.32px] text-[#454545] leading-[26px] whitespace-pre-line">
                 {comment.content}
               </p>
               <span className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[22px]">

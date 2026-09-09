@@ -51,7 +51,7 @@ export default function ScheduleDetailContent({ content = '' }) {
 
   // 목록 표기가 하나도 없으면 줄바꿈만 살려 그대로 보여준다. (공지 본문과 같은 방식)
   if (!lines.some((line) => line.isBullet)) {
-    return <p className={`${textClass} whitespace-pre-line`}>{content}</p>;
+    return <p className={`${textClass} select-text whitespace-pre-line`}>{content}</p>;
   }
 
   const items = groupByDepth(lines);

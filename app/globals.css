@@ -226,3 +226,22 @@
     zoom: var(--mobile-ui-zoom);
   }
 }
+
+/* 모바일 텍스트 선택 차단 — 크롬 안드로이드는 글자를 탭만 해도 "탭하여 검색"(구글 검색 패널)이 올라온다.
+   메뉴·제목·버튼 같은 UI 글자는 선택 대상이 아니므로 767px 이하에서 통째로 막고,
+   실제로 복사할 일이 있는 본문(게시글·댓글·일정 내용)과 입력칸만 .select-text 로 다시 연다. */
+@media (max-width: 767px) {
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  input,
+  textarea,
+  [contenteditable="true"],
+  .select-text,
+  .select-text * {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
