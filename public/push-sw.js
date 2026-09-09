@@ -129,3 +129,22 @@ self.addEventListener('notificationclick', (event) => {
     })()
   );
 });
+
+// 크롬은 푸시 구독을 주기적으로 갱신한다(만료·키 회전). 이 이벤트를 처리하지 않으면
+// 브라우저 구독은 조용히 새 endpoint 로 바뀌고, 서버는 옛 endpoint 로 보내다 410 을 받아 그 행을 지운다.
+// 그러면 앱에서는 "이 기기에서 알림 받기"가 꺼진 것처럼 보인다 (실제 사고: deviceId 4·5·6 연속 정리).
+// 여기서는 같은 VAPID 키로 다시 구독만 해 둔다 — 서버 등록은 인증이 필요해 서비스 워커가 못 하므로,
+// 앱을 다음에 열 때 lib/push.js 의 getPushToggleState 가 새 endpoint 를 서버에 등록한다.
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil(
+    (async () => {
+      const key = event.oldSubscription?.options?.applicationServerKey;
+      if (!key) return;
+      try {
+        await self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+      } catch {
+        // 재구독 실패 시에는 사용자가 토글을 다시 켜야 한다
+      }
+    })()
+  );
+});
