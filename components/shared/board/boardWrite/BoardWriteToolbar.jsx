@@ -46,7 +46,7 @@ export default function BoardWriteToolbar({
   };
 
   return (
-    <div className="flex h-full w-full items-center justify-center gap-[34px] px-[16px]">
+    <div className="flex h-full w-full items-center justify-center gap-[18px] px-[12px] md:gap-[34px] md:px-[16px]">
       <button type="button" onClick={() => applyFormat('heading')} aria-label="제목" title="제목">
         <Heading size={24} strokeWidth={2} className={iconClass} />
       </button>

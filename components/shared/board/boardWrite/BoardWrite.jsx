@@ -92,8 +92,8 @@ export default function BoardWrite({ boardId }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto flex max-w-[1000px] flex-col gap-[20px] p-8">
-      <div className="flex w-full flex-col gap-[36px]">
+    <form onSubmit={handleSubmit} className="mx-auto flex max-w-[1000px] flex-col gap-[20px] px-4 py-4 sm:px-6 sm:py-7 md:p-8">
+      <div className="flex w-full flex-col gap-6 md:gap-[36px]">
         <h1 className="text-[24px] leading-[1.5] tracking-[-0.48px] font-bold text-black">
           {board?.boardName ?? ''} 글쓰기
         </h1>
@@ -101,7 +101,8 @@ export default function BoardWrite({ boardId }) {
         <BoardWriteForm boardId={boardId} board={board} />
       </div>
 
-      <div className="mt-4 flex w-full flex-col gap-[12px]">
+      {/* 작성·취소 버튼은 한 줄에 나란히 (세로로 쌓을 이유가 없다) */}
+      <div className="mt-4 flex w-full flex-row gap-[12px]">
         <button
           type="submit"
           disabled={submitting}

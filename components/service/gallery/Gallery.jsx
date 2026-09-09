@@ -17,15 +17,28 @@ const Gallery = () => {
   ] = GALLERY_PHOTOS;
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-[51px] bg-white p-8">
-      <header className="pb-[40px] border-b-[1.5px]">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[51px] md:p-10">
+      <header className="border-b-[1.5px] pb-6 md:pb-[40px]">
         <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.02em] text-[#212121]">
           활동 사진
         </h2>
       </header>
 
-      {/* 전체 하나의 큰 직사각형(2:1) 안을 여백 없이 채우는 구조 */}
-      <div className="flex flex-col w-full aspect-[2/1] overflow-hidden">
+      {/* md 미만: 2열 정사각 타일. 아래 2:1 상자에 3·3·5장을 넣으면 폰에서 타일이 손톱만 해진다.
+          장수가 홀수면 마지막 한 장은 두 칸을 차지해 빈 칸이 안 남는다. */}
+      <div className="grid w-full grid-cols-2 gap-1 md:hidden">
+        {GALLERY_PHOTOS.map((photo, index) => {
+          const isLastOdd = index === GALLERY_PHOTOS.length - 1 && GALLERY_PHOTOS.length % 2 === 1;
+          return (
+            <div key={index} className={`relative ${isLastOdd ? 'col-span-2 aspect-[2/1]' : 'aspect-square'}`}>
+              <GalleryTile photo={photo} />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* md 이상: 전체 하나의 큰 직사각형(2:1) 안을 여백 없이 채우는 구조 */}
+      <div className="hidden w-full aspect-[2/1] flex-col overflow-hidden md:flex">
         {/* 1, 2, 3번: 가로 3장, 여백 없이 붙여서 */}
         <div className="flex flex-1">
           <div className="relative flex-1">

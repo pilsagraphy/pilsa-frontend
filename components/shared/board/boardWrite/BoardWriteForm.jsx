@@ -73,7 +73,8 @@ export default function BoardWriteForm({ boardId, board }) {
         />
       </BoardWriteBox>
 
-      <div className="flex flex-col md:flex-row gap-[12px] w-full">
+      {/* 툴바·카테고리는 모바일에서도 한 줄 — 세로로 쌓으면 폼이 화면 두 장 길이가 된다 */}
+      <div className="flex w-full flex-row gap-[12px]">
         <BoardWriteBox label="툴바">
           <BoardWriteToolbar
             contentRef={contentRef}
