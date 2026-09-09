@@ -76,10 +76,11 @@ self.addEventListener('push', (event) => {
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       const focused = windows.find((w) => w.focused);
 
+      // 앱을 보고 있어도 OS 알림을 띄운다 — 예전에는 인앱 토스트로만 알려서, 다른 화면을 보고 있으면
+      // 알림이 왔는지도 몰랐고 토스트가 사라지면 확인할 방법이 없었다.
+      // 열려 있는 창에는 배지·알림함을 갱신하라고만 알린다(토스트는 띄우지 않는다 — OS 알림과 중복).
       if (focused) {
-        // 앱 보는 중 → 인앱 토스트 (NotificationBell.jsx 의 message 리스너가 수신)
-        focused.postMessage({ type: 'toast', ...data });
-        return;
+        focused.postMessage({ type: 'push-received', ...data });
       }
 
       // 받은 푸시는 반드시 알림으로 표시 (userVisibleOnly 계약)

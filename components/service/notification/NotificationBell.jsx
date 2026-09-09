@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Bell, X } from 'lucide-react';
-import { toast } from 'sonner';
 import useAuthStore from '@/stores/useAuthStore';
 import {
   getToastList,
@@ -120,36 +119,19 @@ export default function NotificationBell() {
     })();
   }, [isLoggedIn, pathname, applyBadge]);
 
-  // 서비스 워커 인앱 토스트 브리지 — 앱을 보는 중 수신된 푸시(포그라운드 분기)
+  // 서비스 워커 브리지 — 앱을 보는 중 푸시가 오면 배지·알림함을 갱신한다.
+  // 알림 자체는 서비스 워커가 OS 알림으로 띄우므로(앱 실행 중에도) 여기서 토스트는 띄우지 않는다.
   useEffect(() => {
     if (!isLoggedIn || !('serviceWorker' in navigator)) return undefined;
 
     const onMessage = (event) => {
-      if (event.data?.type !== 'toast') return;
-      const { title, body, toastId, targetType, targetId, boardId } = event.data;
-      toast(title ?? '새 알림', {
-        description: body,
-        action: {
-          label: '보기',
-          // SPA 이동은 컴포넌트가 재마운트되지 않으므로 ?toastId= 처리에 기대지 않고
-          // 여기서 직접 읽음 처리 후 이동한다 (읽음 API는 멱등)
-          onClick: async () => {
-            try {
-              const data = await readToast(toastId);
-              if (data?.unreadCount != null) applyBadge(data.unreadCount);
-              router.push(resolveNotificationUrl({ ...data, toastId: undefined }));
-            } catch {
-              router.push(resolveNotificationUrl({ targetType, targetId, boardId }));
-            }
-          },
-        },
-      });
+      if (event.data?.type !== 'push-received') return;
       refreshUnreadCount();
     };
 
     navigator.serviceWorker.addEventListener('message', onMessage);
     return () => navigator.serviceWorker.removeEventListener('message', onMessage);
-  }, [isLoggedIn, refreshUnreadCount, applyBadge, router]);
+  }, [isLoggedIn, refreshUnreadCount]);
 
   // 패널 밖 클릭 시 닫기
   useEffect(() => {
