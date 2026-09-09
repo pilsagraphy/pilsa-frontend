@@ -175,8 +175,9 @@ const Sidebar = () => {
       <aside
         onClick={closeOnLinkClick}
         className={`
-          fixed top-0 left-0 h-full bg-white z-[60] flex flex-col pl-[80px] py-10 font-['Pretendard'] border-r border-gray-100
+          fixed top-0 left-0 h-[100dvh] overflow-y-auto overscroll-contain bg-white z-[60] flex flex-col pl-[80px] py-10 font-['Pretendard'] border-r border-gray-100
           w-[260px] transition-transform duration-300 ease-in-out
+          tablet:h-full tablet:overflow-visible
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}
           tablet:translate-x-0 tablet:static tablet:w-[240px] tablet:z-auto tablet:border-none
         `}
@@ -191,7 +192,7 @@ const Sidebar = () => {
 
         {isAdminArea ? (
           /* ===================== 관리자 사이드바 ===================== */
-          <div className="flex flex-col gap-[26px] w-full items-start mt-10 tablet:mt-0">
+          <div className="flex shrink-0 flex-col gap-[26px] w-full items-start mt-10 tablet:mt-0">
             {/* 관리자홈 */}
             <Link href={ROUTES.ADMIN_HOME}>
               <p className={singleLinkClass(pathname === ROUTES.ADMIN_HOME)}>관리자홈</p>
@@ -243,7 +244,7 @@ const Sidebar = () => {
           </div>
         ) : (
           /* ===================== 일반 사이드바 ===================== */
-          <div className="flex flex-col gap-[26px] w-full items-start mt-10 tablet:mt-0">
+          <div className="flex shrink-0 flex-col gap-[26px] w-full items-start mt-10 tablet:mt-0">
             {/* 1. ABOUT PILSA */}
             <div className="w-full flex flex-col items-start">
               <button
