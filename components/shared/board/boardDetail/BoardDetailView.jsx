@@ -76,7 +76,7 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
   const listButton = (
     <button
       type="button"
-      className="h-12 w-full rounded-[4px] bg-[#212121] text-white"
+      className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white"
       onClick={() => router.push(listPath)}
     >
       목록

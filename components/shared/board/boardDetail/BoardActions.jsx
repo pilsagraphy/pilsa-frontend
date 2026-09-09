@@ -88,16 +88,17 @@ export default function BoardActions({
     }
   };
 
+  // 모바일: 좋아요·목록·수정·삭제를 한 줄에 — 감싸는 div 는 contents 로 풀어 버튼들이 같은 줄의 flex 항목이 되게 한다
   return (
-    <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
-      <div className="flex w-full flex-col gap-[10px] md:w-auto">
+    <div className="flex w-full flex-row items-center gap-2 md:justify-between md:gap-0">
+      <div className="contents md:flex md:w-auto md:flex-col md:gap-[10px]">
         {/* 좋아요 버튼 */}
         <button
           type="button"
           onClick={handleLike}
           disabled={likeLoading}
           aria-pressed={liked}
-          className={`flex h-12 w-full items-center justify-center gap-[6px] rounded-[4px] border text-[15px] tracking-[-0.32px] transition-colors disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px] ${
+          className={`flex h-12 flex-1 items-center justify-center gap-[6px] rounded-[4px] border text-[15px] tracking-[-0.32px] transition-colors disabled:opacity-60 md:h-[52px] md:w-[135px] md:flex-none md:text-[16px] ${
             liked
               ? 'border-[#212121] bg-[#212121] text-white hover:bg-black'
               : 'border-[#b9b9b9] bg-white text-[#212121] hover:bg-[#f5f5f5]'
@@ -108,12 +109,12 @@ export default function BoardActions({
           <span>좋아요 {likeCount}</span>
         </button>
 
-        {afterLikeOnMobile != null && <div className="w-full md:hidden">{afterLikeOnMobile}</div>}
+        {afterLikeOnMobile != null && <div className="contents md:hidden">{afterLikeOnMobile}</div>}
       </div>
 
       {/* 수정 / 삭제 (권한 있을 때만) */}
       {(canEdit || canDelete) && (
-        <div className="flex w-full gap-2 md:w-auto md:gap-5">
+        <div className="contents md:flex md:w-auto md:gap-5">
           {canEdit && (
             <button
               type="button"
