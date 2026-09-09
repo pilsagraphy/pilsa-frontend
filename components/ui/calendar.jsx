@@ -96,7 +96,7 @@ export function Calendar({
 
       if (isOutside) {
         return (
-          <td className="h-10 w-10 p-0 text-center align-middle sm:h-12 sm:w-12">
+          <td className="h-9 w-9 p-0 text-center align-middle sm:h-12 sm:w-12">
             <span
               style={{
                 display: 'inline-block',
@@ -256,10 +256,10 @@ export function Calendar({
           // weekdays(구 head_row)에는 flex를 주지 않는다. <tr>이 flex가 되면
           // <th>가 table-cell을 잃어 본문 칸과 열이 어긋난다.
           weekday:
-            'w-10 p-0 text-center text-[11px] font-normal text-neutral-400 sm:w-12 sm:text-[14px]',
-          day: 'h-10 w-10 p-0 text-center align-middle bg-transparent sm:h-12 sm:w-12',
+            'w-9 p-0 text-center text-[11px] font-normal text-neutral-400 sm:w-12 sm:text-[14px]',
+          day: 'h-9 w-9 p-0 text-center align-middle bg-transparent sm:h-12 sm:w-12',
           day_button:
-            'flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-[13px] font-normal text-neutral-900 outline-none hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-12 sm:w-12 sm:text-[16px]',
+            'flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-[13px] font-normal text-neutral-900 outline-none hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-12 sm:w-12 sm:text-[16px]',
           // 선택한 날짜 표시는 아래 <style>의 td[data-selected]::after로 그린다.
           // 버튼에 테두리를 주면 버튼 크기(48px 정사각)를 따라가 막대보다 높아지기 때문.
           today: 'bg-transparent',

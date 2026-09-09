@@ -244,7 +244,8 @@ export default function CalendarSection({
           달력은 칸 40px×7=280px 로 고정하고 목록이 남는 폭을 가져간다. */}
       <div className="flex w-full flex-row items-start gap-3 sm:gap-5 min-[960px]:justify-between min-[960px]:gap-[29px]">
         {/* 960px 미만은 안쪽 여백 없이 280px 고정 — 격자(40px×7)가 상자 폭을 꽉 채운다 */}
-        <div className="w-[280px] shrink-0 bg-white p-0 min-[960px]:w-[443px] min-[960px]:p-[24px]">
+        {/* 상자 폭 = 칸 폭 × 7 (36×7=252, sm 48×7=336). 어긋나면 날짜 원(버튼)이 칸 밖으로 삐져나온다 */}
+        <div className="w-[252px] shrink-0 bg-white p-0 sm:w-[336px] min-[960px]:w-[443px] min-[960px]:p-[24px]">
           <Calendar
             mode="single"
             month={currentMonth}
