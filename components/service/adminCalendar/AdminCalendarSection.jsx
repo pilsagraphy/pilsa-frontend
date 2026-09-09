@@ -100,7 +100,11 @@ export default function AdminCalendarSection() {
           : await createEvent(values);
 
         toast.success(
-          result?.message ?? (isEdit ? '일정이 수정되었습니다.' : '새로운 일정이 등록되었습니다.')
+          result?.message ?? (isEdit ? '일정이 수정되었습니다.' : '새로운 일정이 등록되었습니다.'),
+          {
+            // 구글 캘린더 팬아웃은 비동기라(실패 시 10분 간격 재시도) 회원 캘린더에 바로 보이지 않는다
+            description: '구글 캘린더를 구독 중인 회원에게는 최대 10분 안에 반영돼요.',
+          }
         );
         setFormTarget(null);
         refresh(values.startDate);

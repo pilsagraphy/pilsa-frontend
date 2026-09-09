@@ -22,7 +22,7 @@ const GOOGLE_CALLBACK_MESSAGES = {
   calendar: {
     linked: {
       type: 'success',
-      text: '구글 캘린더를 연동했어요. 다가오는 일정을 채우는 중이에요',
+      text: '구글 캘린더를 연동했어요. 다가오는 일정을 채우는 중이에요 (최대 10분 정도 걸릴 수 있어요)',
     },
     failed: { type: 'error', text: '구글 캘린더 연동에 실패했어요. 다시 시도해주세요.' },
     cancelled: { type: 'info', text: '구글 캘린더 연동을 취소했어요' },

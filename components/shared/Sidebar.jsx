@@ -43,6 +43,14 @@ const Sidebar = () => {
     setIsMobileOpen(false);
   }, [pathname]);
 
+  // 메뉴 링크를 누르면 경로가 바뀌든 말든 즉시 닫는다.
+  // 위 effect 는 pathname 이 바뀔 때만 돌아서, 지금 보고 있는 페이지의 메뉴를 다시 누르거나
+  // (예: /students 에서 '메인페이지') 이동이 막힌 경우(권한 없음 토스트)에는 사이드바가 그대로 남았다.
+  // 펼침 버튼(ABOUT PILSA · 회원 게시판 · 관리자 메뉴)은 <button> 이라 여기에 걸리지 않는다.
+  const closeOnLinkClick = useCallback((event) => {
+    if (event.target.closest('a')) setIsMobileOpen(false);
+  }, []);
+
   const checkBoardAccess = useCallback(async () => {
     if (!isLoggedIn) {
       router.push(ROUTES.LOGIN);
@@ -165,6 +173,7 @@ const Sidebar = () => {
 
       {/* --- 사이드바 본체 --- */}
       <aside
+        onClick={closeOnLinkClick}
         className={`
           fixed top-0 left-0 h-full bg-white z-[60] flex flex-col pl-[80px] py-10 font-['Pretendard'] border-r border-gray-100
           w-[260px] transition-transform duration-300 ease-in-out
