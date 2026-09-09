@@ -5,11 +5,14 @@ import { usePathname } from 'next/navigation';
 import useAuthStore, { AUTO_LOGIN_KEY } from '@/stores/useAuthStore';
 import { PUBLIC_ROUTES } from '@/constants/routes';
 import { validateRefreshToken } from '@/apis/auth';
+import { restorePushAfterLogin } from '@/lib/push';
 
 export default function AuthBootstrap({ children }) {
   const pathname = usePathname();
   const initializeAuth = useAuthStore((s) => s.initializeAuth);
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const autoLoginTried = useRef(false);
+  const pushRestored = useRef(false);
 
   // 자동 로그인 설정된 경우 공개 경로에서도 앱 최초 진입 1회에 한해 refresh 쿠키로 세션을 복원
   useEffect(() => {
@@ -59,6 +62,16 @@ export default function AuthBootstrap({ children }) {
 
     initializeAuth();
   }, [pathname, initializeAuth]);
+
+  // 세션이 살아난 뒤 알림 기기 등록 상태를 맞춘다.
+  // 로그인 폼(LoginSection)에서만 부르면 자동 로그인으로 들어온 사람은 이 과정을 건너뛴다 —
+  // 크롬이 푸시 구독을 갱신해 endpoint 가 바뀌면 다시 등록할 기회가 없어 알림이 조용히 끊긴다.
+  // 권한 없음 · 사용자가 직접 끔 · 이미 등록됨은 restorePushAfterLogin 이 걸러내므로 여기서는 부르기만 한다.
+  useEffect(() => {
+    if (!isLoggedIn || pushRestored.current) return;
+    pushRestored.current = true;
+    restorePushAfterLogin();
+  }, [isLoggedIn]);
 
   return children;
 }
