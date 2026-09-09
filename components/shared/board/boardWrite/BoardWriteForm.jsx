@@ -95,7 +95,7 @@ export default function BoardWriteForm({ boardId, board }) {
               onChange={(e) => setCategoryId(e.target.value)}
               className="w-full h-full px-[16px] bg-transparent text-[16px] text-[#212121] tracking-[-0.32px] outline-none appearance-none cursor-pointer relative z-10"
             >
-              <option value="">게시글 카테고리를 선택하세요</option>
+              <option value="">카테고리를 선택하세요</option>
 
               {categories.map((category) => (
                 <option key={category.categoryId} value={String(category.categoryId)}>
