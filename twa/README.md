@@ -24,7 +24,7 @@ TWA 는 `https://pilsa.co.kr` 을 그대로 여는 껍데기라 **웹 코드가 
 | `maskableIconUrl` · `monochromeIconUrl` | `/icons/icon-maskable-512.png` · `/icons/icon-monochrome-512.png` — 홈 화면 아이콘(검정 네모) |
 | `signingKey` | `../../app-key/pilsa-upload.jks`, alias `pilsa-upload` (2026-09-09 재생성) |
 | `themeColor` · `navigationColor` (다크 포함) | `#FFFFFF` — 상태바·내비게이션바 색. `#212121` 이던 v5 까지는 흰 화면 위아래로 검은 띠가 보였다. 아이콘 명암은 크롬이 색 밝기를 보고 알아서 뒤집는다 |
-| `appVersionName` / `appVersionCode` | `1.0.5` / `6` — v1(`1.0.0`/`1`) 2026-09-09 비공개 테스트, v3(`1.0.2`/`3`) 알림 수정, v4(`1.0.3`/`4`) provider 를 Chrome 으로 고정(아래 '웹 푸시에 대해'), v5(`1.0.4`/`5`) 시작 URL `/?launch=app`, **v6 은 상태바·내비게이션바 흰색 + 크롬 알림 설정 다리** |
+| `appVersionName` / `appVersionCode` | `1.0.5` / `6` — v1(`1.0.0`/`1`) 2026-09-09 비공개 테스트, v3(`1.0.2`/`3`) 알림 수정, v4(`1.0.3`/`4`) provider 를 Chrome 으로 고정(아래 '웹 푸시에 대해'), v5(`1.0.4`/`5`) 시작 URL `/?launch=app`, **v6 은 상태바·내비게이션바 흰색 + 브라우저 알림 설정 다리** |
 | `assetlinks.json` 지문 | 업로드 키 `20:7E:A7:E9:…:9B:8A` + Play 앱 서명 키 `95:08:85:FC:…:46:38` 두 개 |
 
 > 업로드 키는 `pilsa-upload.jks` 다. 예전 `v_1_release_key.jks` 는 비밀번호를 아는 사람이 없어
@@ -121,8 +121,11 @@ bubblewrap update --skipVersionUpgrade
 - `LauncherActivity.java` — `createTwaLauncher()` 를 오버라이드해 **Chrome 이 있으면 Chrome 으로** 앱을 연다. 이걸 빼먹고 빌드하면
   갤럭시에서 삼성 인터넷으로 열리는 옛 동작으로 돌아간다(알림이 "삼성 브라우저" 로 오고 누르면 브라우저가 열림).
   Bubblewrap 템플릿의 `LauncherActivity.java` 가 바뀌면(onCreate 등) `overrides/` 쪽도 맞춘다.
-- `ChromeNotificationSettingsActivity.java` + 매니페스트 조각 — `pilsa://chrome-notification` 을 받아 **크롬의 알림 설정 화면**을 연다.
-  마이페이지 알림 토글 아래의 "'Chrome에서 실행 중' 알림 숨기기" 가 이 주소로 보낸다(`NotificationToggle.jsx`).
+- `BrowserNotificationSettingsActivity.java` + 매니페스트 조각 — `pilsa://browser-notification?pkg=<패키지>` 를 받아
+  **그 브라우저의 알림 설정 화면**을 연다. 마이페이지 알림 토글 아래 링크가 이 주소로 보낸다(`NotificationToggle.jsx`).
+  어느 브라우저인지는 웹이 UA 로 판별해 넘긴다(`lib/platform.js` 의 `getAndroidHostBrowser`) — 앱은 Chrome 을 우선하지만
+  Chrome 이 없는 폰은 삼성 인터넷 등으로 열리고, 고지를 띄우는 것도 그 브라우저이기 때문이다.
+  넘어온 패키지는 액티비티의 허용 목록(Chrome 계열·삼성 인터넷·Edge·웨일)에 있는 것만 쓴다.
   안드로이드에는 남의 앱 알림을 대신 꺼 주는 API 가 없어서, 데려다주는 데까지가 우리가 할 수 있는 전부다.
   매니페스트는 **통째로 덮어쓰지 않는다** — `twa-manifest.json` 의 색·아이콘·알림 설정이 반영되는 생성물이라 조각만 끼워 넣는다.
 
