@@ -12,7 +12,7 @@
   "navigationDividerColorDark": "#212121",
   "backgroundColor": "#FFFFFF",
   "enableNotifications": true,
-  "startUrl": "/",
+  "startUrl": "/?launch=app",
   "iconUrl": "https://pilsa.co.kr/icons/icon-splash-512.png",
   "maskableIconUrl": "https://pilsa.co.kr/icons/icon-maskable-512.png",
   "monochromeIconUrl": "https://pilsa.co.kr/icons/icon-monochrome-512.png",
@@ -21,8 +21,8 @@
     "path": "../../app-key/pilsa-upload.jks",
     "alias": "pilsa-upload"
   },
-  "appVersionName": "1.0.2",
-  "appVersionCode": 3,
+  "appVersionName": "1.0.4",
+  "appVersionCode": 5,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://pilsa.co.kr/manifest.json",
@@ -41,5 +41,5 @@
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "1.0.2"
+  "appVersion": "1.0.4"
 }

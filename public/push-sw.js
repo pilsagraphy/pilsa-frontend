@@ -96,6 +96,23 @@ self.addEventListener('push', (event) => {
   );
 });
 
+// 창을 게시글로 이동시키고 앞으로 가져온다. focus() 와 navigate() 는 환경(특히 TWA)에 따라 각각 거부될 수 있어
+// 따로 감싼다 — 예전엔 focus() 가 던지면 navigate 까지 못 가서 앱은 뜨는데 첫 화면에 머물렀다.
+async function moveClientTo(client, url) {
+  try {
+    const moved = await client.navigate(url);
+    if (!moved) return false;
+    try {
+      await moved.focus();
+    } catch {
+      // 포커스 실패는 무시 — 이동은 이미 됐다
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const data = event.notification.data || {};
@@ -106,26 +123,20 @@ self.addEventListener('notificationclick', (event) => {
     (async () => {
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
 
-      // 이미 열린 창이 있으면 그 창을 게시글로 이동시킨다.
-      // focus() 와 navigate() 는 환경(특히 TWA)에 따라 각각 거부될 수 있어 따로 감싼다 —
-      // 예전엔 focus() 가 던지면 navigate 까지 못 가서 앱은 뜨는데 첫 화면에 머물렀다.
-      for (const client of windows) {
-        try {
-          if ('navigate' in client) {
-            const moved = await client.navigate(url);
-            if (moved) {
-              try {
-                await moved.focus();
-              } catch {
-                // 포커스 실패는 무시 — 이동은 이미 됐다
-              }
-              return;
-            }
-          }
-        } catch {
-          // 이 창으로는 이동 불가 → 다음 창 또는 새 창
-        }
+      // 예전에는 잡히는 아무 창이나(최근 포커스 순) navigate+focus 했다. 크롬은 설치형 앱(TWA)과 일반 브라우저 탭이
+      // 같은 프로필이라 브라우저로 열어 뒀던 pilsa.co.kr 탭이 먼저 잡히면 그 탭이 전면으로 나왔다 — "앱이 아니라 브라우저로 열림".
+      // 게다가 숨어 있는 앱 창은 navigate 해도 앞으로 오지 않는다(크롬이 TWA 태스크를 전면화하려면 앱에 REORDER_TASKS 권한이
+      // 필요한데 Bubblewrap 앱에는 없다) — 이동만 되고 화면엔 아무 일도 없는 것처럼 보인다.
+      // 그래서 **지금 화면에 보이는 창**만 그 자리에서 이동시키고, 아니면 새 창으로 간다.
+      const visible = windows
+        .filter((w) => w.visibilityState === 'visible')
+        .sort((a, b) => Number(b.focused) - Number(a.focused));
+      for (const client of visible) {
+        if (await moveClientTo(client, url)) return;
       }
+
+      // 새 창 — 크롬은 이 사이트의 TWA 가 위임 앱으로 등록돼 있으면(앱을 크롬으로 한 번이라도 열어 검증된 상태)
+      // 브라우저 탭 대신 그 앱을 URL 과 함께 띄운다. 앱이 백그라운드에 있어도 앞으로 오며 그 화면을 연다.
       await self.clients.openWindow(url);
     })()
   );

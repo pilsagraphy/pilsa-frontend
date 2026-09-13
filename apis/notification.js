@@ -15,7 +15,9 @@ export const getNotificationDevices = async () => {
 };
 
 // 2. 알림 수신 동의/거부 통합 토글 (PUT /api/user/mypage/toast/devices)
-//    요청 [동의] { enabled: true, endpoint, keys: { p256dh, auth } }  ← subscribe().toJSON() + enabled
+//    요청 [동의] { enabled: true, endpoint, keys: { p256dh, auth }, replaceOthers? }  ← subscribe().toJSON() + enabled
+//      replaceOthers=true 는 설치형 안드로이드 앱(TWA)에서만 보낸다 — 서버가 같은 회원의 다른 안드로이드(비-Apple) 기기 행을
+//      함께 지운다(같은 폰의 삼성 인터넷·크롬 탭 구독이 남아 알림이 두 번 오는 것 방지). iPhone 홈 화면 앱은 남는다
 //    요청 [거부] { enabled: false, endpoint }                        ← keys 불필요
 //    응답: { enabled, deviceCount, message } — 처리 후 상태를 주므로 목록 재조회 불필요
 // 등록·해제가 PUT 하나로 통합돼 있다. 원하는 상태만 보내면 되고 두 번 보내도 결과가 같다

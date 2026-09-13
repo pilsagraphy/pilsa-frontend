@@ -3,9 +3,9 @@
 import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import useAuthStore, { AUTO_LOGIN_KEY } from '@/stores/useAuthStore';
-import { PUBLIC_ROUTES } from '@/constants/routes';
+import { PUBLIC_ROUTES, ROUTES } from '@/constants/routes';
 import { validateRefreshToken } from '@/apis/auth';
-import { restorePushAfterLogin } from '@/lib/push';
+import { restorePushAfterLogin, watchPushPermissionRecovery } from '@/lib/push';
 
 export default function AuthBootstrap({ children }) {
   const pathname = usePathname();
@@ -19,7 +19,10 @@ export default function AuthBootstrap({ children }) {
     if (autoLoginTried.current) return;
     autoLoginTried.current = true;
 
-    if (!PUBLIC_ROUTES.includes(window.location.pathname)) return;
+    // 게이트(/)도 포함한다 — 설치형 앱은 켤 때마다 게이트(/?launch=app)에서 첫 마운트되므로, 여기서 시도하지 않으면
+    // 앱을 켤 때마다 로그아웃 상태로 보이고 알림 재구독(restorePushAfterLogin)도 돌지 않는다. 보호 경로는 아래 effect 가 맡는다.
+    const path = window.location.pathname;
+    if (!PUBLIC_ROUTES.includes(path) && path !== ROUTES.GATE) return;
 
     // 로그아웃 진입(/login?logout=1)과의 경합 방지 — 로그아웃 처리 중 세션을 부활시키면 안 된다
     if (new URLSearchParams(window.location.search).get('logout') === '1') return;
@@ -71,6 +74,12 @@ export default function AuthBootstrap({ children }) {
     if (!isLoggedIn || pushRestored.current) return;
     pushRestored.current = true;
     restorePushAfterLogin();
+  }, [isLoggedIn]);
+
+  // 앱으로 돌아왔을 때 알림 권한이 살아났으면 등록 — OS 설정에서 알림을 켜고 돌아온 사람의 복구 경로
+  useEffect(() => {
+    if (!isLoggedIn) return undefined;
+    return watchPushPermissionRecovery();
   }, [isLoggedIn]);
 
   return children;

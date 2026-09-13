@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { isIOS } from '@/lib/platform';
 import {
   canShowPushToggle,
   getPushToggleState,
   enablePushOnThisDevice,
   disablePushOnThisDevice,
+  isInstalledAndroidApp,
 } from '@/lib/push';
 
 // "이 기기에서 알림 받기" 토글
@@ -55,7 +57,14 @@ export default function NotificationToggle() {
       }
     } catch (err) {
       if (err?.code === 'PERMISSION_DENIED') {
-        toast.error('브라우저에서 알림이 차단되어 있어요');
+        // 설치형 앱은 OS 프롬프트를 한 번 거부하면 웹에서 다시 물을 수 없다 — 앱 설정에서 켜는 길을 알려준다
+        toast.error(
+          isInstalledAndroidApp()
+            ? '앱 알림이 꺼져 있어요. 앱 아이콘을 길게 눌러 [앱 정보] → [알림]에서 켠 뒤 앱을 다시 열어주세요.'
+            : isIOS()
+              ? '알림이 꺼져 있어요. iPhone 설정 → 알림 → Pilsagraphy 에서 허용해 주세요.'
+              : '브라우저에서 알림이 차단되어 있어요'
+        );
       } else {
         toast.error('알림 설정에 실패했어요. 잠시 후 다시 시도해주세요.');
       }

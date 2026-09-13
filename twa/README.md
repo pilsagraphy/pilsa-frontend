@@ -4,6 +4,9 @@ Bubblewrap 으로 웹앱을 Android 앱(TWA)으로 감싸 Play 스토어에 올�
 `twa-manifest.json` 이 그 입력값이고, 이 디렉터리는 **생성물이 아니라 설정만** 담는다
 (생성된 Android 프로젝트는 커밋하지 않는다 — `twa-manifest.json` 만 있으면 2번으로 다시 만들어진다).
 
+생성물 위에 덮어쓰는 **우리 쪽 수정본은 `overrides/`** 에 있다 (현재 `LauncherActivity.java` 하나 — 앱을 여는 브라우저를
+Chrome 으로 고정). `bubblewrap update` 가 템플릿으로 다시 만들어 버리므로 update 뒤에 `apply-overrides.ps1` 로 덮어쓴다 (2-1번).
+
 TWA 는 `https://pilsa.co.kr` 을 그대로 여는 껍데기라 **웹 코드가 앱 안에 들어가지 않는다.**
 프론트를 재배포하면 앱을 다시 만들지 않아도 그대로 반영된다. 앱을 새로 빌드해야 하는 건
 `twa-manifest.json` 이 바뀔 때뿐이다 (패키지명·이름·아이콘·버전·서명키·알림 설정 등).
@@ -15,10 +18,11 @@ TWA 는 `https://pilsa.co.kr` 을 그대로 여는 껍데기라 **웹 코드가 
 | `packageId` | `kr.co.pilsa.pilsagraphy` — **Play Console 에 2026-08-16 에 만들어 둔 앱의 패키지명.** 다른 값으로 빌드하면 업로드가 거부된다 |
 | `name` · `launcherName` | `Pilsagraphy` — 설치된 앱·홈 화면에 보이는 이름 (스토어 등록정보 이름과 맞춤) |
 | `host` · `webManifestUrl` · `fullScopeUrl` | `pilsa.co.kr` |
+| `startUrl` | `/?launch=app` — 앱을 켤 때마다 시계 게이트를 보이기 위한 표식. middleware 가 이 진입만 통과 쿠키가 있어도 게이트로 둔다 (크롬은 앱 종료 후에도 세션 쿠키를 복원해 쿠키 수명으로는 구분이 안 된다) |
 | `iconUrl` | `/icons/icon-splash-512.png` — **스플래시 전용** (흰 바탕에 검정 로고, 배경 투명). 아래 '스플래시' 참고 |
 | `maskableIconUrl` · `monochromeIconUrl` | `/icons/icon-maskable-512.png` · `/icons/icon-monochrome-512.png` — 홈 화면 아이콘(검정 네모) |
 | `signingKey` | `../../app-key/pilsa-upload.jks`, alias `pilsa-upload` (2026-09-09 재생성) |
-| `appVersionName` / `appVersionCode` | `1.0.1` / `2` — v1(`1.0.0`/`1`)은 2026-09-09 비공개 테스트 Alpha 에 올려 검토 중. v2 는 그 검토가 끝난 뒤 올린다 |
+| `appVersionName` / `appVersionCode` | `1.0.4` / `5` — v1(`1.0.0`/`1`) 2026-09-09 비공개 테스트, v3(`1.0.2`/`3`) 알림 수정, v4(`1.0.3`/`4`) provider 를 Chrome 으로 고정(아래 '웹 푸시에 대해'), **v5 는 시작 URL `/?launch=app`** (v4 는 시작 URL 없는 빌드가 올라갔을 수 있어 번호를 올림) |
 | `assetlinks.json` 지문 | 업로드 키 `20:7E:A7:E9:…:9B:8A` + Play 앱 서명 키 `95:08:85:FC:…:46:38` 두 개 |
 
 > 업로드 키는 `pilsa-upload.jks` 다. 예전 `v_1_release_key.jks` 는 비밀번호를 아는 사람이 없어
@@ -104,6 +108,17 @@ bubblewrap update --skipVersionUpgrade
 - `--skipVersionUpgrade` 를 빼면 `versionName` 을 대화형으로 묻고 `versionCode` 를 1 올린다.
   버전을 올릴 때만 `--appVersionName 1.0.1` 처럼 명시한다.
 
+## 2-1. 수정본 덮어쓰기 (update 뒤 · build 전, 매번)
+
+```powershell
+.\apply-overrides.ps1
+```
+
+`overrides/` 아래 파일을 같은 경로의 생성물 위에 복사한다. 지금은 `app/src/main/java/kr/co/pilsa/pilsagraphy/LauncherActivity.java`
+하나로, `createTwaLauncher()` 를 오버라이드해 **Chrome 이 있으면 Chrome 으로** 앱을 연다. 이걸 빼먹고 빌드하면 갤럭시에서
+삼성 인터넷으로 열리는 옛 동작으로 돌아간다(알림이 "삼성 브라우저" 로 오고 누르면 브라우저가 열림).
+Bubblewrap 템플릿의 `LauncherActivity.java` 가 바뀌면(onCreate 등) `overrides/` 쪽도 맞춘다.
+
 ## 3. 빌드
 
 비밀번호는 명령줄에 쓰지 말고 같은 셸의 환경변수로 넘긴다 (키스토어 옆에 둔 비밀번호 파일을 읽어서):
@@ -142,7 +157,7 @@ Play Console 의 앱(`kr.co.pilsa.pilsagraphy`)은 이미 만들어져 있고 �
 3. 테스터 목록에 본인 계정을 넣고 참여 링크로 설치한다
 
 다음 버전을 올릴 때는 `appVersionCode` 를 올려야 한다. `twa-manifest.json` 의 `appVersionCode`/`appVersionName` 을
-직접 올린 뒤 `bubblewrap update --skipVersionUpgrade` → `bubblewrap build` 순서면 된다 (v2 는 이미 `2`/`1.0.1` 로 올려 뒀다).
+직접 올린 뒤 `bubblewrap update --skipVersionUpgrade` → `.\apply-overrides.ps1` → `bubblewrap build` 순서면 된다.
 
 > 검토 중인 버전이 있을 때 새 버전을 올리면 앞 검토가 대체돼 다시 기다린다.
 > 비공개 테스트 중 새 버전을 올려도 12명/14일 카운터는 리셋되지 않는다 — 리셋되는 건 **트랙 일시중지** 뿐이다.
@@ -187,6 +202,40 @@ https://developers.google.com/digital-asset-links/tools/generator
 
 ## 웹 푸시에 대해
 
-`public/push-sw.js` 의 웹 푸시가 TWA 안에서도 그대로 동작한다.
-Bubblewrap 의 `enableNotifications: true` 는 Android 13+ 의 알림 권한(`POST_NOTIFICATIONS`)을
-매니페스트에 넣어 주는 역할이라 켜 두었다.
+`public/push-sw.js` 의 웹 푸시가 TWA 안에서도 그대로 동작한다 — 단, **앱을 여는 브라우저가 Chrome 일 때**다.
+
+### 앱을 여는 브라우저(provider)는 Chrome 으로 고정한다 (v4, `overrides/LauncherActivity.java`)
+
+TWA 는 껍데기고 실제 화면·서비스 워커·푸시 구독은 폰에 깔린 브라우저가 맡는다. android-browser-helper 의 기본 선택은
+**폰의 기본 브라우저**가 TWA 를 지원하면 그것을 쓰는데, 갤럭시는 기본 브라우저가 삼성 인터넷인 경우가 많다. 그러면:
+
+- 푸시 구독·알림 표시가 삼성 인터넷 몫이 된다 → 알림이 **"삼성 브라우저"** 이름으로 뜨고, 앱은 알림 채널을 만든 적이 없어
+  **설정 > 알림 의 앱 목록에 없다** (알림을 켜고 끌 수도 없다). 앱 정보의 알림 스위치는 이 경우 아무 영향이 없다.
+- 알림을 눌러도 **앱이 아니라 삼성 인터넷 탭**이 열린다 (앱이 켜져 있을 때만 앱 창이 잡혀 "가끔 앱으로" 열렸다).
+- Android 13+ 알림 권한 위임(웹의 `Notification.requestPermission()` → 앱의 `POST_NOTIFICATIONS` 프롬프트)도 없다.
+
+Chrome 은 위 세 가지를 모두 지원한다(알림 위임 `DelegationService`, 권한 위임 `NotificationPermissionRequestActivity`,
+알림 클릭 시 검증된 TWA 로 URL 전달). 그래서 `createTwaLauncher()` 에서 Chrome(안정→베타→개발→카나리)이 설치·활성·TWA 지원
+버전이면 그것을 provider 로 넘기고, 아니면 기본 선택으로 물러선다.
+
+### Android 13+ 알림 권한 — OS 프롬프트를 한 번 거부하면 웹에서 다시 못 묻는다
+
+Chrome 은 TWA 를 열 때 앱의 알림 권한 상태를 **조회만** 해서 사이트 권한에 복사한다(자동으로 묻지 않는다). 프롬프트는 웹이
+`Notification.requestPermission()` 을 부를 때(알림 유도 바텀시트·마이페이지 토글) Chrome 이 앱의
+`NotificationPermissionRequestActivity` 로 위임해 뜨는 **OS 다이얼로그**다. android-browser-helper 는 **한 번이라도 물어본 뒤
+허용이 아니면 영구 `BLOCK`** 을 답하므로(`NotificationDelegationExtraCommandHandler`), 거기서 거부하면 그 뒤 웹의
+`Notification.permission` 은 `denied` 로 고정되고 `requestPermission()` 은 프롬프트 없이 `denied` 를 돌려준다.
+(설치 전에 Chrome 브라우저에서 알림을 허용해 둔 사람도 TWA 를 한 번 열면 앱 권한(기본 꺼짐)이 사이트 권한을 덮어쓴다.)
+
+유일한 복구 경로는 사용자가 **앱 정보 → 알림** 에서 직접 켜는 것이다. 단 Chrome 은 이 상향 동기화를 **Chrome 프로세스가 다시 뜬 뒤
+TWA 를 열어 검증할 때** 한 번만 하므로, 켠 뒤 앱을 완전히 닫았다가 다시 열어야 하고 그래도 안 되면 휴대폰을 껐다 켜야 한다.
+프론트는 권한이 `granted` 로 살아나면 자동으로 구독·서버 등록까지 한다(`lib/push.js` 의 `restorePushAfterLogin`/
+`recoverPushIfNewlyGranted`)와, `denied` 인 사람에게 그 절차를 안내한다(`PushPromptBottomSheet`).
+
+`enableNotifications: true` 가 `POST_NOTIFICATIONS`·`DelegationService`·`NotificationPermissionRequestActivity` 를 매니페스트에 넣는다.
+
+### v4 로 올라간 뒤 기존 사용자 (삼성 인터넷으로 쓰던 사람)
+
+앱이 Chrome 으로 열리므로 Chrome 프로필에는 로그인·구독이 없다 → 다시 로그인해야 하고, 로그인하면 프론트가 구독을 만들어
+서버에 `replaceOthers: true` 로 등록한다. 서버는 그 회원의 다른 안드로이드 기기 행(삼성 인터넷 구독)을 지워 **알림이 두 번 오지 않게**
+한다. 삼성 인터넷 쪽 구독은 브라우저 안에 남지만 서버가 더 보내지 않으므로 조용하다.
