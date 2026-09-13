@@ -9,7 +9,7 @@ import useSidebarStore from '@/stores/sidebar';
 import useAuthStore from '@/stores/useAuthStore';
 import useBoardStore from '@/stores/useBoardStore';
 import { ROUTES, ALLOWED_BOARD_MEMBER_TYPES } from '@/constants/routes';
-import { loginHref, loginUrlWithReturnTo, stashReturnTo } from '@/lib/returnTo';
+import { loginUrlWithReturnTo, stashReturnTo } from '@/lib/returnTo';
 
 const Sidebar = () => {
   const router = useRouter();
@@ -344,8 +344,10 @@ const Sidebar = () => {
               </Link>
             </>
           ) : (
-            /* 비로그인: 로그인만. 로그인 뒤 보던 화면으로 돌아온다 */
-            <Link href={loginHref(pathname)} onClick={() => stashReturnTo(pathname)}>
+            /* 비로그인: 로그인만. 이건 '지금 로그인하겠다' 는 뜻이라 보던 화면이 아니라 학생 홈으로 보낸다
+               (게시판을 누르다 밀려난 경우는 위 checkBoardAccess 가 그 게시판을 returnTo 로 들려 보낸다).
+               앞서 밀려나며 저장해 둔 목적지가 남아 있으면 지운다 — 안 지우면 엉뚱한 화면으로 돌아간다 */
+            <Link href={ROUTES.LOGIN} onClick={() => stashReturnTo(null)}>
               <button onClick={toggleLogin} className={bottomItemClass}>
                 로그인
               </button>
