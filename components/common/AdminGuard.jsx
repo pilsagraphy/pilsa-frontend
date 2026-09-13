@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import useAuthStore from '@/stores/useAuthStore';
+import AppLoading from '@/components/common/AppLoading';
 import { BASE_PATH } from '@/constants/routes';
 import { loginUrlWithReturnTo, currentPathForReturn } from '@/lib/returnTo';
 
@@ -41,7 +42,7 @@ export default function AdminGuard({ children }) {
   }, [authChecked, isLoggedIn, adminLevel, memberType, fetchRole, router]);
 
   if (!authChecked || !roleChecked) {
-    return <div className="py-20 text-center text-[#919191]">권한 확인 중...</div>;
+    return <AppLoading label="권한 확인 중" />;
   }
 
   return children;

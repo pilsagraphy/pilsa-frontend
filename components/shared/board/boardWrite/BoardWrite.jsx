@@ -8,6 +8,7 @@ import useBoardWriteStore from '@/stores/useBoardWriteStore';
 import { createBoardPost } from '@/apis/board';
 import { getErrorMessage } from '@/apis/auth';
 import { ROUTES } from '@/constants/routes';
+import AppLoading from '@/components/common/AppLoading';
 
 const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base';
 
@@ -79,7 +80,7 @@ export default function BoardWrite({ boardId }) {
   }
 
   if (!boards) {
-    return <div className={MESSAGE_CLASS}>불러오는 중입니다.</div>;
+    return <AppLoading />;
   }
 
   if (!board) {

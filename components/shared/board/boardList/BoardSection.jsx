@@ -16,6 +16,7 @@ import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 
 import { getBoardPosts, getBoardCategories } from '@/apis/board';
 import { getErrorMessage } from '@/apis/auth';
+import AppLoading from '@/components/common/AppLoading';
 
 const PAGE_SIZE = 10;
 
@@ -185,7 +186,7 @@ export default function BoardSection({ boardId }) {
   }
 
   if (!boards) {
-    return <div className={MESSAGE_CLASS}>불러오는 중입니다.</div>;
+    return <AppLoading />;
   }
 
   if (!board) {

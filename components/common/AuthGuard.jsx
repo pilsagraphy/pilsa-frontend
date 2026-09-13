@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuthStore from '@/stores/useAuthStore';
+import AppLoading from '@/components/common/AppLoading';
 import { loginUrlWithReturnTo, currentPathForReturn } from '@/lib/returnTo';
 
 export default function AuthGuard({ children }) {
@@ -18,7 +19,7 @@ export default function AuthGuard({ children }) {
   }, [authChecked, isLoggedIn, router]);
 
   if (!authChecked) {
-    return <div>로딩 중...</div>;
+    return <AppLoading />;
   }
 
   if (!isLoggedIn) {

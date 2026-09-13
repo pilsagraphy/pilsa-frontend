@@ -15,6 +15,7 @@ import BoardContent from './BoardContent';
 import BoardActions from './BoardActions';
 import BoardComments from './BoardComments';
 import PostPrevNext from '@/components/shared/board/PostPrevNext';
+import AppLoading from '@/components/common/AppLoading';
 
 const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base';
 
@@ -54,7 +55,7 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
   // 아직 요청이 시작되지 않은 첫 렌더도 '로딩'으로 본다.
   // 그러지 않으면 정상 글인데 '존재하지 않는 게시글입니다.' 가 한 프레임 스친다.
   if (!boards || isLoading || (!post && !error)) {
-    return <div className={MESSAGE_CLASS}>불러오는 중입니다.</div>;
+    return <AppLoading />;
   }
 
   if (!post) {
