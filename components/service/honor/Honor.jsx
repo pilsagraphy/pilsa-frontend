@@ -1,27 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import HonorGrid from "./HonorGrid";
-import { getHonorList } from "@/apis/honor";
+import AppLoading from "@/components/common/AppLoading";
+import { getDonations } from "@/apis/donation";
+import { getErrorMessage } from "@/apis/auth";
 
-import { DUMMY_DONORS } from "@/mocks/donorsData";
-
-export default function Honor() {  
+export default function Honor() {
+  // 폐기된 /api/public/honor/ 를 부르다 401 을 맞고 있었다. 공개 API 는 GET /api/donations 다(비로그인 열람 가능).
   const [donors, setDonors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchDonations = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await getDonations();
+      setDonors(Array.isArray(data) ? data : []);
+    } catch (err) {
+      // 예전엔 console.error 만 찍어서, 화면은 '후원자가 없음' 과 구별되지 않았다
+      setError(getErrorMessage(err, "명예의 전당을 불러오지 못했습니다."));
+      setDonors([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const fetchHonor = async () => {
-      try {
-        const data = await getHonorList();
-        setDonors(data);
-      } catch (error) {
-        console.error("명예의 전당 조회 실패:", error);
-      }
-    };
+    fetchDonations();
+  }, [fetchDonations]);
 
-    fetchHonor();
-  }, []);
-  
   const sortedDonors = [...donors].sort((a, b) => b.amount - a.amount);
 
   const totalCount = sortedDonors.length;
@@ -41,6 +50,27 @@ export default function Honor() {
           필사그래피 명예의 전당
         </p>
       </header>
+
+      {loading && <AppLoading label="명예의 전당 불러오는 중" />}
+
+      {!loading && error && (
+        <div className="flex flex-col items-center gap-3 py-16">
+          <p className="text-[14px] text-[#919191]">{error}</p>
+          <button
+            type="button"
+            onClick={fetchDonations}
+            className="text-[14px] text-[#919191] underline transition-colors hover:text-[#212121]"
+          >
+            다시 시도
+          </button>
+        </div>
+      )}
+
+      {!loading && !error && totalCount === 0 && (
+        <p className="py-16 text-center text-[14px] text-[#919191]">
+          아직 등록된 후원자가 없습니다.
+        </p>
+      )}
 
       {/* 등수별 그리드 영역 */}
       <section className="flex flex-col">

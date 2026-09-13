@@ -7,3 +7,7 @@ import axiosInstance from '@/apis/axiosInstance';
 //           donatedAt, isAnonymous, photoUrl }]
 //    비로그인 열람 가능. 익명 후원이면 displayName 이 '익명후원자'로 치환되어 내려온다
 //    photoUrl(/uploads/Honor/**)은 공개 정적 서빙이 유지되므로 그대로 <img src> 로 쓴다
+export const getDonations = async () => {
+  const response = await axiosInstance.get('/api/donations');
+  return response.data;
+};
