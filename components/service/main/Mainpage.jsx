@@ -2,7 +2,11 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { Zen_Dots } from 'next/font/google';
 import ClockScene from './ClockScene';
+
+// 헤더 로고와 같은 서체 — 안내 문구가 로고의 일부처럼 보이게
+const zenDots = Zen_Dots({ weight: '400', subsets: ['latin'] });
 
 /**
  * 게이트 화면. 클릭하면 통과 쿠키를 심고 소개 페이지로 넘어간다
@@ -28,9 +32,9 @@ export default function Page() {
     if (isAccelerating) return;
     setIsAccelerating(true);
 
-    // 게이트 통과 표시 — max-age 없는 "세션 쿠키"다. 설치형 앱(TWA)을 껐다 켜면 사라지므로
-    // 시계는 앱을 실행할 때마다 한 번 보이고, 그 뒤 앱 안에서 로고를 눌러 / 로 오면
-    // middleware 가 통과 쿠키를 보고 소개 페이지로 넘긴다. 지울 때는 max-age=0
+    // 게이트 통과 표시(세션 쿠키). 앱 안에서 / 로 다시 오면 middleware 가 이 쿠키를 보고 소개 페이지로 넘긴다.
+    // "앱을 켤 때마다 시계 한 번"은 쿠키 수명이 아니라 앱의 시작 URL(/?launch=app)로 구분한다 — 크롬은 앱을
+    // 껐다 켜도 세션 쿠키를 복원하기 때문(middleware.js 참고). 지울 때는 max-age=0
     document.cookie = 'pilsa_gate_passed=1; path=/';
 
     // middleware 가 게이트로 돌려보내며 붙인 원래 목적지(?from=/students/...). 알림을 눌러 들어온
@@ -79,6 +83,16 @@ export default function Page() {
           zIndex: 5,
         }}
       />
+
+      {/* 안내 문구 — 시계만 돌고 있으면 "무한 로딩" 으로 오해한다는 피드백. 탭하면 넘어간다는 걸 알려 준다.
+          누르는 순간 사라지고(가속 시작), 클릭은 main 이 받으므로 pointer-events 를 끊는다 */}
+      <div
+        aria-hidden
+        className={`${zenDots.className} gateHint${isAccelerating ? ' gateHint--hidden' : ''}`}
+      >
+        <span className="gateHint__ring" />
+        TAP TO START
+      </div>
 
       {/* Flash overlay */}
       <div

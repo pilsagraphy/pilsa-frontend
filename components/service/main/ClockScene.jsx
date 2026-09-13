@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useRef, useState } from 'react';
 import {
   BAND_CELLS,
   CENTER_DOT,
@@ -26,7 +27,8 @@ import {
  *    다이얼 지름에서 파생시켜 원본의 비율(다이얼 = 15.9칸)을 어떤 화면비에서도 지킨다.
  *  - 다이얼은 SVG(viewBox 0~100, 중심 50,50) 로 중앙에 두고 화면의 짧은 변에 맞춘다(vmin).
  *
- * speed 는 게이트를 통과할 때 배속을 걸기 위한 값이다 (CSS 변수로 내려 애니메이션 시간에 곱한다).
+ * speed 는 게이트를 통과할 때 거는 배속이다. 바늘은 마운트 후 JS(rAF)가 각도를 직접 굴리고, 배속은 스프링으로
+ * 따라가게 해서 눌렀을 때 뚝 끊기지 않고 이어지듯 빨라진다. JS 가 뜨기 전에는 CSS 키프레임이 대신 돌린다.
  */
 
 const HAIRLINE = 'rgba(0,0,0,0.85)';
@@ -68,9 +70,68 @@ function DotText({ text, top, pitch, dotR, gap }) {
   return <g fill="#000">{dots}</g>;
 }
 
+// 목표 배속으로 따라붙는 속도(클수록 빨리 붙는다). 임계 감쇠라 튕기지 않고 S 자로 부드럽게 올라간다
+const SPEED_STIFFNESS = 9;
+
 export default function ClockScene({ speed = 1 }) {
+  const handRefs = useRef([]);
+  const targetSpeed = useRef(speed);
+  // JS 가 바늘을 굴리기 시작하면 CSS 키프레임을 끈다 (둘이 같이 돌면 CSS 쪽이 이긴다).
+  // 하이드레이션 전·JS 실패 시에는 기존 CSS 애니메이션이 그대로 돌아 화면이 멈춰 보이지 않는다
+  const [jsDriven, setJsDriven] = useState(false);
+
+  useEffect(() => {
+    targetSpeed.current = speed;
+  }, [speed]);
+
+  useEffect(() => {
+    const setAngle = (i, deg) => {
+      const el = handRefs.current[i];
+      if (el) el.style.transform = `rotate(${deg.toFixed(2)}deg)`;
+    };
+
+    setJsDriven(true);
+
+    // 움직임을 줄여 달라는 설정이면 원본 첫 프레임 각도로 세워만 둔다
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) {
+      HANDS.forEach((h, i) => setAngle(i, h.start));
+      return undefined;
+    }
+
+    // 예전에는 CSS animation-duration 을 배속으로 나눴다. 그러면 (1) 속도가 계단처럼 뚝 바뀌고
+    // (2) 음수 animation-delay 가 새 duration 기준으로 다시 계산돼 바늘이 엉뚱한 각도로 튀었다.
+    // 여기서는 각도를 프레임마다 직접 적분하고, 배속만 스프링으로 따라가게 해서 이어지듯 가속한다.
+    const angles = HANDS.map((h) => h.start);
+    let current = targetSpeed.current;
+    let velocity = 0;
+    let last = performance.now();
+    let raf = requestAnimationFrame(function frame(now) {
+      const dt = Math.min((now - last) / 1000, 0.05); // 탭 전환 등으로 크게 벌어진 간격은 잘라 낸다
+      last = now;
+
+      const accel =
+        SPEED_STIFFNESS * SPEED_STIFFNESS * (targetSpeed.current - current) -
+        2 * SPEED_STIFFNESS * velocity;
+      velocity += accel * dt;
+      current = Math.max(0, current + velocity * dt);
+
+      HANDS.forEach((h, i) => {
+        angles[i] = (angles[i] + (360 / h.period) * dt * current) % 360;
+        setAngle(i, angles[i]);
+      });
+
+      raf = requestAnimationFrame(frame);
+    });
+
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
   return (
-    <div className="clockScene" style={{ '--clock-speed': speed }} aria-hidden>
+    <div
+      className={`clockScene${jsDriven ? ' clockScene--js' : ''}`}
+      style={{ '--clock-speed': speed }}
+      aria-hidden
+    >
       {/* 격자선 — CSS 그라디언트라 화면이 아무리 커져도 끊기지 않는다 */}
       <div className="clockGrid" />
 
@@ -110,6 +171,9 @@ export default function ClockScene({ speed = 1 }) {
         {HANDS.map((h, i) => (
           <line
             key={i}
+            ref={(el) => {
+              handRefs.current[i] = el;
+            }}
             className="clockHand"
             style={{ '--hand-dur': `${h.period}s`, '--hand-delay': `${(-(h.start / 360) * h.period).toFixed(3)}s` }}
             x1="50"

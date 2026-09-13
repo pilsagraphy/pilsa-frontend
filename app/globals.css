@@ -179,6 +179,11 @@
   }
 }
 
+/* JS(rAF)가 바늘을 굴리기 시작하면 키프레임을 끈다 — 켜 둔 채로는 CSS 애니메이션이 인라인 transform 을 덮어쓴다 */
+.clockScene--js .clockHand {
+  animation: none;
+}
+
 /* 모서리 장식. 위치·크기는 원본 캔버스 가장자리 기준을 칸 단위로 옮긴 것.
    좌우 물결은 다이얼과 겹치지 않게 중심에서 최소 원본 간격(8.35칸)만큼 떨어지도록 막아 둔다 —
    좁은 화면에서는 그만큼 가장자리 밖으로 밀려난다. */
@@ -227,4 +232,119 @@
     -webkit-user-select: text;
     user-select: text;
   }
+}
+
+/* ─────────────── 게이트 화면 안내 문구 (TAP TO START) ─────────────── */
+/* 시계만 돌면 로딩 중으로 오해한다 — 다이얼 아래에서 숨 쉬듯 깜빡이며 탭을 유도한다 */
+.gateHint {
+  position: absolute;
+  left: 50%;
+  bottom: max(7vh, 32px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: clamp(12px, 2.6vmin, 16px);
+  letter-spacing: 0.32em;
+  color: #212121;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 6;
+  animation: gateHintPulse 2.2s ease-in-out infinite;
+  transition: opacity 300ms ease-out;
+}
+.gateHint--hidden {
+  opacity: 0;
+  animation: none;
+}
+
+/* 손끝이 닿는 자리처럼 퍼지는 원 */
+.gateHint__ring {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: #212121;
+  flex: none;
+}
+.gateHint__ring::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 1.5px solid #212121;
+  animation: gateHintRipple 2.2s ease-out infinite;
+}
+
+@keyframes gateHintPulse {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.4; }
+}
+@keyframes gateHintRipple {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  70% { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gateHint { animation: none; }
+  .gateHint__ring::after { animation: none; opacity: 0; }
+}
+
+/* ─────────────── 로딩 화면 (app/loading.js) ─────────────── */
+/* 흰 바탕 + 로고 글자만. 글자가 왼쪽부터 차례로 떠올랐다 가라앉는 물결 + 아래에 얇게 흐르는 선 */
+.appLoading {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  background: #fff;
+}
+.appLoading__word {
+  display: inline-flex;
+  font-size: clamp(22px, 6vw, 40px);
+  letter-spacing: 0.14em;
+  color: #212121;
+  white-space: nowrap;
+  margin: 0;
+}
+.appLoading__letter {
+  display: inline-block;
+  animation: appLoadingWave 1.6s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 70ms);
+  will-change: transform, opacity;
+}
+.appLoading__bar {
+  position: relative;
+  width: clamp(120px, 28vw, 220px);
+  height: 1.5px;
+  background: rgba(33, 33, 33, 0.12);
+  overflow: hidden;
+  border-radius: 9999px;
+}
+.appLoading__bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background: #212121;
+  border-radius: 9999px;
+  animation: appLoadingSweep 1.4s ease-in-out infinite;
+}
+
+@keyframes appLoadingWave {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.28; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+@keyframes appLoadingSweep {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .appLoading__letter { animation: none; opacity: 1; }
+  .appLoading__bar::after { animation: none; left: 0; width: 100%; opacity: 0.5; }
 }

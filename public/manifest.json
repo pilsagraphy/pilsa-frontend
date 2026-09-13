@@ -3,7 +3,7 @@
   "short_name": "Pilsagraphy",
   "description": "필사그래피 동아리 홈페이지 — 게시판, 일정, 알림",
   "lang": "ko",
-  "start_url": "/",
+  "start_url": "/?launch=app",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",

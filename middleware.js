@@ -16,10 +16,16 @@ export function middleware(req) {
 
   // ✅ 게이트 통과 여부(쿠키)
   const passed = req.cookies.get('pilsa_gate_passed')?.value === '1';
+
+  // ✅ 설치형 앱(TWA·홈 화면 앱)의 시작 URL 은 /?launch=app — 앱을 켤 때마다 시계를 보여야 하므로 통과 쿠키가 있어도 게이트로 둔다.
+  // 예전엔 통과 쿠키를 세션 쿠키로 두고 "앱을 끄면 사라진다"에 기댔는데, 안드로이드 크롬은 종료 뒤에도 세션 쿠키를
+  // 복원해서 첫 실행 이후로는 시계가 다시 나오지 않았다. 쿠키 수명이 아니라 진입 URL 로 앱 실행을 구분한다.
+  const isAppLaunch = pathname === '/' && req.nextUrl.searchParams.has('launch');
+
   if (passed) {
-    // 이미 통과한 사람에게 / 는 시계 게이트가 아니라 소개 페이지다.
-    // 헤더 로고(href="/")와 설치형 앱의 start_url 이 / 라서, 이게 없으면 누를 때마다·켤 때마다 시계가 다시 나온다.
-    if (pathname === '/') {
+    // 이미 통과한 사람에게 / 는 시계 게이트가 아니라 소개 페이지다 (앱 실행 진입은 예외).
+    // 헤더 로고와 같은 사이트 안 이동에서 / 로 오면, 이게 없으면 누를 때마다 시계가 다시 나온다.
+    if (pathname === '/' && !isAppLaunch) {
       const url = req.nextUrl.clone();
       url.pathname = '/about/intro';
       url.search = '';
