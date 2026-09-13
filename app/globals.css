@@ -239,7 +239,10 @@
 .gateHint {
   position: absolute;
   left: 50%;
-  bottom: max(7vh, 32px);
+  /* 다이얼 바로 아래. 화면 맨 밑에 두면 시계와 떨어져 따로 노는 안내처럼 보였다.
+     --dial 은 .clockScene 에 걸려 있고 이 요소는 그 형제라 상속되지 않으므로 같은 식(min(88vmin, 900px))을 직접 쓴다.
+     화면이 낮고 넓으면 다이얼이 세로를 거의 채워서 아래로 밀려나가므로, 바닥에서 44px 안쪽으로 묶어 둔다 */
+  top: min(calc(50% + min(88vmin, 900px) / 2 + 2.5vmin), calc(100% - 44px));
   transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
