@@ -21,8 +21,8 @@
     "path": "../../app-key/pilsa-upload.jks",
     "alias": "pilsa-upload"
   },
-  "appVersionName": "1.0.5",
-  "appVersionCode": 6,
+  "appVersionName": "1.0.6",
+  "appVersionCode": 7,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://pilsa.co.kr/manifest.json",
@@ -41,5 +41,5 @@
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "1.0.5"
+  "appVersion": "1.0.6"
 }
