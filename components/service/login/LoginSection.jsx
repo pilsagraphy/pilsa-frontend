@@ -48,11 +48,11 @@ function LoginCheckbox({ checked, onChange, label }) {
       />
       <span
         aria-hidden
-        className="grid size-6 place-content-center rounded-[2px] border border-[#919191] bg-white text-white transition-colors peer-checked:border-[#212121] peer-checked:bg-[#212121] peer-focus-visible:ring-2 peer-focus-visible:ring-[#212121]/40"
+        className="grid size-[20px] place-content-center rounded-[4px] border border-[#dedede] bg-white text-white transition-colors peer-checked:border-[#212121] peer-checked:bg-[#212121] peer-focus-visible:ring-2 peer-focus-visible:ring-[#212121]/40"
       >
-        {checked && <Check className="size-4" strokeWidth={3} />}
+        {checked && <Check className="size-3.5" strokeWidth={3} />}
       </span>
-      <span className="text-[14px] font-bold tracking-[-0.28px] text-black">{label}</span>
+      <span className="text-[14px] tracking-[-0.28px] text-[#454545]">{label}</span>
     </label>
   );
 }
@@ -365,45 +365,8 @@ export default function LoginSection() {
             </div>
           )}
 
-          {/* 제목 + (아이디 저장·자동 로그인 / 아이디 찾기·이메일 찾기·비밀번호 재설정) */}
-          <div className="flex flex-col gap-3">
-            <h2 className="text-[24px] font-semibold tracking-[-0.48px] text-black">로그인</h2>
-
-            <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-              {/* 아이디 저장 / 자동 로그인 */}
-              <div className="flex items-center gap-4">
-                <LoginCheckbox label="아이디 저장" checked={rememberId} onChange={setRememberId} />
-                <LoginCheckbox label="자동 로그인" checked={autoLogin} onChange={setAutoLogin} />
-              </div>
-
-              {/* 아이디 찾기 / 이메일 찾기 / 비밀번호 재설정 */}
-              <div className="flex items-center gap-1.5 text-[14px] font-bold tracking-[-0.28px] text-black whitespace-nowrap">
-                <button
-                  type="button"
-                  className="transition-colors hover:underline"
-                  onClick={() => router.push(ROUTES.FIND_ID)}
-                >
-                  아이디 찾기
-                </button>
-                <span className="h-[9px] w-px bg-[#e5e5e5]" aria-hidden />
-                <button
-                  type="button"
-                  className="transition-colors hover:underline"
-                  onClick={() => router.push(ROUTES.FIND_EMAIL)}
-                >
-                  이메일 찾기
-                </button>
-                <span className="h-[9px] w-px bg-[#e5e5e5]" aria-hidden />
-                <button
-                  type="button"
-                  className="transition-colors hover:underline"
-                  onClick={() => router.push(ROUTES.FIND_PW)}
-                >
-                  비밀번호 재설정
-                </button>
-              </div>
-            </div>
-          </div>
+          {/* 제목 */}
+          <h2 className="text-[24px] font-semibold tracking-[-0.48px] text-black">로그인</h2>
 
           {/* 입력 필드 */}
           <div className="flex flex-col gap-3">
@@ -422,6 +385,46 @@ export default function LoginSection() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
+          </div>
+
+          {/* 입력칸 아래 한 줄: 왼쪽 아이디 저장·자동 로그인 / 오른쪽 계정 찾기.
+              예전엔 이 다섯 개가 제목 옆에 한 줄로 몰려 빽빽했다. 자리를 입력칸 아래로 내리고
+              찾기 링크는 옅은 회색 + 얇은 구분선으로 낮춰 체크박스와 무게를 나눈다.
+              폭이 좁으면(폰) 링크 줄이 아래로 접힌다 */}
+          <div className="-mt-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+            <div className="flex items-center gap-5">
+              <LoginCheckbox label="아이디 저장" checked={rememberId} onChange={setRememberId} />
+              <LoginCheckbox label="자동 로그인" checked={autoLogin} onChange={setAutoLogin} />
+            </div>
+
+            <nav
+              aria-label="계정 찾기"
+              className="flex items-center gap-2.5 text-[13px] tracking-[-0.26px] text-[#919191]"
+            >
+              <button
+                type="button"
+                className="rounded-[2px] transition-colors hover:text-[#212121] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#212121]/30"
+                onClick={() => router.push(ROUTES.FIND_EMAIL)}
+              >
+                이메일 찾기
+              </button>
+              <span className="h-[10px] w-px shrink-0 bg-[#dedede]" aria-hidden />
+              <button
+                type="button"
+                className="rounded-[2px] transition-colors hover:text-[#212121] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#212121]/30"
+                onClick={() => router.push(ROUTES.FIND_ID)}
+              >
+                아이디 찾기
+              </button>
+              <span className="h-[10px] w-px shrink-0 bg-[#dedede]" aria-hidden />
+              <button
+                type="button"
+                className="rounded-[2px] transition-colors hover:text-[#212121] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#212121]/30"
+                onClick={() => router.push(ROUTES.FIND_PW)}
+              >
+                비밀번호 재설정
+              </button>
+            </nav>
           </div>
 
           {/* 버튼 */}
