@@ -152,8 +152,8 @@ export default function LoginSection() {
           {
             id: LOGOUT_TOAST_ID,
             // 예전엔 Infinity 라 사용자가 X 를 누르기 전까지 화면에 남아 로그인 화면을 가렸다.
-            // '홈으로' 버튼을 누를 여유는 주되 알아서 사라지게 한다
-            duration: 6000,
+            // 로그아웃했다는 사실만 알리면 되는 안내라 짧게 스치고 지나간다 (PM 지정 1초)
+            duration: 1000,
             action: {
               label: '홈으로',
               onClick: () => router.push(BASE_PATH),
