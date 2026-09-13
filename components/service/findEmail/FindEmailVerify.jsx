@@ -6,29 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { ROUTES } from '@/constants/routes';
+import { findEmailByStudentNo, getErrorMessage } from '@/apis/auth';
 
 // 학번은 숫자 10자리
 const isValidStudentId = (v) => /^\d{10}$/.test(v);
 
-// ── 임시 mock (실제 API 연동 전까지 백엔드 응답을 흉내) ─────────────
-// 등록된 테스트 계정이면 이메일을 반환하고, 그 외에는 '회원 없음' 에러를 던진다.
-// API가 준비되면 이 함수를 apis/의 실제 호출(예: findEmailByStudent)로 교체하면 된다.
-const MOCK_ACCOUNT = { studentId: '2026000000', name: '홍길동', email: 'ki****@naver.com' };
-
-const mockFindEmail = (studentId, name) =>
-  new Promise((resolve, reject) => {
-    setTimeout(() => {
-      if (studentId === MOCK_ACCOUNT.studentId && name === MOCK_ACCOUNT.name) {
-        resolve({ email: MOCK_ACCOUNT.email });
-      } else {
-        // 실제 API에서는 404 등으로 내려올 부분
-        const err = new Error('MEMBER_NOT_FOUND');
-        err.code = 'MEMBER_NOT_FOUND';
-        reject(err);
-      }
-    }, 500);
-  });
-// ────────────────────────────────────────────────────────────────
 
 export default function FindEmailVerify({ onNext }) {
   const router = useRouter();
@@ -59,20 +41,23 @@ export default function FindEmailVerify({ onNext }) {
 
     setLoading(true);
     try {
-      // TODO: 실제 API 연동 시 mockFindEmail → apis/의 실제 호출로 교체
-      const result = await mockFindEmail(normalizedId, normalizedName);
+      // POST /api/auth/email/find — 학번+이름이 모두 일치할 때만 마스킹된 이메일을 준다
+      const result = await findEmailByStudentNo(normalizedId, normalizedName);
       onNext(result.email); // 성공: 결과 화면으로 이동 (loading 유지)
     } catch (err) {
-      // 존재하지 않는 회원인 경우
-      // (실제 API 연동 시엔 err.response?.status === 404 등으로 '회원 없음'과
-      //  네트워크/서버 오류를 구분해 처리하면 된다)
-      toast.error('존재하지 않는 회원입니다.', {
-        description: '회원가입을 해주세요.',
-        action: {
-          label: '회원가입',
-          onClick: () => router.push(ROUTES.SIGNUP),
-        },
-      });
+      if (err?.response?.status === 404) {
+        // 일치하는 회원 없음 — 학번·이름 중 하나라도 다르면 여기로 온다
+        toast.error('존재하지 않는 회원입니다.', {
+          description: '학번과 이름을 다시 확인해 주세요. 가입하지 않으셨다면 회원가입을 해주세요.',
+          action: {
+            label: '회원가입',
+            onClick: () => router.push(ROUTES.SIGNUP),
+          },
+        });
+      } else {
+        // 네트워크·서버 오류는 '회원 없음'과 구분해 알린다 (예전 mock 은 전부 회원 없음으로 뭉뚱그렸다)
+        toast.error(getErrorMessage(err, '이메일을 조회하지 못했어요. 잠시 후 다시 시도해주세요.'));
+      }
       setLoading(false); // 실패 시 다시 입력 시도할 수 있게 로딩 해제
     }
   };

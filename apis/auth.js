@@ -130,10 +130,14 @@ export const findLoginIdByEmail = async (email) => {
   return response.data; // { message, loginId }
 };
 
-// 5-3. 이메일 찾기 (POST /api/auth/email/find) [PUBLIC] — 미연동
-//      요청: { studentNo, name }  ★기존 findEmailByLoginId(loginId) 스텁과 스펙이 다르다
-//      응답: { email } — 마스킹된 이메일 (예: 'ho**@pilsa.co.kr')
-//      GET + loginId 가 아니라 POST + 학번/이름이다. 함수명도 findEmailByStudentNo 로 맞출 것
+// 5-3. 이메일 찾기 (POST /api/auth/email/find) [PUBLIC]
+//      요청: { studentNo, name } — 학번 10자리 + 이름, 둘 다 정확히 일치해야 한다
+//      응답: { message, email } — email 은 마스킹된 값 (예: 'ho**@pilsa.co.kr')
+//      실패: 400 학번·이름 누락 / 404 일치하는 회원 없음(탈퇴 포함)
+export const findEmailByStudentNo = async (studentNo, name) => {
+  const response = await axiosInstance.post('/api/auth/email/find', { studentNo, name });
+  return response.data;
+};
 
 // 6. 비밀번호 초기화
 // 6-1. 인증번호 발송 (GET /api/auth/verification) - 응답: { message, expireTime }
