@@ -6,7 +6,7 @@ import { Check } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
-import useAuthStore from '@/stores/useAuthStore';
+import useAuthStore, { rememberAutoLogin } from '@/stores/useAuthStore';
 import { ROUTES, BASE_PATH, SANCTION_POLICY_URL } from '@/constants/routes';
 import { logout as logoutApi, refreshAccessToken, getErrorMessage } from '@/apis/auth';
 import {
@@ -224,6 +224,11 @@ export default function LoginSection() {
       try {
         const data = await refreshAccessToken();
         applyAuthResponse(data);
+
+        // 구글 로그인은 서버가 항상 자동 로그인으로 쿠키를 심는다
+        // (GoogleAccountService.loginWithGoogle → issueForUserId(userId, true, ...), 400일).
+        // 브라우저 쪽 표시도 같이 남겨야 앱을 껐다 켰을 때 AuthBootstrap 이 세션을 복원한다.
+        rememberAutoLogin(true);
 
         try {
           sessionStorage.setItem(JUST_LOGGED_IN_KEY, '1');
