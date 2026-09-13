@@ -55,7 +55,10 @@ export default function AuthBootstrap({ children }) {
 
   // 보호 경로 진입 시 세션 복원
   useEffect(() => {
-    const isPublicRoute = PUBLIC_ROUTES.includes(pathname);
+    // 게이트(/)는 보호 경로가 아니라 PUBLIC_ROUTES 에도 없다. 여기서 refresh 를 부르면 처음 오는 사람마다
+    // 콘솔에 401 이 찍히는데(리프레시 쿠키가 없으니 당연하다) 얻는 것이 없다 — 게이트는 로그인과 무관한 화면이고,
+    // 자동 로그인은 위 effect 가 따로 처리한다. 세션은 보호 경로로 들어갈 때 복원하면 된다.
+    const isPublicRoute = PUBLIC_ROUTES.includes(pathname) || pathname === ROUTES.GATE;
 
     if (isPublicRoute) return;
 
