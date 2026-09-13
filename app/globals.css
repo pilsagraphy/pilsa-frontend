@@ -239,9 +239,9 @@
 .gateHint {
   position: absolute;
   left: 50%;
-  /* 화면 아래쪽에 살짝 띄워 둔다. 다이얼 바로 밑에 붙여 봤더니 시계에 매달린 꼬리표처럼 보여 되돌렸다 —
-     시계는 가운데, 안내는 아래. 둘 사이 여백이 있어야 화면이 안정적으로 보인다 */
-  bottom: max(7vh, 32px);
+  /* 시계와 화면 바닥 사이. 다이얼에 붙이면 꼬리표처럼 보이고, 바닥에 붙이면 시계와 동떨어져 보여서
+     그 중간쯤(바닥에서 화면 높이의 20%)에 띄운다 */
+  bottom: max(20vh, 96px);
   transform: translateX(-50%);
   display: inline-flex;
   align-items: center;
