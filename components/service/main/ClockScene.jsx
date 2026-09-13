@@ -73,6 +73,11 @@ function DotText({ text, top, pitch, dotR, gap }) {
 // 목표 배속으로 따라붙는 속도(클수록 빨리 붙는다). 임계 감쇠라 튕기지 않고 S 자로 부드럽게 올라간다
 const SPEED_STIFFNESS = 9;
 
+// 바늘 하나가 낼 수 있는 최고 각속도(도/초) — 초당 두 바퀴쯤. 배속을 그대로 곱하면 초침이 초당 10바퀴가 되는데,
+// 그쯤 되면 프레임마다 비슷한 각도에 찍혀 도는 게 아니라 깜빡이는 것처럼 보인다. 여기서 잘라 주면
+// 느린 바늘(시침·분침)은 계속 빨라지고 초침만 일정 속도로 흐르듯 돌아 전체가 부드럽게 감긴다.
+const MAX_DEG_PER_SEC = 760;
+
 export default function ClockScene({ speed = 1 }) {
   const handRefs = useRef([]);
   const targetSpeed = useRef(speed);
@@ -116,7 +121,9 @@ export default function ClockScene({ speed = 1 }) {
       current = Math.max(0, current + velocity * dt);
 
       HANDS.forEach((h, i) => {
-        angles[i] = (angles[i] + (360 / h.period) * dt * current) % 360;
+        // 평상시 각속도에 배속을 곱하되, 눈이 따라갈 수 있는 선에서 자른다
+        const degPerSec = Math.min((360 / h.period) * current, MAX_DEG_PER_SEC);
+        angles[i] = (angles[i] + degPerSec * dt) % 360;
         setAngle(i, angles[i]);
       });
 
