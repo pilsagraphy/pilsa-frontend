@@ -19,7 +19,8 @@ import {
 // 그래서 동의를 받아 서버가 각자 캘린더에 일정을 직접 넣는다 — 사용자에게는 구독처럼 보인다.
 export default function GoogleIntegrationSection() {
   const [account, setAccount] = useState(null); // { linked, googleEmail, linkedAt }
-  const [calendar, setCalendar] = useState(null); // { linked, lastSyncedAt, syncedCount, failedCount }
+  // 서버 응답: { linked, lastSyncedAt, syncedCount, failedCount } — syncedCount 는 화면에 쓰지 않는다(위 문구 주석 참고)
+  const [calendar, setCalendar] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -128,7 +129,7 @@ export default function GoogleIntegrationSection() {
             // 로그인용과 캘린더용 구글 계정이 다를 수 있다(각각 따로 동의를 받는다).
             // 어느 캘린더에 일정이 들어가는지 헷갈리지 않도록 다를 때만 짚어 준다.
             <p className="mt-0.5 truncate text-[12px] leading-[1.5] tracking-[-0.02em] text-[#B9B9B9]">
-              일정은 {calendar.googleEmail} 캘린더로 들어가요
+              동아리 일정은 {calendar.googleEmail} 캘린더에 반영해 드려요
             </p>
           )}
         </div>
@@ -154,13 +155,14 @@ export default function GoogleIntegrationSection() {
             내 구글 캘린더에 일정 자동 등록
           </p>
           <p className="mt-0.5 text-[12px] leading-[1.5] tracking-[-0.02em] text-[#919191] [word-break:keep-all]">
+            {/* 건수는 보여 주지 않는다 — 사용자가 확인할 것은 '켜져 있는지' 이지 몇 건이 들어갔는지가 아니고,
+                숫자가 보이면 오히려 "왜 2건뿐이지" 하고 헤아리게 된다.
+                문구는 무엇이 어디로 가는지 주어를 밝혀 쓴다 (알림 토글의 '알려드려요' 와 같은 말투) */}
             {hasSyncFailure
-              ? '동기화에 실패한 일정이 있어요. 해제 후 다시 연동해주세요.'
+              ? '일부 일정을 반영하지 못했어요. 연동을 해제한 뒤 다시 켜주세요.'
               : calendarOn
-                ? `동아리 일정이 자동으로 들어가요${
-                    calendar?.syncedCount ? ` (${calendar.syncedCount}건 등록됨)` : ''
-                  }`
-                : '등록·수정된 동아리 일정이 내 캘린더에 자동 반영돼요'}
+                ? '동아리 일정이 추가되거나 바뀌면 내 캘린더에도 반영해 드려요'
+                : '켜두면 동아리 일정을 내 캘린더에 자동으로 넣어 드려요'}
           </p>
         </div>
 
