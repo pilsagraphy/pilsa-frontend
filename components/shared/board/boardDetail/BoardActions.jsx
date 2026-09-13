@@ -88,9 +88,10 @@ export default function BoardActions({
     }
   };
 
-  // 모바일: 좋아요·목록·수정·삭제를 한 줄에 — 감싸는 div 는 contents 로 풀어 버튼들이 같은 줄의 flex 항목이 되게 한다
+  // 모바일: 좋아요·목록·수정·삭제를 한 줄에 — 감싸는 div 는 contents 로 풀어 버튼들이 같은 줄의 flex 항목이 되게 한다.
+  // 버튼은 댓글 작성 버튼과 같은 크기(h-11, 최대 120px)로 둔다 — 예전엔 h-12 에 flex-1 이라 화면 폭을 꽉 채운 검은 막대였다
   return (
-    <div className="flex w-full flex-row items-center gap-2 md:justify-between md:gap-0">
+    <div className="flex w-full flex-row items-center justify-between gap-2 md:gap-0">
       <div className="contents md:flex md:w-auto md:flex-col md:gap-[10px]">
         {/* 좋아요 버튼 */}
         <button
@@ -98,7 +99,7 @@ export default function BoardActions({
           onClick={handleLike}
           disabled={likeLoading}
           aria-pressed={liked}
-          className={`flex h-12 flex-1 items-center justify-center gap-[6px] rounded-[4px] border text-[15px] tracking-[-0.32px] transition-colors disabled:opacity-60 md:h-[52px] md:w-[135px] md:flex-none md:text-[16px] ${
+          className={`flex h-11 min-w-0 flex-1 items-center justify-center gap-[6px] rounded-[4px] border text-[15px] tracking-[-0.32px] transition-colors disabled:opacity-60 max-w-[120px] md:h-[52px] md:w-[135px] md:max-w-none md:flex-none md:text-[16px] ${
             liked
               ? 'border-[#212121] bg-[#212121] text-white hover:bg-black'
               : 'border-[#b9b9b9] bg-white text-[#212121] hover:bg-[#f5f5f5]'
@@ -118,7 +119,7 @@ export default function BoardActions({
           {canEdit && (
             <button
               type="button"
-              className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white md:h-[52px] md:w-[135px] md:flex-none"
+              className="h-11 min-w-0 max-w-[120px] flex-1 rounded-[4px] bg-[#212121] text-[15px] text-white md:h-[52px] md:w-[135px] md:max-w-none md:flex-none md:text-[16px]"
               onClick={handleEdit}
             >
               수정
@@ -128,7 +129,7 @@ export default function BoardActions({
             <button
               type="button"
               disabled={deleteLoading}
-              className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white disabled:opacity-60 md:h-[52px] md:w-[135px] md:flex-none"
+              className="h-11 min-w-0 max-w-[120px] flex-1 rounded-[4px] bg-[#212121] text-[15px] text-white disabled:opacity-60 md:h-[52px] md:w-[135px] md:max-w-none md:flex-none md:text-[16px]"
               onClick={handleDelete}
             >
               {deleteLoading ? '삭제 중...' : '삭제'}

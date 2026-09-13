@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { getComments, createComment, updateComment, deleteComment } from '@/apis/comment';
 import { getErrorMessage } from '@/apis/auth';
 import useApiRequest from '@/hooks/useApiRequest';
@@ -25,6 +25,163 @@ const MAX_INDENT_DEPTH = INDENT_CLASS_BY_DEPTH.length - 1;
 
 // 잘못된 데이터(순환 참조 등)로 무한 재귀에 빠지지 않게 하는 안전장치
 const MAX_RENDER_DEPTH = 20;
+
+// 입력창이 내용에 맞춰 자라는 상한 — 이 이상은 안에서 스크롤
+const COMPOSER_MAX_HEIGHT = 320;
+
+const COMPOSER_TEXT = {
+  new: { placeholder: '댓글을 작성하세요.', submit: '댓글 작성' },
+  reply: { placeholder: '답글을 작성하세요.', submit: '답글 작성' },
+  edit: { placeholder: '댓글을 수정하세요.', submit: '수정 완료' },
+};
+
+/**
+ * 댓글 입력창 (새 댓글 / 답글 / 수정 공용).
+ *
+ * - 내용에 맞춰 높이가 자동으로 늘어난다. 예전엔 3줄 고정이라 조금만 길어져도 안에서 스크롤돼 타이핑이 불편했다.
+ * - 답글·수정은 그 댓글 바로 아래에 인라인으로 뜬다(autoFocus). 예전엔 맨 아래 입력창 하나를 답글 모드로 바꿔 써서
+ *   답글 한 번에 화면 끝까지 내려가야 했다.
+ * - 줄바꿈은 Enter, 등록은 버튼 또는 Ctrl/Cmd+Enter, 인라인 입력창은 Esc 로 닫는다.
+ *
+ * 값은 내부 상태로 갖고, 등록이 끝나면 부모가 key 를 바꾸거나(새 댓글) 입력창을 떼어(답글·수정) 비운다.
+ */
+function CommentComposer({
+  mode,
+  initial,
+  allowAnonymous,
+  allowPrivateComment,
+  submitting,
+  autoFocus = false,
+  onSubmit,
+  onCancel,
+}) {
+  const [text, setText] = useState(initial?.content ?? '');
+  const [isAnonymous, setIsAnonymous] = useState(Boolean(initial?.isAnonymous));
+  const [isPrivate, setIsPrivate] = useState(Boolean(initial?.isPrivate));
+  const textareaRef = useRef(null);
+  const uid = useId(); // 인라인 입력창이 여러 개 떠도 체크박스 id 가 겹치지 않게
+
+  // 자동 높이 — 매 입력마다 실제 내용 높이로 맞춘다 (상한까지)
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    const next = Math.min(el.scrollHeight, COMPOSER_MAX_HEIGHT);
+    el.style.height = `${next}px`;
+    el.style.overflowY = el.scrollHeight > COMPOSER_MAX_HEIGHT ? 'auto' : 'hidden';
+  }, [text]);
+
+  // 인라인 입력창은 뜨자마자 포커스 + 화면 가운데로 — 모바일에서 키보드가 올라와도 입력창이 보이게
+  useEffect(() => {
+    if (!autoFocus) return;
+    const el = textareaRef.current;
+    if (!el) return;
+    el.focus({ preventScroll: true });
+    // 수정 모드는 커서를 끝으로
+    const end = el.value.length;
+    el.setSelectionRange(end, end);
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [autoFocus]);
+
+  const canSubmit = Boolean(text.trim()) && !submitting;
+  const submit = () => {
+    if (!canSubmit) return;
+    onSubmit({ content: text.trim(), isAnonymous, isPrivate });
+  };
+
+  const labels = COMPOSER_TEXT[mode] ?? COMPOSER_TEXT.new;
+  const inline = mode !== 'new';
+
+  return (
+    <div className="flex w-full flex-col gap-3 md:gap-4">
+      <textarea
+        ref={textareaRef}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        placeholder={labels.placeholder}
+        rows={inline ? 2 : 3}
+        className={`w-full resize-none rounded-[4px] border border-[#b9b9b9] bg-white px-4 py-3 text-[15px] leading-[1.6] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#919191] md:text-[16px] ${
+          inline ? 'min-h-[72px]' : 'min-h-[96px] md:min-h-[112px]'
+        }`}
+        onKeyDown={(e) => {
+          if (e.nativeEvent.isComposing) return;
+          if (e.key === 'Escape' && onCancel) {
+            e.preventDefault();
+            onCancel();
+            return;
+          }
+          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
+            submit();
+          }
+        }}
+      />
+
+      {/* 아래 줄: 왼쪽 익명/비밀댓글 체크박스(게시판이 허용할 때만), 오른쪽 취소·등록 버튼 */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-[20px]">
+          {allowAnonymous && (
+            <div className="flex items-center gap-[8px]">
+              <input
+                type="checkbox"
+                id={`${uid}-anonymous`}
+                checked={isAnonymous}
+                onChange={(e) => setIsAnonymous(e.target.checked)}
+                className="w-[24px] h-[24px] border border-[#919191] rounded-[2px] cursor-pointer accent-[#212121]"
+              />
+              <label
+                htmlFor={`${uid}-anonymous`}
+                className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[1.6] cursor-pointer"
+              >
+                익명
+              </label>
+            </div>
+          )}
+
+          {allowPrivateComment && (
+            <div className="flex items-center gap-[8px]">
+              <input
+                type="checkbox"
+                id={`${uid}-private`}
+                checked={isPrivate}
+                onChange={(e) => setIsPrivate(e.target.checked)}
+                className="w-[24px] h-[24px] border border-[#919191] rounded-[2px] cursor-pointer accent-[#212121]"
+              />
+              <label
+                htmlFor={`${uid}-private`}
+                className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[1.6] cursor-pointer"
+              >
+                비밀 댓글
+              </label>
+            </div>
+          )}
+        </div>
+
+        <div className="flex shrink-0 items-center gap-2">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              className="h-11 rounded-[4px] px-4 text-[15px] tracking-[-0.32px] text-[#919191] transition-colors hover:text-[#212121] md:h-[52px] md:text-[16px]"
+            >
+              취소
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={submit}
+            disabled={!canSubmit}
+            className={`h-11 shrink-0 rounded-[4px] bg-[#212121] text-[15px] tracking-[-0.32px] text-white disabled:opacity-60 md:h-[52px] md:text-[16px] ${
+              inline ? 'px-5' : 'w-[120px] md:w-[135px]'
+            }`}
+          >
+            {submitting ? '등록 중...' : labels.submit}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // 공통게시판 댓글/대댓글.
 // 익명/비밀 허용 여부는 게시판 플래그(board.allowAnonymous / board.allowPrivateComment)로 결정한다.
@@ -59,13 +216,11 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
   // 현재 로그인 사용자 (본인 댓글 판별용)
   const currentUserId = useAuthStore((s) => s.user?.userId);
 
-  // 하단 입력창 - 댓글 작성 / 답글 작성 / 댓글 수정에 공용으로 쓴다
-  const [commentText, setCommentText] = useState('');
-  const [isAnonymous, setIsAnonymous] = useState(false);
-  const [isPrivate, setIsPrivate] = useState(false);
-
+  // 어느 댓글에 답글/수정 입력창이 열려 있는지 (동시에 하나만)
   const [editingId, setEditingId] = useState(null);
-  const [replyTo, setReplyTo] = useState(null);
+  const [replyToId, setReplyToId] = useState(null);
+  // 새 댓글 입력창은 등록이 끝나면 key 를 바꿔 비운다
+  const [newComposerKey, setNewComposerKey] = useState(0);
   const [reportTarget, setReportTarget] = useState(null);
   const [confirmState, setConfirmState] = useState(null);
   const [alertState, setAlertState] = useState(null);
@@ -122,19 +277,16 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
 
   const isDeleted = (comment) => Boolean(comment.isDeleted ?? comment.deleted);
 
-  const resetInput = () => {
-    setCommentText('');
-    setIsAnonymous(false);
-    setIsPrivate(false);
+  const closeInline = () => {
     setEditingId(null);
-    setReplyTo(null);
+    setReplyToId(null);
   };
 
   // 확인 모달에서 '네'를 누른 뒤 실행되는 수정 처리
   const runUpdate = async (commentId, body) => {
     try {
       await updateComment(boardId, postId, commentId, body);
-      resetInput();
+      closeInline();
       refetch();
     } catch (error) {
       setAlertState({ title: getErrorMessage(error, '댓글 수정에 실패했습니다.') });
@@ -145,36 +297,21 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
   const runDelete = async (commentId) => {
     try {
       await deleteComment(boardId, postId, commentId);
-      if (editingId === commentId || replyTo?.commentId === commentId) resetInput();
+      if (editingId === commentId || replyToId === commentId) closeInline();
       refetch();
     } catch (error) {
       setAlertState({ title: getErrorMessage(error, '댓글 삭제에 실패했습니다.') });
     }
   };
 
-  // 하단 입력창 제출 - 수정 모드면 확인 모달, 아니면 댓글/답글 등록
-  const handleSubmit = async () => {
-    if (!commentText.trim() || isSubmitting) return;
-
-    if (editingId) {
-      const targetId = editingId;
-      const body = { content: commentText.trim(), isAnonymous, isPrivate };
-      setConfirmState({
-        title: '댓글 내용을 수정하시겠습니까?',
-        onConfirm: () => runUpdate(targetId, body),
-      });
-      return;
-    }
-
+  // 새 댓글(parentCommentId=null) / 답글(parentCommentId=부모) 등록
+  const submitCreate = async ({ content, isAnonymous, isPrivate }, parentCommentId) => {
+    if (isSubmitting) return;
     try {
       setIsSubmitting(true);
-      await createComment(boardId, postId, {
-        content: commentText.trim(),
-        parentCommentId: replyTo ? replyTo.commentId : null,
-        isAnonymous,
-        isPrivate,
-      });
-      resetInput();
+      await createComment(boardId, postId, { content, parentCommentId, isAnonymous, isPrivate });
+      if (parentCommentId) closeInline();
+      else setNewComposerKey((k) => k + 1);
       refetch();
     } catch (error) {
       setAlertState({ title: getErrorMessage(error, '댓글 등록에 실패했습니다.') });
@@ -183,30 +320,32 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     }
   };
 
-  // 답글 (같은 댓글의 답글 버튼을 다시 누르면 해제)
+  // 수정은 확인 모달을 거친다
+  const submitEdit = (commentId, body) => {
+    setConfirmState({
+      title: '댓글 내용을 수정하시겠습니까?',
+      onConfirm: () => runUpdate(commentId, body),
+    });
+  };
+
+  // 답글 — 그 댓글 바로 아래에 입력창을 연다 (같은 댓글의 답글 버튼을 다시 누르면 닫힘)
   const toggleReply = (comment) => {
-    if (replyTo?.commentId === comment.commentId) {
-      resetInput();
+    if (replyToId === comment.commentId) {
+      closeInline();
       return;
     }
     setEditingId(null);
-    setReplyTo(comment);
-    setCommentText('');
-    setIsAnonymous(false);
-    setIsPrivate(false);
+    setReplyToId(comment.commentId);
   };
 
-  // 수정 - 하단 입력창에 기존 내용을 불러온다 (같은 댓글의 수정 버튼을 다시 누르면 해제)
+  // 수정 — 댓글 본문 자리에 기존 내용이 채워진 입력창을 연다 (같은 댓글의 수정 버튼을 다시 누르면 닫힘)
   const toggleEdit = (comment) => {
     if (editingId === comment.commentId) {
-      resetInput();
+      closeInline();
       return;
     }
-    setReplyTo(null);
+    setReplyToId(null);
     setEditingId(comment.commentId);
-    setCommentText(comment.content ?? '');
-    setIsAnonymous(Boolean(comment.isAnonymous));
-    setIsPrivate(Boolean(comment.isPrivate));
   };
 
   const handleDelete = (commentId) => {
@@ -247,7 +386,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     const indentClass = INDENT_CLASS_BY_DEPTH[Math.min(depth, MAX_INDENT_DEPTH)];
     const deleted = isDeleted(comment);
     const owner = isOwner(comment);
-    const replying = replyTo?.commentId === comment.commentId;
+    const replying = replyToId === comment.commentId;
     const editing = editingId === comment.commentId;
     const anchorId = getCommentAnchorId(comment.commentId);
     // 해시로 지목된 댓글도 답글·수정 중인 댓글과 같은 회색 배경으로 눈에 띄게 한다
@@ -263,73 +402,120 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         key={comment.commentId}
         // 댓글 하나를 URL로 가리킬 수 있게 앵커를 붙인다 (예: /students/boards/2/posts/12#comment-3)
         id={anchorId}
-        className={`flex w-full scroll-mt-[100px] flex-col gap-3 py-4 md:flex-row md:items-start md:justify-between md:py-5 ${indentClass} ${
+        className={`flex w-full scroll-mt-[100px] flex-col gap-3 py-4 md:py-5 ${indentClass} ${
           highlighted ? 'bg-[#f5f5f5]' : ''
         }`}
       >
-        <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
-          {deleted ? (
-            <p className="flex items-center gap-1 text-[16px] tracking-[-0.32px] text-[#919191] leading-[26px]">
-              {isReply && <CornerDownRight className="h-4 w-4 shrink-0 text-[#b9b9b9]" aria-hidden />}
-              삭제된 댓글입니다
-            </p>
-          ) : (
-            <>
-              <span className="flex items-center gap-1 text-[16px] tracking-[-0.32px] text-[#454545] leading-[26px]">
-                {isReply && (
-                  <CornerDownRight className="h-4 w-4 shrink-0 text-[#b9b9b9]" aria-hidden />
-                )}
-                {comment.authorName}
-              </span>
-              <p className="select-text text-[16px] tracking-[-0.32px] text-[#454545] leading-[26px] whitespace-pre-line">
-                {comment.content}
+        <div className="flex w-full flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
+            {deleted ? (
+              <p className="flex items-center gap-1 text-[16px] tracking-[-0.32px] text-[#919191] leading-[26px]">
+                {isReply && <CornerDownRight className="h-4 w-4 shrink-0 text-[#b9b9b9]" aria-hidden />}
+                삭제된 댓글입니다
               </p>
-              <span className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[22px]">
-                {formatSlashDateTime(comment.updated ?? comment.created)}
-              </span>
-            </>
+            ) : (
+              <>
+                <span
+                  className={`flex items-center gap-1 text-[16px] tracking-[-0.32px] leading-[26px] ${
+                    owner ? 'font-semibold text-[#212121]' : 'text-[#454545]'
+                  }`}
+                >
+                  {isReply && (
+                    <CornerDownRight className="h-4 w-4 shrink-0 text-[#b9b9b9]" aria-hidden />
+                  )}
+                  {comment.authorName}
+                  {/* 내 댓글 표식 — 긴 스레드에서 내가 쓴 것을 바로 찾게. 익명 댓글도 서버 isMine 으로 판별된다 */}
+                  {owner && (
+                    <span className="ml-1 rounded-[3px] bg-[#212121] px-1.5 py-[1px] text-[11px] font-medium leading-[16px] tracking-[-0.2px] text-white">
+                      내 댓글
+                    </span>
+                  )}
+                </span>
+
+                {editing ? (
+                  // 수정: 본문 자리에 기존 내용이 채워진 입력창
+                  <div className="pt-1 md:pr-4">
+                    <CommentComposer
+                      mode="edit"
+                      initial={comment}
+                      allowAnonymous={allowAnonymous}
+                      allowPrivateComment={allowPrivateComment}
+                      submitting={false}
+                      autoFocus
+                      onSubmit={(body) => submitEdit(comment.commentId, body)}
+                      onCancel={closeInline}
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <p className="select-text text-[16px] tracking-[-0.32px] text-[#454545] leading-[26px] whitespace-pre-line">
+                      {comment.content}
+                    </p>
+                    <span className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[22px]">
+                      {formatSlashDateTime(comment.updated ?? comment.created)}
+                    </span>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+
+          {/* 액션: 삭제된 댓글에는 표시하지 않는다 */}
+          {!deleted && (
+            <div className="flex shrink-0 items-center gap-3 md:ml-5">
+              <button
+                type="button"
+                className={actionClassName(replying)}
+                onClick={() => toggleReply(comment)}
+              >
+                답글
+              </button>
+
+              {owner ? (
+                <>
+                  <button
+                    type="button"
+                    className={actionClassName(editing)}
+                    onClick={() => toggleEdit(comment)}
+                  >
+                    수정
+                  </button>
+                  <button
+                    type="button"
+                    className={actionClassName(false)}
+                    onClick={() => handleDelete(comment.commentId)}
+                  >
+                    삭제
+                  </button>
+                </>
+              ) : (
+                canReport(comment) && (
+                  <button
+                    type="button"
+                    className={actionClassName(false)}
+                    onClick={() => handleReport(comment)}
+                  >
+                    신고
+                  </button>
+                )
+              )}
+            </div>
           )}
         </div>
 
-        {/* 액션: 삭제된 댓글에는 표시하지 않는다 */}
-        {!deleted && (
-          <div className="flex shrink-0 items-center gap-3 md:ml-5">
-            <button
-              type="button"
-              className={actionClassName(replying)}
-              onClick={() => toggleReply(comment)}
-            >
-              답글
-            </button>
-
-            {owner ? (
-              <>
-                <button
-                  type="button"
-                  className={actionClassName(editing)}
-                  onClick={() => toggleEdit(comment)}
-                >
-                  수정
-                </button>
-                <button
-                  type="button"
-                  className={actionClassName(false)}
-                  onClick={() => handleDelete(comment.commentId)}
-                >
-                  삭제
-                </button>
-              </>
-            ) : (
-              canReport(comment) && (
-                <button
-                  type="button"
-                  className={actionClassName(false)}
-                  onClick={() => handleReport(comment)}
-                >
-                  신고
-                </button>
-              )
-            )}
+        {/* 답글: 그 댓글 바로 아래, 답글 들여쓰기 위치에 입력창 */}
+        {replying && (
+          <div className="flex w-full items-start gap-2 pl-[16px] md:pl-[40px] md:pr-4">
+            <CornerDownRight className="mt-4 h-4 w-4 shrink-0 text-[#b9b9b9]" aria-hidden />
+            <CommentComposer
+              mode="reply"
+              allowAnonymous={allowAnonymous}
+              allowPrivateComment={allowPrivateComment}
+              submitting={isSubmitting}
+              autoFocus
+              onSubmit={(body) => submitCreate(body, comment.commentId)}
+              onCancel={closeInline}
+            />
           </div>
         )}
       </div>
@@ -344,6 +530,19 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
             {/* 목록을 못 받은 동안에는 상세 응답의 commentCount 를 쓴다 (0개로 위장하지 않도록) */}
             댓글 {commentsError || commentsLoading ? (commentCount ?? 0) : list.length}개
           </span>
+        </div>
+
+        {/* 새 댓글 입력 — 목록 위에 둔다. 아래에 두면 댓글이 많을수록 입력창까지 한참 내려가야 했다.
+            답글·수정은 각 댓글 아래 인라인으로 뜬다 */}
+        <div className="w-full pb-6 md:px-5 md:pb-8">
+          <CommentComposer
+            key={newComposerKey}
+            mode="new"
+            allowAnonymous={allowAnonymous}
+            allowPrivateComment={allowPrivateComment}
+            submitting={isSubmitting}
+            onSubmit={(body) => submitCreate(body, null)}
+          />
         </div>
 
         {commentsLoading && (
@@ -371,73 +570,6 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
             {idx !== visibleComments.length - 1 && <Divider />}
           </React.Fragment>
         ))}
-      </div>
-
-      {/* 댓글 입력 (댓글 작성 / 답글 작성 / 댓글 수정 공용) */}
-      <div className="flex w-full flex-col gap-3 md:gap-4">
-        {/* 여러 줄 입력. 줄바꿈은 Enter, 등록은 버튼 또는 Ctrl/Cmd+Enter —
-            한 줄 input 시절의 "Enter = 등록"은 줄바꿈과 충돌해서 뺐다. 본문은 whitespace-pre-line 으로 그려진다. */}
-        <textarea
-          value={commentText}
-          onChange={(e) => setCommentText(e.target.value)}
-          placeholder={replyTo ? '답글을 작성하세요.' : '댓글을 작성하세요.'}
-          rows={3}
-          className="min-h-[96px] w-full resize-none rounded-[4px] border border-[#b9b9b9] bg-white px-4 py-3 text-[15px] leading-[1.6] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#919191] md:min-h-[112px] md:text-[16px]"
-          onKeyDown={(e) => {
-            if (e.key !== 'Enter' || !(e.ctrlKey || e.metaKey) || e.nativeEvent.isComposing) return;
-            handleSubmit();
-          }}
-        />
-
-        {/* 아래 줄: 왼쪽 익명/비밀댓글 체크박스(게시판이 허용할 때만), 오른쪽 등록 버튼 */}
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-[20px]">
-            {allowAnonymous && (
-              <div className="flex items-center gap-[8px]">
-                <input
-                  type="checkbox"
-                  id="comment-anonymous"
-                  checked={isAnonymous}
-                  onChange={(e) => setIsAnonymous(e.target.checked)}
-                  className="w-[24px] h-[24px] border border-[#919191] rounded-[2px] cursor-pointer accent-[#212121]"
-                />
-                <label
-                  htmlFor="comment-anonymous"
-                  className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[1.6] cursor-pointer"
-                >
-                  익명
-                </label>
-              </div>
-            )}
-
-            {allowPrivateComment && (
-              <div className="flex items-center gap-[8px]">
-                <input
-                  type="checkbox"
-                  id="comment-private"
-                  checked={isPrivate}
-                  onChange={(e) => setIsPrivate(e.target.checked)}
-                  className="w-[24px] h-[24px] border border-[#919191] rounded-[2px] cursor-pointer accent-[#212121]"
-                />
-                <label
-                  htmlFor="comment-private"
-                  className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[1.6] cursor-pointer"
-                >
-                  비밀 댓글
-                </label>
-              </div>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleSubmit}
-            disabled={isSubmitting || !commentText.trim()}
-            className="h-11 w-[120px] shrink-0 rounded-[4px] bg-[#212121] text-[15px] tracking-[-0.32px] text-white disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px]"
-          >
-            {isSubmitting ? '등록 중...' : replyTo ? '답글 작성' : '댓글 작성'}
-          </button>
-        </div>
       </div>
 
       {/* 댓글 신고 모달 */}
