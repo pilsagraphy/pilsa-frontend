@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import useAuthStore from '@/stores/useAuthStore';
 import { BASE_PATH } from '@/constants/routes';
+import { loginUrlWithReturnTo, currentPathForReturn } from '@/lib/returnTo';
 
 // 관리자 화면 보호막 — 로그인 여부(AuthGuard)와 별개로 관리레벨(adminLevel >= 1)을 확인한다.
 // 서버도 /api/admin/** 을 ROLE_ADMIN 으로 막고 있으므로 이 가드는 UX용 1차 방어선이다.
@@ -17,7 +18,7 @@ export default function AdminGuard({ children }) {
     if (!authChecked) return;
 
     if (!isLoggedIn) {
-      router.replace('/login');
+      router.replace(loginUrlWithReturnTo(currentPathForReturn()));
       return;
     }
 

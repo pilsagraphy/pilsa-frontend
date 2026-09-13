@@ -16,6 +16,7 @@ import {
   discardGooglePendingLink,
 } from '@/apis/google';
 import { disablePushForLogout, restorePushAfterLogin } from '@/lib/push';
+import { takeReturnTo, stashReturnTo, RETURN_TO_PARAM } from '@/lib/returnTo';
 import { JUST_LOGGED_IN_KEY } from '@/components/service/notification/PushPromptBottomSheet';
 import LoginBannedSection from './LoginBannedSection';
 import LoginRestrictedSection from './LoginRestrictedSection';
@@ -202,7 +203,8 @@ export default function LoginSection() {
         restorePushAfterLogin();
 
         toast.success('구글 계정으로 로그인했어요');
-        router.replace(ROUTES.STUDENTS_DASHBOARD);
+        // 알림 딥링크 등에서 밀려났던 경로가 있으면 그리로 (구글을 거치는 동안 sessionStorage 에 남겨 둔 값)
+        router.replace(takeReturnTo(searchParams) ?? ROUTES.STUDENTS_DASHBOARD);
       } catch {
         // 쿠키가 심어지지 않았거나 이미 만료된 경우
         toast.error('로그인 정보를 받지 못했어요. 다시 시도해주세요.');
@@ -219,6 +221,8 @@ export default function LoginSection() {
     try {
       const url = await getGoogleLoginUrl();
       if (!url) throw new Error('authorizeUrl 없음');
+      // 구글·서버를 거쳐 /login?login=google 로 돌아오면 쿼리가 사라진다 — 돌아갈 경로를 sessionStorage 에 남긴다
+      stashReturnTo(searchParams.get(RETURN_TO_PARAM));
       window.location.href = url;
     } catch {
       toast.error('구글 로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.');
@@ -292,7 +296,8 @@ export default function LoginSection() {
       // 이 기기에 살아있는 푸시 구독이 있으면 서버에 조용히 재등록 (로그인 흐름을 막지 않음)
       restorePushAfterLogin();
 
-      router.push(ROUTES.STUDENTS_DASHBOARD);
+      // 알림 딥링크 등에서 밀려났던 경로가 있으면 그리로, 없으면 대시보드
+      router.push(takeReturnTo(searchParams) ?? ROUTES.STUDENTS_DASHBOARD);
     } catch (err) {
       const data = err.response?.data;
 

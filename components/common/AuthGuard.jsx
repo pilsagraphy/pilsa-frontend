@@ -3,6 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import useAuthStore from '@/stores/useAuthStore';
+import { loginUrlWithReturnTo, currentPathForReturn } from '@/lib/returnTo';
 
 export default function AuthGuard({ children }) {
   const router = useRouter();
@@ -11,7 +12,8 @@ export default function AuthGuard({ children }) {
   useEffect(() => {
     if (!authChecked) return;
     if (!isLoggedIn) {
-      router.replace('/login');
+      // 보고 있던 경로를 들고 간다 — 알림 딥링크로 들어온 사람이 로그인 뒤 그 게시글로 돌아가게
+      router.replace(loginUrlWithReturnTo(currentPathForReturn()));
     }
   }, [authChecked, isLoggedIn, router]);
 

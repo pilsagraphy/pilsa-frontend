@@ -6,6 +6,7 @@ import { CalendarPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import useAuthStore from '@/stores/useAuthStore';
 import { ROUTES } from '@/constants/routes';
+import { loginUrlWithReturnTo } from '@/lib/returnTo';
 import { getCalendarLinkStatus, getCalendarLinkUrl } from '@/apis/google';
 import { Button } from '@/components/ui/button';
 import {
@@ -133,7 +134,11 @@ export default function CalendarSubscribeButton() {
 
           <DialogFooter className="flex flex-col gap-[8px] sm:flex-col sm:space-x-0">
             {!isLoggedIn ? (
-              <Button type="button" onClick={() => router.push(ROUTES.LOGIN)} className={primaryBtn}>
+              <Button
+                type="button"
+                onClick={() => router.push(loginUrlWithReturnTo(window.location.pathname))}
+                className={primaryBtn}
+              >
                 로그인하기
               </Button>
             ) : linked ? (

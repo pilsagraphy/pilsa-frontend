@@ -3,6 +3,7 @@ import axios from 'axios';
 import useAuthStore from '@/stores/useAuthStore';
 import { PUBLIC_ROUTES } from '@/constants/routes';
 import { refreshAccessToken } from '@/apis/auth';
+import { loginUrlWithReturnTo, currentPathForReturn } from '@/lib/returnTo';
 
 const axiosInstance = axios.create({
   // 로컬 개발에서는 상대경로로 보내 next.config의 rewrite 프록시를 타게 한다.
@@ -74,7 +75,8 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         // 재발급 실패 시 (리프레시 토큰도 만료된 경우) 로그아웃 처리
         useAuthStore.getState().logout();
-        window.location.href = '/login';
+        // 보고 있던 경로를 들고 로그인으로 — 로그인 뒤 그 자리로 돌아간다 (알림 딥링크 보존)
+        window.location.href = loginUrlWithReturnTo(currentPathForReturn());
         return Promise.reject(refreshError);
       }
     }

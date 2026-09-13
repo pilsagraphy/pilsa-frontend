@@ -1,7 +1,10 @@
+'use client';
+
 import { Menu } from 'lucide-react';
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { Zen_Dots } from 'next/font/google';
+import useAuthStore from '@/stores/useAuthStore';
 
 const zenDots = Zen_Dots({
   weight: '400',
@@ -9,6 +12,11 @@ const zenDots = Zen_Dots({
 });
 
 export default function Header() {
+  // 로그인한 사람에게 '홈'은 학생 대시보드다 — 소개 페이지로 보내면 로그인하고도 계속 손님 화면에 떨어진다.
+  // 비로그인은 그대로 소개 페이지(첫 실행이면 middleware 가 시계 게이트로 돌려보낸다)
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const homeHref = isLoggedIn ? ROUTES.STUDENTS_DASHBOARD : ROUTES.ABOUT_INTRO;
+
   return (
     <header className="w-full h-40">
       <div
@@ -30,8 +38,12 @@ export default function Header() {
             fontSize: 'clamp(24px, 9vw, 48px)',
           }}
         >
-          {/* 시계 게이트(/)가 아니라 소개 페이지로. 첫 실행 때는 middleware 가 게이트로 돌려보낸다 */}
-          <Link href={ROUTES.ABOUT_INTRO} aria-label="필사그래피 소개로 이동" className="inline-block">
+          {/* 시계 게이트(/)로는 보내지 않는다 — 로그인 상태면 학생 홈, 아니면 소개 페이지 */}
+          <Link
+            href={homeHref}
+            aria-label={isLoggedIn ? '홈으로 이동' : '필사그래피 소개로 이동'}
+            className="inline-block"
+          >
             PILSAGRAPHY
           </Link>
         </h1>

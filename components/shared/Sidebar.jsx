@@ -9,6 +9,7 @@ import useSidebarStore from '@/stores/sidebar';
 import useAuthStore from '@/stores/useAuthStore';
 import useBoardStore from '@/stores/useBoardStore';
 import { ROUTES, ALLOWED_BOARD_MEMBER_TYPES } from '@/constants/routes';
+import { loginHref, loginUrlWithReturnTo, stashReturnTo } from '@/lib/returnTo';
 
 const Sidebar = () => {
   const router = useRouter();
@@ -51,9 +52,12 @@ const Sidebar = () => {
     if (event.target.closest('a')) setIsMobileOpen(false);
   }, []);
 
-  const checkBoardAccess = useCallback(async () => {
+  const checkBoardAccess = useCallback(async (targetPath) => {
     if (!isLoggedIn) {
-      router.push(ROUTES.LOGIN);
+      // 로그인 뒤 방금 누른 메뉴로 돌아가게 목적지를 들려 보낸다.
+      // 여기서 e.preventDefault() 로 이동을 막기 때문에 페이지의 AuthGuard(returnTo 를 붙여 주는 쪽)까지 가지 않는다 —
+      // 예전엔 그냥 /login 으로 보내서 로그인해도 게시판이 아니라 기본 화면으로 떨어졌다.
+      router.push(loginUrlWithReturnTo(targetPath));
       return false;
     }
     // 신분(memberType) + 관리레벨(adminLevel) 2축 판정 — 스토어에 없으면 /api/role 재조회
@@ -82,7 +86,7 @@ const Sidebar = () => {
   const handleBoardSubmenuClick = useCallback(
     async (e, path) => {
       e.preventDefault();
-      const allowed = await checkBoardAccess();
+      const allowed = await checkBoardAccess(path);
       if (allowed) router.push(path);
     },
     [checkBoardAccess, router]
@@ -340,8 +344,8 @@ const Sidebar = () => {
               </Link>
             </>
           ) : (
-            /* 비로그인: 로그인만 */
-            <Link href={ROUTES.LOGIN}>
+            /* 비로그인: 로그인만. 로그인 뒤 보던 화면으로 돌아온다 */
+            <Link href={loginHref(pathname)} onClick={() => stashReturnTo(pathname)}>
               <button onClick={toggleLogin} className={bottomItemClass}>
                 로그인
               </button>
