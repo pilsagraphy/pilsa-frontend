@@ -4,12 +4,12 @@
   "name": "Pilsagraphy",
   "launcherName": "Pilsagraphy",
   "display": "standalone",
-  "themeColor": "#212121",
-  "themeColorDark": "#212121",
-  "navigationColor": "#212121",
-  "navigationColorDark": "#212121",
-  "navigationDividerColor": "#212121",
-  "navigationDividerColorDark": "#212121",
+  "themeColor": "#FFFFFF",
+  "themeColorDark": "#FFFFFF",
+  "navigationColor": "#FFFFFF",
+  "navigationColorDark": "#FFFFFF",
+  "navigationDividerColor": "#FFFFFF",
+  "navigationDividerColorDark": "#FFFFFF",
   "backgroundColor": "#FFFFFF",
   "enableNotifications": true,
   "startUrl": "/?launch=app",
@@ -21,8 +21,8 @@
     "path": "../../app-key/pilsa-upload.jks",
     "alias": "pilsa-upload"
   },
-  "appVersionName": "1.0.4",
-  "appVersionCode": 5,
+  "appVersionName": "1.0.5",
+  "appVersionCode": 6,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://pilsa.co.kr/manifest.json",
@@ -41,5 +41,5 @@
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "1.0.4"
+  "appVersion": "1.0.5"
 }

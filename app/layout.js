@@ -27,9 +27,10 @@ export const metadata = {
 };
 
 export const viewport = {
-  // 브랜드 CI 색 (components/service/brandCI/BrandColor.jsx). TWA 상태바 색이 된다.
-  // 스플래시는 manifest 의 background_color(흰색) 를 쓴다 — 앱 화면이 흰 바탕이라 그쪽은 맞춰 둔다.
-  themeColor: '#212121',
+  // 설치형 앱(TWA)의 상태바·내비게이션바 색이 이 값이 된다. 브랜드 색(#212121)을 넣었더니
+  // 흰 바탕 화면 위아래로 검은 띠가 생겨(다른 앱에는 없는 모습) 화면 배경과 같은 흰색으로 맞춘다.
+  // 아이콘 명암은 크롬이 색 밝기를 보고 알아서 뒤집는다 — 흰 바탕이면 어두운 아이콘.
+  themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1,
 };
