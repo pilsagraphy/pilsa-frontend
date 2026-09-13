@@ -241,8 +241,9 @@ const Sidebar = () => {
               </p>
             </Link>
 
-            {/* ABOUT 필사 (공개 소개 영역으로 이동 → 일반 사이드바로 복귀) */}
-            <Link href={ROUTES.ABOUT}>
+            {/* ABOUT 필사 (공개 소개 영역으로 이동 → 일반 사이드바로 복귀).
+                /about 이 아니라 첫 화면인 /about/intro 로 보낸다 — /about 은 목차가 없는 빈 경로다 */}
+            <Link href={ROUTES.ABOUT_INTRO}>
               <p className={singleLinkClass(false)}>ABOUT 필사</p>
             </Link>
           </div>

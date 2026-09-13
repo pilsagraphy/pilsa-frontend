@@ -4,8 +4,7 @@ Bubblewrap 으로 웹앱을 Android 앱(TWA)으로 감싸 Play 스토어에 올�
 `twa-manifest.json` 이 그 입력값이고, 이 디렉터리는 **생성물이 아니라 설정만** 담는다
 (생성된 Android 프로젝트는 커밋하지 않는다 — `twa-manifest.json` 만 있으면 2번으로 다시 만들어진다).
 
-생성물 위에 덮어쓰는 **우리 쪽 수정본은 `overrides/`** 에 있다 (`LauncherActivity.java` — 앱을 여는 브라우저를 Chrome 으로 고정,
-`ChromeNotificationSettingsActivity.java` — "Chrome에서 실행 중" 고지를 끄는 설정 화면으로 데려다주는 다리).
+생성물 위에 덮어쓰는 **우리 쪽 수정본은 `overrides/`** 에 있다 (현재 `LauncherActivity.java` 하나 — 앱을 여는 브라우저를 Chrome 으로 고정).
 `bubblewrap update` 가 템플릿으로 다시 만들어 버리므로 update 뒤에 `apply-overrides.ps1` 로 덮어쓴다 (2-1번).
 
 TWA 는 `https://pilsa.co.kr` 을 그대로 여는 껍데기라 **웹 코드가 앱 안에 들어가지 않는다.**
@@ -24,7 +23,7 @@ TWA 는 `https://pilsa.co.kr` 을 그대로 여는 껍데기라 **웹 코드가 
 | `maskableIconUrl` · `monochromeIconUrl` | `/icons/icon-maskable-512.png` · `/icons/icon-monochrome-512.png` — 홈 화면 아이콘(검정 네모) |
 | `signingKey` | `../../app-key/pilsa-upload.jks`, alias `pilsa-upload` (2026-09-09 재생성) |
 | `themeColor` · `navigationColor` (다크 포함) | `#FFFFFF` — 상태바·내비게이션바 색. `#212121` 이던 v5 까지는 흰 화면 위아래로 검은 띠가 보였다. 아이콘 명암은 크롬이 색 밝기를 보고 알아서 뒤집는다 |
-| `appVersionName` / `appVersionCode` | `1.0.6` / `7` — v1(`1.0.0`/`1`) 2026-09-09 비공개 테스트, v3(`1.0.2`/`3`) 알림 수정, v4(`1.0.3`/`4`) provider 를 Chrome 으로 고정(아래 '웹 푸시에 대해'), v5(`1.0.4`/`5`) 시작 URL `/?launch=app`, v6(`1.0.5`/`6`) 상태바·내비게이션바 흰색, **v7 은 고지 알림 안내를 브라우저별로**(v6 은 Chrome 문구로 고정돼 있었다) |
+| `appVersionName` / `appVersionCode` | `1.0.6` / `7` — v1(`1.0.0`/`1`) 2026-09-09 비공개 테스트, v3(`1.0.2`/`3`) 알림 수정, v4(`1.0.3`/`4`) provider 를 Chrome 으로 고정(아래 '웹 푸시에 대해'), v5(`1.0.4`/`5`) 시작 URL `/?launch=app`, v6(`1.0.5`/`6`) 상태바·내비게이션바 흰색, v7(`1.0.6`/`7`) 은 v6 과 앱 동작이 사실상 같다(빌드해 뒀을 뿐 필수 아님) |
 | `assetlinks.json` 지문 | 업로드 키 `20:7E:A7:E9:…:9B:8A` + Play 앱 서명 키 `95:08:85:FC:…:46:38` 두 개 |
 
 > 업로드 키는 `pilsa-upload.jks` 다. 예전 `v_1_release_key.jks` 는 비밀번호를 아는 사람이 없어
@@ -116,17 +115,11 @@ bubblewrap update --skipVersionUpgrade
 .\apply-overrides.ps1
 ```
 
-`overrides/` 아래 파일을 같은 경로의 생성물 위에 복사하고, `AndroidManifest.xml` 에는 액티비티 한 조각을 끼워 넣는다.
+`overrides/` 아래 파일을 같은 경로의 생성물 위에 복사한다.
 
 - `LauncherActivity.java` — `createTwaLauncher()` 를 오버라이드해 **Chrome 이 있으면 Chrome 으로** 앱을 연다. 이걸 빼먹고 빌드하면
   갤럭시에서 삼성 인터넷으로 열리는 옛 동작으로 돌아간다(알림이 "삼성 브라우저" 로 오고 누르면 브라우저가 열림).
   Bubblewrap 템플릿의 `LauncherActivity.java` 가 바뀌면(onCreate 등) `overrides/` 쪽도 맞춘다.
-- `BrowserNotificationSettingsActivity.java` + 매니페스트 조각 — `pilsa://browser-notification?pkg=<패키지>` 를 받아
-  **그 브라우저의 알림 설정 화면**을 연다. 마이페이지 알림 토글 아래 링크가 이 주소로 보낸다(`NotificationToggle.jsx`).
-  어느 브라우저인지는 웹이 UA 로 판별해 넘긴다(`lib/platform.js` 의 `getAndroidHostBrowser`) — 앱은 Chrome 을 우선하지만
-  Chrome 이 없는 폰은 삼성 인터넷 등으로 열리고, 고지를 띄우는 것도 그 브라우저이기 때문이다.
-  넘어온 패키지는 액티비티의 허용 목록(Chrome 계열·삼성 인터넷·Edge·웨일)에 있는 것만 쓴다.
-  안드로이드에는 남의 앱 알림을 대신 꺼 주는 API 가 없어서, 데려다주는 데까지가 우리가 할 수 있는 전부다.
   매니페스트는 **통째로 덮어쓰지 않는다** — `twa-manifest.json` 의 색·아이콘·알림 설정이 반영되는 생성물이라 조각만 끼워 넣는다.
 
 ## 3. 빌드
@@ -243,6 +236,15 @@ TWA 를 열어 검증할 때** 한 번만 하므로, 켠 뒤 앱을 완전히 �
 `recoverPushIfNewlyGranted`)와, `denied` 인 사람에게 그 절차를 안내한다(`PushPromptBottomSheet`).
 
 `enableNotifications: true` 가 `POST_NOTIFICATIONS`·`DelegationService`·`NotificationPermissionRequestActivity` 를 매니페스트에 넣는다.
+
+### "Chrome에서 실행 중" 고지 알림은 끌 수 없다 (2026-09-14 실기기 확인, 시도 후 철회)
+
+앱을 켜 두면 크롬이 이 고지를 알림으로 띄운다. 크롬이 직접 띄우는 것이라 앱에서 끌 API 가 없다.
+설정 화면까지 데려다주는 다리(`pilsa://browser-notification` → 앱 알림 설정)를 만들어 v6·v7 에 넣어 봤는데,
+갤럭시(One UI)에서 열리는 크롬 알림 설정에는 **채널 목록 자체가 없다.** 있는 것은 '알림 허용' 하나뿐이라
+그걸 끄면 고지와 함께 **우리 댓글 알림도 같이 죽는다.** 안내로 성립하지 않아 웹 버튼과 액티비티를 모두 걷어냈다
+(커밋 이력에 남아 있다). 회원에게는 "알림을 한 번 옆으로 밀어 지우면 대개 다시 안 뜬다" 정도만 안내한다.
+근본 해결은 TWA 를 벗어나는 것(WebView 래퍼)뿐이다.
 
 ### v4 로 올라간 뒤 기존 사용자 (삼성 인터넷으로 쓰던 사람)
 
