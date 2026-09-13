@@ -57,6 +57,34 @@ function LoginCheckbox({ checked, onChange, label }) {
   );
 }
 
+// 계정 찾기 링크 — 제목 '로그인' 오른쪽.
+// 입력칸 아래(체크박스 옆)에도 뒀었는데 폰에서 줄이 접혀 버튼 위에 떠 있는 것처럼 보였다.
+// 순서는 이메일 → 아이디 → 비밀번호: 이메일이 있어야 아이디를 찾고, 아이디가 있어야 비밀번호를 재설정한다
+function AccountFindLinks({ className = '' }) {
+  const router = useRouter();
+  const itemClass =
+    'rounded-[2px] transition-colors hover:text-[#212121] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#212121]/30';
+
+  return (
+    <nav
+      aria-label="계정 찾기"
+      className={`items-center gap-2.5 text-[13px] tracking-[-0.26px] text-[#919191] ${className}`}
+    >
+      <button type="button" className={itemClass} onClick={() => router.push(ROUTES.FIND_EMAIL)}>
+        이메일 찾기
+      </button>
+      <span className="h-[10px] w-px shrink-0 bg-[#dedede]" aria-hidden />
+      <button type="button" className={itemClass} onClick={() => router.push(ROUTES.FIND_ID)}>
+        아이디 찾기
+      </button>
+      <span className="h-[10px] w-px shrink-0 bg-[#dedede]" aria-hidden />
+      <button type="button" className={itemClass} onClick={() => router.push(ROUTES.FIND_PW)}>
+        비밀번호 재설정
+      </button>
+    </nav>
+  );
+}
+
 export default function LoginSection() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -123,7 +151,9 @@ export default function LoginSection() {
             : '로그아웃되었습니다!',
           {
             id: LOGOUT_TOAST_ID,
-            duration: Infinity,
+            // 예전엔 Infinity 라 사용자가 X 를 누르기 전까지 화면에 남아 로그인 화면을 가렸다.
+            // '홈으로' 버튼을 누를 여유는 주되 알아서 사라지게 한다
+            duration: 6000,
             action: {
               label: '홈으로',
               onClick: () => router.push(BASE_PATH),
@@ -365,8 +395,11 @@ export default function LoginSection() {
             </div>
           )}
 
-          {/* 제목 */}
-          <h2 className="text-[24px] font-semibold tracking-[-0.48px] text-black">로그인</h2>
+          {/* 제목 줄: 왼쪽 '로그인' / 오른쪽 계정 찾기 */}
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <h2 className="text-[24px] font-semibold tracking-[-0.48px] text-black">로그인</h2>
+            <AccountFindLinks className="flex" />
+          </div>
 
           {/* 입력 필드 */}
           <div className="flex flex-col gap-3">
@@ -387,44 +420,10 @@ export default function LoginSection() {
             />
           </div>
 
-          {/* 입력칸 아래 한 줄: 왼쪽 아이디 저장·자동 로그인 / 오른쪽 계정 찾기.
-              예전엔 이 다섯 개가 제목 옆에 한 줄로 몰려 빽빽했다. 자리를 입력칸 아래로 내리고
-              찾기 링크는 옅은 회색 + 얇은 구분선으로 낮춰 체크박스와 무게를 나눈다.
-              폭이 좁으면(폰) 링크 줄이 아래로 접힌다 */}
-          <div className="-mt-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-            <div className="flex items-center gap-5">
-              <LoginCheckbox label="아이디 저장" checked={rememberId} onChange={setRememberId} />
-              <LoginCheckbox label="자동 로그인" checked={autoLogin} onChange={setAutoLogin} />
-            </div>
-
-            <nav
-              aria-label="계정 찾기"
-              className="flex items-center gap-2.5 text-[13px] tracking-[-0.26px] text-[#919191]"
-            >
-              <button
-                type="button"
-                className="rounded-[2px] transition-colors hover:text-[#212121] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#212121]/30"
-                onClick={() => router.push(ROUTES.FIND_EMAIL)}
-              >
-                이메일 찾기
-              </button>
-              <span className="h-[10px] w-px shrink-0 bg-[#dedede]" aria-hidden />
-              <button
-                type="button"
-                className="rounded-[2px] transition-colors hover:text-[#212121] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#212121]/30"
-                onClick={() => router.push(ROUTES.FIND_ID)}
-              >
-                아이디 찾기
-              </button>
-              <span className="h-[10px] w-px shrink-0 bg-[#dedede]" aria-hidden />
-              <button
-                type="button"
-                className="rounded-[2px] transition-colors hover:text-[#212121] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#212121]/30"
-                onClick={() => router.push(ROUTES.FIND_PW)}
-              >
-                비밀번호 재설정
-              </button>
-            </nav>
+          {/* 입력칸 아래에는 체크박스만 (계정 찾기는 제목 줄로 올렸다) */}
+          <div className="-mt-1 flex items-center gap-5">
+            <LoginCheckbox label="아이디 저장" checked={rememberId} onChange={setRememberId} />
+            <LoginCheckbox label="자동 로그인" checked={autoLogin} onChange={setAutoLogin} />
           </div>
 
           {/* 버튼 */}
