@@ -23,17 +23,17 @@ Get-ChildItem -Path $src -Recurse -File | ForEach-Object {
     Write-Host "override -> $rel"
 }
 
-# ── AndroidManifest.xml 에 ChromeNotificationSettingsActivity 를 끼워 넣는다 ──────────────────
-# 웹(마이페이지)에서 pilsa://chrome-notification 으로 이동하면 이 액티비티가 열려서
-# 크롬의 알림 설정 화면으로 데려다준다 ("Chrome에서 실행 중" 고지를 끄는 길).
+# ── AndroidManifest.xml 에 BrowserNotificationSettingsActivity 를 끼워 넣는다 ──────────────────
+# 웹(마이페이지)에서 pilsa://browser-notification?pkg=<브라우저 패키지> 로 이동하면 이 액티비티가 열려서
+# 그 브라우저의 알림 설정 화면으로 데려다준다 ("○○에서 실행 중" 고지를 끄는 길).
 $manifestPath = Join-Path $twaDir 'app/src/main/AndroidManifest.xml'
 $manifest = Get-Content -Path $manifestPath -Raw -Encoding UTF8
 
-if ($manifest -match 'ChromeNotificationSettingsActivity') {
-    Write-Host "manifest -> ChromeNotificationSettingsActivity (이미 있음)"
+if ($manifest -match 'BrowserNotificationSettingsActivity') {
+    Write-Host "manifest -> BrowserNotificationSettingsActivity (이미 있음)"
 } else {
     $activity = @'
-        <activity android:name="ChromeNotificationSettingsActivity"
+        <activity android:name="BrowserNotificationSettingsActivity"
             android:exported="true"
             android:excludeFromRecents="true"
             android:noHistory="true"
@@ -42,7 +42,7 @@ if ($manifest -match 'ChromeNotificationSettingsActivity') {
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="pilsa" android:host="chrome-notification" />
+                <data android:scheme="pilsa" android:host="browser-notification" />
             </intent-filter>
         </activity>
 
@@ -50,5 +50,5 @@ if ($manifest -match 'ChromeNotificationSettingsActivity') {
 '@
     $manifest = $manifest -replace '(?s)\s*</application>', ("`r`n" + $activity)
     Set-Content -Path $manifestPath -Value $manifest -Encoding UTF8 -NoNewline
-    Write-Host "manifest -> ChromeNotificationSettingsActivity 추가"
+    Write-Host "manifest -> BrowserNotificationSettingsActivity 추가"
 }
