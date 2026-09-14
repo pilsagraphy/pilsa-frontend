@@ -268,7 +268,9 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     }
   });
 
-  // 묶음별 답글 — 서버가 준 순서(작성순) 그대로. 답글의 답글도 여기 같이 들어가 한 줄로 쌓인다
+  // 묶음별 답글. 답글의 답글도 같은 묶음에 들어가 한 줄로 쌓이므로, 서버 순서를 믿지 않고
+  // 작성 시각순으로 다시 세운다 — 중간 댓글에 단 답글이 그 댓글 바로 뒤가 아니라 제 시간 자리에 놓인다.
+  // 시각이 같으면 id 순 (같은 초에 달린 답글끼리 순서가 흔들리지 않게).
   const repliesByGroup = new Map();
   list.forEach((comment) => {
     if (!comment.parentCommentId) return;
@@ -276,6 +278,10 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     if (!repliesByGroup.has(key)) repliesByGroup.set(key, []);
     repliesByGroup.get(key).push(comment);
   });
+  const byCreated = (a, b) =>
+    String(a.created ?? '').localeCompare(String(b.created ?? '')) ||
+    Number(a.commentId) - Number(b.commentId);
+  repliesByGroup.forEach((replies) => replies.sort(byCreated));
 
   const visibleComments = displayRoots.flatMap((root) => {
     const key = root.isPlaceholder ? `placeholder:${root.commentId}` : `comment:${root.commentId}`;
@@ -487,16 +493,15 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
           {/* 액션: 삭제된 댓글에는 표시하지 않는다 */}
           {!deleted && (
             <div className="flex shrink-0 items-center gap-3 md:ml-5">
-              {/* 답글은 최상위 댓글에만 단다 — 답글의 답글은 같은 묶음 아래에 쌓일 뿐이라 버튼을 두지 않는다 */}
-              {depth === 0 && (
-                <button
-                  type="button"
-                  className={actionClassName(replying)}
-                  onClick={() => toggleReply(comment)}
-                >
-                  답글
-                </button>
-              )}
+              {/* 답글은 어느 댓글에나 단다. 부모 id 는 그 댓글 자신이라 알림이 그 사람에게 가고,
+                  화면에서는 어차피 같은 묶음(최상위 댓글 아래) 한 줄에 시간순으로 놓인다 */}
+              <button
+                type="button"
+                className={actionClassName(replying)}
+                onClick={() => toggleReply(comment)}
+              >
+                답글
+              </button>
 
               {owner ? (
                 <>

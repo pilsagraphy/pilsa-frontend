@@ -16,6 +16,7 @@ import {
 // - 모바일 && 푸시 지원 환경에서만 노출. PC 웹은 알림함(종 아이콘)만 제공.
 export default function NotificationToggle() {
   const [supported, setSupported] = useState(false);
+  const [inAndroidApp, setInAndroidApp] = useState(false);
   const [on, setOn] = useState(false);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -24,6 +25,7 @@ export default function NotificationToggle() {
     const init = async () => {
       const visible = canShowPushToggle();
       setSupported(visible);
+      setInAndroidApp(isInstalledAndroidApp());
       if (!visible) {
         setLoading(false);
         return;
@@ -87,6 +89,13 @@ export default function NotificationToggle() {
         <p className="mt-0.5 text-[12px] leading-[1.5] tracking-[-0.02em] text-[#919191]">
           새 댓글·답글이 달리면 알려드려요
         </p>
+        {/* 알림이 몇 시간 늦게 오는 원인은 서버가 아니라 폰의 절전이다(9/14 발송 기록으로 확정 — 발송은 1초 안,
+            폰이 놀 때만 지연). 앱은 Chrome 이 받으므로 Chrome 을 절전에서 빼야 한다. 코드로는 대신 못 한다 */}
+        {inAndroidApp && on && (
+          <p className="mt-1.5 text-[11px] leading-[1.5] tracking-[-0.02em] text-[#B0B0B0] [word-break:keep-all]">
+            알림이 늦게 오면 설정 → 애플리케이션 → Chrome → 배터리에서 &lsquo;제한 없음&rsquo;으로 바꿔주세요
+          </p>
+        )}
       </div>
 
       <button
