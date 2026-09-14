@@ -2,9 +2,10 @@
 // ※ 첨부 정적 서빙은 폐지되었다 — 모든 첨부 접근은 아래 인증형 API 가 유일한 경로
 import axiosInstance from '@/apis/axiosInstance';
 
-// 파일 전송은 공통 타임아웃(5초)으로는 부족하다 (업로드 한도가 30MB).
+// 파일 전송은 공통 타임아웃(5초)으로는 부족하다. 한도(서버 설정값)에 가까운 파일을 캠퍼스 와이파이나
+// 모바일 데이터로 올리면 분 단위가 걸린다 — 10Mbps 면 100MB 에 80초가 넘는다.
 // axiosInstance 는 건드리지 않고 이 파일의 요청에만 넉넉한 값을 준다.
-const FILE_TIMEOUT_MS = 60000;
+const FILE_TIMEOUT_MS = 5 * 60 * 1000;
 
 // 1. 파일 업로드 (POST /api/user/boards/{boardId}/files) [MEMBER]
 //    multipart/form-data: file(1개, 필수), usage(inline|attachment, 선택)
@@ -16,7 +17,8 @@ const FILE_TIMEOUT_MS = 60000;
 //    markdown 은 완성된 문자열 → 본문의 `![Uploading name…]()` 자리표시자를 이 값으로 교체
 //    글 연결은 발행/수정/임시저장의 attachmentIds + 본문에 남은 /api/user/files/{id} 자동 스캔
 //    미연결 파일은 24시간 후 새벽 배치가 물리 삭제한다
-//    실패: 400 허용되지 않는 형식 / 400 inline 인데 비이미지 / 403 권한·업로드 미사용 / 413 30MB 초과
+//    실패: 400 허용되지 않는 형식 / 400 inline 인데 비이미지 / 403 권한·업로드 미사용 / 413 용량 초과
+//    (413 한도는 서버 설정이다 — application.properties 의 spring.servlet.multipart 와 nginx client_max_body_size)
 export const uploadFile = async (boardId, file, usage) => {
   const formData = new FormData();
   formData.append('file', file);

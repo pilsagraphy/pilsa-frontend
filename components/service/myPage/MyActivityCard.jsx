@@ -19,7 +19,7 @@ export default function MyActivityCard() {
   const semester = summary?.semester ?? null; // 불러오기 전에는 null
 
   return (
-    <div className="w-full rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px] lg:flex-1">
+    <div className="flex h-full w-full flex-col rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px] lg:flex-1">
       <div className="flex items-center gap-[8px]">
         <h3 className="text-[16px] font-bold leading-[1.5] tracking-[-0.02em] text-black">
           이번 학기 활동 요약
@@ -28,7 +28,7 @@ export default function MyActivityCard() {
       </div>
 
       {/* 선을 '작성한 글' 바로 위(목록 상단)에 붙임 */}
-      <dl className="-mx-[12px] mt-[40px] flex flex-col border-t border-[#BDBDBD] px-[12px]">
+      <dl className="-mx-[12px] mt-auto flex flex-col border-t border-[#BDBDBD] px-[12px] lg:mt-[40px]">
         {ACTIVITY_META.map((item, index) => (
           <div
             key={item.key}

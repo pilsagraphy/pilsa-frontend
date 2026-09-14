@@ -18,10 +18,12 @@ function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
 }
 
-// 깊이별 들여쓰기 (Tailwind가 정적으로 인식하도록 클래스를 미리 정의해 둔다)
-// 이 배열 길이를 넘어가는 깊이는 마지막 값을 그대로 쓴다 - 모바일 가독성 보호
-const INDENT_CLASS_BY_DEPTH = ['md:px-10', 'pl-[16px] md:pl-[40px]', 'pl-[32px] md:pl-[80px]'];
-const MAX_INDENT_DEPTH = INDENT_CLASS_BY_DEPTH.length - 1;
+// 깊이별 들여쓰기는 globals.css 의 .commentRow 가 --comment-depth 로 계산한다.
+// Tailwind 클래스 배열로 갖고 있으면 배열 길이만큼만 들어가서, 답글의 답글의 답글이 전부 같은 자리에 그려졌다.
+//
+// 상한을 두는 이유는 폰 화면이다 — 깊이만큼 계속 밀면 본문 폭이 남지 않는다.
+// 여기서 멈춘 뒤로는 화살표(↳)와 순서로만 관계를 읽는다.
+const MAX_INDENT_DEPTH = 6;
 
 // 잘못된 데이터(순환 참조 등)로 무한 재귀에 빠지지 않게 하는 안전장치
 const MAX_RENDER_DEPTH = 20;
@@ -383,7 +385,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
   const renderComment = (comment, depth) => {
     // 자리표시(삭제된 부모)는 원래 답글이었으므로 최상위처럼 보이지 않게 화살표를 붙인다
     const isReply = depth > 0 || Boolean(comment.isPlaceholder);
-    const indentClass = INDENT_CLASS_BY_DEPTH[Math.min(depth, MAX_INDENT_DEPTH)];
+    const indentDepth = Math.min(depth, MAX_INDENT_DEPTH);
     const deleted = isDeleted(comment);
     const owner = isOwner(comment);
     const replying = replyToId === comment.commentId;
@@ -402,9 +404,10 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         key={comment.commentId}
         // 댓글 하나를 URL로 가리킬 수 있게 앵커를 붙인다 (예: /students/boards/2/posts/12#comment-3)
         id={anchorId}
-        className={`flex w-full scroll-mt-[100px] flex-col gap-3 py-4 md:py-5 ${indentClass} ${
+        className={`commentRow flex w-full scroll-mt-[100px] flex-col gap-3 py-4 md:py-5 ${
           highlighted ? 'bg-[#f5f5f5]' : ''
         }`}
+        style={{ '--comment-depth': indentDepth }}
       >
         <div className="flex w-full flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
@@ -505,7 +508,10 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
 
         {/* 답글: 그 댓글 바로 아래, 답글 들여쓰기 위치에 입력창 */}
         {replying && (
-          <div className="flex w-full items-start gap-2 pl-[16px] md:pl-[40px] md:pr-4">
+          <div
+            className="commentReplyComposer flex w-full items-start gap-2 md:pr-4"
+            style={{ '--comment-depth': Math.min(depth + 1, MAX_INDENT_DEPTH) }}
+          >
             <CornerDownRight className="mt-4 h-4 w-4 shrink-0 text-[#b9b9b9]" aria-hidden />
             <CommentComposer
               mode="reply"

@@ -359,3 +359,27 @@
   .appLoading__letter { animation: none; opacity: 1; }
   .appLoading__bar::after { animation: none; left: 0; width: 100%; opacity: 0.5; }
 }
+
+/* 댓글 들여쓰기 — 깊이(--comment-depth)에 비례해 왼쪽을 민다.
+   클래스를 깊이마다 미리 만들어 두면 만들어 둔 만큼만 들어가므로, 계산으로 둔다.
+   상한은 JS 쪽(MAX_INDENT_DEPTH)이 잡아 준다 — 여기서는 받은 값을 그대로 쓴다.
+   PC 는 본문 폭이 넉넉해 한 단계를 크게, 폰은 작게 잡는다. */
+.commentRow {
+  padding-left: calc(var(--comment-depth, 0) * 14px);
+  padding-right: 0;
+}
+
+.commentReplyComposer {
+  padding-left: calc(var(--comment-depth, 0) * 14px);
+}
+
+@media (min-width: 768px) {
+  .commentRow {
+    padding-left: calc(40px + var(--comment-depth, 0) * 28px);
+    padding-right: 40px;
+  }
+
+  .commentReplyComposer {
+    padding-left: calc(40px + var(--comment-depth, 0) * 28px);
+  }
+}

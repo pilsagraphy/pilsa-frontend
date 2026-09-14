@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { CalendarPlus } from 'lucide-react';
 import { toast } from 'sonner';
 import useAuthStore from '@/stores/useAuthStore';
+import { isIOS } from '@/lib/platform';
+import { calendarWebcalUrl } from '@/lib/calendarFeed';
 import { ROUTES } from '@/constants/routes';
 import { loginUrlWithReturnTo } from '@/lib/returnTo';
 import { getCalendarLinkStatus, getCalendarLinkUrl } from '@/apis/google';
@@ -25,8 +27,10 @@ import {
 //  3) 아직 연동 동의가 없으면 마이페이지로 보내지 않고 이 자리에서 동의 화면으로 보낸다.
 //     동의가 끝나면 백엔드 콜백이 이 페이지(?calendar=linked)로 돌려보내고 첫 동기화가 이어진다.
 //
-// ICS 주소 구독(webcal)은 화면에서 뺐다. 주소(/api/event/calendar.ics) 자체는 이미 구독한 사람들이
-// 쓰고 있으므로 백엔드에 그대로 남겨 둔다 — 없애면 그 사람들 캘린더 갱신이 끊긴다.
+// 아이폰만 예외다. 아이폰 기본 캘린더는 구글 계정을 따로 붙여 두지 않으면 구글 캘린더를 보여주지 않아서,
+// 연동이 성공해도 "일정이 안 보인다" 로 끝나는 사람이 많았다. 그래서 아이폰에서는
+// ICS 주소 구독(webcal)을 함께 보여 준다 — 기본 캘린더가 주소를 직접 읽어 가므로 구글 계정이 필요 없다.
+// 주소(/api/event/calendar.ics)는 로그인 없이 열리는 공개 피드다.
 const CALENDAR_RESULT = {
   // 서버가 비동기로 넣어 주므로(실패 시 10분 간격 재시도) 캘린더에 보이기까지 시간이 걸린다
   linked: [
@@ -42,12 +46,18 @@ export default function CalendarSubscribeButton() {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  // 아이폰 여부는 마운트 뒤에 정한다 — 서버 렌더 결과와 어긋나면 첫 그림이 깜빡인다
+  const [onIOS, setOnIOS] = useState(false);
   // 구글 캘린더 연동 상태. undefined = 조회 중, null = 조회 실패, 그 외 { linked, googleEmail, ... }
   const [status, setStatus] = useState(undefined);
 
   // 동의 화면에서 돌아온 결과 안내 (?calendar=linked|failed|cancelled). 읽은 뒤 쿼리는 지운다.
   // useSearchParams 대신 window.location 을 쓴다 — 마운트 직후 한 번만 필요한 값이고,
   // 훅을 쓰면 이 버튼을 품은 페이지 전체가 Suspense 경계를 요구하게 된다 (MyPageSection 과 같은 이유).
+  useEffect(() => {
+    setOnIOS(isIOS());
+  }, []);
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const entry = CALENDAR_RESULT[params.get('calendar')];
@@ -97,7 +107,12 @@ export default function CalendarSubscribeButton() {
     description = '';
   } else if (linked) {
     title = '이미 구독 중이에요';
-    description = `${status.googleEmail ? `${status.googleEmail} ` : ''}구글 캘린더에 새 일정·변경·삭제가 자동으로 반영돼요 (반영까지 최대 10분). 연동 관리는 마이페이지 → 정보 수정에서 할 수 있어요.`;
+    description = `${status.googleEmail ? `${status.googleEmail} ` : ''}구글 캘린더에 새 일정·변경·삭제가 자동으로 반영돼요 (반영까지 최대 10분). 연동 관리는 마이페이지 → 설정에서 할 수 있어요.`;
+  } else if (onIOS) {
+    title = '어느 캘린더에 넣을까요?';
+    // 아이폰은 기본 캘린더 구독을 먼저 권한다. 구글 캘린더 앱을 따로 쓰는 사람만 아래 버튼으로 간다
+    description =
+      '아이폰 기본 캘린더를 쓰신다면 아래 [아이폰 캘린더에 구독]을 눌러주세요. 구독 창이 뜨면 [구독]을 누르면 끝이고, 구글 계정도 필요 없어요. 구글 캘린더 앱을 쓰신다면 [구글 캘린더에 연동]으로 가세요.';
   } else {
     title = '구글 캘린더에 구독할까요?';
     // 계정 선택 화면에서 폰에 들어있는 구글 계정을 고르면 비밀번호·2단계 인증 없이 지나간다.
@@ -146,9 +161,29 @@ export default function CalendarSubscribeButton() {
                 확인
               </Button>
             ) : (
-              <Button type="button" onClick={startConsent} disabled={checking || busy} className={primaryBtn}>
-                {busy ? '구글로 이동 중…' : '구글로 연동하고 구독하기'}
-              </Button>
+              <>
+                {onIOS && (
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      // webcal:// 은 OS 가 캘린더 앱으로 넘긴다 — 창을 새로 열지 않고 그대로 이동한다
+                      window.location.href = calendarWebcalUrl();
+                      setOpen(false);
+                    }}
+                    className={primaryBtn}
+                  >
+                    아이폰 캘린더에 구독
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  onClick={startConsent}
+                  disabled={checking || busy}
+                  className={onIOS ? outlineBtn : primaryBtn}
+                >
+                  {busy ? '구글로 이동 중…' : onIOS ? '구글 캘린더에 연동' : '구글로 연동하고 구독하기'}
+                </Button>
+              </>
             )}
             {!linked && (
               <Button

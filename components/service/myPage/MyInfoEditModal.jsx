@@ -11,11 +11,13 @@ import {
 import { Button } from '@/components/ui/button';
 import NotificationToggle from './NotificationToggle';
 import GoogleIntegrationSection from './GoogleIntegrationSection';
+import CalendarFeedSection from './CalendarFeedSection';
 import WithdrawModal from './WithdrawModal';
 import PasswordChangeModal from './PasswordChangeModal';
 import { canShowPushToggle } from '@/lib/push';
 
-// 정보 수정 모달 — 내 정보 / 알림 설정 / 계정 관리(비밀번호 재설정·회원 탈퇴)를 구분해 배치
+// 설정 모달 — 내 정보 / 알림 / 구글 연동 / 계정 관리(비밀번호 재설정·회원 탈퇴)를 구분해 배치.
+// 예전 이름은 '정보 수정' 이었는데 알림·연동 설정이 들어오면서 내용과 맞지 않게 됐다.
 // ※ 알림 설정은 비밀번호 재설정과 별도 섹션 (요청 사항)
 // ※ 알림 섹션은 모바일(+푸시 지원)에서만 노출 — PC 웹은 알림함(종 아이콘)만 제공 (PM 확정 정책)
 export default function MyInfoEditModal({ open, onOpenChange, myInfo }) {
@@ -42,7 +44,7 @@ export default function MyInfoEditModal({ open, onOpenChange, myInfo }) {
         >
           <DialogHeader className="text-left">
             <DialogTitle className="text-[18px] tracking-[-0.02em] text-black">
-              정보 수정
+              설정
             </DialogTitle>
           </DialogHeader>
 
@@ -84,7 +86,15 @@ export default function MyInfoEditModal({ open, onOpenChange, myInfo }) {
             <GoogleIntegrationSection />
           </section>
 
-          {/* 4. 계정 */}
+          {/* 4. 캘린더 구독 — 구글 연동과 다른 길이다. 캘린더 앱이 공개 주소를 직접 읽어 가는 방식이라
+                 구글 계정을 붙이지 않은 아이폰 기본 캘린더에서도 보인다.
+                 해제는 기기에서만 되므로(서버에 구독 기록이 없다) 그 방법을 함께 둔다 */}
+          <section className="flex flex-col gap-1">
+            <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-[#919191]">캘린더 구독</h4>
+            <CalendarFeedSection />
+          </section>
+
+          {/* 5. 계정 */}
           <section className="flex flex-col gap-1">
             <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-[#919191]">계정</h4>
             <div className="rounded-[8px] border border-black/10">

@@ -18,12 +18,12 @@ export default function MyInfoCard() {
   const myInfo = { loginId, joinedAt }; // 수정 모달도 같은 값을 그대로 보여준다
 
   return (
-    <div className="w-full rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px] lg:shrink-0">
+    <div className="flex h-full w-full flex-col rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px] lg:h-auto lg:shrink-0">
       <h3 className="-mx-[12px] border-b border-[#BDBDBD] px-[12px] pb-[12px] text-[16px] font-bold leading-[1.5] tracking-[-0.02em] text-black">
         내 정보
       </h3>
 
-      <dl className="mt-[4px] flex flex-col">
+      <dl className="mb-[8px] mt-[4px] flex flex-col">
         <div className="-mx-[12px] flex items-center justify-between border-b border-[#BDBDBD] px-[12px] py-[14px]">
           <dt className="pl-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
             아이디
@@ -38,13 +38,13 @@ export default function MyInfoCard() {
         </div>
       </dl>
 
-      {/* 정보 수정 모달 */}
+      {/* 설정 모달 — 알림·구글 연동·계정까지 다루므로 '정보 수정' 이 아니라 '설정' 이다 */}
       <button
         type="button"
         onClick={() => setEditOpen(true)}
-        className="mt-[8px] flex h-[38px] w-full items-center justify-center rounded-[4px] bg-[#212121] px-4 text-[16px] leading-[1.6] tracking-[-0.02em] text-white transition hover:bg-black"
+        className="mt-auto flex h-[38px] w-full shrink-0 items-center justify-center rounded-[4px] bg-[#212121] px-4 text-[16px] leading-[1.6] tracking-[-0.02em] text-white transition hover:bg-black"
       >
-        정보 수정
+        설정
       </button>
 
       <MyInfoEditModal open={editOpen} onOpenChange={setEditOpen} myInfo={myInfo} />

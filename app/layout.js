@@ -4,8 +4,9 @@ import DesktopSiteNotice from '@/components/shared/DesktopSiteNotice';
 import IosInstallGuide from '@/components/shared/IosInstallGuide';
 
 export const metadata = {
-  title: 'pilsa-homepage',
-  description: '필사 홈페이지',
+  // 브라우저 탭·북마크·공유 카드에 그대로 나가는 이름이라 앱·스토어 표기와 같은 값을 쓴다
+  title: 'Pilsagraphy',
+  description: '필사그래피 동아리 홈페이지 — 게시판, 일정, 알림',
   // PWA — 이 manifest 가 있어야 홈 화면 설치와 TWA(플레이스토어 앱) 가 성립한다
   manifest: '/manifest.json',
   icons: {
