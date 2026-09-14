@@ -30,6 +30,7 @@ const UNSUBSCRIBE_STEPS = [
 ];
 
 export default function CalendarFeedSection() {
+  // 아이폰에서만 보이는 항목이다 (PM 결정). 판별은 마운트 뒤에 — 서버 렌더와 어긋나지 않게
   const [onIOS, setOnIOS] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [feedUrl, setFeedUrl] = useState('');
@@ -50,11 +51,15 @@ export default function CalendarFeedSection() {
     }
   };
 
+  if (!onIOS) return null;
+
   return (
+    <section className="flex flex-col gap-1">
+      <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-[#919191]">캘린더 구독</h4>
     <div className="rounded-[8px] border border-black/10 px-4 py-3">
-      <p className="text-[14px] font-medium tracking-[-0.02em] text-[#212121]">동아리 일정 구독</p>
+      <p className="text-[14px] font-medium tracking-[-0.02em] text-[#212121]">아이폰 캘린더 구독</p>
       <p className="mt-0.5 text-[12px] leading-[1.5] tracking-[-0.02em] text-[#919191]">
-        캘린더 앱이 이 주소를 읽어 동아리 일정을 채워요. 구글 계정이 없어도 돼요.
+        아이폰 기본 캘린더가 이 주소를 읽어 동아리 일정을 채워요. 구글 계정이 없어도 돼요.
       </p>
 
       {onIOS && (
@@ -94,21 +99,22 @@ export default function CalendarFeedSection() {
       </button>
 
       {helpOpen && (
-        <dl className="mt-2 flex flex-col gap-2 border-t border-[#F0F0F0] pt-2.5">
+        <div className="mt-2 flex flex-col gap-2 border-t border-[#F0F0F0] pt-2.5">
           <p className="text-[12px] leading-[1.6] tracking-[-0.02em] text-[#757575]">
             구독은 기기의 캘린더 앱이 갖고 있어서 이 화면에서는 끊을 수 없어요. 쓰시는 캘린더에서
             지워주세요.
           </p>
           {UNSUBSCRIBE_STEPS.map(({ device, steps }) => (
             <div key={device}>
-              <dt className="text-[12px] font-medium tracking-[-0.02em] text-[#454545]">{device}</dt>
-              <dd className="mt-0.5 text-[12px] leading-[1.6] tracking-[-0.02em] text-[#919191] [word-break:keep-all]">
+              <p className="text-[12px] font-medium tracking-[-0.02em] text-[#454545]">{device}</p>
+              <p className="mt-0.5 text-[12px] leading-[1.6] tracking-[-0.02em] text-[#919191] [word-break:keep-all]">
                 {steps}
-              </dd>
+              </p>
             </div>
           ))}
-        </dl>
+        </div>
       )}
     </div>
+    </section>
   );
 }

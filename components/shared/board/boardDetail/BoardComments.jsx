@@ -18,15 +18,11 @@ function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
 }
 
-// 깊이별 들여쓰기는 globals.css 의 .commentRow 가 --comment-depth 로 계산한다.
-// Tailwind 클래스 배열로 갖고 있으면 배열 길이만큼만 들어가서, 답글의 답글의 답글이 전부 같은 자리에 그려졌다.
-//
-// 상한을 두는 이유는 폰 화면이다 — 깊이만큼 계속 밀면 본문 폭이 남지 않는다.
-// 여기서 멈춘 뒤로는 화살표(↳)와 순서로만 관계를 읽는다.
-const MAX_INDENT_DEPTH = 6;
-
-// 잘못된 데이터(순환 참조 등)로 무한 재귀에 빠지지 않게 하는 안전장치
-const MAX_RENDER_DEPTH = 20;
+// 답글은 한 단계만 있다(PM 결정). 최상위 댓글 아래에 답글들이 순서대로 쌓이고, 답글에는 [답글] 버튼이 없다.
+// 서버는 부모 id 를 무제한 깊이로 받아 주지만(예전 데이터에 답글의 답글이 남아 있다), 화면은 그것들도
+// 같은 묶음의 답글로 편다 — 어느 최상위 댓글 아래 대화인지만 보이면 된다.
+// 들여쓰기는 globals.css 의 .commentRow 가 --comment-depth 로 계산한다 (0 = 최상위, 1 = 답글).
+const MAX_INDENT_DEPTH = 1;
 
 // 입력창이 내용에 맞춰 자라는 상한 — 이 이상은 안에서 스크롤
 const COMPOSER_MAX_HEIGHT = 320;
@@ -229,10 +225,27 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
   // 등록/답글 전송 중 잠금 (엔터 연타·버튼 중복 클릭으로 같은 댓글이 두 번 등록되는 것을 막는다)
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 대댓글 구조: parentCommentId 로 트리를 만든다 (무제한 깊이)
+  // 답글 묶음: 각 댓글이 어느 최상위 댓글 아래 대화인지 찾는다.
+  // 부모를 거슬러 올라가 부모가 없는(최상위) 댓글, 또는 부모가 목록에 없는(삭제된) 댓글에서 멈춘다.
   const commentById = new Map(list.map((c) => [c.commentId, c]));
-  const getChildren = (parentId) =>
-    list.filter((c) => c.parentCommentId === parentId && c.commentId !== parentId);
+  const topOf = (comment) => {
+    let current = comment;
+    const seen = new Set(); // 잘못된 데이터(순환 참조)로 무한히 돌지 않게
+    while (
+      current.parentCommentId &&
+      commentById.has(current.parentCommentId) &&
+      !seen.has(current.commentId)
+    ) {
+      seen.add(current.commentId);
+      current = commentById.get(current.parentCommentId);
+    }
+    return current;
+  };
+  // 묶음 키: 최상위 댓글이면 그 id, 부모가 삭제돼 목록에 없으면 그 (없는) 부모 id 의 자리표시
+  const groupKeyOf = (comment) => {
+    const top = topOf(comment);
+    return top.parentCommentId ? `placeholder:${top.parentCommentId}` : `comment:${top.commentId}`;
+  };
 
   // 최상위 댓글과, 부모가 삭제되어 목록에 없는 답글의 '자리표시'를 서버가 준 순서대로 섞는다.
   // 자리표시를 맨 뒤에 몰아 붙이면 오래된 대화가 최신 댓글 아래로 밀려 순서가 뒤집힌다.
@@ -253,14 +266,20 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     }
   });
 
-  const flattenThread = (comment, depth, acc) => {
-    if (depth > MAX_RENDER_DEPTH) return acc;
-    acc.push({ comment, depth });
-    getChildren(comment.commentId).forEach((child) => flattenThread(child, depth + 1, acc));
-    return acc;
-  };
+  // 묶음별 답글 — 서버가 준 순서(작성순) 그대로. 답글의 답글도 여기 같이 들어가 한 줄로 쌓인다
+  const repliesByGroup = new Map();
+  list.forEach((comment) => {
+    if (!comment.parentCommentId) return;
+    const key = groupKeyOf(comment);
+    if (!repliesByGroup.has(key)) repliesByGroup.set(key, []);
+    repliesByGroup.get(key).push(comment);
+  });
 
-  const visibleComments = displayRoots.reduce((acc, root) => flattenThread(root, 0, acc), []);
+  const visibleComments = displayRoots.flatMap((root) => {
+    const key = root.isPlaceholder ? `placeholder:${root.commentId}` : `comment:${root.commentId}`;
+    const replies = repliesByGroup.get(key) ?? [];
+    return [{ comment: root, depth: 0 }, ...replies.map((reply) => ({ comment: reply, depth: 1 }))];
+  });
 
   // 본인 댓글 판별.
   // 서버가 isMine 을 주면 그것을 쓴다 — 익명 댓글은 userId 가 null 로 마스킹돼 비교 자체가 불가능하다.
@@ -466,13 +485,16 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
           {/* 액션: 삭제된 댓글에는 표시하지 않는다 */}
           {!deleted && (
             <div className="flex shrink-0 items-center gap-3 md:ml-5">
-              <button
-                type="button"
-                className={actionClassName(replying)}
-                onClick={() => toggleReply(comment)}
-              >
-                답글
-              </button>
+              {/* 답글은 최상위 댓글에만 단다 — 답글의 답글은 같은 묶음 아래에 쌓일 뿐이라 버튼을 두지 않는다 */}
+              {depth === 0 && (
+                <button
+                  type="button"
+                  className={actionClassName(replying)}
+                  onClick={() => toggleReply(comment)}
+                >
+                  답글
+                </button>
+              )}
 
               {owner ? (
                 <>
