@@ -39,7 +39,8 @@ const COMPOSER_TEXT = {
  * - 내용에 맞춰 높이가 자동으로 늘어난다. 예전엔 3줄 고정이라 조금만 길어져도 안에서 스크롤돼 타이핑이 불편했다.
  * - 답글·수정은 그 댓글 바로 아래에 인라인으로 뜬다(autoFocus). 예전엔 맨 아래 입력창 하나를 답글 모드로 바꿔 써서
  *   답글 한 번에 화면 끝까지 내려가야 했다.
- * - 줄바꿈은 Enter, 등록은 버튼 또는 Ctrl/Cmd+Enter, 인라인 입력창은 Esc 로 닫는다.
+ * - 등록은 Enter (채팅처럼). 줄바꿈은 Shift+Enter. Ctrl/Cmd+Enter 도 등록이다. 인라인 입력창은 Esc 로 닫는다.
+ *   한글 조합 중(isComposing)의 Enter 는 조합 확정이라 무시한다 — 안 그러면 마지막 글자가 잘린 채 나간다.
  *
  * 값은 내부 상태로 갖고, 등록이 끝나면 부모가 key 를 바꾸거나(새 댓글) 입력창을 떼어(답글·수정) 비운다.
  */
@@ -108,7 +109,8 @@ function CommentComposer({
             onCancel();
             return;
           }
-          if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+          // Enter = 등록, Shift+Enter = 줄바꿈 (Ctrl/Cmd+Enter 도 등록)
+          if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             submit();
           }

@@ -11,7 +11,6 @@ import {
 import { Button } from '@/components/ui/button';
 import NotificationToggle from './NotificationToggle';
 import GoogleIntegrationSection from './GoogleIntegrationSection';
-import CalendarFeedSection from './CalendarFeedSection';
 import WithdrawModal from './WithdrawModal';
 import PasswordChangeModal from './PasswordChangeModal';
 import { canShowPushToggle } from '@/lib/push';
@@ -86,12 +85,7 @@ export default function MyInfoEditModal({ open, onOpenChange, myInfo }) {
             <GoogleIntegrationSection />
           </section>
 
-          {/* 4. 캘린더 구독 — 아이폰에서만 보인다(안에서 판별). 구글 연동과 다른 길이다:
-                 캘린더 앱이 공개 주소를 직접 읽어 가는 방식이라 구글 계정이 필요 없다.
-                 해제는 기기에서만 되므로(서버에 구독 기록이 없다) 그 방법을 함께 둔다 */}
-          <CalendarFeedSection />
-
-          {/* 5. 계정 */}
+          {/* 4. 계정 */}
           <section className="flex flex-col gap-1">
             <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-[#919191]">계정</h4>
             <div className="rounded-[8px] border border-black/10">

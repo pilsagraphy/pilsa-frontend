@@ -179,6 +179,8 @@ export default function CalendarSubscribeButton() {
                 )}
                 <Button
                   type="button"
+                  // outline 은 className 만으로는 안 된다 — 기본 variant 의 어두운 바탕이 남아 글자가 묻힌다
+                  variant={onIOS ? 'outline' : 'default'}
                   onClick={startConsent}
                   disabled={checking || busy}
                   className={onIOS ? outlineBtn : primaryBtn}
