@@ -143,7 +143,8 @@ function SignupFormInner() {
   };
 
   useEffect(() => {
-    if (!isEmailSent || emailExpireTime <= 0) return;
+    // 인증이 끝난 뒤에는 세지 않는다 — 남은 시간은 '번호를 입력할 수 있는 시간' 이라 인증 뒤엔 뜻이 없다
+    if (!isEmailSent || isEmailVerified || emailExpireTime <= 0) return;
 
     const timer = setInterval(() => {
       setEmailExpireTime((prev) => {
@@ -156,7 +157,7 @@ function SignupFormInner() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isEmailSent, emailExpireTime]);
+  }, [isEmailSent, isEmailVerified, emailExpireTime]);
 
   const formatTime = (seconds) => {
     const min = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -507,9 +508,10 @@ function SignupFormInner() {
               </Button>
             </div>
 
-            {isEmailSent && (
+            {isEmailSent && !isEmailVerified && (
               <p className="text-[13px] text-[#666]">남은 시간: {formatTime(emailExpireTime)}</p>
             )}
+            {isEmailVerified && <p className="text-[13px] text-[#666]">이메일 인증이 완료됐어요</p>}
 
             <div className="flex gap-[12px]">
               <FormField
