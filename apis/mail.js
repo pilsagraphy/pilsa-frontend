@@ -6,7 +6,7 @@ import axiosInstance from '@/apis/axiosInstance';
 // 실패: 400 이메일 미입력 / 500 발송 실패
 export const sendVerifyCode = async (email) => {
   const response = await axiosInstance.post('/api/mail/verification-code', { email });
-  return response.data; // expireTime(seconds)
+  return response.data; // { message, expireTime } — 초 값만 필요하면 .expireTime 을 읽는다
 };
 
 // 2. 인증번호 검증 (POST /api/mail/verification-code/verify) - 응답: { message, verified: true }

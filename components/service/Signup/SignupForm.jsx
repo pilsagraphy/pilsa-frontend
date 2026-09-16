@@ -211,12 +211,15 @@ function SignupFormInner() {
       // 1. 이메일 중복 확인
       await checkEmailDuplicate(finalEmail);
 
-      // 2. 인증번호 발송
-      const expireTime = await sendVerifyCode(finalEmail);
+      // 2. 인증번호 발송 — 응답은 { message, expireTime } 객체다. 예전 API 는 초 값을 그대로 돌려줬는데
+      //    객체로 바뀐 뒤에도 그대로 Number() 에 넣어 NaN → 0 이 되어 타이머가 00:00 으로 시작했다.
+      //    값이 비어 오면 서버 기본 유효시간(3분)으로 센다 — 0 으로 두면 방금 받은 번호를 못 쓰는 것처럼 보인다.
+      const sent = await sendVerifyCode(finalEmail);
+      const expireTime = Number(sent?.expireTime ?? sent) || 180;
 
       setIsEmailSent(true);
       setIsEmailVerified(false);
-      setEmailExpireTime(Number(expireTime) || 0);
+      setEmailExpireTime(expireTime);
       form.setValue('emailCode', '');
 
       toast.success('인증번호가 발송되었습니다.');
