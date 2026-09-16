@@ -102,6 +102,20 @@ function SignupFormInner() {
   });
 
   const emailDomain = form.watch('emailDomain');
+
+  // 'id@domain' 한 덩어리를 앞칸(emailLocal)·도메인 선택으로 나눠 넣는다. 도메인이 목록에 없으면 직접 입력으로.
+  // 구글 계정 프리필과 브라우저 자동완성이 둘 다 이 길을 탄다 — 자동완성은 저장된 이메일 전체를 앞칸에 통째로
+  // 밀어 넣기 때문에(브라우저는 이 칸이 아이디만 받는 칸인지 모른다), 그대로 두면 'wm5256@naver.com@선택' 이 된다.
+  const applyFullEmail = (email) => {
+    const at = email.indexOf('@');
+    if (at <= 0) return false;
+    const domain = email.slice(at + 1).trim();
+    const known = EMAIL_DOMAINS.some((d) => d.value === domain && d.value !== 'custom');
+    form.setValue('emailLocal', email.slice(0, at).trim());
+    form.setValue('emailDomain', known ? domain : 'custom');
+    if (!known) form.setValue('emailCustom', domain);
+    return true;
+  };
   const passwordValue = form.watch('password');
 
   useEffect(() => {
@@ -111,14 +125,8 @@ function SignupFormInner() {
         setGooglePending(info);
 
         // 구글 계정 이메일로 이메일 칸을 채운다 — 인증번호는 그대로 받아야 한다 (가입 API 가 인증 통과를 확인한다)
-        const email = info.googleEmail ?? '';
-        const at = email.indexOf('@');
-        if (at <= 0 || form.getValues('emailLocal')) return;
-        const domain = email.slice(at + 1);
-        const known = EMAIL_DOMAINS.some((d) => d.value === domain && d.value !== 'custom');
-        form.setValue('emailLocal', email.slice(0, at));
-        form.setValue('emailDomain', known ? domain : 'custom');
-        if (!known) form.setValue('emailCustom', domain);
+        if (form.getValues('emailLocal')) return;
+        applyFullEmail(info.googleEmail ?? '');
       })
       .catch(() => {
         // 확인에 실패하면 일반 가입 화면으로 둔다
@@ -420,7 +428,13 @@ function SignupFormInner() {
                         {...field}
                         placeholder="이메일 주소"
                         className="h-[52px]"
+                        inputMode="email"
                         onChange={(e) => {
+                          // 자동완성·붙여넣기로 '@' 까지 들어오면 도메인 쪽으로 나눠 넣는다
+                          if (e.target.value.includes('@') && applyFullEmail(e.target.value)) {
+                            resetEmailAuth();
+                            return;
+                          }
                           field.onChange(e);
                           resetEmailAuth();
                         }}
