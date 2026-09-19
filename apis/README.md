@@ -43,7 +43,7 @@ apis/
 │   ├── comments.js       ✅ 연동됨   댓글 관리
 │   ├── reports.js        ✅ 연동됨  신고 관리 + 일괄 조치(select-*)
 │   ├── sanctions.js      🆕 제재 회원
-│   ├── users.js          🆕 회원 목록/정지/차단/강제탈퇴
+│   ├── users.js          ✅ 연동됨 회원 목록/정지/차단/강제탈퇴
 │   ├── quotes.js         🆕 문장 관리
 │   └── event.js          ✅ 연동됨  일정 등록/수정/삭제
 │
@@ -73,23 +73,13 @@ apis/
 
 ## 4. 백엔드 대기 (연동 불가 — 화면만 준비)
 
-<<<<<<< HEAD
-| 엔드포인트 | 파일 | 상태 |
-| ------------------------------------------- | ---------------------- | ------------- |
-| `POST /api/admin/sanctions/users/{id}/lift` | `admin/sanctions.js` 5 | 3기 진행 예정 |
+| 엔드포인트                                             | 파일                    | 상태                       |
+| ------------------------------------------------------ | ----------------------- | -------------------------- |
+| `POST /api/admin/sanctions/users/{id}/lift`             | `admin/sanctions.js` 5  | 3기 진행 예정               |
+| `GET /api/admin/reports/{posts\|comments}/{targetId}`   | `admin/reports.js` 하단 | 미명세 — 요청함 (아래 6번) |
 
 > 마이페이지 활동 목록 3종(`posts` · `comments` · `likes`)은 명세서 2026-08-26 기준으로
 > 서버 구현이 끝나 연동 완료됐다. 이 표에 있던 'planned (백로그 C-2)' 항목은 그래서 지웠다.
-> =======
-> | 엔드포인트 | 파일 | 상태 |
-> | ------------------------------------------- | ---------------------- | ---------------------------------------------------- |
-> | `GET /api/user/mypage/posts` | `mypage.js` 5 | planned (백로그 C-2) |
-> | `GET /api/user/mypage/comments` | `mypage.js` 6 | planned (백로그 C-2) |
-> | `GET /api/user/mypage/likes` | `mypage.js` 7 | planned (백로그 C-2) |
-> | `POST /api/admin/sanctions/users/{id}/lift` | `admin/sanctions.js` 5 | 3기 진행 예정 |
-> | `GET /api/admin/reports/{posts\|comments}/{targetId}` | `admin/reports.js` 하단 | 미명세 — 요청함 (아래 6번) |
->
-> > > > > > > 5c93ed6 (🔗 [FE] 관리자 신고 관리 API 연동)
 
 ---
 
@@ -125,7 +115,7 @@ apis/
    무시되고 전체가 내려온다(2026-09-06 확인). 그동안 화면은 state=normal 인 행을 '공개'로
    보여준다. 기획상 나올 수 없는 상태지만, '블라인드'로 적으면 관리자가 가려진 줄 알고 넘어가
    실제로는 노출된 글이 방치되기 때문이다.
-8. **신고 관리 - 복원한 신고의 목록 노출** — 기획은 '복원해도 목록에 「복원」으로 남는다'인데
+9. **신고 관리 - 복원한 신고의 목록 노출** — 기획은 '복원해도 목록에 「복원」으로 남는다'인데
    서버 명세는 `state` 미지정 시 "반려(복구)된 신고만 제외"라 복원한 건을 목록에서 뺀다.
    지금은 삭제 조치로 이미 `resolved` 가 된 대상을 복원한 경우에만(끝낼 pending 이 없어
    `rejected` 가 되지 않으므로) 목록에 남아, 같은 복원인데 결과가 갈린다(확인: 158번 게시글).

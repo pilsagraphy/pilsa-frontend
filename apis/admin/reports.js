@@ -36,13 +36,8 @@ export const getReportedComments = async (params) => {
 
 // 3. 선택 블라인드 (PATCH /api/admin/reports/select-blind) [ADMIN]
 //    가리기만 하고 벌점은 부과하지 않는다. 최종 판단 전 임시 조치라 신고는 pending 으로 남는다
-<<<<<<< HEAD
-export const selectBlind = async (body) => {
-  const response = await axiosInstance.patch('/api/admin/reports/select-blind', body);
-=======
-export const blindReportTargets = async (payload) => {
+export const selectBlind = async (payload) => {
   const response = await axiosInstance.patch('/api/admin/reports/select-blind', payload);
->>>>>>> 5c93ed6 (🔗 [FE] 관리자 신고 관리 API 연동)
   return response.data;
 };
 
@@ -50,15 +45,10 @@ export const blindReportTargets = async (payload) => {
 //    소프트 삭제(state=deleted) + 작성자 주의 +2 + 경고/정지 에스컬레이션
 //    대상별 pending 신고를 resolved 로 일괄 종료한다 (중복 신고 이중 벌점 차단)
 //    reasonId 를 안 보내면 대표(최신) 신고 사유를 쓰므로 신고 없는 글도 이 API 로 삭제 가능
-<<<<<<< HEAD
-export const selectDelete = async (body) => {
-  const response = await axiosInstance.patch('/api/admin/reports/select-delete', body);
-=======
 //    작성자가 먼저 지운 글도 삭제 조치로 인정해 벌점을 부과한다 —
 //    관리자가 이미 삭제 조치한 대상만 no-op (벌점 중복 차단)
-export const deleteReportTargets = async (payload) => {
+export const selectDelete = async (payload) => {
   const response = await axiosInstance.patch('/api/admin/reports/select-delete', payload);
->>>>>>> 5c93ed6 (🔗 [FE] 관리자 신고 관리 API 연동)
   return response.data;
 };
 

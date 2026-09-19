@@ -2,11 +2,11 @@ import { create } from 'zustand';
 
 import { getErrorMessage } from '@/apis/auth';
 import {
-  blindReportTargets,
-  deleteReportTargets,
   getReportedComments,
   getReportedPosts,
   restoreReportTargets,
+  selectBlind,
+  selectDelete,
 } from '@/apis/admin/reports';
 import { REPORT_TARGET_COMMENT } from '@/constants/adminReports';
 
@@ -27,8 +27,8 @@ const listRequest = (targetType) =>
 // 조치 이름 → 요청 함수. 값은 constants/adminReports.js 의 REPORT_ACTION_* 과 같다
 const ACTION_REQUESTS = {
   restore: restoreReportTargets,
-  delete: deleteReportTargets,
-  blind: blindReportTargets,
+  delete: selectDelete,
+  blind: selectBlind,
 };
 
 // 값이 없는 필터는 아예 빼서 보낸다 — state 에 'all' 이나 빈 문자열을 실어 보내면
@@ -67,8 +67,9 @@ const useAdminReportStore = create((set) => ({
 
       set({
         items: data?.items ?? [],
-        // 목록이 비어도 페이지네이션이 0페이지를 가리키지 않도록 최소 1로 둔다
-        totalPages: data?.totalPages ?? 1,
+        // 목록이 비어 서버가 totalPages: 0 을 줘도 페이지네이션이 0페이지를 가리키지 않도록
+        // 최소 1로 둔다 (?? 1은 null · undefined만 걸러내 0은 그대로 새므로 Math.max로 막는다)
+        totalPages: Math.max(1, Number(data?.totalPages) || 1),
         totalCount: data?.totalCount ?? 0,
         isLoading: false,
       });

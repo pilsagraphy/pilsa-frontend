@@ -3,7 +3,6 @@
 
 import { getCommentAnchorId } from '@/lib/utils';
 import { ROUTES } from '@/constants/routes';
-import { REPORT_REASONS } from './report';
 
 // ── 탭 ────────────────────────────────────────────────────────────────
 // 두 탭의 표 구조(열 구성)가 완전히 같고 대상 종류만 다르다.
@@ -142,18 +141,6 @@ export const formatReportedAt = (value) => {
   return `${year.slice(2)}.${month}.${day} ${hour}:${minute}`;
 };
 
-// ── 신고 사유 ─────────────────────────────────────────────────────────
-// 조치 모달의 사유 셀렉트는 code('SPAM')를 넘기는데 서버는 reasonId(1)를 받는다.
-// TODO: 사유 목록을 GET /api/user/reports/reasons 로 받아오면 reasonId 가 바로 들어와
-//       이 변환이 필요 없어진다. 그 셀렉트는 사용자용 신고 모달과 공유하는 컴포넌트라
-//       영향 범위가 넓어서 별도 작업으로 분리했다.
-const REASON_ID_BY_CODE = Object.fromEntries(
-  REPORT_REASONS.map(({ code, reasonId }) => [code, reasonId])
-);
-
-// 모르는 코드면 null 을 준다 — 서버는 reasonId 가 없으면 대표(최신) 신고 사유를 쓴다
-export const getReasonIdByCode = (code) => REASON_ID_BY_CODE[code] ?? null;
-
 // ── 신고자 별칭 ───────────────────────────────────────────────────────
 // 신고자는 공개하지 않는 정책이라(사용자 신고 모달: '신고자 정보는 공개되지 않습니다')
 // 서버는 신고자 정보를 주지 않는다. 대상별 신고 내역을 신고일시 오름차순으로 받아
@@ -174,12 +161,17 @@ export const getReporterAlias = (index) =>
 // 댓글은 별도 상세 페이지가 없어서 해시로만 특정할 수 있다.
 // 갈 곳이 없으면 null → 행에서는 링크 대신 텍스트로 보여준다.
 //
+// 사용자 상세(ROUTES.BOARD_POST)가 아니라 관리자 전용 상세(ADMIN_POST_DETAIL)로 보낸다.
+// 사용자 상세는 블라인드·삭제 글을 보여주지 않고 익명글의 실작성자도 가리는데, 신고 대상은
+// 대부분 블라인드·삭제 상태라 그리로 보내면 정작 확인해야 할 내용을 볼 수 없다
+// (게시글·댓글 관리의 getAdminPostDetailHref · getCommentOriginHref와 같은 이유).
+//
 // allowComment 는 게시판 목록 API 의 플래그다. 댓글 영역이 없는 게시판(공지사항 등)으로
 // 보내면 '이동은 했는데 문제의 댓글이 없는' 화면이 되므로 아예 링크를 걸지 않는다.
 export const getReportTargetHref = (report, allowComment = true) => {
-  if (report.boardId == null || report.postId == null) return null;
+  if (report.postId == null) return null;
 
-  const postHref = ROUTES.BOARD_POST(report.boardId, report.postId);
+  const postHref = ROUTES.ADMIN_POST_DETAIL(report.postId);
   if (report.targetType !== REPORT_TARGET_COMMENT) return postHref;
   if (!allowComment) return null;
 

@@ -20,16 +20,17 @@ import {
   REPORT_ACTION_RESTORE,
   REPORT_SORT_LATEST,
   REPORT_SORT_OPTIONS,
+  REPORT_TARGET_COMMENT,
   REPORT_TARGET_LABELS,
   REPORT_TARGET_POST,
   STATUS_FILTER_ALL,
   STATUS_FILTER_OPTIONS,
   buildBoardFilterOptions,
-  getReasonIdByCode,
   getReportPanelId,
   getReportTabId,
   isDeletable,
 } from '@/constants/adminReports';
+import { getReasonId } from '@/constants/report';
 import useAdminReportStore from '@/stores/useAdminReportStore';
 import useBoardStore from '@/stores/useBoardStore';
 
@@ -67,9 +68,10 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
   const { isLoading, error, items, totalPages, fetchReports, runReportAction } =
     useAdminReportStore();
 
-  // 게시판 필터 선택지. 게시판이 새로 생겨도 따라오도록 게시판 목록 API 를 쓴다
+  // 게시판 필터 선택지. 게시판이 새로 생겨도 따라오도록 게시판 목록 API 를 쓴다.
+  // ensureBoards 로 불러야 이미 받아둔 목록(사이드바가 앱 진입 시 채워둔다)을 다시 받지 않는다.
   const boards = useBoardStore((state) => state.data);
-  const fetchBoards = useBoardStore((state) => state.fetchBoards);
+  const ensureBoards = useBoardStore((state) => state.ensureBoards);
 
   // 복원 · 삭제 확인 모달 { action, ids, items }
   // Radix Dialog는 open이 false가 돼도 퇴장 애니메이션 동안 화면에 남는다.
@@ -108,8 +110,8 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
   const reports = items;
 
   useEffect(() => {
-    fetchBoards();
-  }, [fetchBoards]);
+    ensureBoards();
+  }, [ensureBoards]);
 
   // 입력이 멎으면 그때 검색어를 확정한다
   useEffect(() => {
@@ -124,9 +126,11 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
     setSelectedIds([]);
   }, [searchKeyword]);
 
-  // 목록 조회 — 탭 · 페이지 · 필터 · 검색어가 바뀔 때마다 서버에 다시 물어본다.
-  // 거르기 · 정렬 · 잘라내기를 모두 서버가 하므로 화면은 받은 것을 그대로 그린다.
-  const reloadKey = `${targetType}|${currentPage}|${boardFilter}|${statusFilter}|${searchKeyword}`;
+  // 목록 조회 — 탭 · 페이지 · 필터 · 검색어가 바뀔 때마다, 그리고 조치 뒤 재조회 신호(refetchToken)가
+  // 올 때마다 서버에 다시 물어본다. 거르기 · 정렬 · 잘라내기를 모두 서버가 하므로 화면은 받은 것을
+  // 그대로 그린다. 조회 조건을 만드는 자리를 여기 하나로 묶어, 조치 후 재조회도 같은 조건으로 나가게 한다.
+  const [refetchToken, setRefetchToken] = useState(0);
+  const reloadKey = `${targetType}|${currentPage}|${boardFilter}|${statusFilter}|${searchKeyword}|${refetchToken}`;
 
   useEffect(() => {
     fetchReports(targetType, {
@@ -317,7 +321,7 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
       targetIds: ids,
       // 복원은 사유를 받지 않는다. 삭제는 셀렉트가 code('SPAM')를 주므로 서버가 받는 숫자로 바꾼다
       // (변환에 실패해 null 이 되면 서버가 대표 신고 사유를 쓴다)
-      reasonId: action === REPORT_ACTION_DELETE ? getReasonIdByCode(reason) : undefined,
+      reasonId: action === REPORT_ACTION_DELETE ? getReasonId(reason) : undefined,
       detail,
     });
 
@@ -342,16 +346,11 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
       );
     }, DIALOG_HANDOFF_MS);
 
-    // 성공했든 일부 실패했든 서버 상태가 바뀌었으므로 목록을 다시 받는다
+    // 성공했든 일부 실패했든 서버 상태가 바뀌었으므로 목록을 다시 받는다.
+    // 조회 조건은 그대로이므로 직접 부르지 않고, 위 reloadKey 효과가 다시 fetchReports 를
+    // 부르도록 신호만 보낸다 (조회 조건을 만드는 자리를 두 곳에 두지 않기 위해).
     if (result.ok) {
-      fetchReports(targetType, {
-        page: currentPage,
-        size: PAGE_SIZE,
-        state: statusFilter === STATUS_FILTER_ALL ? undefined : statusFilter,
-        boardId: boardFilter === BOARD_FILTER_ALL ? undefined : Number(boardFilter),
-        keyword: searchKeyword,
-        sort: REPORT_SORT_LATEST,
-      });
+      setRefetchToken((token) => token + 1);
     }
   };
 
@@ -415,6 +414,7 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
             <Button
               type="button"
               variant="outline"
+              disabled={isLoading || isSubmitting || selectedIds.length === 0}
               onClick={() => openBulkConfirm(REPORT_ACTION_RESTORE)}
               className={cn(
                 actionButtonClass,
@@ -425,6 +425,7 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
             </Button>
             <Button
               type="button"
+              disabled={isLoading || isSubmitting || selectedIds.length === 0}
               onClick={() => openBulkConfirm(REPORT_ACTION_DELETE)}
               className={cn(
                 actionButtonClass,

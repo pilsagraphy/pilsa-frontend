@@ -84,7 +84,7 @@ function ReportTargetBlock({ item }) {
                       </span>
                     </TableCell>
                     <TableCell className={`whitespace-nowrap px-0 text-right ${bodyTextClass}`}>
-                      {formatReportedAt(report.reportedAt)}
+                      {formatReportedAt(report.createdAt)}
                     </TableCell>
                   </TableRow>
                 ))}
