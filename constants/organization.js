@@ -1,5 +1,3 @@
-export const advisors = ['가성연', '정도이', '김예령'];
-
 export const chairman = {
   title: '회장단',
   leader: '최재연',
@@ -10,16 +8,16 @@ export const teams = [
   {
     title: '제작스터디',
     leader: '박수민',
-    members: ['최예윤', '유해담'],
+    members: ['김아란', '남가현', '박시현', '유해담', '최보은', '최예윤'],
   },
   {
     title: '정기모임',
     leader: '한서은',
-    members: ['김서현', '김수현', '최서진', '하종연'],
+    members: ['김서현', '김성은', '김수현', '이민승', '최서진', '홍준화'],
   },
   {
     title: '큐레이션팀',
     leader: '김서진',
-    members: [],
+    members: ['정현준', '하민재'],
   },
 ];
