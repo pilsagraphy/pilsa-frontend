@@ -1,22 +1,28 @@
 'use client';
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import { formatDotDate } from '@/lib/utils';
+import { ROUTES } from '@/constants/routes';
 
 // 회원 신분 코드 → 화면 라벨 (회원가입 화면과 동일 규칙)
 const MEMBER_TYPE_LABELS = { STUDENT: '재학생', ALUMNI: '졸업생' };
 
-// 섹션 헤더: 제목 + 전체보기 →
-function ActivityHeader({ title }) {
+// 섹션 헤더: 제목 + 전체보기 → (누르면 해당 관리 페이지로 이동)
+function ActivityHeader({ title, onViewAll }) {
   return (
     <div className="flex h-[44px] items-center justify-between">
       <h3 className="text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121]">
         {title}
       </h3>
-      <div className="flex cursor-pointer items-center gap-[6px] text-[#B9B9B9] transition hover:text-[#919191]">
+      <button
+        type="button"
+        onClick={onViewAll}
+        className="flex cursor-pointer items-center gap-[6px] text-[#B9B9B9] transition hover:text-[#919191]"
+      >
         <span className="text-[16px] leading-[1.6] tracking-[-0.32px]">전체보기</span>
         <ArrowRight size={16} strokeWidth={2} />
-      </div>
+      </button>
     </div>
   );
 }
@@ -31,10 +37,10 @@ function ActivityMessage({ children }) {
 }
 
 // 최근 신고 목록
-function RecentReports({ reports, isLoading, error }) {
+function RecentReports({ reports, isLoading, error, onViewAll }) {
   return (
     <div className="flex w-full flex-col lg:flex-1 lg:basis-0">
-      <ActivityHeader title="최근 신고" />
+      <ActivityHeader title="최근 신고" onViewAll={onViewAll} />
       <div className="mt-[7px] flex flex-col border-t border-[#B9B9B9]">
         {isLoading ? (
           <ActivityMessage>불러오는 중...</ActivityMessage>
@@ -69,10 +75,10 @@ function RecentReports({ reports, isLoading, error }) {
 }
 
 // 최근 가입 회원 목록
-function RecentMembers({ members, isLoading, error }) {
+function RecentMembers({ members, isLoading, error, onViewAll }) {
   return (
     <div className="flex w-full flex-col lg:flex-1 lg:basis-0">
-      <ActivityHeader title="최근 가입 회원" />
+      <ActivityHeader title="최근 가입 회원" onViewAll={onViewAll} />
       <div className="mt-[7px] flex flex-col border-t border-[#B9B9B9]">
         {isLoading ? (
           <ActivityMessage>불러오는 중...</ActivityMessage>
@@ -121,10 +127,22 @@ export default function RecentActivitySection({
   isMembersLoading = false,
   membersError = null,
 }) {
+  const router = useRouter();
+
   return (
     <div className="flex w-full flex-col gap-10 lg:flex-row lg:gap-[28px]">
-      <RecentReports reports={reports} isLoading={isReportsLoading} error={reportsError} />
-      <RecentMembers members={members} isLoading={isMembersLoading} error={membersError} />
+      <RecentReports
+        reports={reports}
+        isLoading={isReportsLoading}
+        error={reportsError}
+        onViewAll={() => router.push(ROUTES.ADMIN_REPORTS)}
+      />
+      <RecentMembers
+        members={members}
+        isLoading={isMembersLoading}
+        error={membersError}
+        onViewAll={() => router.push(ROUTES.ADMIN_MEMBER_LIST)}
+      />
     </div>
   );
 }
