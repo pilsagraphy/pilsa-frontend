@@ -1,5 +1,6 @@
 // 관리자 - 제재 회원 관리 API 처리
 // ※ 정지/영구차단 부과는 apis/admin/users.js (회원목록 화면)
+// ※ 아래 전부 공통 실패: 401 미인증 / 403 관리자 권한 없음 — 본문은 { message }
 import axiosInstance from '@/apis/axiosInstance';
 
 // 1. 제재 회원 목록 (GET /api/admin/sanctions/users) [ADMIN]
@@ -45,7 +46,8 @@ export const getSanctionedUserReportedComments = async (userId) => {
 };
 
 // 5. 제재 수동 해제 (POST /api/admin/sanctions/users/{userId}/lift) [ADMIN]
-//    응답: { message }
+//    요청 본문 없음
+//    응답: { message } — 예: "제재가 해제되었습니다."
+//    ban_status 를 none 으로 되돌리고 열린 ban_log 를 전부 해제 처리한다 (lifted_by 에 처리 관리자 기록)
 //    정지만 푼다 — 경고(warning_log)는 시효 365일 동안 유효하게 남는다
-//    실패: 404 없는 회원 / 409 이미 해제된 회원
-//    ※ 3기 진행 예정 — 백엔드 대기(연동 불가), 화면 연결 전 PM 확인 필요
+//    ※ 백엔드는 제공 중이다 — 화면 연결(해제 버튼)만 3기 진행 예정, 연결 전 PM 확인 필요
