@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { getFile } from '@/apis/file';
 import { getErrorMessage } from '@/apis/auth';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
 
 function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
@@ -15,6 +16,7 @@ function Divider() {
 // 그래서 클릭 시 fetch(+토큰) → blob 으로 받아 내려준다.
 export default function BoardAttachments({ attachments = [] }) {
   const [downloadingId, setDownloadingId] = useState(null);
+  const isMdUp = useMinWidthMd();
 
   const list = Array.isArray(attachments) ? attachments : [];
   if (list.length === 0) return null;
@@ -43,6 +45,43 @@ export default function BoardAttachments({ attachments = [] }) {
       setDownloadingId(null);
     }
   };
+
+  // 모바일(#183): '첨부파일 | 값' 한 줄(등록일·작성자 메타와 동일 스타일). 데스크톱은 아래 return 그대로.
+  if (!isMdUp) {
+    return (
+      <section className="w-full">
+        <Divider />
+
+        <div className="flex items-center gap-[12px] py-3 text-[14px] tracking-[-0.28px]">
+          <span className="shrink-0 text-[#919191] leading-none">첨부파일</span>
+          <span className="h-[16px] w-px shrink-0 bg-[#DEDEDE]" aria-hidden="true" />
+
+          <div className="flex min-w-0 flex-col gap-1">
+            {list.map((file) => {
+              const fileName = file?.originName ?? '첨부파일';
+              const fileId = file?.attachmentId;
+              const isDownloading = downloadingId === fileId;
+
+              return (
+                <button
+                  key={fileId ?? fileName}
+                  type="button"
+                  onClick={() => handleDownload(file)}
+                  disabled={downloadingId != null}
+                  className="flex items-center gap-1 break-all text-left leading-none text-[#454545] hover:underline disabled:opacity-60"
+                >
+                  {fileName}
+                  {isDownloading && <span className="text-[#919191]">(받는 중...)</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <Divider />
+      </section>
+    );
+  }
 
   return (
     <section className="flex w-full flex-col gap-4 md:gap-[20px]">

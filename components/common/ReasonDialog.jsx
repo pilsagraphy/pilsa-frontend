@@ -140,7 +140,10 @@ export default function ReasonDialog({
                     // 기본 hover 색은 Radix가 항목에 포커스를 줄 때(data-highlighted)만 켜지는데,
                     // 모달(Dialog) 안에서는 포커스가 트리거에 묶여 있어 마우스를 올려도 아무 색이 안 뜬다.
                     // 그래서 포커스와 무관한 :hover로 직접 회색을 준다. (키보드 이동용으로 highlighted도 함께 둔다)
-                    className="cursor-pointer text-[16px] text-[#454545] hover:bg-[#dedede] data-[highlighted]:bg-[#dedede]"
+                    //
+                    // #183 모바일: 항목 사이 구분선(#B9B9B9)·텍스트 #9E9E9E·행 높이 52px(피그마).
+                    // 데스크톱(md↑)은 기존 그대로.
+                    className="cursor-pointer rounded-none border-b border-[#B9B9B9] py-[13px] text-[16px] text-[#9E9E9E] last:border-b-0 hover:bg-[#dedede] data-[highlighted]:bg-[#dedede] md:rounded-sm md:border-b-0 md:py-1.5 md:text-[#454545]"
                   >
                     {label}
                   </SelectItem>
@@ -161,7 +164,12 @@ export default function ReasonDialog({
           />
         )}
 
-        <DialogFooter className="flex flex-row justify-end gap-[12px] sm:space-x-0">
+        {/* #183 모바일 기본 신고 모달 높이를 피그마(371px)에 맞추는 여백.
+            기타 선택 시엔 상세 사유 입력칸이 그 자리를 채우므로 넣지 않는다. */}
+        {!hideReason && !isEtc && <div aria-hidden className="h-[6px] md:hidden" />}
+
+        {/* #183 모바일은 버튼 가운데 정렬(피그마), 데스크톱(md↑)은 기존 오른쪽 정렬 유지 */}
+        <DialogFooter className="flex flex-row justify-center gap-[12px] sm:space-x-0 md:justify-end">
           <Button
             type="button"
             variant="outline"

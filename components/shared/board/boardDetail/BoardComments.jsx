@@ -11,8 +11,9 @@ import ReportModal from '@/components/shared/board/boardList/ReportModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import AlertModal from '@/components/common/AlertModal';
 import { REPORT_SUCCESS_ALERT } from '@/constants/report';
-import { CornerDownRight } from 'lucide-react';
+import { CornerDownRight, ArrowBigRight } from 'lucide-react';
 import { formatSlashDateTime } from '@/lib/boardDetail';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
 
 function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
@@ -31,6 +32,7 @@ const MAX_RENDER_DEPTH = 20;
 // 익명·비밀 마스킹(익명 authorName='익명', 비밀 content='비밀댓글입니다.')은 서버가 처리하므로
 // 프론트는 받은 값을 그대로 그린다 (다시 마스킹하지 않는다).
 export default function BoardComments({ boardId, postId, board, commentCount }) {
+  const isMdUp = useMinWidthMd();
   const boardLabel = board?.boardName ?? '';
   const allowAnonymous = Boolean(board?.allowAnonymous);
   const allowPrivateComment = Boolean(board?.allowPrivateComment);
@@ -254,16 +256,95 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     const highlighted = replying || editing || focusedAnchor === anchorId;
 
     const actionClassName = (active) =>
-      `text-[14px] transition-colors ${
+      `text-[12px] md:text-[14px] transition-colors ${
         active ? 'font-medium text-[#212121]' : 'text-[#919191] hover:text-[#212121]'
       }`;
+
+    // 답글/수정/삭제·신고 버튼 (모바일·데스크톱 공용)
+    const actionButtons = deleted ? null : (
+      <>
+        <button type="button" className={actionClassName(replying)} onClick={() => toggleReply(comment)}>
+          답글
+        </button>
+
+        {owner ? (
+          <>
+            <button type="button" className={actionClassName(editing)} onClick={() => toggleEdit(comment)}>
+              수정
+            </button>
+            <button
+              type="button"
+              className={actionClassName(false)}
+              onClick={() => handleDelete(comment.commentId)}
+            >
+              삭제
+            </button>
+          </>
+        ) : (
+          canReport(comment) && (
+            <button
+              type="button"
+              className={actionClassName(false)}
+              onClick={() => handleReport(comment)}
+            >
+              신고
+            </button>
+          )
+        )}
+      </>
+    );
+
+    // 대댓글 꺾쇠(└) 마커 — 피그마 Rectangle 147 (좌·하 테두리)
+    const replyMarker = <span className="h-3 w-3 shrink-0 border-b border-l border-[#B9B9B9]" aria-hidden />;
+
+    // 모바일(#183 피그마): 이름+액션이 한 줄(space-between), 내용·날짜는 아래 전체폭.
+    // 답글은 꺾쇠 마커 + 내용 30px 들여쓰기, 하이라이트 #F6F6F6. 데스크톱은 아래 return 그대로.
+    if (!isMdUp) {
+      return (
+        <div
+          key={comment.commentId}
+          id={anchorId}
+          className={`flex w-full scroll-mt-[100px] flex-col gap-[6px] px-[20px] py-[10px] ${
+            highlighted ? 'bg-[#F6F6F6]' : ''
+          }`}
+        >
+          {deleted ? (
+            <p className="flex items-center gap-[16px] text-[16px] leading-[19px] text-[#919191]">
+              {isReply && replyMarker}
+              삭제된 댓글입니다.
+            </p>
+          ) : (
+            <>
+              <div className="flex items-start justify-between gap-4">
+                <span className="flex min-w-0 items-center gap-[16px] text-[16px] leading-[19px] text-[#454545]">
+                  {isReply && replyMarker}
+                  <span className="truncate">{comment.authorName}</span>
+                </span>
+                <div className="flex shrink-0 items-center gap-[10px] px-[4px] py-[2px]">
+                  {actionButtons}
+                </div>
+              </div>
+
+              <div className={`flex flex-col gap-[4px] ${isReply ? 'pl-[30px]' : ''}`}>
+                <p className="whitespace-pre-line text-[16px] leading-[19px] text-[#454545]">
+                  {comment.content}
+                </p>
+                <span className="text-[12px] leading-[14px] text-[#919191]">
+                  {formatSlashDateTime(comment.updated ?? comment.created)}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    }
 
     return (
       <div
         key={comment.commentId}
         // 댓글 하나를 URL로 가리킬 수 있게 앵커를 붙인다 (예: /students/boards/2/posts/12#comment-3)
         id={anchorId}
-        className={`flex w-full scroll-mt-[100px] flex-col gap-3 py-4 md:flex-row md:items-start md:justify-between md:py-5 ${indentClass} ${
+        className={`flex w-full scroll-mt-[100px] flex-row items-start justify-between gap-3 py-4 md:py-5 ${indentClass} ${
           highlighted ? 'bg-[#f5f5f5]' : ''
         }`}
       >
@@ -284,7 +365,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
               <p className="text-[16px] tracking-[-0.32px] text-[#454545] leading-[26px] whitespace-pre-line">
                 {comment.content}
               </p>
-              <span className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[22px]">
+              <span className="text-[12px] leading-[14px] tracking-[-0.28px] text-[#919191] md:text-[14px] md:leading-[22px]">
                 {formatSlashDateTime(comment.updated ?? comment.created)}
               </span>
             </>
@@ -292,46 +373,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         </div>
 
         {/* 액션: 삭제된 댓글에는 표시하지 않는다 */}
-        {!deleted && (
-          <div className="flex shrink-0 items-center gap-3 md:ml-5">
-            <button
-              type="button"
-              className={actionClassName(replying)}
-              onClick={() => toggleReply(comment)}
-            >
-              답글
-            </button>
-
-            {owner ? (
-              <>
-                <button
-                  type="button"
-                  className={actionClassName(editing)}
-                  onClick={() => toggleEdit(comment)}
-                >
-                  수정
-                </button>
-                <button
-                  type="button"
-                  className={actionClassName(false)}
-                  onClick={() => handleDelete(comment.commentId)}
-                >
-                  삭제
-                </button>
-              </>
-            ) : (
-              canReport(comment) && (
-                <button
-                  type="button"
-                  className={actionClassName(false)}
-                  onClick={() => handleReport(comment)}
-                >
-                  신고
-                </button>
-              )
-            )}
-          </div>
-        )}
+        {!deleted && <div className="flex shrink-0 items-center gap-3 md:ml-5">{actionButtons}</div>}
       </div>
     );
   };
@@ -340,7 +382,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     <section className="flex w-full flex-col gap-8 md:gap-[60px]">
       <div className="flex w-full flex-col items-center">
         <div className="w-full py-2 md:px-5 md:py-[10px]">
-          <span className="text-[16px] leading-[1.6] tracking-[-0.36px] text-[#454545] md:text-[18px]">
+          <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#454545]">
             {/* 목록을 못 받은 동안에는 상세 응답의 commentCount 를 쓴다 (0개로 위장하지 않도록) */}
             댓글 {commentsError || commentsLoading ? (commentCount ?? 0) : list.length}개
           </span>
@@ -375,13 +417,17 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
 
       {/* 댓글 입력 (댓글 작성 / 답글 작성 / 댓글 수정 공용) */}
       <div className="flex w-full flex-col gap-4 md:gap-5">
-        <div className="flex w-full flex-col gap-2 md:flex-row md:items-center md:gap-5">
+        <div className="flex w-full flex-row items-center gap-1 md:items-center md:gap-5">
           <input
             type="text"
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}
-            placeholder={replyTo ? '답글을 작성하세요.' : '댓글을 작성하세요.'}
-            className="h-12 w-full flex-1 rounded-[4px] border border-[#b9b9b9] bg-white px-4 text-[15px] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#919191] md:h-[52px] md:text-[16px]"
+            placeholder={
+              isMdUp ? (replyTo ? '답글을 작성하세요.' : '댓글을 작성하세요.') : '내용을 입력하세요.'
+            }
+            className={`h-[40px] w-full flex-1 rounded-[4px] border bg-white px-4 text-[16px] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#212121] md:h-[52px] md:border-[#b9b9b9] md:focus:border-[#919191] ${
+              editingId || replyTo ? 'border-[#212121]' : 'border-[#919191]'
+            }`}
             onKeyDown={(e) => {
               if (e.key !== 'Enter' || e.nativeEvent.isComposing) return;
               handleSubmit();
@@ -391,9 +437,14 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
             type="button"
             onClick={handleSubmit}
             disabled={isSubmitting || !commentText.trim()}
-            className="h-12 w-full shrink-0 rounded-[4px] bg-[#212121] text-[15px] tracking-[-0.32px] text-white disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px]"
+            aria-label={replyTo ? '답글 작성' : '댓글 작성'}
+            className="flex h-[40px] w-[55px] shrink-0 items-center justify-center rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white disabled:opacity-60 md:h-[52px] md:w-[135px]"
           >
-            {isSubmitting ? '등록 중...' : replyTo ? '답글 작성' : '댓글 작성'}
+            {/* 모바일: 화살표 아이콘 / 데스크톱: 기존 텍스트 버튼 */}
+            <ArrowBigRight width={24} height={24} strokeWidth={1.5} className="md:hidden" aria-hidden="true" />
+            <span className="hidden md:inline">
+              {isSubmitting ? '등록 중...' : replyTo ? '답글 작성' : '댓글 작성'}
+            </span>
           </button>
         </div>
 
@@ -407,7 +458,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                   id="comment-anonymous"
                   checked={isAnonymous}
                   onChange={(e) => setIsAnonymous(e.target.checked)}
-                  className="w-[24px] h-[24px] border border-[#919191] rounded-[2px] cursor-pointer accent-[#212121]"
+                  className="w-[18px] h-[18px] md:w-[24px] md:h-[24px] border border-[#919191] rounded-[2px] cursor-pointer accent-[#212121]"
                 />
                 <label
                   htmlFor="comment-anonymous"
@@ -425,7 +476,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                   id="comment-private"
                   checked={isPrivate}
                   onChange={(e) => setIsPrivate(e.target.checked)}
-                  className="w-[24px] h-[24px] border border-[#919191] rounded-[2px] cursor-pointer accent-[#212121]"
+                  className="w-[18px] h-[18px] md:w-[24px] md:h-[24px] border border-[#919191] rounded-[2px] cursor-pointer accent-[#212121]"
                 />
                 <label
                   htmlFor="comment-private"
@@ -465,6 +516,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         open={Boolean(alertState)}
         title={alertState?.title ?? ''}
         description={alertState?.description ?? ''}
+        mobileBodyMinHeight={alertState?.mobileBodyMinHeight}
         onClose={() => setAlertState(null)}
       />
     </section>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { formatKoreanDate } from '@/lib/boardDetail';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
 
 import StateChip from './StateChip';
 
@@ -23,14 +24,53 @@ function Badge({ label }) {
 }
 
 // 제목 · 배지 · 등록일 · 작성자 영역
+<<<<<<< HEAD
 //
 // stateLabel: 게시글 상태(공개 · 블라인드 · 삭제). 관리자 상세만 넘긴다.
 //   넘기지 않으면 그리지 않으므로 사용자 상세의 모양은 그대로다.
 //   게시판 이름 옆에 붙이면 '게시판이 공개'라는 뜻으로 읽히므로 제목 옆에 둔다.
 export default function BoardInfo({ badgeLabel, title, date, author, stateLabel }) {
+=======
+export default function BoardInfo({ badgeLabel, title, date, author }) {
+  const isMdUp = useMinWidthMd();
+>>>>>>> b9da454 (회원게시판 상세 모바일 디자인 변경 (#183))
   const safeTitle = title ?? '';
   const safeAuthor = author ?? '';
   const safeDate = formatKoreanDate(date);
+
+  // 모바일(#183): 등록일·작성자를 한 줄(좌·우)로. 데스크톱은 아래 return 그대로.
+  if (!isMdUp) {
+    return (
+      <section className="w-full">
+        <div className="h-px w-full bg-[#919191]" />
+
+        <div className="flex min-h-0 items-center py-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
+            {badgeLabel && <Badge label={badgeLabel} />}
+            <h2 className="min-w-0 flex-1 text-[16px] leading-snug tracking-[-0.36px] text-[#212121]">
+              {safeTitle}
+            </h2>
+          </div>
+        </div>
+
+        <Divider />
+
+        <div className="flex items-center justify-between gap-2 py-3 text-[14px] tracking-[-0.28px]">
+          <div className="flex items-center gap-[12px]">
+            <span className="shrink-0 text-[#919191] leading-none">등록일</span>
+            <VLine />
+            <span className="text-[#454545] leading-none">{safeDate}</span>
+          </div>
+
+          <div className="flex items-center gap-[12px]">
+            <span className="shrink-0 text-[#919191] leading-none">작성자</span>
+            <VLine />
+            <span className="min-w-0 break-all text-[#454545] leading-none">{safeAuthor}</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="w-full">
