@@ -9,6 +9,10 @@ import {
   withdrawUser,
 } from '@/apis/admin/users';
 
+// 검색어 입력마다 디바운스 없이 요청이 나가므로, 응답이 늦게 온 이전 요청이
+// 최신 요청 결과를 덮어쓰지 않도록 순번으로 최신 요청만 반영한다.
+let fetchSeq = 0;
+
 // 관리자 회원 관리 화면의 통신 상태 스토어
 // isLoading / data / error 세 개를 세트로 관리한다.
 // - 요청 시작:      { isLoading: true, error: null }
@@ -23,12 +27,15 @@ const useAdminUsersStore = create((set) => ({
 
   // 1. 회원 목록 조회 (GET /api/admin/users)
   fetchUsers: async (params) => {
+    const seq = ++fetchSeq;
     set({ isLoading: true, error: null });
     try {
       const data = await getUsers(params);
+      if (seq !== fetchSeq) return data; // 이후 더 최신 요청이 나갔다면 이 응답은 버린다
       set({ data, isLoading: false });
       return data;
     } catch (err) {
+      if (seq !== fetchSeq) throw err;
       set({ error: getErrorMessage(err, '회원 목록을 불러오지 못했습니다.'), isLoading: false });
       throw err;
     }

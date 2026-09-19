@@ -42,8 +42,17 @@ export default function MemberListSection({ title = '회원 목록' }) {
   // 강제 탈퇴는 되돌릴 수 없어 관리 레벨 3 전용 (명세 140)
   const canWithdraw = useAuthStore((s) => s.adminLevel) >= 3;
 
-  const { data, isLoading, error, fetchUsers, updateUser, suspendUser, banUsers, withdrawUser } =
-    useAdminUsersStore();
+  const {
+    data,
+    isLoading,
+    error,
+    fetchUsers,
+    updateUser,
+    suspendUser,
+    banUsers,
+    withdrawUser,
+    clearError,
+  } = useAdminUsersStore();
 
   // 서버 응답을 화면(MemberRow)이 쓰는 형태로 변환한다.
   const members = useMemo(() => (data?.members ?? []).map(mapApiMemberToRow), [data]);
@@ -116,7 +125,10 @@ export default function MemberListSection({ title = '회원 목록' }) {
   // 회원 정지 — 단건 처리라 정확히 한 명 선택했을 때만 열린다 (버튼 disabled로 보장)
   const handleSuspendClick = () => {
     const target = members.find((member) => member.memberId === selectedIds[0]);
-    if (target) setSuspendTarget(target);
+    if (target) {
+      clearError();
+      setSuspendTarget(target);
+    }
   };
 
   const handleSuspendSubmit = async ({ endDate }) => {
@@ -202,7 +214,10 @@ export default function MemberListSection({ title = '회원 목록' }) {
           <Button
             type="button"
             disabled={isLoading || selectedIds.length === 0}
-            onClick={() => setBanOpen(true)}
+            onClick={() => {
+              clearError();
+              setBanOpen(true);
+            }}
             className={`${actionButtonClass} bg-[#212121] text-white`}
           >
             영구 차단
@@ -221,7 +236,10 @@ export default function MemberListSection({ title = '회원 목록' }) {
         onSelectOne={handleSelectOne}
         onSelectAll={handleSelectAll}
         onFieldChange={handleFieldChange}
-        onWithdraw={setWithdrawTarget}
+        onWithdraw={(member) => {
+          clearError();
+          setWithdrawTarget(member);
+        }}
         canWithdraw={canWithdraw}
         loading={isLoading && isListEmpty}
         errorMessage={!isLoading && isListEmpty ? (error ?? '') : ''}
@@ -230,21 +248,33 @@ export default function MemberListSection({ title = '회원 목록' }) {
       <MemberSuspendModal
         open={Boolean(suspendTarget)}
         member={suspendTarget}
-        onClose={() => setSuspendTarget(null)}
+        error={error}
+        onClose={() => {
+          clearError();
+          setSuspendTarget(null);
+        }}
         onSubmit={handleSuspendSubmit}
       />
 
       <MemberBanModal
         open={banOpen}
         members={selectedMembers}
-        onClose={() => setBanOpen(false)}
+        error={error}
+        onClose={() => {
+          clearError();
+          setBanOpen(false);
+        }}
         onSubmit={handleBanSubmit}
       />
 
       <MemberWithdrawModal
         member={withdrawTarget}
+        error={error}
         onConfirm={handleWithdrawConfirm}
-        onCancel={() => setWithdrawTarget(null)}
+        onCancel={() => {
+          clearError();
+          setWithdrawTarget(null);
+        }}
       />
 
       <div className="mt-6 mb-16 flex justify-center md:mt-[34px] md:mb-[120px]">

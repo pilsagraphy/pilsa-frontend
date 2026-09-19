@@ -23,6 +23,8 @@ export default function MemberBanModal({
   open,
   // [{ memberId, loginId, name, studentNo | studentNumber }]
   members = [],
+  // 차단 처리 실패 메시지 (있으면 모달 안에 노출)
+  error,
   onClose,
   onSubmit,
 }) {
@@ -35,6 +37,7 @@ export default function MemberBanModal({
       confirmLabel="영구 차단"
       // 대상이 하나도 없으면 차단할 것이 없으므로 확인을 막는다
       disabled={members.length === 0}
+      error={error}
       // 폭은 표 내용에 따라 늘어난다. 짧으면 시안 크기(505px)를 지키고,
       // 대상 회원이 길면 그만큼 넓어지되 화면을 넘지 않도록 상한을 둔다.
       // min-width는 max-width보다 우선하므로 하한에도 92vw를 걸어야

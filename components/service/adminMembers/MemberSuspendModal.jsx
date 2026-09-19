@@ -13,13 +13,25 @@ import {
 import { formatMemberLabel } from '@/lib/utils';
 
 // 정지 종료일 드롭다운에 채울 연도 (올해부터 3년치). 종료일은 미래여야 하므로 과거는 넣지 않는다.
-const CURRENT_YEAR = new Date().getFullYear();
+const today = new Date();
+const CURRENT_YEAR = today.getFullYear();
+const CURRENT_MONTH = today.getMonth() + 1;
+const CURRENT_DAY = today.getDate();
 const YEARS = Array.from({ length: 4 }, (_, i) => CURRENT_YEAR + i);
-const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
+
+// 선택한 연도가 올해면 이번 달부터, 그 이후 연도면 1월부터 고를 수 있다 (과거 달 차단)
+const monthsForYear = (year) => {
+  const start = Number(year) === CURRENT_YEAR ? CURRENT_MONTH : 1;
+  return Array.from({ length: 12 - start + 1 }, (_, i) => start + i);
+};
 
 // 선택한 연·월의 마지막 날 (일 드롭다운 상한). 둘 중 하나라도 안 고르면 최대 31일까지 연다.
 const daysInMonth = (year, month) =>
   year && month ? new Date(Number(year), Number(month), 0).getDate() : 31;
+
+// 선택한 연·월이 이번 달이면 오늘부터, 아니면 1일부터 고를 수 있다 (과거 날짜 차단)
+const firstSelectableDay = (year, month) =>
+  Number(year) === CURRENT_YEAR && Number(month) === CURRENT_MONTH ? CURRENT_DAY : 1;
 
 const pad2 = (value) => String(value).padStart(2, '0');
 
@@ -40,6 +52,8 @@ export default function MemberSuspendModal({
   open,
   // { memberId, loginId, name, studentNo | studentNumber }
   member = null,
+  // 정지 처리 실패 메시지 (있으면 모달 안에 노출)
+  error,
   onClose,
   onSubmit,
 }) {
@@ -55,16 +69,27 @@ export default function MemberSuspendModal({
     setDay('');
   }, [open]);
 
+  const months = monthsForYear(year);
+  const minDay = firstSelectableDay(year, month);
   const maxDay = daysInMonth(year, month);
-  const days = Array.from({ length: maxDay }, (_, i) => i + 1);
+  const days = Array.from({ length: Math.max(0, maxDay - minDay + 1) }, (_, i) => minDay + i);
 
-  // 연·월을 바꿔 그 달에 없는 날이 되면(예: 2월 31일) 일 선택을 비운다
+  // 연·월을 바꿔 이미 고른 날이 더는 고를 수 없는 날이 되면(그 달에 없는 날 · 지나간 날) 일 선택을 비운다
   const clampDay = (nextYear, nextMonth) => {
-    if (day && Number(day) > daysInMonth(nextYear, nextMonth)) setDay('');
+    if (!day) return;
+    const nextMin = firstSelectableDay(nextYear, nextMonth);
+    const nextMax = daysInMonth(nextYear, nextMonth);
+    if (Number(day) < nextMin || Number(day) > nextMax) setDay('');
   };
 
   const handleYearChange = (next) => {
     setYear(next);
+    // 이미 고른 달이 새 연도에서 지나간 달이 되면(예: 올해로 바꿨는데 이미 지난 달을 골라둔 경우) 달·일을 비운다
+    if (month && !monthsForYear(next).includes(Number(month))) {
+      setMonth('');
+      setDay('');
+      return;
+    }
     clampDay(next, month);
   };
 
@@ -94,6 +119,7 @@ export default function MemberSuspendModal({
       onSubmit={handleSubmit}
       // 사유가 채워져도 종료일이 없으면 확인을 막는다
       disabled={!endDate}
+      error={error}
       contentClassName="w-[432px] max-w-[92vw]"
       title={
         <>
@@ -137,7 +163,7 @@ export default function MemberSuspendModal({
               <SelectValue placeholder="월" />
             </SelectTrigger>
             <SelectContent className="max-h-[min(240px,var(--radix-select-content-available-height))]">
-              {MONTHS.map((m) => (
+              {months.map((m) => (
                 <SelectItem key={m} value={String(m)}>
                   {pad2(m)}월
                 </SelectItem>
