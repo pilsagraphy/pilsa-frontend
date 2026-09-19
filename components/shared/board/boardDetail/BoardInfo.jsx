@@ -24,16 +24,8 @@ function Badge({ label }) {
 }
 
 // 제목 · 배지 · 등록일 · 작성자 영역
-<<<<<<< HEAD
-//
-// stateLabel: 게시글 상태(공개 · 블라인드 · 삭제). 관리자 상세만 넘긴다.
-//   넘기지 않으면 그리지 않으므로 사용자 상세의 모양은 그대로다.
-//   게시판 이름 옆에 붙이면 '게시판이 공개'라는 뜻으로 읽히므로 제목 옆에 둔다.
-export default function BoardInfo({ badgeLabel, title, date, author, stateLabel }) {
-=======
 export default function BoardInfo({ badgeLabel, title, date, author }) {
   const isMdUp = useMinWidthMd();
->>>>>>> b9da454 (회원게시판 상세 모바일 디자인 변경 (#183))
   const safeTitle = title ?? '';
   const safeAuthor = author ?? '';
   const safeDate = formatKoreanDate(date);

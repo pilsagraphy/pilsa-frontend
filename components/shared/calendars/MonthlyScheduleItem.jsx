@@ -44,7 +44,7 @@ export default function MonthlyScheduleItem({
         onClick={() => onClick?.(schedule)}
         aria-expanded={isSelected}
         className={[
-          'flex h-[62px] w-full items-center justify-between gap-4 rounded-[5px] px-[16px] text-left transition md:h-[70px] md:px-[20px]',
+          'flex h-[62px] w-full items-center justify-between gap-4 rounded-[5px] px-[16px] text-left transition md:h-[89px] md:px-[20px]',
           isSelected ? 'bg-[#454545]' : 'bg-[#f6f6f6] hover:bg-[#ededed]',
         ].join(' ')}
       >

@@ -5,6 +5,10 @@ import Schedule from './Schedule';
 import RecentActivitySection from './RecentActivitySection';
 import useAdminDashboardStore from '@/stores/useAdminDashboardStore';
 
+// 관리자 홈의 달력은 일정을 골라도 아래 상세를 펼치지 않는다. (왼쪽 달력 강조만 남긴다)
+// 상세를 빈 값으로 그려 CalendarSection이 기본 ScheduleDetail을 렌더하지 않게 한다.
+const renderNoDetail = () => null;
+
 // 합치는 곳: 관리자 홈 화면
 // 스토어에서 통계 · 최근 신고 · 최근 가입 세 영역을 받아 각 하위 섹션에 내려준다.
 export default function ManagerDashboardSection() {
@@ -51,10 +55,11 @@ export default function ManagerDashboardSection() {
       {/* 영역 2: 통계 카드 */}
       <StatsSection stats={stats} isLoading={isStatsLoading} error={statsError} />
 
-      {/* 영역 3: 일정 달력 */}
-      <Schedule />
+      {/* 영역 3: 일정 달력 (홈에서는 일정 상세를 펼치지 않음) */}
+      <Schedule renderDetail={renderNoDetail} />
 
       {/* 영역 4: 최근 신고 / 최근 가입 회원 */}
+      <div className="w-full border-b border-[#DEDEDE]" />
       <RecentActivitySection
         reports={recentReports}
         isReportsLoading={isReportsLoading}
