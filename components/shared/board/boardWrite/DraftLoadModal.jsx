@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 
+import RowActionButton from '@/components/shared/admin/RowActionButton';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogFooter, DialogTitle } from '@/components/ui/dialog';
 import { formatDraftDate } from '@/lib/draft';
@@ -28,6 +29,9 @@ export default function DraftLoadModal({
   error = '',
   onCancel,
   onSelect,
+  onDelete,
+  // 삭제 요청이 도는 중인 초안. 그동안 다른 행의 삭제도 잠근다 (연달아 눌러 404 가 나는 것을 막는다)
+  deletingId = null,
 }) {
   const [selectedId, setSelectedId] = useState(null);
 
@@ -35,6 +39,13 @@ export default function DraftLoadModal({
   useEffect(() => {
     if (open) setSelectedId(null);
   }, [open]);
+
+  // 고른 초안이 목록에서 사라졌으면(삭제·다른 기기에서 정리) 선택을 놓는다.
+  // 안 놓으면 체크는 안 보이는데 '선택' 버튼만 살아 있어 없는 초안을 불러오려 한다.
+  useEffect(() => {
+    if (selectedId == null) return;
+    if (!drafts.some((draft) => draft.draftId === selectedId)) setSelectedId(null);
+  }, [drafts, selectedId]);
 
   // 불러오는 중 · 실패 · 빈 목록일 때 목록 자리에 보여줄 안내문.
   // 이미 목록이 있는데 다시 받는 중이라면(모달을 다시 열었을 때) 안내문으로 덮지 않는다 —
@@ -87,6 +98,21 @@ export default function DraftLoadModal({
                 <span className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191]">
                   {formatDraftDate(draft.updatedAt)}
                 </span>
+
+                {/* 삭제. 보관 상한(5개)에 닿으면 지우지 않고는 더 저장할 수 없어서 둔다.
+                    모양은 게시판 관리 표의 '수정'과 같은 행 버튼(RowActionButton)을 쓴다.
+                    label 안의 button 이라 label 이 클릭을 체크박스로 넘기지 않게 막는다. */}
+                <RowActionButton
+                  className="ml-[18px] min-w-[44px]"
+                  disabled={deletingId !== null}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onDelete?.(draft);
+                  }}
+                >
+                  삭제
+                </RowActionButton>
               </label>
             ))
           )}
@@ -101,8 +127,9 @@ export default function DraftLoadModal({
             취소
           </button>
 
-          {/* loading 은 스토어 공용이라 자동저장이 돌 때도 켜진다.
-              그걸로 버튼을 잠그면 30초마다 잠깐씩 눌리지 않으므로 선택 여부만 본다. */}
+          {/* loading 은 목록 조회 전용이다(저장·삭제는 별도 상태).
+              목록이 이미 그려진 상태에서 다시 받는 중이라면 고른 것을 그대로 불러도 되므로
+              여기서는 선택 여부만 본다. */}
           <button
             type="button"
             disabled={!selectedId}

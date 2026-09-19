@@ -11,16 +11,23 @@ import DraftLoadModal from './DraftLoadModal';
 export default function DraftLoadButton({ boardId, disabled = false }) {
   const [open, setOpen] = useState(false);
 
+  // 삭제 요청이 도는 중인 초안 (그동안 목록의 삭제 버튼을 잠근다)
+  const [deletingId, setDeletingId] = useState(null);
+
+  // isLoading·error 는 '목록' 전용이다 — 저장·삭제는 actionError 를 따로 쓰므로
+  // 자동저장이 도는 동안 모달이 '불러오는 중입니다.' 로 바뀌지 않는다.
   const drafts = useDraftStore((s) => s.data);
   const isLoading = useDraftStore((s) => s.isLoading);
   const error = useDraftStore((s) => s.error);
   const fetchDrafts = useDraftStore((s) => s.fetchDrafts);
   const loadDraft = useDraftStore((s) => s.loadDraft);
+  const removeDraft = useDraftStore((s) => s.removeDraft);
 
   const title = useBoardWriteStore((s) => s.title);
   const content = useBoardWriteStore((s) => s.content);
   const files = useBoardWriteStore((s) => s.files);
   const setForm = useBoardWriteStore((s) => s.setForm);
+  const clearDraftLink = useBoardWriteStore((s) => s.clearDraftLink);
 
   // 버튼에 개수를 띄워야 하므로 화면에 들어올 때 목록을 받아둔다.
   // (저장한 뒤에는 BoardWrite 가 다시 불러 개수를 갱신한다)
@@ -50,7 +57,7 @@ export default function DraftLoadButton({ boardId, disabled = false }) {
 
     const detail = await loadDraft(boardId, draftId);
     if (!detail) {
-      alert(useDraftStore.getState().error ?? '임시저장한 글을 불러오지 못했습니다.');
+      alert(useDraftStore.getState().actionError ?? '임시저장한 글을 불러오지 못했습니다.');
       return;
     }
 
@@ -68,6 +75,39 @@ export default function DraftLoadButton({ boardId, disabled = false }) {
     });
 
     setOpen(false);
+  };
+
+  // 삭제. 보관 상한(5개)이 차면 지우지 않고는 더 저장할 수 없어서 목록에서 바로 지운다.
+  // 서버는 물리 삭제다 — DB 행은 물론 딸린 첨부의 파일까지 지워지고 되돌릴 수 없다.
+  const handleDelete = async (draft) => {
+    const label = draft.title?.trim() || '(제목 없음)';
+    if (
+      !window.confirm(
+        `'${label}' 임시저장 글을 삭제하시겠습니까?\n첨부한 파일까지 함께 지워지고 되돌릴 수 없습니다.`
+      )
+    ) {
+      return;
+    }
+
+    setDeletingId(draft.draftId);
+    try {
+      await removeDraft(boardId, draft.draftId);
+
+      // 성공·실패는 스토어의 actionError 로 본다 (요청 시작에 null 로 비워진다).
+      // 응답 본문이 비어도 삭제는 된 것이므로 반환값으로 판단하지 않는다.
+      const message = useDraftStore.getState().actionError;
+      if (message) {
+        alert(message);
+        return;
+      }
+
+      // 지금 이어쓰고 있던 초안을 지웠다면 연결을 끊는다.
+      // 그대로 두면 다음 저장이 없는 초안에 덮어쓰기를 보내 404 가 되고,
+      // 발행 때는 이미 지워진 첨부 id 를 실어 보낸다. 쓰던 내용은 화면에 남는다.
+      if (useBoardWriteStore.getState().draftId === draft.draftId) clearDraftLink();
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   return (
@@ -97,6 +137,8 @@ export default function DraftLoadButton({ boardId, disabled = false }) {
         error={error ?? ''}
         onCancel={() => setOpen(false)}
         onSelect={handleSelect}
+        onDelete={handleDelete}
+        deletingId={deletingId}
       />
     </>
   );

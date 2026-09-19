@@ -42,22 +42,47 @@ export default function BoardWrite({ boardId }) {
 
   const [submitting, setSubmitting] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
+  // 자동저장이 도는 중인지 (버튼 잠금용 — busyRef 는 ref라 리렌더를 못 일으킨다)
+  const [autoSaving, setAutoSaving] = useState(false);
 
-  // 자동저장 상태 (화면 아래 작은 안내문에만 쓴다)
-  const [autoSavedAt, setAutoSavedAt] = useState('');
+  // 저장 상태 (화면 아래 작은 안내문에만 쓴다).
+  // savedNotice 는 완성된 문장이다 — 수동 저장과 자동저장을 구분해 적어야 해서
+  // 시각만 들고 있지 않는다 ('14:30 저장됨' / '14:30 자동 저장됨').
+  const [savedNotice, setSavedNotice] = useState('');
   const [autoSaveError, setAutoSaveError] = useState('');
 
   // 마지막으로 저장한 내용의 지문. 고친 것이 없으면 자동저장이 요청을 건너뛴다.
   const lastSavedRef = useRef('');
   // 자동저장이 수동 저장·발행과 겹치지 않게 하는 잠금
   const busyRef = useRef(false);
+  // handleSaveDraft 중복 실행 방지 — savingDraft state 는 리렌더 후에야 disabled 에 반영되므로,
+  // 그 전에 두 번째 클릭이 들어오면 state 만으로는 막지 못한다. ref 는 즉시 반영된다.
+  const savingDraftRef = useRef(false);
   // 돌고 있는 자동저장. 수동 저장·발행은 이것이 끝난 뒤에 시작한다
   const autoSaveTaskRef = useRef(null);
+  // 이번 화면에서 직접 저장해 받은 draftId.
+  // 아래 '기준선 초기화' effect 는 이 번호를 건너뛴다 — 저장한 쪽이 이미 정확한 지문을 넣어뒀다.
+  const selfSavedIdRef = useRef(null);
 
   // 페이지 진입 시 폼 초기화
   useEffect(() => {
     resetForm();
   }, [resetForm]);
+
+  // 임시저장 요청 본문을 '지금 화면 값'으로 만든다.
+  // 폼 값을 인자나 클로저로 받지 않고 스토어에서 그때그때 읽는다 —
+  // 첨부 선업로드(최대 60초)나 자동저장 대기를 기다린 뒤에 만들어지므로
+  // 클로저 값을 쓰면 사용자가 그사이 고친 내용이 빠진 채 저장된다.
+  const currentDraftBody = useCallback(() => {
+    const form = useBoardWriteStore.getState();
+    return buildDraftBody({
+      title: form.title,
+      content: form.content,
+      categoryId: board?.categoryMode ? form.categoryId : '',
+      isAnonymous: board?.allowAnonymous ? form.isAnonymous : false,
+      attachmentIds: form.draftAttachments.map((file) => file.attachmentId),
+    });
+  }, [board]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -117,12 +142,17 @@ export default function BoardWrite({ boardId }) {
   // '글 저장하기' — 임시저장.
   // 이어쓰는 중(draftId 있음)이면 그 슬롯을 덮어쓰고, 아니면 새 슬롯을 만든다.
   const handleSaveDraft = async () => {
+    // 더블클릭 등으로 버튼이 실제로 disabled 되기 전에 두 번째 호출이 들어오면
+    // 첨부가 중복 업로드되거나 초안 슬롯이 두 개 소비된다 — ref 로 즉시 막는다.
+    if (savingDraftRef.current) return;
+
     // 서버는 제목·내용이 둘 다 비면 400 을 준다. 요청을 보내기 전에 걸러낸다.
     if (isDraftEmpty(title, content)) {
       alert('제목이나 내용 중 하나는 입력해주세요.');
       return;
     }
 
+    savingDraftRef.current = true;
     try {
       setSavingDraft(true);
 
@@ -138,12 +168,21 @@ export default function BoardWrite({ boardId }) {
       // 앞에서부터 순서대로 올리고, 하나라도 실패하면 거기서 멈춘다.
       // 성공한 것은 실패해도 첨부 목록으로 옮겨야 한다 — 안 옮기면 다시 저장할 때
       // 같은 파일이 또 올라가 첨부가 중복된다.
+      //
+      // 목록은 이 루프가 돌고 있는 동안에도 바뀔 수 있다(업로드가 수십 초 걸린다).
+      // 그래서 '몇 개'가 아니라 '어느 File 을' 올렸는지를 들고 있다가 그것만 덜어낸다.
       const uploaded = [];
+      const consumedFiles = [];
       let uploadError = null;
 
       if (board?.allowAttachment && Array.isArray(files)) {
         for (const file of files) {
           if (!file) continue;
+
+          // 업로드 도중 사용자가 '제거'한 파일은 올리지 않는다
+          // (이 루프는 버튼을 누른 시점의 목록을 돌기 때문에 스토어를 다시 확인해야 한다)
+          if (!useBoardWriteStore.getState().files.includes(file)) continue;
+
           try {
             // eslint-disable-next-line no-await-in-loop
             const result = await uploadFile(boardId, file, 'attachment');
@@ -153,6 +192,7 @@ export default function BoardWrite({ boardId }) {
               fileUrl: result.url,
               fileSize: result.fileSize,
             });
+            consumedFiles.push(file);
           } catch (error) {
             uploadError = getErrorMessage(
               error,
@@ -163,39 +203,36 @@ export default function BoardWrite({ boardId }) {
         }
       }
 
-      promoteFilesToDraft(uploaded, uploaded.length);
+      promoteFilesToDraft(uploaded, consumedFiles);
 
       if (uploadError) {
         alert(uploadError);
         return;
       }
 
-      // 방금 promoteFilesToDraft 로 옮겼으니 스토어에서 다시 읽는다
-      // (렌더 시점의 draftAttachments 는 옮기기 전 값이라 그대로 쓰면 헷갈린다).
+      // 요청 본문은 지금 화면 값으로 만든다 — 위 업로드를 기다리는 동안 사용자가 고쳤을 수 있다.
+      // (방금 promoteFilesToDraft 로 옮긴 첨부도 스토어에서 함께 읽힌다)
       // attachmentIds 는 '이번 저장이 유지할 첨부 전체'다 — 빠진 것은 서버가 파일까지 지운다.
-      const body = buildDraftBody({
-        title,
-        content,
-        categoryId: board?.categoryMode ? categoryId : '',
-        isAnonymous: board?.allowAnonymous ? isAnonymous : false,
-        attachmentIds: useBoardWriteStore
-          .getState()
-          .draftAttachments.map((file) => file.attachmentId),
-      });
+      const body = currentDraftBody();
 
       const savedId = await saveDraft(boardId, draftId, body);
 
-      const message = useDraftStore.getState().error;
-      if (message) {
-        alert(message);
+      // 실패 판정은 오류 문장과 draftId 를 함께 본다.
+      // savedId 가 없으면 이어쓸 슬롯을 잡을 수 없어 다음 저장이 또 새 슬롯을 만든다 →
+      // 보관 상한(5개)이 사용자 모르게 차버리므로 성공으로 처리하지 않는다.
+      const message = useDraftStore.getState().actionError;
+      if (message || !savedId) {
+        alert(message ?? '임시저장 결과를 확인하지 못했습니다. 목록에서 확인해 주세요.');
         return;
       }
 
-      if (savedId) setDraftId(savedId);
+      setDraftId(savedId);
+      selfSavedIdRef.current = savedId;
 
       // 방금 저장한 내용을 기억해 둔다 — 자동저장이 같은 내용을 또 보내지 않게
       lastSavedRef.current = draftSignature(body);
       setAutoSaveError('');
+      setSavedNotice(`${formatClock(new Date())} 저장됨`);
 
       // 개수는 저장 응답에 없다 → 목록을 다시 받아 쓴다 (추측하지 않는다)
       await fetchDrafts(boardId);
@@ -206,6 +243,7 @@ export default function BoardWrite({ boardId }) {
     } finally {
       setSavingDraft(false);
       busyRef.current = false;
+      savingDraftRef.current = false;
     }
   };
 
@@ -214,22 +252,11 @@ export default function BoardWrite({ boardId }) {
   // 글쓰기 화면을 여닫을 때마다 draftId 가 비므로, 그때마다 초안이 하나씩 쌓이면
   // 보관 상한(5개)이 사용자 모르게 차버린다. 첫 저장은 반드시 '글 저장하기'로 한다.
   //
-  // 폼 값은 인자로 받지 않고 스토어에서 그때그때 읽는다.
+  // 폼 값을 의존성에 넣지 않는다(currentDraftBody 가 스토어에서 읽는다).
   // 값을 의존성에 넣으면 글자를 칠 때마다 타이머가 새로 걸려 자동저장이 영원히 안 걸린다.
   //
   // 자동저장은 파일을 올리지 않는다. 고르기만 한 파일이 타이머에 걸려 조용히 업로드되면
   // 곤란하고, 이미 올라간 첨부(draftAttachments)만 유지하면 서버 쪽 첨부는 그대로 남는다.
-  const currentDraftBody = useCallback(() => {
-    const form = useBoardWriteStore.getState();
-    return buildDraftBody({
-      title: form.title,
-      content: form.content,
-      categoryId: board?.categoryMode ? form.categoryId : '',
-      isAnonymous: board?.allowAnonymous ? form.isAnonymous : false,
-      attachmentIds: form.draftAttachments.map((file) => file.attachmentId),
-    });
-  }, [board]);
-
   const runAutoSave = useCallback(() => {
     // 수동 저장·발행 중이면 건너뛴다 (같은 슬롯에 요청이 겹치지 않게)
     if (busyRef.current) return;
@@ -245,12 +272,16 @@ export default function BoardWrite({ boardId }) {
     if (signature === lastSavedRef.current) return;
 
     busyRef.current = true;
+    // 자동저장이 도는 동안 초안 불러오기·삭제·첨부 제거 버튼을 잠근다 —
+    // 그대로 두면 응답이 오기 전에 화면이 다른 초안으로 바뀌어, 뒤늦게 도착한
+    // 이번 저장 결과가 이미 전환된 화면의 저장 상태를 엉뚱하게 덮어쓴다.
+    setAutoSaving(true);
 
     // 수동 저장이 기다릴 수 있도록 진행 중인 작업을 남겨둔다
     const task = (async () => {
       try {
         const savedId = await saveDraft(boardId, activeDraftId, body);
-        const message = useDraftStore.getState().error;
+        const message = useDraftStore.getState().actionError;
 
         // 자동저장은 조용히 돈다 — 실패해도 alert 로 작업을 끊지 않고 안내문만 바꾼다
         if (message || !savedId) {
@@ -260,10 +291,11 @@ export default function BoardWrite({ boardId }) {
 
         lastSavedRef.current = signature;
         setAutoSaveError('');
-        setAutoSavedAt(formatClock(new Date()));
+        setSavedNotice(`${formatClock(new Date())} 자동 저장됨`);
       } finally {
         busyRef.current = false;
         autoSaveTaskRef.current = null;
+        setAutoSaving(false);
       }
     })();
 
@@ -279,11 +311,17 @@ export default function BoardWrite({ boardId }) {
   useEffect(() => {
     if (!draftId) return;
 
+    // 내가 방금 저장해서 받은 번호라면 손대지 않는다.
+    // 여기서 '지금 화면 값'으로 덮으면, 저장 요청이 오가는 동안 사용자가 이어 쓴 내용이
+    // '이미 저장된 것'으로 기록돼 자동저장이 그 부분을 영원히 건너뛴다.
+    // 저장한 쪽(handleSaveDraft)이 실제로 보낸 본문의 지문을 이미 넣어뒀다.
+    if (draftId === selfSavedIdRef.current) return;
+
     // 초안을 막 불러왔다면 화면 내용이 서버와 같다 →
     // 첫 타이머가 같은 내용을 그대로 다시 보내지 않도록 지문을 맞춰 둔다.
     lastSavedRef.current = draftSignature(currentDraftBodyRef.current());
     setAutoSaveError('');
-    setAutoSavedAt('');
+    setSavedNotice('');
   }, [draftId]);
 
   useEffect(() => {
@@ -293,6 +331,40 @@ export default function BoardWrite({ boardId }) {
     const timer = setInterval(runAutoSave, AUTO_SAVE_INTERVAL_MS);
     return () => clearInterval(timer);
   }, [draftId, runAutoSave]);
+
+  // 탭을 닫거나 새로고침할 때, 아직 서버에 없는 변경이 있으면 브라우저 확인창을 띄운다.
+  // 자동저장 주기가 30초라 그사이 편집분은 어디에도 남아 있지 않다.
+  //
+  // 앱 안에서의 화면 이동(취소 버튼·사이드바)은 브라우저 이벤트가 아니라 여기서 잡히지 않는다.
+  // '취소'는 이미 자체 확인창을 띄우므로, 남는 구멍은 사이드바 등으로 그냥 옮겨가는 경우다.
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      const form = useBoardWriteStore.getState();
+
+      // 고르기만 하고 아직 올리지 않은 파일이 있으면 무조건 남아 있는 것이다
+      // (자동저장은 파일을 올리지 않는다)
+      const hasPendingFiles = Array.isArray(form.files) && form.files.length > 0;
+
+      // 아무것도 쓰지 않은 화면은 지킬 것이 없다
+      const isEmpty = isDraftEmpty(form.title, form.content) && !hasPendingFiles;
+
+      // 아직 초안이 아니면(한 번도 저장하지 않았으면) 쓴 내용 전부가 미저장이다.
+      // 초안이면 마지막 저장 지문과 달라졌는지로 판단한다.
+      const isDirty =
+        hasPendingFiles ||
+        !form.draftId ||
+        draftSignature(currentDraftBodyRef.current()) !== lastSavedRef.current;
+
+      if (isEmpty || !isDirty) return;
+
+      event.preventDefault();
+      // 일부 브라우저는 returnValue 가 설정돼야 확인창을 띄운다 (문구는 브라우저가 정한다)
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, []);
 
   const handleCancel = () => {
     if (window.confirm('작성을 취소하시겠습니까? 작성 중인 내용은 저장되지 않습니다.')) {
@@ -331,7 +403,7 @@ export default function BoardWrite({ boardId }) {
           boardId={boardId}
           board={board}
           enableDraft
-          busy={submitting || savingDraft}
+          busy={submitting || savingDraft || autoSaving}
         />
       </div>
 
@@ -345,7 +417,7 @@ export default function BoardWrite({ boardId }) {
           autoSaveError ? 'text-[#e5484d]' : 'text-[#919191]'
         }`}
       >
-        {draftId ? autoSaveError || (autoSavedAt && `${autoSavedAt} 자동 저장됨`) : ''}
+        {draftId ? autoSaveError || savedNotice : ''}
       </p>
 
       <div className="mt-4 flex w-full flex-col gap-[12px]">

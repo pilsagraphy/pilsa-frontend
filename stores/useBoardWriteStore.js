@@ -63,13 +63,20 @@ const useBoardWriteStore = create((set) => ({
   // 서버로 올라간 첨부를 File 목록에서 빼고 초안 첨부 목록으로 옮긴다.
   // 옮기지 않으면 다시 저장할 때 같은 파일이 한 번 더 올라가 첨부가 중복된다.
   //
-  // 앞에서부터 순서대로 올리다가 중간에 실패할 수 있어 '올라간 개수(consumedCount)'만
-  // 덜어낸다. 전부 비우면 아직 안 올라간 파일이 조용히 사라진다.
-  promoteFilesToDraft: (attachments, consumedCount) =>
+  // 실제로 올라간 File 객체(consumedFiles)만 골라 빼낸다 — 개수로 앞에서부터 자르면,
+  // 업로드 도중 사용자가 목록에서 무언가를 제거했을 때 엉뚱한 항목이 사라진다.
+  // (중간에 실패해도 성공한 것까지만 넘어오므로 안 올라간 파일은 목록에 남는다)
+  promoteFilesToDraft: (attachments, consumedFiles = []) =>
     set((state) => ({
-      files: state.files.slice(consumedCount),
+      files: state.files.filter((file) => !consumedFiles.includes(file)),
       draftAttachments: [...state.draftAttachments, ...attachments],
     })),
+
+  // 이어쓰던 초안이 사라졌을 때(사용자가 목록에서 삭제) 연결만 끊는다.
+  // 화면에 쓰던 내용은 그대로 두고 draftId 만 비워, 다음 저장이 새 슬롯을 만들게 한다
+  // (없는 초안에 덮어쓰기를 보내면 404 다).
+  // 초안 첨부는 삭제와 함께 서버에서 물리 삭제되므로 목록에서도 함께 비운다.
+  clearDraftLink: () => set({ draftId: null, draftAttachments: [] }),
 
   // 초안 첨부 빼기.
   // 서버 호출이 아니다 — 다음 저장의 attachmentIds 에서 빠지면 그때 서버가 파일까지 지운다.

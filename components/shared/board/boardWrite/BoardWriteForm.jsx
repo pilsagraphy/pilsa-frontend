@@ -163,7 +163,10 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
 
       {/* 임시저장에서 이어받은 첨부 — 이미 서버에 올라가 있어 id 로만 다룬다.
           여기서 '제거'하면 다음 저장·발행의 attachmentIds 에서 빠지고,
-          그때 서버가 DB 행과 파일까지 정리한다 (별도 삭제 호출 없음). */}
+          그때 서버가 DB 행과 파일까지 정리한다 (별도 삭제 호출 없음).
+
+          저장·발행이 도는 중에는 잠근다 — 이미 만들어져 나간 요청의 '유지할 첨부 전체'와
+          어긋나면 방금 뺀 것이 남거나 남겨둔 것이 지워진다. */}
       {allowAttachment && draftAttachments.length > 0 && (
         <div className="flex flex-col gap-[6px] px-[4px]">
           <span className="text-[14px] tracking-[-0.28px] text-[#919191]">임시저장 첨부파일</span>
@@ -175,7 +178,8 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
               <button
                 type="button"
                 onClick={() => removeDraftAttachment(file.attachmentId)}
-                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121]"
+                disabled={busy}
+                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[#919191]"
               >
                 제거
               </button>
@@ -184,7 +188,9 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
         </div>
       )}
 
-      {/* 이번에 새로 고른 파일 (개별 제거 가능) */}
+      {/* 이번에 새로 고른 파일 (개별 제거 가능).
+          임시저장이 이 파일들을 순서대로 올리는 중에는 잠근다 — 올라가는 중인 항목을
+          빼면 화면과 서버에 붙은 첨부가 어긋난다. */}
       {allowAttachment && Array.isArray(files) && files.length > 0 && (
         <div className="flex flex-col gap-[6px] px-[4px]">
           {files.map((file, index) => (
@@ -195,7 +201,8 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
               <button
                 type="button"
                 onClick={() => removeFileAt(index)}
-                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121]"
+                disabled={busy}
+                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[#919191]"
               >
                 제거
               </button>
