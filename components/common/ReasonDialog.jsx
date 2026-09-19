@@ -19,11 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
-import {
-  REPORT_REASONS,
-  REPORT_REASON_ETC,
-  REPORT_DETAIL_MAX_LENGTH,
-} from '@/constants/report';
+import { REPORT_REASONS, REPORT_REASON_ETC, REPORT_DETAIL_MAX_LENGTH } from '@/constants/report';
 
 /**
  * 사유를 골라서 확인하는 모달의 공통 껍데기 (신고 · 관리자 조치)
@@ -52,6 +48,9 @@ export default function ReasonDialog({
   hideReason = false,
   // 사유와 별개로 확인을 막아야 할 때 (예: 대상이 하나도 없을 때)
   disabled = false,
+  // 확인 처리 실패 메시지. 모달이 열려 있는 동안의 실패라 배경(Overlay)에 가려지지 않도록
+  // 모달 안에서 보여준다.
+  error,
   onClose,
   onSubmit,
 }) {
@@ -163,10 +162,13 @@ export default function ReasonDialog({
             className="h-[190px] resize-none rounded-[4px] border-[#b9b9b9] p-[16px] text-[16px] tracking-[-0.32px] shadow-none placeholder:text-[#b9b9b9]"
           />
         )}
-
         {/* #183 모바일 기본 신고 모달 높이를 피그마(371px)에 맞추는 여백.
             기타 선택 시엔 상세 사유 입력칸이 그 자리를 채우므로 넣지 않는다. */}
         {!hideReason && !isEtc && <div aria-hidden className="h-[6px] md:hidden" />}
+
+        {error && (
+          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#e02d2d]">{error}</p>
+        )}
 
         {/* #183 모바일은 버튼 가운데 정렬(피그마), 데스크톱(md↑)은 기존 오른쪽 정렬 유지 */}
         <DialogFooter className="flex flex-row justify-center gap-[12px] sm:space-x-0 md:justify-end">

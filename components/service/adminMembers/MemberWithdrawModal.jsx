@@ -11,7 +11,8 @@ import {
 
 // 회원 강제 탈퇴 확인 모달
 // 되돌릴 수 없는 처리라 공용 ConfirmModal 대신 경고 문구를 따로 둔다
-export default function MemberWithdrawModal({ member, onConfirm, onCancel }) {
+// error: 탈퇴 처리 실패 메시지 (있으면 모달 안에 노출)
+export default function MemberWithdrawModal({ member, error, onConfirm, onCancel }) {
   return (
     <Dialog open={Boolean(member)} onOpenChange={(next) => !next && onCancel?.()}>
       <DialogContent
@@ -25,6 +26,12 @@ export default function MemberWithdrawModal({ member, onConfirm, onCancel }) {
         <DialogDescription className="text-center text-[14px] leading-[1.6] tracking-[-0.28px] text-[#757575] [word-break:keep-all]">
           개인정보가 즉시 파기되며 되돌릴 수 없습니다.
         </DialogDescription>
+
+        {error && (
+          <p className="text-center text-[14px] leading-[1.6] tracking-[-0.28px] text-[#e02d2d]">
+            {error}
+          </p>
+        )}
 
         <DialogFooter className="flex flex-row justify-center gap-[12px] sm:justify-center sm:space-x-0">
           <Button
