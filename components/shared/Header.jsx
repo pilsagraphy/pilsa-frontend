@@ -42,13 +42,14 @@ export default function Header() {
           </button>
         </div>
 
-        {/* 가운데 로고. clamp 로 폰에서는 작게, PC 에서는 크게 */}
+        {/* 가운데 로고. clamp 로 폰에서는 작게, PC 에서는 크게.
+            폰에서도 햄버거와 종 사이 남는 폭의 정가운데에 둔다 — flex-1 이 그 폭이고 text-center 가 그 가운데다 */}
         {/* 폰에서는 로고를 왼쪽(햄버거 옆)에 붙인다. 가운데에 두면 글자가 오른쪽 알림 종까지 닿는다.
             태블릿부터는 화면이 넓어 가운데 정렬로 돌아간다.
             크기는 남는 폭에 맞춰 줄어든다 — (100vw - 200px) 는 좌우 아이콘 칸과 바깥 여백을 뺀 폭이고,
             8.6 은 이 글꼴에서 'PILSAGRAPHY' 11글자가 글자 크기의 몇 배를 차지하는지다. */}
         <h1
-          className={`${zenDots.className} min-w-0 flex-1 overflow-hidden whitespace-nowrap pl-3 text-left tablet:pl-0 tablet:text-center`}
+          className={`${zenDots.className} min-w-0 flex-1 overflow-hidden whitespace-nowrap px-2 text-center`}
           style={{ fontSize: 'clamp(15px, min(6.5vw, (100vw - 200px) / 8.6), 48px)' }}
         >
           {/* 시계 게이트(/)로는 보내지 않는다 — 로그인 상태면 학생 홈, 아니면 소개 페이지 */}

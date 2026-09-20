@@ -209,7 +209,7 @@ export default function MemberListSection({ title = '회원 목록' }) {
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex shrink-0 flex-row items-center gap-2">
           {/* 회원 정지는 단건 처리 → 한 명 선택했을 때만 활성화 */}
           <Button
             type="button"

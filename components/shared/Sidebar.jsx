@@ -246,11 +246,7 @@ const Sidebar = () => {
               <p className={singleLinkClass(false)}>구글 드라이브</p>
             </a>
 
-            {/* ABOUT 필사 (공개 소개 영역으로 이동 → 일반 사이드바로 복귀).
-                /about 이 아니라 첫 화면인 /about/intro 로 보낸다 — /about 은 목차가 없는 빈 경로다 */}
-            <Link href={ROUTES.ABOUT_INTRO}>
-              <p className={singleLinkClass(false)}>ABOUT 필사</p>
-            </Link>
+            {/* ABOUT 필사 링크는 뺐다 (2026-09-20 PM). 아래 '메인 페이지로 이동'이 그 역할을 한다 */}
           </div>
         ) : (
           /* ===================== 일반 사이드바 ===================== */

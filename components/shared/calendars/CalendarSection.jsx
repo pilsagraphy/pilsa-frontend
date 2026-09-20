@@ -55,6 +55,8 @@ export default function CalendarSection({
   onUserSelect,
   refreshKey = 0,
   focusDate = null,
+  // 관리자 화면에서는 끈다 — 운영진이 관리 화면에서 자기 캘린더를 구독할 일이 없다
+  showSubscribe = true,
 }) {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
   const [apiResponse, setApiResponse] = React.useState(response ?? null);
@@ -255,7 +257,7 @@ export default function CalendarSection({
         <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
           일정 달력
         </h2>
-        <CalendarSubscribeButton />
+        {showSubscribe && <CalendarSubscribeButton />}
       </div>
 
       {/* 달력 왼쪽 · 월별 일정 오른쪽.

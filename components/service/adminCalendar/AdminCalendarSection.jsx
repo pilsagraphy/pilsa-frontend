@@ -208,6 +208,7 @@ export default function AdminCalendarSection() {
   return (
     <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10">
       <CalendarSection
+        showSubscribe={false}
         refreshKey={refreshSignal.key}
         focusDate={refreshSignal.date}
         scheduleListAction={scheduleListAction}

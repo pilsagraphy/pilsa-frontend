@@ -195,10 +195,12 @@ export default function MemberRow({
 
       {/* 3. 재학상태 (누르면 select로 변경) */}
       <TableCell className="whitespace-nowrap text-center">
+        {/* 동문회는 채워서 재학생과 한눈에 갈리게 한다 (권한 배지의 관리자와 같은 규칙) */}
         <EditablePill
           label="재학상태"
           value={member.enrollmentStatus}
           options={ENROLLMENT_STATUSES}
+          filled={member.enrollmentStatus === '동문회'}
           onChange={(next) => onFieldChange?.(member.memberId, 'enrollmentStatus', next)}
         />
       </TableCell>

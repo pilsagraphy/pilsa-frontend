@@ -42,7 +42,7 @@ export default function ReportSection({ title, reports = [], isLoading = false, 
       <div className="border-b border-[#919191]" />
 
       {/* 스크롤 범위: row 1~5 (46px * 5). 6개 이상이면 세로 스크롤 (화살표 없이) */}
-      <div className="mp-scroll-y h-[280px] overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable] md:h-[230px]">
+      <div className="mp-scroll-y max-h-[280px] min-h-[92px] overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable] md:h-[230px] md:max-h-none">
         {isLoading ? (
           // 1) 로딩 중
           <div className="flex h-full items-center justify-center text-[14px] tracking-[-0.28px] text-[#919191]">

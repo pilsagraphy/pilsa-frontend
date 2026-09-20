@@ -20,8 +20,8 @@ export const listSubtitleClass = 'text-[18px] leading-[1.6] tracking-[-0.36px] t
 // px-3 은 좁아졌을 때의 하한을 조금 낮춘다. 180px 일 때는 글자가 가운데 정렬이라 표시에 차이가 없다.
 // 좁은 화면에서는 줄어들 수 있어야 한다 — 고정 폭이면 옆의 검색창을 밀어 찌그러뜨린다
 export const actionButtonClass =
-  'h-[52px] w-full min-w-[110px] shrink px-3 rounded-[4px] text-[16px] font-normal sm:w-[150px] lg:w-[180px]';
+  'h-[48px] min-w-0 flex-1 shrink px-3 rounded-[4px] text-[15px] font-normal sm:h-[52px] sm:w-[150px] sm:min-w-[110px] sm:flex-none sm:text-[16px] lg:w-[180px]';
 
 // 목록 표의 체크박스 (헤더 · 행 공용)
 export const checkboxClass =
-  'size-6 rounded-[4px] border-[#919191] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]';
+  'size-5 md:size-6 rounded-[4px] border-[#919191] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]';

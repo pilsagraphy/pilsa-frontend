@@ -45,13 +45,25 @@ export default function AddSingleEventDialog({ schedule, open, onClose }) {
     onClose?.();
   };
 
+  // 두 번째 버튼이 검정 바탕에 검정 글자로 보였다 — 테두리 모양 클래스만 주고 variant 를 안 줘서
+  // 기본(채움) 배경이 남아 있었다. 모양을 바꾸는 쪽은 variant 도 같이 바꾼다
   const googleButton = (
-    <Button type="button" onClick={openGoogle} className={onApple ? outlineBtn : primaryBtn}>
+    <Button
+      type="button"
+      variant={onApple ? 'outline' : 'default'}
+      onClick={openGoogle}
+      className={onApple ? outlineBtn : primaryBtn}
+    >
       구글 캘린더에 추가
     </Button>
   );
   const icsButton = (
-    <Button type="button" onClick={openIcs} className={onApple ? primaryBtn : outlineBtn}>
+    <Button
+      type="button"
+      variant={onApple ? 'default' : 'outline'}
+      onClick={openIcs}
+      className={onApple ? primaryBtn : outlineBtn}
+    >
       캘린더 앱에 추가
     </Button>
   );

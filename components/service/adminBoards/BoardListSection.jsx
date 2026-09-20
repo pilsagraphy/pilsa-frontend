@@ -261,7 +261,6 @@ export default function BoardListSection({ title = '게시판 관리' }) {
         onEdit={handleOpenEdit}
         onManageCategories={setCategoryBoard}
         onMove={handleMove}
-        totalCount={sortedBoards.length}
         loading={isFirstLoading}
         saving={isSaving}
         errorMessage={listErrorMessage}

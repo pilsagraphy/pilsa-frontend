@@ -30,14 +30,19 @@ export default function StatsSection({ stats, isLoading, error }) {
   const items = STAT_ITEMS.map(({ key, label }) => ({ value: stats[key] ?? 0, label }));
 
   return (
-    <div className="flex w-full items-stretch justify-center py-[10px]">
+    // 폰: 2×2. 네 장을 한 줄에 놓으면 라벨이 글자 단위로 끊긴다. 세로선은 한 줄일 때만 뜻이 있다
+    <div className="grid w-full grid-cols-2 gap-y-[12px] py-[10px] sm:flex sm:items-stretch sm:justify-center sm:gap-y-0">
       {items.map((stat, index) => (
         <React.Fragment key={stat.label}>
-          <div className="flex flex-1 justify-center">
+          <div
+            className={`flex justify-center sm:flex-1 ${
+              index % 2 === 0 ? 'border-r border-[#DEDEDE] sm:border-r-0' : ''
+            }`}
+          >
             <StatCard value={stat.value} label={stat.label} />
           </div>
           {index < items.length - 1 && (
-            <div className="w-px flex-shrink-0 self-stretch bg-[#919191]" />
+            <div className="hidden w-px flex-shrink-0 self-stretch bg-[#919191] sm:block" />
           )}
         </React.Fragment>
       ))}

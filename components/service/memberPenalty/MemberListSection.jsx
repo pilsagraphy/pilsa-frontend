@@ -101,7 +101,7 @@ export default function MemberListSection({ selectedId, onSelect }) {
 
       {/* 스크롤 범위. 검색으로 한정된 목록을 노출 (세로 스크롤, 화살표 없이) */}
       {/* 폰에서는 목록이 화면을 다 먹지 않게 짧게 — 아래 상세가 보여야 무엇을 고른 건지 안다 */}
-      <div className="mp-scroll-y h-[300px] overflow-x-hidden overflow-y-auto pr-[6px] lg:h-[720px]">
+      <div className="mp-scroll-y max-h-[300px] min-h-[92px] overflow-x-hidden overflow-y-auto pr-[6px] lg:h-[720px] lg:max-h-none">
         {isLoading ? (
           // 1) 로딩 중
           <div className="flex h-full items-center justify-center text-[16px] tracking-[-0.32px] text-[#919191]">

@@ -64,7 +64,8 @@ export default function PostListSection({ title = '게시글 관리' }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        {/* 폰에서도 한 줄 — 세로로 쌓으면 목록보다 버튼이 먼저 화면을 채운다 */}
+        <div className="flex flex-row items-center gap-2">
           <Button
             type="button"
             variant="outline"

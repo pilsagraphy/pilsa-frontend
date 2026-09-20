@@ -24,11 +24,12 @@ function formatStatNumber(value) {
 // 통계 카드: 진한 숫자 + 그 아래 회색 라벨
 export default function StatCard({ value, label }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-[6px] text-center w-full min-h-[96px]">
-      <span className="font-['Pretendard',sans-serif] font-bold text-[36px] leading-[1.3] tracking-[-0.72px] text-[#212121] whitespace-pre-line break-words">
+    <div className="flex min-h-[84px] w-full flex-col items-center justify-center gap-[4px] text-center md:min-h-[96px] md:gap-[6px]">
+      <span className="whitespace-pre-line break-words font-['Pretendard',sans-serif] text-[28px] font-bold leading-[1.3] tracking-[-0.56px] text-[#212121] md:text-[36px] md:tracking-[-0.72px]">
         {formatStatNumber(value)}
       </span>
-      <span className="font-['Pretendard',sans-serif] text-[16px] leading-[1.6] tracking-[-0.32px] text-[#919191]">
+      {/* 폰에서 '처리 대기 신고'가 '처리 대기 신/고'로 끊겼다 — 단어 단위로만 줄을 바꾼다 */}
+      <span className="break-keep font-['Pretendard',sans-serif] text-[13px] leading-[1.5] tracking-[-0.26px] text-[#919191] md:text-[16px] md:leading-[1.6] md:tracking-[-0.32px]">
         {label}
       </span>
     </div>

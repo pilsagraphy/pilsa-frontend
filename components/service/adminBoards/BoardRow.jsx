@@ -71,7 +71,7 @@ export default function BoardRow({
           disabled={disabled}
           onClick={() => onManageCategories?.(board)}
         >
-          관리
+          카테고리 수정
         </RowActionButton>
       </TableCell>
 
@@ -82,7 +82,7 @@ export default function BoardRow({
           disabled={disabled}
           onClick={() => onEdit?.(board)}
         >
-          수정
+          정보 수정
         </RowActionButton>
       </TableCell>
 

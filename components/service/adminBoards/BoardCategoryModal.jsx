@@ -112,13 +112,15 @@ export default function BoardCategoryModal({ board, open, onClose }) {
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose?.()}>
-      <DialogContent className="max-h-[85vh] max-w-[520px] gap-[16px] overflow-y-auto rounded-[4px] border-[#dedede] p-[24px]">
+      <DialogContent className="max-h-[85vh] w-[calc(100vw-32px)] max-w-[520px] gap-[16px] overflow-y-auto rounded-[6px] border-[#dedede] p-[20px] sm:p-[24px]">
         <DialogTitle className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121]">
           {board?.boardName ?? '게시판'} 카테고리
         </DialogTitle>
         <DialogDescription className="text-[13px] leading-[1.7] tracking-[-0.26px] text-[#757575] [word-break:keep-all]">
-          이 게시판의 글쓰기 선택지와 목록 필터에 바로 반영됩니다. 글이 달고 있는 카테고리는 지울 수
-          없어요.
+          이 게시판의 글쓰기 선택지와 목록 필터에 바로 반영됩니다. 공개 중인 글이 달고 있는
+          카테고리는 지울 수 없어요(관리자가 삭제한 글은 세지 않아요).{' '}
+          <strong className="font-semibold text-[#454545]">중요</strong>는 상단 고정에 쓰는
+          카테고리라 모든 게시판에 항상 있고, 이름을 바꾸거나 지울 수 없어요.
         </DialogDescription>
 
         {/* 목록 */}

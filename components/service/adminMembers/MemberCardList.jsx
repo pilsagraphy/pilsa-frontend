@@ -177,6 +177,7 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
               label="재학상태"
               value={member.enrollmentStatus}
               options={ENROLLMENT_STATUSES}
+              filled={member.enrollmentStatus === '동문회'}
               onChange={change('enrollmentStatus')}
             />
             <EditablePill

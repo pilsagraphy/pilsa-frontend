@@ -35,11 +35,15 @@ const STATE_LABEL = { normal: '정상', blind: '블라인드', deleted: '삭제'
 // 원문 링크의 글자는 열 너비 때문에 'Link' 하나뿐이라, 어느 글로 가는지는
 // 서버가 주는 제목을 title(마우스오버) / linkLabel(보조기기) 로만 알릴 수 있다.
 // 관리자 댓글 관리의 CommentRow 가 '바로가기' 링크를 같은 이유로 같게 처리한다.
+// 신고 없이 관리자가 바로 조치한 건은 reportId 가 없다(moderation_log 에서 온다).
+// 그래도 목록의 key 는 있어야 하니 대상과 시각으로 만든다.
+const rowKey = (report, targetId) => report.reportId ?? `m-${targetId}-${report.resolvedAt}`;
+
 function toPostRow(report) {
   return {
-    reportId: report.reportId,
+    reportId: rowKey(report, report.postId),
     board: report.boardName,
-    reason: report.reasonLabel,
+    reason: report.reasonLabel ?? '관리자 직접 조치',
     link: getPostDetailHref(report.boardId, report.postId),
     targetTitle: report.title,
     linkLabel: report.title ? `게시글 보기: ${report.title}` : undefined,
@@ -60,9 +64,9 @@ function toCommentRow(report) {
       ? `${postHref}#${getCommentAnchorId(report.commentId)}`
       : postHref;
   return {
-    reportId: report.reportId,
+    reportId: rowKey(report, report.commentId),
     board: report.boardName,
-    reason: report.reasonLabel,
+    reason: report.reasonLabel ?? '관리자 직접 조치',
     link,
     targetTitle: report.postTitle,
     linkLabel: report.postTitle ? `원글 보기: ${report.postTitle}` : undefined,
@@ -185,15 +189,15 @@ export default function PenaltyDashboardSection() {
               ) : null}
 
               {/* 길쭉한 회색 박스 안에 신고 게시글 / 신고 댓글 */}
-              <div className="mt-[24px] flex flex-col gap-[28px] rounded-[15px] border border-[#dedede] p-[18px] shadow-[0px_1px_8.3px_0px_rgba(0,0,0,0.25)]">
+              <div className="mt-[20px] flex flex-col gap-[20px] rounded-[12px] border border-[#dedede] p-[12px] shadow-[0px_1px_6px_0px_rgba(0,0,0,0.15)] md:mt-[24px] md:gap-[28px] md:rounded-[15px] md:p-[18px] md:shadow-[0px_1px_8.3px_0px_rgba(0,0,0,0.25)]">
                 <ReportSection
-                  title="신고 게시글"
+                  title="신고·처리 게시글"
                   reports={selectedPosts.data.map(toPostRow)}
                   isLoading={selectedPosts.isLoading}
                   error={selectedPosts.error}
                 />
                 <ReportSection
-                  title="신고 댓글"
+                  title="신고·처리 댓글"
                   reports={selectedComments.data.map(toCommentRow)}
                   isLoading={selectedComments.isLoading}
                   error={selectedComments.error}

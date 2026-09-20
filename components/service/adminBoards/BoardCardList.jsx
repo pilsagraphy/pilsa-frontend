@@ -1,24 +1,91 @@
 'use client';
 
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { GripVertical } from 'lucide-react';
 
 import { getReadScopeLabel, getWriteLevelLabel } from '@/constants/adminBoards';
+
+// 꾹 누른 뒤 끌기로 인정하는 시간. 스크롤하려고 손을 댄 것과 구분한다
+const HOLD_MS = 350;
 
 // 좁은 화면의 게시판 목록.
 //
 // 표를 가로로 미는 대신 게시판 하나를 카드 하나로 세운다.
-// 순서 바꾸기도 여기서만 다르다 — 표는 마우스로 끌지만, 폰에는 끌 손잡이가 없어 위·아래 버튼을 준다.
-// (같은 요청을 보낸다: '몇 번째 자리'를 서버에 알려 주면 나머지가 밀린다)
+// 순서 바꾸기는 표(마우스 끌기)와 같은 손맛으로 — 손잡이를 꾹 누르면 카드가 들리고,
+// 위아래로 끌어 놓으면 그 자리로 간다. 서버에는 '몇 번째 자리'만 보낸다 (표와 같다).
+//
+// 왜 위·아래 버튼이 아니라 끌기인가: 버튼은 한 칸씩만 움직여 다섯 칸 옮기려면 다섯 번 눌러야 하고,
+// 매번 서버 왕복이라 다섯 번 기다린다. 끌기는 한 번에 끝난다.
 export default function BoardCardList({
   boards,
   onEdit,
   onManageCategories,
   onMove,
   disabled = false,
-  // 목록이 페이지로 나뉘어 있어 카드의 index 로는 첫·끝을 알 수 없다 — 전체 순번(displayOrder)으로 본다
-  totalCount = 0,
   emptyMessage = '',
 }) {
+  const listRef = useRef(null);
+  const holdTimerRef = useRef(null);
+  const dragRef = useRef(null); // { boardId, fromIndex, pointerId }
+  const [dragging, setDragging] = useState(null); // { boardId, y }
+  const [dropIndex, setDropIndex] = useState(null); // 놓으면 들어갈 자리(카드 index)
+
+  useEffect(() => () => clearTimeout(holdTimerRef.current), []);
+
+  // 손가락 y 좌표로 '몇 번째 카드 자리'인지 센다. 카드 가운데를 넘으면 그 다음 자리다
+  const indexAtY = (y) => {
+    const cards = Array.from(listRef.current?.querySelectorAll('[data-card]') ?? []);
+    let index = 0;
+    for (const card of cards) {
+      const rect = card.getBoundingClientRect();
+      if (y > rect.top + rect.height / 2) index += 1;
+    }
+    return Math.min(index, cards.length - 1);
+  };
+
+  const cancelDrag = () => {
+    clearTimeout(holdTimerRef.current);
+    dragRef.current = null;
+    setDragging(null);
+    setDropIndex(null);
+  };
+
+  const handlePointerDown = (event, board, index) => {
+    if (disabled || event.button !== 0) return;
+    const { pointerId } = event;
+    const target = event.currentTarget;
+
+    // 바로 들지 않고 잠깐 기다린다 — 그냥 스크롤하려는 손과 가르기 위해
+    holdTimerRef.current = setTimeout(() => {
+      dragRef.current = { boardId: board.boardId, fromIndex: index, pointerId };
+      target.setPointerCapture?.(pointerId);
+      setDragging({ boardId: board.boardId, y: event.clientY });
+      setDropIndex(index);
+      if (navigator.vibrate) navigator.vibrate(10);
+    }, HOLD_MS);
+  };
+
+  const handlePointerMove = (event) => {
+    if (!dragRef.current) {
+      // 들리기 전에 손이 움직이면 스크롤이다 — 끌기 대기를 접는다
+      clearTimeout(holdTimerRef.current);
+      return;
+    }
+    event.preventDefault();
+    setDragging((prev) => (prev ? { ...prev, y: event.clientY } : prev));
+    setDropIndex(indexAtY(event.clientY));
+  };
+
+  const handlePointerUp = () => {
+    const drag = dragRef.current;
+    const to = dropIndex;
+    cancelDrag();
+    if (!drag || to === null || to === drag.fromIndex) return;
+
+    // 페이지가 나뉘어 있어도 카드 index 차이는 그대로 순번 차이다
+    onMove?.(drag.boardId, to - drag.fromIndex);
+  };
+
   if (emptyMessage) {
     return (
       <p className="border-b border-[#B9B9B9] py-10 text-center text-[14px] text-[#919191]">
@@ -31,63 +98,75 @@ export default function BoardCardList({
     'rounded-[4px] border border-[#b9b9b9] px-3 py-[5px] text-[13px] leading-[1.6] text-[#454545] disabled:border-[#E0E0E0] disabled:text-[#C4C4C4]';
 
   return (
-    <div className="flex flex-col">
-      {boards.map((board) => (
-        <div key={board.boardId} className="border-b border-[#B9B9B9] px-1 py-[14px]">
-          <div className="flex items-start gap-[10px]">
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-[16px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121]">
-                {board.boardName}
-              </p>
-              <p className="mt-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#757575]">
-                글 {board.postCount?.toLocaleString() ?? 0}개 · 열람{' '}
-                {getReadScopeLabel(board.readScope)} · 작성 {getWriteLevelLabel(board.writeLevel)}
-              </p>
-            </div>
+    <div ref={listRef} className="flex flex-col">
+      {boards.map((board, index) => {
+        const lifted = dragging?.boardId === board.boardId;
+        // 들린 카드가 놓일 자리를 선으로 보여 준다
+        const fromIndex = dragRef.current?.fromIndex ?? -1;
+        const showLineAbove = dragging && dropIndex === index && index < fromIndex;
+        const showLineBelow = dragging && dropIndex === index && index > fromIndex;
 
-            {/* 순서 */}
-            <div className="flex shrink-0 flex-col">
+        return (
+          <div
+            key={board.boardId}
+            data-card
+            className={`relative border-b border-[#B9B9B9] px-1 py-[14px] transition-opacity ${
+              lifted ? 'opacity-40' : ''
+            } ${showLineAbove ? 'border-t-2 border-t-[#212121]' : ''} ${
+              showLineBelow ? '!border-b-2 !border-b-[#212121]' : ''
+            }`}
+          >
+            <div className="flex items-start gap-[10px]">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-[16px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121]">
+                  {board.boardName}
+                </p>
+                <p className="mt-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#757575]">
+                  글 {board.postCount?.toLocaleString() ?? 0}개 · 열람{' '}
+                  {getReadScopeLabel(board.readScope)} · 작성 {getWriteLevelLabel(board.writeLevel)}
+                </p>
+              </div>
+
+              {/* 순서 손잡이: 꾹 누르면 들린다. touch-none 이 없으면 브라우저가 스크롤로 가져가 버린다 */}
               <button
                 type="button"
-                aria-label="위로"
-                disabled={disabled || board.displayOrder <= 1}
-                onClick={() => onMove?.(board.boardId, -1)}
-                className="text-[#919191] disabled:text-[#E0E0E0]"
+                aria-label="꾹 눌러서 순서 바꾸기"
+                title="꾹 눌러서 순서 바꾸기"
+                disabled={disabled}
+                onPointerDown={(event) => handlePointerDown(event, board, index)}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={cancelDrag}
+                onContextMenu={(event) => event.preventDefault()}
+                className={`grid size-8 shrink-0 touch-none select-none place-items-center rounded-[4px] text-[#B9B9B9] ${
+                  lifted ? 'bg-[#F0F0F0] text-[#212121]' : 'active:bg-[#F5F5F5]'
+                }`}
               >
-                <ChevronUp size={16} />
+                <GripVertical size={18} />
+              </button>
+            </div>
+
+            <div className="mt-[10px] flex gap-2">
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={() => onEdit?.(board)}
+                className={buttonClass}
+              >
+                정보 수정
               </button>
               <button
                 type="button"
-                aria-label="아래로"
-                disabled={disabled || board.displayOrder >= totalCount}
-                onClick={() => onMove?.(board.boardId, 1)}
-                className="text-[#919191] disabled:text-[#E0E0E0]"
+                disabled={disabled}
+                onClick={() => onManageCategories?.(board)}
+                className={buttonClass}
               >
-                <ChevronDown size={16} />
+                카테고리 수정
               </button>
             </div>
           </div>
-
-          <div className="mt-[10px] flex gap-2">
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => onEdit?.(board)}
-              className={buttonClass}
-            >
-              수정
-            </button>
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={() => onManageCategories?.(board)}
-              className={buttonClass}
-            >
-              카테고리
-            </button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

@@ -117,13 +117,47 @@ export default function ScheduleDatePicker({ start, end, triggerRef, onConfirm, 
     onConfirm?.(toParts(draft.start), toParts(draft.end ?? draft.start));
   };
 
+  // 고른 기간을 글자로 — 달력의 막대만으로는 어디서 어디까지인지 확신이 안 선다
+  const formatDay = (date) => `${date.getMonth() + 1}월 ${date.getDate()}일`;
+  const rangeLabel = !draft.start
+    ? '시작일을 골라 주세요'
+    : !draft.end
+      ? `${formatDay(draft.start)} 부터 — 종료일을 골라 주세요 (같은 날이면 한 번 더)`
+      : isSameDay(draft.start, draft.end)
+        ? `${formatDay(draft.start)} 하루`
+        : `${formatDay(draft.start)} ~ ${formatDay(draft.end)}`;
+
+  const goToday = () => {
+    const today = startOfDay(new Date());
+    setMonth(today);
+    setDraft({ start: today, end: today });
+  };
+
   return (
-    <div
-      ref={rootRef}
-      role="dialog"
-      aria-label="날짜 선택"
-      className="absolute end-0 top-[48px] z-40 w-[min(392px,calc(100vw-32px))] rounded-[6px] border border-[#dedede] bg-white p-[16px] shadow-[0_4px_16px_rgba(0,0,0,0.1)]"
-    >
+    <>
+      {/* 폰: 뒤를 어둡게 해 달력이 떠 있다는 것을 알린다. 넓은 화면은 버튼 옆에 붙어 있어 필요 없다 */}
+      <div aria-hidden className="fixed inset-0 z-40 bg-black/30 md:hidden" />
+      <div
+        ref={rootRef}
+        role="dialog"
+        aria-label="날짜 선택"
+        // 폰: 화면 가운데 고정. 버튼 기준(absolute)으로 붙이면 버튼이 오른쪽 끝이라 왼쪽이 화면 밖으로 나갔다.
+        // md 이상: 버튼 아래 오른쪽 정렬 (원래 자리)
+        className="fixed left-1/2 top-1/2 z-50 w-[calc(100vw-32px)] max-w-[392px] -translate-x-1/2 -translate-y-1/2 rounded-[6px] border border-[#dedede] bg-white p-[16px] shadow-[0_4px_16px_rgba(0,0,0,0.1)] md:absolute md:left-auto md:end-0 md:top-[48px] md:z-40 md:w-[392px] md:translate-x-0 md:translate-y-0"
+      >
+      <div className="mb-[8px] flex items-center justify-between gap-2">
+        <p className="min-w-0 truncate text-[13px] leading-[1.6] tracking-[-0.26px] text-[#454545]">
+          {rangeLabel}
+        </p>
+        <button
+          type="button"
+          onClick={goToday}
+          className="shrink-0 rounded-[4px] border border-[#dedede] px-[8px] py-[2px] text-[12px] leading-[1.6] text-[#454545] hover:bg-[#f6f6f6]"
+        >
+          오늘
+        </button>
+      </div>
+
       <Calendar
         mode="single"
         month={month}
@@ -150,6 +184,7 @@ export default function ScheduleDatePicker({ start, end, triggerRef, onConfirm, 
           확인
         </button>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
