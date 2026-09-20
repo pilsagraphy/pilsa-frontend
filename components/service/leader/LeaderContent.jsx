@@ -6,7 +6,7 @@ import { ROUTES } from '@/constants/routes';
 // '(2021~2022)' → 2021. 재임 시작 연도의 연혁으로 보낸다
 const startYearOf = (period) => /(\d{4})/.exec(String(period ?? ''))?.[1] ?? null;
 
-const LeaderContent = ({ order, name, period, imageSrc }) => {
+const LeaderContent = ({ order, name, period, imageSrc, officers = [] }) => {
   const year = startYearOf(period);
   return (
     // 전체 너비를 부모 그리드에 맡기고, 내부 요소들만 중앙 정렬.
@@ -41,6 +41,25 @@ const LeaderContent = ({ order, name, period, imageSrc }) => {
         <span className="text-[18px] font-semibold leading-tight md:text-[30px]">{name}</span>
         <span className="mt-1 text-[13px] font-medium text-[#454545] md:text-[20px]">{period}</span>
       </div>
+
+      {/* 재임 중 임원진 — 학기별로 한 묶음. 사진 카드 폭 안에 작은 글자로 */}
+      {officers.length > 0 && (
+        <div className="flex w-full flex-col gap-3 border-t border-[#DEDEDE] pt-3 font-['Pretendard',sans-serif]">
+          {officers.map(({ term, groups }) => (
+            <div key={term} className="flex flex-col gap-1">
+              <span className="text-[12px] font-semibold tracking-[-0.24px] text-[#212121] md:text-[14px]">{term}</span>
+              {groups.map(({ label, names }) => (
+                <p
+                  key={label}
+                  className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#454545] md:text-[13px]"
+                >
+                  <span className="text-[#919191]">{label}</span> {names.join(' · ')}
+                </p>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
     </Link>
   );
 };
