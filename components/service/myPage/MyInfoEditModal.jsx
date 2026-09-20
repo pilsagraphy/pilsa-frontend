@@ -48,7 +48,7 @@ export default function MyInfoEditModal({ open, onOpenChange, myInfo }) {
           </DialogHeader>
 
           {/* 1. 내 정보 */}
-          {/* TODO: API 연결 (내 정보) — 백엔드 마이페이지 조회 API 배포 후 연동 (이번 작업 범위 외) */}
+          {/* 아이디·가입일은 마이페이지 요약(GET /api/user/mypage)에서 온 값 — MyInfoCard 가 스토어에서 읽어 넘긴다 */}
           <section className="flex flex-col gap-1">
             <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-[#919191]">내 정보</h4>
             <div className="rounded-[8px] border border-black/10">
