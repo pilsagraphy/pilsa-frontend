@@ -55,6 +55,30 @@ const Sidebar = () => {
   // 펼침 버튼(ABOUT PILSA · 회원 게시판 · 관리자 메뉴)은 <button> 이라 여기에 걸리지 않는다.
   const swipeRef = useRef(null);
 
+  // 폰: 화면 왼쪽 가장자리에서 오른쪽으로 쓸면 사이드바가 열린다 (닫을 때 왼쪽으로 쓰는 것과 짝).
+  // 가장자리 24px 안에서 시작한 손가락만 본다 — 본문을 좌우로 문지르는 것과 헷갈리지 않게.
+  useEffect(() => {
+    let start = null;
+    const onStart = (event) => {
+      const t = event.touches[0];
+      start = t && t.clientX <= 24 && window.innerWidth < 768 ? { x: t.clientX, y: t.clientY } : null;
+    };
+    const onEnd = (event) => {
+      if (!start) return;
+      const t = event.changedTouches[0];
+      const dx = t.clientX - start.x;
+      const dy = t.clientY - start.y;
+      start = null;
+      if (dx > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) openMobile();
+    };
+    document.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchend', onEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onStart);
+      document.removeEventListener('touchend', onEnd);
+    };
+  }, [openMobile]);
+
   const closeOnLinkClick = useCallback((event) => {
     if (event.target.closest('a')) setIsMobileOpen(false);
   }, []);
