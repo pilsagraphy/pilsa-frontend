@@ -33,7 +33,15 @@ export const DUMMY_LEADER = [
     officers: [
       {
         term: '2026-1학기',
-        chairman: { title: '회장단', leader: '최재연', members: ['최성현', '안예지'] },
+        chairman: {
+          title: '회장단',
+          leader: '최재연',
+          // 직책이 있는 사람은 { name, role } 로 (PM: 최성현 부회장 · 안예지 총무, 2026-09-21)
+          members: [
+            { name: '최성현', role: '부회장' },
+            { name: '안예지', role: '총무' },
+          ],
+        },
         teams: [
           { title: '제작스터디', leader: '박수민', members: ['최예윤', '유해담'] },
           { title: '정기모임', leader: '한서은', members: ['김서현', '김수현', '최서진', '하종연'] },
@@ -43,7 +51,15 @@ export const DUMMY_LEADER = [
       },
       {
         term: '2026-2학기',
-        chairman: { title: '회장단', leader: '최재연', members: ['최성현', '안예지'] },
+        chairman: {
+          title: '회장단',
+          leader: '최재연',
+          // 직책이 있는 사람은 { name, role } 로 (PM: 최성현 부회장 · 안예지 총무, 2026-09-21)
+          members: [
+            { name: '최성현', role: '부회장' },
+            { name: '안예지', role: '총무' },
+          ],
+        },
         teams: [
           { title: '제작스터디', leader: '박수민', members: ['김아란', '남가현', '박시현', '유해담', '최보은', '최예윤'] },
           { title: '정기모임', leader: '한서은', members: ['김서현', '김성은', '김수현', '이민승', '최서진', '홍준화'] },

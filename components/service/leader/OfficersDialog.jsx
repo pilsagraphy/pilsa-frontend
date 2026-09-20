@@ -94,6 +94,10 @@ export default function OfficersDialog({ order, name, officers = [] }) {
   );
 }
 
+// 구성원은 문자열('홍길동') 또는 { name, role }('부회장' 같은 직책이 있을 때)
+const memberText = (member) =>
+  typeof member === 'string' ? member : `${member?.name ?? ''}${member?.role ? ` (${member.role})` : ''}`;
+
 // 한 묶음: 제목 · 대표(회장/팀장) · 구성원. membersLabel 이 없으면(회장단·자문) 이름만 적는다
 function Group({ title, leader, leaderLabel, membersLabel, members = [] }) {
   return (
@@ -108,7 +112,7 @@ function Group({ title, leader, leaderLabel, membersLabel, members = [] }) {
         {members.length > 0 && (
           <span>
             {membersLabel && <span className="text-[#919191]">{membersLabel} </span>}
-            {members.join(' · ')}
+            {members.map(memberText).join(' · ')}
           </span>
         )}
       </div>
