@@ -4,17 +4,18 @@ import React, { useEffect, useState } from 'react';
 import { ThumbsUp } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toggleBoardPostLike, deleteBoardPost } from '@/apis/board';
+import { submitReport } from '@/apis/report';
 import { getErrorMessage } from '@/apis/auth';
 import useAuthStore from '@/stores/useAuthStore';
 import { ROUTES } from '@/constants/routes';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import ReportModal from '@/components/shared/board/boardList/ReportModal';
 import AlertModal from '@/components/common/AlertModal';
-import { REPORT_SUCCESS_ALERT } from '@/constants/report';
+import { REPORT_SUCCESS_ALERT, REPORT_DUPLICATE_ALERT, getReasonId } from '@/constants/report';
 
 // 좋아요 + (권한이 있을 때만) 수정/삭제 버튼
-//  - 수정: 작성자 또는 관리자
-//  - 삭제: 작성자 본인만 (관리자는 관리자 화면에서 조치)
+//  - 수정·삭제: 작성자 본인만. 관리자는 남의 글을 고치지 않는다 — 조치(블라인드·삭제)는 관리자 게시글 관리에서
+//    (예전엔 관리자에게도 수정을 열어 뒀는데, 관리자가 남의 글을 열면 수정 버튼이 떠서 혼란스러웠다 — 2026-09-20)
 export default function BoardActions({
   boardId,
   postId,
@@ -37,18 +38,17 @@ export default function BoardActions({
   const [likeLoading, setLikeLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // 게시글 신고 (모바일 전용) — 댓글 신고처럼 접수 완료 안내만 (백엔드 신고 API 확정 후 연동)
+  // 게시글 신고 — 작성자가 아닌 사람에게만 보인다 (폰·PC 공통)
   const [reportOpen, setReportOpen] = useState(false);
+  const [reportError, setReportError] = useState('');
   const [alertState, setAlertState] = useState(null);
 
   const user = useAuthStore((s) => s.user);
-  const adminLevel = useAuthStore((s) => s.adminLevel);
 
   const currentUserId = Number(user?.userId ?? user?.id ?? user?.user_id);
-  const isAdmin = adminLevel >= 1;
   const isAuthor = Number.isFinite(currentUserId) && currentUserId === Number(authorId);
 
-  const canEdit = isAdmin || isAuthor;
+  const canEdit = isAuthor;
   const canDelete = isAuthor;
 
   useEffect(() => {
@@ -100,11 +100,53 @@ export default function BoardActions({
     }
   };
 
-  // 신고 - 모달에서 사유 선택 후 확인 (지금은 접수완료 안내만)
-  const handleReportSubmit = () => {
-    setReportOpen(false);
-    setAlertState(REPORT_SUCCESS_ALERT);
+  // 신고 - 모달에서 고른 사유를 서버에 보낸다. 409 는 이미 신고했거나 대상이 삭제된 경우
+  const handleReportSubmit = async ({ reason, detail }) => {
+    setReportError('');
+    try {
+      await submitReport({
+        targetType: 'post',
+        targetId: postId,
+        reasonId: getReasonId(reason),
+        detail,
+      });
+      setReportOpen(false);
+      setAlertState(REPORT_SUCCESS_ALERT);
+    } catch (error) {
+      if (error?.response?.status === 409) {
+        setReportOpen(false);
+        setAlertState(REPORT_DUPLICATE_ALERT);
+        return;
+      }
+      // 모달을 닫지 않고 안에서 알린다 — 닫으면 고른 사유가 날아간다
+      setReportError(getErrorMessage(error, '신고 접수에 실패했습니다. 잠시 후 다시 시도해주세요.'));
+    }
   };
+
+  // 폰·PC 가 같은 모달을 쓴다. 각 레이아웃 뒤에 한 번만 붙인다
+  const modals = (
+    <>
+      <ReportModal
+        open={reportOpen}
+        onClose={() => {
+          setReportOpen(false);
+          setReportError('');
+        }}
+        onSubmit={handleReportSubmit}
+        error={reportError}
+        targetLabel="게시글"
+        targetUser={authorName ? { name: authorName } : null}
+        targetContent={boardLabel ? `${boardLabel} / ${postTitle}` : postTitle}
+      />
+      <AlertModal
+        open={Boolean(alertState)}
+        title={alertState?.title ?? ''}
+        description={alertState?.description ?? ''}
+        mobileBodyMinHeight={alertState?.mobileBodyMinHeight}
+        onClose={() => setAlertState(null)}
+      />
+    </>
+  );
 
   // 모바일(#183): 좋아요 + (작성자) 수정/삭제 · (그 외) 신고하기 를 한 줄로. 데스크톱은 아래 return 그대로.
   if (!isMdUp) {
@@ -159,22 +201,7 @@ export default function BoardActions({
           )}
         </div>
 
-        <ReportModal
-          open={reportOpen}
-          onClose={() => setReportOpen(false)}
-          onSubmit={handleReportSubmit}
-          targetLabel="게시글"
-          targetUser={authorName ? { name: authorName } : null}
-          targetContent={boardLabel ? `${boardLabel} / ${postTitle}` : postTitle}
-        />
-
-        <AlertModal
-          open={Boolean(alertState)}
-          title={alertState?.title ?? ''}
-          description={alertState?.description ?? ''}
-          mobileBodyMinHeight={alertState?.mobileBodyMinHeight}
-          onClose={() => setAlertState(null)}
-        />
+        {modals}
       </>
     );
   }
@@ -202,13 +229,13 @@ export default function BoardActions({
         {afterLikeOnMobile != null && <div className="w-full md:hidden">{afterLikeOnMobile}</div>}
       </div>
 
-      {/* 수정 / 삭제 (권한 있을 때만) */}
-      {(canEdit || canDelete) && (
+      {/* 작성자: 수정(흰 테두리) / 삭제(검정) — 폰(#183 피그마)과 같은 규칙. 그 외: 신고 */}
+      {canEdit || canDelete ? (
         <div className="flex w-full gap-2 md:w-auto md:gap-5">
           {canEdit && (
             <button
               type="button"
-              className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white md:h-[52px] md:w-[135px] md:flex-none"
+              className="h-12 flex-1 rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] transition-colors hover:bg-[#f5f5f5] md:h-[52px] md:w-[135px] md:flex-none"
               onClick={handleEdit}
             >
               수정
@@ -218,14 +245,23 @@ export default function BoardActions({
             <button
               type="button"
               disabled={deleteLoading}
-              className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white disabled:opacity-60 md:h-[52px] md:w-[135px] md:flex-none"
+              className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white transition-colors hover:bg-black disabled:opacity-60 md:h-[52px] md:w-[135px] md:flex-none"
               onClick={handleDelete}
             >
               {deleteLoading ? '삭제 중...' : '삭제'}
             </button>
           )}
         </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setReportOpen(true)}
+          className="h-12 w-full rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] transition-colors hover:bg-[#f5f5f5] md:h-[52px] md:w-[135px]"
+        >
+          신고
+        </button>
       )}
+      {modals}
     </div>
   );
 }

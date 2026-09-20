@@ -10,7 +10,8 @@ import useAuthStore from '@/stores/useAuthStore';
 import ReportModal from '@/components/shared/board/boardList/ReportModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import AlertModal from '@/components/common/AlertModal';
-import { REPORT_SUCCESS_ALERT } from '@/constants/report';
+import { REPORT_SUCCESS_ALERT, REPORT_DUPLICATE_ALERT, getReasonId } from '@/constants/report';
+import { submitReport } from '@/apis/report';
 import { CornerDownRight, ArrowBigRight } from 'lucide-react';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { formatSlashDateTime } from '@/lib/boardDetail';
@@ -407,11 +408,28 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     setReportTarget(comment);
   };
 
-  // 신고 - 모달에서 사유 선택 후 확인
-  // TODO: 백엔드 신고(reports) API 스펙 확정 후 실제 전송 연동 (지금은 접수완료 모달만)
-  const handleReportSubmit = () => {
-    setReportTarget(null);
-    setAlertState(REPORT_SUCCESS_ALERT);
+  // 신고 - 모달에서 고른 사유를 서버에 보낸다. 409 는 이미 신고했거나 대상이 삭제된 경우
+  const [reportError, setReportError] = useState('');
+  const handleReportSubmit = async ({ reason, detail }) => {
+    if (!reportTarget) return;
+    setReportError('');
+    try {
+      await submitReport({
+        targetType: 'comment',
+        targetId: reportTarget.commentId,
+        reasonId: getReasonId(reason),
+        detail,
+      });
+      setReportTarget(null);
+      setAlertState(REPORT_SUCCESS_ALERT);
+    } catch (error) {
+      if (error?.response?.status === 409) {
+        setReportTarget(null);
+        setAlertState(REPORT_DUPLICATE_ALERT);
+        return;
+      }
+      setReportError(getErrorMessage(error, '신고 접수에 실패했습니다. 잠시 후 다시 시도해주세요.'));
+    }
   };
 
   // 익명 댓글은 서버가 authorName='익명', userId=null 로 이미 마스킹해 내려준다
@@ -632,8 +650,12 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
       {/* 댓글 신고 모달 */}
       <ReportModal
         open={Boolean(reportTarget)}
-        onClose={() => setReportTarget(null)}
+        onClose={() => {
+          setReportTarget(null);
+          setReportError('');
+        }}
         onSubmit={handleReportSubmit}
+        error={reportError}
         targetUser={reportTargetUser()}
         targetContent={reportTargetContent()}
       />

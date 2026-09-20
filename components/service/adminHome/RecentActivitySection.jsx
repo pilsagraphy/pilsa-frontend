@@ -92,19 +92,19 @@ function RecentMembers({ members, isLoading, error, onViewAll }) {
               key={member.userId}
               className="flex h-[44px] items-center border-b border-[#B9B9B9] pl-[10px] pr-[8px]"
             >
-              <span className="text-[18px] font-bold leading-[1.6] tracking-[-0.36px] text-[#212121]">
+              <span className="text-[16px] font-semibold leading-[1.6] tracking-[-0.32px] text-[#212121]">
                 {MEMBER_TYPE_LABELS[member.memberType] ?? member.memberType}
               </span>
 
               <span className="mx-[10px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9]" />
 
-              <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]">
+              <span className="text-[16px] leading-[1.6] tracking-[-0.32px] text-[#212121]">
                 {member.loginId}
               </span>
 
               <span className="mx-[10px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9]" />
 
-              <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]">
+              <span className="text-[16px] leading-[1.6] tracking-[-0.32px] text-[#212121]">
                 {member.name}
               </span>
 

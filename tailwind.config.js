@@ -58,6 +58,20 @@ module.exports = {
           '06': '#212121',
         },
       },
+      // 사이트 기본 글꼴. body 에 font-sans 를 걸어 두므로 font-['Pretendard'] 를 일일이 붙이지 않아도 된다
+      fontFamily: {
+        sans: [
+          'Pretendard',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'system-ui',
+          'Roboto',
+          '"Apple SD Gothic Neo"',
+          '"Noto Sans KR"',
+          '"Malgun Gothic"',
+          'sans-serif',
+        ],
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

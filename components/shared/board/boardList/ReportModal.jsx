@@ -16,6 +16,8 @@ export default function ReportModal({
   // { loginId, studentId, name } - 서버가 주지 않는 값은 자동으로 생략된다
   targetUser = null,
   targetContent = '',
+  // 전송 실패 메시지. 모달 안에 보여 준다 (닫으면 고른 사유가 날아간다)
+  error,
 }) {
   const targetUserText = formatMemberLabel(targetUser);
 
@@ -24,6 +26,7 @@ export default function ReportModal({
       open={open}
       onClose={onClose}
       onSubmit={onSubmit}
+      error={error}
       contentClassName="max-w-[346px]"
       title={
         <>

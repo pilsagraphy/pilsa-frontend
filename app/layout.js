@@ -39,7 +39,16 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
-      <body className="min-h-screen bg-white text-neutral-900 flex flex-col">
+      <head>
+        {/* 사이트 글꼴. 컴포넌트들이 font-['Pretendard'] 를 쓰는데 정작 불러오는 곳이 없어 시스템 글꼴로 떨어졌다.
+            동적 서브셋이라 페이지에 나온 글자만 받는다. 폰트는 CDN 밖 요청이 아니라 CSP 걱정이 없다 */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css"
+        />
+      </head>
+      <body className="min-h-screen bg-white font-sans text-neutral-900 flex flex-col">
         {/* 휴대폰인데 크롬 '데스크톱 사이트' 모드로 PC 화면이 그려질 때만 뜬다 (설치형 앱에서는 끌 방법이 없어 안내가 필요하다) */}
         <DesktopSiteNotice />
         {/* 아이폰으로 사이트 링크를 열고 들어온 사람에게 '홈 화면에 추가' 설치법 안내 (설치형 앱에서는 안 뜬다) */}
