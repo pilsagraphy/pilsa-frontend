@@ -520,7 +520,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                 {/* 이름 줄. 폰에서는 오른쪽에 액션이 같이 선다 */}
                 <div className="flex items-start justify-between gap-4 md:block">
                   <span
-                    className={`flex min-w-0 items-center gap-[16px] text-[16px] leading-[19px] tracking-[-0.32px] md:gap-1 md:leading-[26px] ${
+                    className={`flex min-w-0 items-center gap-[6px] text-[16px] leading-[19px] tracking-[-0.32px] md:leading-[26px] ${
                       owner ? 'font-semibold text-[#212121]' : 'text-[#454545]'
                     }`}
                   >
