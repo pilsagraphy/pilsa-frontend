@@ -15,7 +15,7 @@ import MonthlyScheduleList from '@/components/shared/calendars/MonthlyScheduleLi
 import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
 import CalendarSubscribeButton from '@/components/shared/calendars/CalendarSubscribeButton';
 import AddSingleEventDialog from '@/components/shared/calendars/AddSingleEventDialog';
-import { CalendarPlus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { getEventList } from '@/apis/event';
 import { CALENDAR_COLUMN_MAX_W } from '@/components/shared/calendars/calendarLayout';
 
@@ -245,7 +245,8 @@ export default function CalendarSection({
       }}
       className="grid size-6 place-items-center rounded-full text-[#919191] transition hover:bg-black/5 hover:text-[#212121]"
     >
-      <CalendarPlus size={20} strokeWidth={1.5} aria-hidden />
+      {/* 팀이 만든 원래 모양(+)을 그대로 쓴다 (PM, 2026-09-21) */}
+      <Plus size={20} strokeWidth={1.8} aria-hidden />
     </button>
   );
 
