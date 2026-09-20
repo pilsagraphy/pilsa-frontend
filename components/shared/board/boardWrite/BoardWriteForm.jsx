@@ -274,7 +274,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
             시안에서 툴바·카테고리는 남은 공간을 반씩 나눠 갖고(flex:1) 이 버튼만 135px 로 고정이다.
             라벨이 없으므로 옆 칸의 입력 박스 아래쪽에 맞춘다(self-end). */}
         {enableDraft && (
-          <div className="flex w-full shrink-0 xl:w-[135px] xl:self-end">
+          <div className="flex w-full shrink-0 lg:w-[135px] lg:self-end">
             <DraftLoadButton boardId={boardId} disabled={busy} />
           </div>
         )}

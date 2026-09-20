@@ -5,7 +5,7 @@ import { Search } from 'lucide-react';
 
 export default function SearchInput({ value, onChange, placeholder = '검색어를 입력하세요' }) {
   return (
-    <InputGroup className="h-12 w-full max-w-full xl:h-[52px] xl:max-w-80">
+    <InputGroup className="h-12 w-full max-w-full lg:h-[52px] lg:max-w-80">
       {/* min-w-0 이 없으면 input 의 기본 폭(size 속성에서 나오는 약 170px)이 최소 너비가 되어
           칸이 좁아질 때 줄어들지 않고 옆 요소 위로 넘친다. */}
       <InputGroupInput

@@ -85,13 +85,13 @@ export default function BoardAttachments({ attachments = [] }) {
   }
 
   return (
-    <section className="flex w-full flex-col gap-4 xl:gap-[20px]">
+    <section className="flex w-full flex-col gap-4 lg:gap-[20px]">
       <Divider />
 
-      <div className="flex flex-col gap-2 text-[15px] tracking-[-0.32px] xl:flex-row xl:items-start xl:gap-6 xl:text-[16px]">
+      <div className="flex flex-col gap-2 text-[15px] tracking-[-0.32px] lg:flex-row lg:items-start lg:gap-6 lg:text-[16px]">
         <span className="shrink-0 text-[#919191]">첨부파일</span>
 
-        <div className="flex min-w-0 flex-col items-start gap-2 xl:gap-[8px]">
+        <div className="flex min-w-0 flex-col items-start gap-2 lg:gap-[8px]">
           {list.map((file) => {
             const fileName = file?.originName ?? '첨부파일';
             const fileId = file?.attachmentId;

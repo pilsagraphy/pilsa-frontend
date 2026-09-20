@@ -27,7 +27,7 @@ const PAGE_SIZE = 10;
 // 검색은 타이핑마다 요청하지 않고 잠깐 멈춘 뒤에 한 번만 보낸다
 const SEARCH_DEBOUNCE_MS = 350;
 
-const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] xl:py-20 xl:text-base';
+const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] lg:py-20 lg:text-base';
 
 // 새 API 정렬값: created(최신) | viewCount(조회수)
 export default function BoardSection({ boardId }) {
@@ -192,13 +192,13 @@ export default function BoardSection({ boardId }) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 xl:p-10">
-      <h2 className="font-['Pretendard',sans-serif] text-[24px] font-bold leading-[1.5] tracking-[-0.02em] my-[15px] text-[#212121] xl:font-semibold">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 lg:p-10">
+      <h2 className="font-['Pretendard',sans-serif] text-[24px] font-bold leading-[1.5] tracking-[-0.02em] my-[15px] text-[#212121] lg:font-semibold">
         {title}
       </h2>
 
       {/* 데스크톱 컨트롤 (기존) */}
-      <div className="mb-4 mt-[10px] hidden gap-10 xl:flex xl:flex-row xl:items-end xl:justify-between">
+      <div className="mb-4 mt-[10px] hidden gap-10 lg:flex lg:flex-row lg:items-end lg:justify-between">
         <span className="shrink-0 text-[18px] leading-[1.6] tracking-[-0.02em] text-[#212121]">
           목록
         </span>
@@ -219,14 +219,14 @@ export default function BoardSection({ boardId }) {
             </div>
           )}
 
-          <div className="mb-[5px] min-w-0 flex-1 sm:min-w-[200px] xl:mb-0">
+          <div className="mb-[5px] min-w-0 flex-1 sm:min-w-[200px] lg:mb-0">
             <SearchInput value={searchInput} onChange={handleSearchChange} />
           </div>
         </div>
       </div>
 
       {/* 모바일 컨트롤 (피그마: 정렬·카테고리 버튼 + 검색, 한 줄) */}
-      <div className="mb-3 mt-2 xl:hidden">
+      <div className="mb-3 mt-2 lg:hidden">
         <BoardControlsMobile
           sortOrder={sortOrder}
           onSortChange={handleSortChange}
@@ -249,11 +249,11 @@ export default function BoardSection({ boardId }) {
       />
 
       {/* 데스크톱: 기존 사각형 글쓰기 버튼 */}
-      <div className="mb-16 mt-6 hidden justify-end xl:mb-[120px] xl:mt-[34px] xl:flex">
+      <div className="mb-16 mt-6 hidden justify-end lg:mb-[120px] lg:mt-[34px] lg:flex">
         <WriteButton boardId={boardId} canWrite={canWrite} />
       </div>
 
-      <div className="mt-6 flex justify-center xl:mt-0">
+      <div className="mt-6 flex justify-center lg:mt-0">
         <PaginationWithEllipsis
           currentPage={currentPage}
           totalPages={Math.max(1, totalPages)}
@@ -266,7 +266,7 @@ export default function BoardSection({ boardId }) {
         <Link
           href={ROUTES.BOARD_WRITE(boardId)}
           aria-label="글 작성하기"
-          className="fixed bottom-6 right-4 z-40 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[#212121] text-white shadow-lg xl:hidden"
+          className="fixed bottom-6 right-4 z-40 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-[#212121] text-white shadow-lg lg:hidden"
         >
           <PenLine size={26} strokeWidth={1.8} />
         </Link>

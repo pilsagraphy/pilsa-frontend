@@ -17,7 +17,7 @@ import BoardComments from './BoardComments';
 import PostPrevNext from '@/components/shared/board/PostPrevNext';
 import AppLoading from '@/components/common/AppLoading';
 
-const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] xl:py-20 xl:text-base';
+const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] lg:py-20 lg:text-base';
 
 // 공통게시판 게시글 상세.
 // boardId 로 게시판 정책(플래그)을, postId 로 글을 조회한다. 댓글은 별도 API(BoardComments)로 조회.
@@ -85,13 +85,13 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
   );
 
   return (
-    // 위 여백은 목록 화면(BoardSection: py-4 · xl:p-10)과 같게 — 목록에서 글로 들어가면 제목이 헤더에 붙어 보였다
-    <section className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-12 pt-4 xl:gap-[60px] xl:px-0 xl:pb-0 xl:pt-10">
+    // 위 여백은 목록 화면(BoardSection: py-4 · lg:p-10)과 같게 — 목록에서 글로 들어가면 제목이 헤더에 붙어 보였다
+    <section className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-12 pt-4 lg:gap-[60px] lg:px-0 lg:pb-0 lg:pt-10">
       <BoardHead label={board?.boardName ?? ''} listPath={listPath} />
 
       {/* 글 정보(제목·등록일·작성자)와 본문은 한 덩어리로 묶고 사이 간격만 좁게 준다.
           섹션의 일괄 간격(모바일 32px · 데스크톱 60px)을 그대로 쓰면 본문이 너무 멀어진다. */}
-      <div className="flex flex-col gap-2 xl:gap-[15px]">
+      <div className="flex flex-col gap-2 lg:gap-[15px]">
         <div className="flex flex-col">
           {/* '등록일' 칸이므로 created 를 넘긴다.
               updated 를 우선하면 수정된 글에서 목록의 등록일과 값이 어긋난다. */}
@@ -108,10 +108,10 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
           <BoardContent content={post.content} />
 
           {/* 본문 아래 여백은 본문 위쪽(글 정보 ↔ 본문) 간격과 같은 값으로 맞춘다 */}
-          <div className="mt-2 h-px w-full bg-[#DEDEDE] xl:mt-[15px]" />
+          <div className="mt-2 h-px w-full bg-[#DEDEDE] lg:mt-[15px]" />
 
           {/* 구분선 ↔ 좋아요·수정 버튼 간격도 본문 여백과 같은 값으로 맞춘다 */}
-          <div className="mt-2 xl:mt-[15px]">
+          <div className="mt-2 lg:mt-[15px]">
             <BoardActions
               boardId={boardId}
               postId={post.postId}

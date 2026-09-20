@@ -14,7 +14,7 @@ export const isEmphasizedCategory = (label) => EMPHASIZED.includes(String(label 
 const SHAPE = {
   default: 'rounded-full px-2 py-0.5 text-[12px] leading-[1.4]',
   pinned:
-    'rounded-md px-1.5 py-0.5 text-[11px] leading-[1.35] xl:rounded-full xl:px-2 xl:text-[12px] xl:leading-[1.4]',
+    'rounded-md px-1.5 py-0.5 text-[11px] leading-[1.35] lg:rounded-full lg:px-2 lg:text-[12px] lg:leading-[1.4]',
   mobile: 'h-[27px] rounded-full px-3 text-[14px] leading-none',
 };
 

@@ -18,7 +18,7 @@ export default function SortSelect({ value, onValueChange, compactSort = false, 
   if (compactSort) {
     return (
       <div
-        className="flex h-12 w-full min-w-0 shrink-0 items-center rounded-md border border-input bg-white px-3 text-[15px] leading-[1.6] tracking-[-0.02em] text-[#212121] sm:w-[120px] xl:h-[52px] xl:w-[135px] xl:text-[16px]"
+        className="flex h-12 w-full min-w-0 shrink-0 items-center rounded-md border border-input bg-white px-3 text-[15px] leading-[1.6] tracking-[-0.02em] text-[#212121] sm:w-[120px] lg:h-[52px] lg:w-[135px] lg:text-[16px]"
         aria-label="정렬: 최신순"
       >
         최신순
@@ -30,7 +30,7 @@ export default function SortSelect({ value, onValueChange, compactSort = false, 
 
   return (
     <Select value={value} onValueChange={onValueChange}>
-      <SelectTrigger className="h-12 w-full min-w-0 shrink-0 text-[15px] leading-[1.6] tracking-[-0.02em] text-[#212121] sm:w-[120px] xl:h-[52px] xl:w-[135px] xl:text-[16px]">
+      <SelectTrigger className="h-12 w-full min-w-0 shrink-0 text-[15px] leading-[1.6] tracking-[-0.02em] text-[#212121] sm:w-[120px] lg:h-[52px] lg:w-[135px] lg:text-[16px]">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
