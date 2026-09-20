@@ -79,6 +79,54 @@
   }
 }
 
+/* ─────────────── 글쓰기 편집기(Tiptap) 본문 ───────────────
+   상세 화면(BoardMarkdown)과 같은 모양이어야 "보이는 그대로" 가 된다. 요소별 값은 그쪽 클래스와 맞춘다 */
+.board-editor {
+  font-size: 15px;
+  line-height: 1.65;
+  letter-spacing: -0.32px;
+  color: #212121;
+  min-height: 100%;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+@media (min-width: 1024px) {
+  .board-editor {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+}
+.board-editor > *:first-child { margin-top: 0; }
+.board-editor > *:last-child { margin-bottom: 0; }
+.board-editor p { margin: 12px 0; }
+.board-editor h1 { margin: 24px 0 12px; font-size: 22px; font-weight: 600; }
+.board-editor h2 { margin: 24px 0 12px; font-size: 20px; font-weight: 600; }
+.board-editor h3 { margin: 20px 0 8px; font-size: 18px; font-weight: 600; }
+@media (min-width: 1024px) {
+  .board-editor h1 { font-size: 24px; }
+  .board-editor h2 { font-size: 22px; }
+  .board-editor h3 { font-size: 20px; }
+}
+.board-editor ul { margin: 12px 0; padding-left: 24px; list-style: disc; }
+.board-editor ol { margin: 12px 0; padding-left: 24px; list-style: decimal; }
+.board-editor li > p { margin: 2px 0; }
+.board-editor blockquote { margin: 16px 0; padding-left: 16px; border-left: 3px solid #dedede; color: #919191; }
+.board-editor hr { margin: 24px 0; border: 0; border-top: 1px solid #dedede; }
+.board-editor :not(pre) > code { padding: 2px 5px; border-radius: 3px; background: #f5f5f5; font-size: 14px; }
+.board-editor pre { margin: 16px 0; padding: 16px; border-radius: 4px; background: #f5f5f5; font-size: 14px; line-height: 1.6; overflow-x: auto; }
+.board-editor a { text-decoration: underline; text-underline-offset: 2px; }
+.board-editor img { max-width: 100%; height: auto; border-radius: 4px; }
+/* 빈 편집기의 안내 문구 */
+.board-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: #919191;
+  pointer-events: none;
+}
+/* 선택된 수평선 */
+.board-editor hr.ProseMirror-selectednode { border-top-color: #212121; }
+
 /* 제재 회원 관리: 세로 스크롤바 — 양끝 화살표 없이 스크롤바만 노출 */
 .mp-scroll-y {
   scrollbar-width: thin; /* Firefox */

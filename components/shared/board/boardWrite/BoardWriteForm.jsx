@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { ChevronDown, X } from 'lucide-react';
 import BoardWriteBox from './BoardWriteBox';
 import BoardWriteToolbar from './BoardWriteToolbar';
-import BoardMarkdownEditor from './BoardMarkdownEditor';
+import BoardRichEditor from './BoardRichEditor';
 import DraftLoadButton from './DraftLoadButton';
 import useBoardWriteStore from '@/stores/useBoardWriteStore';
 import { getBoardCategories } from '@/apis/board';
@@ -48,8 +48,8 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
   const removeFileAt = useBoardWriteStore((s) => s.removeFileAt);
   const toggleDeleteAttachment = useBoardWriteStore((s) => s.toggleDeleteAttachment);
 
-  // 툴바가 아래 '내용' 입력창에 서식을 넣어야 해서 ref 를 여기서 만들어 둘에 나눠준다
-  const contentRef = useRef(null);
+  // 툴바가 아래 '내용' 편집기에 서식을 걸어야 해서, 편집기가 만들어지면 여기로 올려 툴바에 넘긴다
+  const [editor, setEditor] = useState(null);
 
   const [categories, setCategories] = useState([]);
   // 게시판이 카테고리를 안 쓰면 관리자용 '중요'만 오고, 그것마저 없으면 칸을 그리지 않는다
@@ -176,9 +176,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
         {/* 툴바 (라벨 없는 42px 박스) */}
         <div className="relative flex h-[42px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
           <BoardWriteToolbar
-            contentRef={contentRef}
-            value={content}
-            onChange={setContent}
+            editor={editor}
             files={files}
             onFilesChange={setFiles}
             allowAttachment={allowAttachment}
@@ -188,13 +186,13 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
         {attachmentChips}
 
         {/* 본문 (라벨 없는 박스) */}
-        <div className="relative flex h-[420px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
-          <BoardMarkdownEditor
+        <div className="relative flex h-[360px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+          <BoardRichEditor
             boardId={boardId}
             value={content}
             onChange={setContent}
             allowUpload={allowAttachment}
-            textareaRef={contentRef}
+            onEditorReady={setEditor}
           />
         </div>
 
@@ -234,9 +232,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
       <div className="flex w-full flex-row gap-[12px]">
         <BoardWriteBox label="툴바">
           <BoardWriteToolbar
-            contentRef={contentRef}
-            value={content}
-            onChange={setContent}
+            editor={editor}
             files={files}
             onFilesChange={setFiles}
             allowAttachment={allowAttachment}
@@ -361,12 +357,12 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
       )}
 
       <BoardWriteBox label="내용" heightClass="h-[615px]">
-        <BoardMarkdownEditor
+        <BoardRichEditor
           boardId={boardId}
           value={content}
           onChange={setContent}
           allowUpload={allowAttachment}
-          textareaRef={contentRef}
+          onEditorReady={setEditor}
         />
       </BoardWriteBox>
 

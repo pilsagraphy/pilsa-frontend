@@ -233,14 +233,15 @@ export default function MyPageBoard() {
                 </TableHead>
               ) : (
                 <>
+                  {/* 게시판 목록 표와 같은 순서: 댓글 → 좋아요 → 조회수 (PM, 2026-09-21) */}
+                  <TableHead className="hidden w-[72px] text-center text-[#424242] xl:table-cell">
+                    댓글
+                  </TableHead>
                   <TableHead className="hidden w-[72px] text-center text-[#424242] xl:table-cell">
                     좋아요
                   </TableHead>
                   <TableHead className="hidden w-[72px] text-center text-[#424242] xl:table-cell">
                     조회수
-                  </TableHead>
-                  <TableHead className="hidden w-[72px] text-center text-[#424242] xl:table-cell">
-                    댓글
                   </TableHead>
                 </>
               )}
@@ -286,13 +287,13 @@ export default function MyPageBoard() {
                     ) : (
                       <>
                         <TableCell className="hidden text-center text-[#424242] xl:table-cell">
+                          {row.commentCount ?? 0}
+                        </TableCell>
+                        <TableCell className="hidden text-center text-[#424242] xl:table-cell">
                           {row.likeCount}
                         </TableCell>
                         <TableCell className="hidden text-center text-[#424242] xl:table-cell">
                           {row.viewCount}
-                        </TableCell>
-                        <TableCell className="hidden text-center text-[#424242] xl:table-cell">
-                          {row.commentCount ?? 0}
                         </TableCell>
                       </>
                     )}
