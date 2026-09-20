@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
 import useBoardStore from '@/stores/useBoardStore';
 import { getTopPosts } from '@/apis/board';
 import { getErrorMessage } from '@/apis/auth';
@@ -33,9 +32,18 @@ function BoardList({ boardId, title, posts = [], loading = false, emptyText, cla
         <Link
           href={ROUTES.BOARD(boardId)}
           aria-label={`${title} 전체보기`}
-          className="w-[24px] h-[24px] flex items-center justify-center hover:bg-[#F6F6F6] transition rounded-sm flex-shrink-0 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#212121]"
+          className="flex h-[24px] shrink-0 items-center justify-center rounded-sm px-[2px] text-[#212121] transition hover:bg-[#F6F6F6] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#212121]"
         >
-          <ArrowRight size={18} color="#1E1E1E" strokeWidth={2} aria-hidden />
+          {/* 글 하단 '목록' 버튼(PostPrevNext)과 같은 선 화살표 — 화살표 모양을 사이트 안에서 하나로 */}
+          <svg width="50" height="10" viewBox="0 0 50 10" fill="none" aria-hidden="true">
+            <path
+              d="M0 5H49M44 1L49 5L44 9"
+              stroke="currentColor"
+              strokeWidth="1"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </Link>
       </div>
 

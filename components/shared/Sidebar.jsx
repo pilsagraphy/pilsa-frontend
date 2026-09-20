@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown, X } from 'lucide-react';
@@ -53,6 +53,8 @@ const Sidebar = () => {
   // 위 effect 는 pathname 이 바뀔 때만 돌아서, 지금 보고 있는 페이지의 메뉴를 다시 누르거나
   // (예: /students 에서 '메인페이지') 이동이 막힌 경우(권한 없음 토스트)에는 사이드바가 그대로 남았다.
   // 펼침 버튼(ABOUT PILSA · 회원 게시판 · 관리자 메뉴)은 <button> 이라 여기에 걸리지 않는다.
+  const swipeRef = useRef(null);
+
   const closeOnLinkClick = useCallback((event) => {
     if (event.target.closest('a')) setIsMobileOpen(false);
   }, []);
@@ -170,6 +172,20 @@ const Sidebar = () => {
       {/* --- 사이드바 본체 --- */}
       <aside
         onClick={closeOnLinkClick}
+        // 왼쪽으로 쓸어 닫기 (폰). 세로 스크롤과 헷갈리지 않게 가로로 60px 넘게, 세로보다 많이 움직였을 때만
+        onTouchStart={(event) => {
+          const t = event.touches[0];
+          swipeRef.current = { x: t.clientX, y: t.clientY };
+        }}
+        onTouchEnd={(event) => {
+          const start = swipeRef.current;
+          swipeRef.current = null;
+          if (!start) return;
+          const t = event.changedTouches[0];
+          const dx = t.clientX - start.x;
+          const dy = t.clientY - start.y;
+          if (dx < -60 && Math.abs(dx) > Math.abs(dy) * 1.5) setIsMobileOpen(false);
+        }}
         className={`
           fixed top-0 left-0 h-[100dvh] overflow-y-auto overscroll-contain bg-white z-[60] flex flex-col border-r border-gray-100
           w-[210px] pl-9 py-6 tablet:w-[240px] tablet:pl-[80px] tablet:py-10
@@ -247,6 +263,8 @@ const Sidebar = () => {
               type="button"
               className="text-left"
               onClick={async () => {
+                // 확인 창이 사이드바 위에 겹치지 않게 먼저 닫는다
+                setIsMobileOpen(false);
                 const go = await confirmDialog(
                   '필사그래피 임원용 구글 드라이브 폴더로 이동됩니다.\n이동하시겠습니까?',
                   { confirmText: '이동', cancelText: '취소' }

@@ -55,6 +55,7 @@ export default function PostTable({
               post={post}
               boardId={boardId}
               listQuery={listQuery}
+              allowComment={allowComment}
             />
           ))
         )}

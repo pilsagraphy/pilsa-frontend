@@ -1,6 +1,6 @@
 'use client';
 
-import { Eye, Heart, Paperclip } from 'lucide-react';
+import { Eye, Heart, MessageCircle, Paperclip } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { ROUTES } from '@/constants/routes';
@@ -9,7 +9,7 @@ import CategoryBadge from './CategoryBadge';
 // 모바일 전용 목록 아이템 (피그마 기준)
 // - 윗줄: 칩(공지=검정 채움 / 카테고리=흰 바탕 테두리) + 제목(말줄임)
 // - 아랫줄: 조회수 · 좋아요 · 작성일
-export default function PostRowMobile({ post, boardId, listQuery = '' }) {
+export default function PostRowMobile({ post, boardId, listQuery = '', allowComment = true }) {
   const router = useRouter();
 
   const handleClick = () => {
@@ -46,6 +46,13 @@ export default function PostRowMobile({ post, boardId, listQuery = '' }) {
           <Heart size={18} strokeWidth={1.5} />
           {post.likeCount?.toLocaleString() ?? 0}
         </span>
+        {/* 댓글을 쓰는 게시판만 — 공지사항엔 댓글이 없다 */}
+        {allowComment && (
+          <span className="inline-flex items-center gap-1">
+            <MessageCircle size={18} strokeWidth={1.5} />
+            {post.commentCount?.toLocaleString() ?? 0}
+          </span>
+        )}
         <span>{formattedDate}</span>
       </div>
     </div>
