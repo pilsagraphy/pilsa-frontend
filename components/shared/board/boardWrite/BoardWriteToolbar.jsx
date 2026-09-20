@@ -28,9 +28,9 @@ const buttonClass = (active) =>
 const FORMAT_BUTTONS = [
   { key: 'bold', label: '굵게', Icon: Bold, run: (c) => c.toggleBold() },
   { key: 'italic', label: '기울임', Icon: Italic, run: (c) => c.toggleItalic() },
+  { key: 'hr', label: '수평선', Icon: Minus, run: (c) => c.setHorizontalRule() },
   { key: 'ul', label: '목록', Icon: List, run: (c) => c.toggleBulletList() },
   { key: 'ol', label: '번호 목록', Icon: ListOrdered, run: (c) => c.toggleOrderedList() },
-  { key: 'hr', label: '수평선', Icon: Minus, run: (c) => c.setHorizontalRule() },
 ];
 
 const HEADING_LEVELS = [1, 2, 3, 4, 5, 6];

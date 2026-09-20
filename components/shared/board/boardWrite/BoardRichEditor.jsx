@@ -304,7 +304,7 @@ export default function BoardRichEditor({
             className="flex items-center gap-1 px-2 py-1 text-[14px] text-[#919191] transition-colors hover:text-[#212121] disabled:opacity-60"
           >
             <ImagePlus size={16} strokeWidth={1.5} aria-hidden />
-            {uploading ? '올리는 중...' : '이미지'}
+            {uploading ? '올리는 중...' : '본문 이미지'}
           </button>
 
           <input
