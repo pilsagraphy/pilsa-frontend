@@ -14,7 +14,7 @@ export const DUMMY_LEADER = [
     imageSrc: '/images/leader/leader_1.png',
     officers: [
       {
-        term: '2021-1학기',
+        term: '2021',
         roles: [
           { role: '회장', names: ['박건희'] },
           { role: '부회장', names: ['김선하'] },
