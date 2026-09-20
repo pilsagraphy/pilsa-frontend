@@ -182,6 +182,12 @@ export default function MyPageBoard() {
                 <span className="min-w-0 flex-1 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-[#454545]">
                   {isComments ? row.postTitle : row.title}
                 </span>
+                {/* 글쓴이는 줄의 오른쪽 끝에 — 게시판 목록과 같은 자리 */}
+                {!isComments && row.authorName && (
+                  <span className="ml-auto max-w-[96px] shrink-0 truncate text-[13px] leading-[1.6] text-[#919191]">
+                    {row.authorName}
+                  </span>
+                )}
               </div>
 
               {/* 아랫줄: 댓글이면 내용, 글이면 좋아요·조회수 + 작성일 */}
@@ -190,13 +196,14 @@ export default function MyPageBoard() {
                   <span className="min-w-0 flex-1 truncate">{row.content}</span>
                 ) : (
                   <>
-                    <span className="inline-flex items-center gap-1">
-                      <Heart size={16} strokeWidth={1.5} />
-                      {row.likeCount ?? 0}
-                    </span>
+                    {/* 게시판 목록과 같은 순서: 조회 → 좋아요 → 댓글 */}
                     <span className="inline-flex items-center gap-1">
                       <Eye size={16} strokeWidth={1.5} />
                       {row.viewCount ?? 0}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Heart size={16} strokeWidth={1.5} />
+                      {row.likeCount ?? 0}
                     </span>
                     <span className="inline-flex items-center gap-1">
                       <MessageCircle size={16} strokeWidth={1.5} />

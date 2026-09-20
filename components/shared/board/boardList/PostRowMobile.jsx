@@ -34,6 +34,12 @@ export default function PostRowMobile({ post, boardId, listQuery = '', allowComm
           {post.title}
         </span>
         {post.hasAttachment && <Paperclip size={16} className="shrink-0 text-[#919191]" />}
+        {/* 글쓴이는 줄의 오른쪽 끝에 (제목이 짧아도 끝에 붙는다) */}
+        {post.authorName && (
+          <span className="ml-auto max-w-[96px] shrink-0 truncate text-[13px] leading-[1.6] text-[#919191]">
+            {post.authorName}
+          </span>
+        )}
       </div>
 
       {/* 아랫줄: 조회수 · 좋아요 · 작성일 */}

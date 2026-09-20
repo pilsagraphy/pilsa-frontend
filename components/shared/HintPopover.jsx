@@ -15,6 +15,10 @@ import { Info } from 'lucide-react';
 // PC 는 마우스를 올리면, 폰은 눌러서 띄운다. 스크롤하거나 창 크기가 바뀌면 닫는다 —
 // 따라다니게 만들면 떠 있는 동안 계속 좌표를 다시 재야 해서 오히려 덜컥거린다.
 
+// 마우스처럼 '올려 두기'가 되는 기기인가 (폰·태블릿은 아니다)
+const canHover = () =>
+  typeof window !== 'undefined' && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
 const WIDTH = 240; // 풍선 최대 너비
 const MARGIN = 12; // 창 가장자리에서 띄울 거리
 const GAP = 8; // 버튼과 풍선 사이
@@ -115,10 +119,12 @@ export default function HintPopover({ label = '설명', children, className = ''
         aria-label={label}
         aria-expanded={Boolean(pos)}
         onClick={() => (pos ? close() : open())}
-        onMouseEnter={open}
-        onMouseLeave={close}
-        onFocus={open}
-        onBlur={close}
+        // 마우스가 있는 기기에서만 올려서 연다. 폰은 첫 탭에 mouseenter 가 흉내로 먼저 와서 열렸다가
+        // 곧이어 click 이 닫아 버려 두 번 눌러야 떴다 — 손가락에는 click 만 남긴다
+        onMouseEnter={() => canHover() && open()}
+        onMouseLeave={() => canHover() && close()}
+        onFocus={() => canHover() && open()}
+        onBlur={() => canHover() && close()}
         className={`grid size-5 place-items-center rounded-full text-[#B9B9B9] transition hover:bg-[#F5F5F5] hover:text-[#757575] ${className}`}
       >
         <Info size={16} strokeWidth={1.5} />
