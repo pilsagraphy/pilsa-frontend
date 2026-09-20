@@ -312,23 +312,27 @@ const Sidebar = () => {
         {/* 하단 영역 */}
         <div className="flex flex-col items-start gap-4">
           {isAdminArea ? (
-            /* 관리자 영역: 로그아웃만 */
-            <Link href={`${ROUTES.LOGIN}?logout=1`}>
-              <button onClick={toggleLogin} className={bottomItemClass}>
-                로그아웃
-              </button>
-            </Link>
+            /* 관리자 영역: 회원 화면으로 돌아가는 길 + 로그아웃.
+               관리자 사이드바에는 게시판·소개 메뉴가 없어, 이 링크가 없으면 주소를 직접 쳐야 나갈 수 있었다 */
+            <>
+              <Link href={ROUTES.STUDENTS_DASHBOARD}>
+                <p className={bottomItemClass}>메인 페이지로 이동</p>
+              </Link>
+              <Link href={`${ROUTES.LOGIN}?logout=1`}>
+                <button onClick={toggleLogin} className={bottomItemClass}>
+                  로그아웃
+                </button>
+              </Link>
+            </>
           ) : isLoggedIn ? (
-            /* 로그인 상태: (관리자면) 관리자 페이지 이동 · 마이페이지 · 로그아웃 */
+            /* 로그인 상태: (관리자면) 관리자 페이지 이동 · 로그아웃.
+               마이페이지는 헤더 오른쪽 프로필 아이콘이 맡는다 — 두 군데 두면 같은 곳으로 가는 길이 중복된다 */
             <>
               {isAdmin && (
                 <Link href={ROUTES.ADMIN_HOME}>
                   <p className={bottomItemClass}>관리자 페이지 이동</p>
                 </Link>
               )}
-              <Link href={ROUTES.MY_PAGE}>
-                <p className={bottomItemClass}>마이페이지</p>
-              </Link>
               <Link href={`${ROUTES.LOGIN}?logout=1`}>
                 <button onClick={toggleLogin} className={bottomItemClass}>
                   로그아웃
