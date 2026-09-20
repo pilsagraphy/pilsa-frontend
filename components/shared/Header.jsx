@@ -28,10 +28,10 @@ export default function Header() {
 
   return (
     <header className="w-full h-16 tablet:h-40">
-      <div className="grid h-full grid-cols-[auto_1fr_auto] items-center px-3 tablet:px-6 lg:px-24">
+      <div className="flex h-full items-center px-3 tablet:grid tablet:grid-cols-[auto_1fr_auto] tablet:px-6 lg:px-24">
         {/* 왼쪽: 폰에서만 사이드바 여는 버튼. PC 는 사이드바가 늘 보여서 자리만 남긴다.
-            좌우 칸 폭을 같게 두어야 가운데 로고가 화면 정중앙에 선다 (오른쪽은 아이콘 두 개라 80px) */}
-        <div className="flex w-20 items-center tablet:w-24">
+            태블릿 이상에서만 좌우 칸 폭을 같게 둔다 — 그래야 가운데 로고가 화면 정중앙에 선다 */}
+        <div className="flex shrink-0 items-center tablet:w-24">
           <button
             type="button"
             aria-label="메뉴 열기"
@@ -43,12 +43,12 @@ export default function Header() {
         </div>
 
         {/* 가운데 로고. clamp 로 폰에서는 작게, PC 에서는 크게 */}
-        {/* 로고는 남는 폭에 맞춰 줄어든다.
-            6.5vw 로만 두면 폰에서 글자가 가운데 칸을 넘쳐 오른쪽 알림 종을 덮었다(2026-09-20).
-            (100vw - 200px) 는 좌우 아이콘 칸과 바깥 여백을 뺀 실제 남는 폭이고, 8.6 은 이 글꼴에서
-            'PILSAGRAPHY' 11글자가 글자 크기의 몇 배를 차지하는지다. overflow-hidden 은 마지막 안전장치. */}
+        {/* 폰에서는 로고를 왼쪽(햄버거 옆)에 붙인다. 가운데에 두면 글자가 오른쪽 알림 종까지 닿는다.
+            태블릿부터는 화면이 넓어 가운데 정렬로 돌아간다.
+            크기는 남는 폭에 맞춰 줄어든다 — (100vw - 200px) 는 좌우 아이콘 칸과 바깥 여백을 뺀 폭이고,
+            8.6 은 이 글꼴에서 'PILSAGRAPHY' 11글자가 글자 크기의 몇 배를 차지하는지다. */}
         <h1
-          className={`${zenDots.className} min-w-0 overflow-hidden text-center whitespace-nowrap`}
+          className={`${zenDots.className} min-w-0 flex-1 overflow-hidden whitespace-nowrap pl-1 text-left tablet:pl-0 tablet:text-center`}
           style={{ fontSize: 'clamp(15px, min(6.5vw, (100vw - 200px) / 8.6), 48px)' }}
         >
           {/* 시계 게이트(/)로는 보내지 않는다 — 로그인 상태면 학생 홈, 아니면 소개 페이지 */}
@@ -62,7 +62,7 @@ export default function Header() {
         </h1>
 
         {/* 오른쪽: 알림 종(로그인 시에만 그려진다) + 프로필. 왼쪽과 폭을 맞춰 로고가 정중앙에 선다 */}
-        <div className="flex w-20 items-center justify-end tablet:w-24 tablet:gap-1">
+        <div className="flex shrink-0 items-center justify-end tablet:w-24 tablet:gap-1">
           <NotificationBell />
           <Link
             href={isLoggedIn ? ROUTES.MY_PAGE : loginUrlWithReturnTo(currentPathForReturn())}
