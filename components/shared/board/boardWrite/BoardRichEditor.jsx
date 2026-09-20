@@ -178,7 +178,7 @@ export default function BoardRichEditor({
     ],
     editorProps: {
       attributes: {
-        class: 'board-editor w-full outline-none',
+        class: 'board-editor w-full p-[16px] outline-none',
       },
       handleDOMEvents: {
         // 폰(특히 안드로이드 한글 자판)의 엔터는 keydown 이 아니라 beforeinput(insertParagraph) 로 온다.
@@ -322,23 +322,16 @@ export default function BoardRichEditor({
         </div>
       )}
 
-      {/* 편집 영역 — 빈 곳을 눌러도 커서가 들어가게 상자 전체가 클릭 대상이다.
+      {/* 편집 영역 — 편집 가능한 요소(.board-editor) 자체가 상자 바닥까지 늘어난다.
+          예전엔 상자만 넓고 편집 요소는 글만큼이라, 글 아래 빈 곳에서 위로 끌어 전체 선택하는 게 안 됐다 (PM, 2026-09-21).
           안쪽 스크롤은 두지 않는다: 본문이 길어지면 상자가 자라고 페이지가 스크롤된다 */}
       <div
-        className="w-full flex-1 cursor-text p-[16px]"
+        className="flex w-full flex-1 cursor-text flex-col"
         onPaste={handlePaste}
         onDrop={handleDrop}
         onDragOver={(e) => allowUpload && e.preventDefault()}
-        onClick={(e) => {
-          if (e.target !== e.currentTarget || !editor) return;
-          // commands.focus() 는 폰에서 dom.focus() 를 그냥 불러, 긴 본문이면 편집 영역 맨 위로 스크롤이 튀었다
-          // (이미지 아래 빈 곳을 누르면 위로 올라갔다가 타이핑하면 다시 내려오던 현상, PM 2026-09-21).
-          // 커서만 끝으로 보내고 ProseMirror 의 focus(preventScroll) 를 쓴다
-          editor.commands.setTextSelection(editor.state.doc.content.size);
-          editor.view.focus();
-        }}
       >
-        <EditorContent editor={editor} />
+        <EditorContent editor={editor} className="flex flex-1 flex-col [&>.board-editor]:flex-1" />
       </div>
     </div>
   );
