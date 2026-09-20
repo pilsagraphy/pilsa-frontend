@@ -15,6 +15,7 @@ import useAdminBoardStore from '@/stores/useAdminBoardStore';
 
 import BoardTable from './BoardTable';
 import BoardFormModal from './BoardFormModal';
+import BoardCategoryModal from './BoardCategoryModal';
 
 const PAGE_SIZE = 10;
 
@@ -34,6 +35,8 @@ export default function BoardListSection({ title = '게시판 관리' }) {
 
   // 게시판 수정 · 생성 모달
   const [formModal, setFormModal] = useState(null); // { mode, board }
+  // 카테고리 관리 모달의 대상 게시판 (null 이면 닫힘)
+  const [categoryBoard, setCategoryBoard] = useState(null);
   // 모달 안에 띄우는 저장 실패 사유. 모달을 닫지 않고 여기에만 보여준다.
   const [formError, setFormError] = useState('');
   const [alertState, setAlertState] = useState(null); // { title, description }
@@ -165,6 +168,30 @@ export default function BoardListSection({ title = '게시판 관리' }) {
     }
   };
 
+  // 폰에서는 끌 수 없어 위·아래 버튼으로 옮긴다. 보내는 값은 드래그와 같다 — '몇 번째 자리'.
+  const handleMove = async (boardId, delta) => {
+    if (reorderingRef.current) return;
+
+    const index = sortedBoards.findIndex((board) => board.boardId === boardId);
+    if (index === -1) return;
+    const position = index + 1 + delta;
+    if (position < 1 || position > sortedBoards.length) return;
+
+    reorderingRef.current = true;
+    setIsReordering(true);
+    try {
+      const updated = await updateBoard(boardId, { displayOrder: position });
+      if (!updated) {
+        setAlertState({ title: takeStoreError('게시판 순서를 바꾸지 못했습니다.') });
+        return;
+      }
+      await fetchBoards();
+    } finally {
+      reorderingRef.current = false;
+      setIsReordering(false);
+    }
+  };
+
   const handleDragEnd = () => {
     setDraggingId(null);
     setDropTargetId(null);
@@ -187,14 +214,16 @@ export default function BoardListSection({ title = '게시판 관리' }) {
     setFormError('');
   };
 
-  // 모달이 넘겨주는 값은 서버 형식({ name, readScope, writeLevel })이다.
-  const handleFormSubmit = async ({ name, readScope, writeLevel }) => {
+  // 모달이 넘겨주는 값은 이미 서버 형식이다(name·readScope·writeLevel + 기능 스위치들).
+  // 예전에는 여기서 앞의 세 개만 꺼내 쓰고 나머지를 버려, 익명·비밀댓글·카테고리 사용을 켜도
+  // 서버에 닿지 않았다 (2026-09-20).
+  const handleFormSubmit = async (payload) => {
     const isEdit = formModal?.mode === 'edit';
     setFormError('');
 
     const result = isEdit
-      ? await updateBoard(formModal.board?.boardId, { name, readScope, writeLevel })
-      : await createBoard({ name, readScope, writeLevel });
+      ? await updateBoard(formModal.board?.boardId, payload)
+      : await createBoard(payload);
 
     if (!result) {
       // 이름 중복(409) 등 서버가 알려준 이유를 모달 안에 그대로 보여준다.
@@ -230,6 +259,9 @@ export default function BoardListSection({ title = '게시판 관리' }) {
       <BoardTable
         boards={pagedBoards}
         onEdit={handleOpenEdit}
+        onManageCategories={setCategoryBoard}
+        onMove={handleMove}
+        totalCount={sortedBoards.length}
         loading={isFirstLoading}
         saving={isSaving}
         errorMessage={listErrorMessage}
@@ -258,6 +290,17 @@ export default function BoardListSection({ title = '게시판 관리' }) {
         errorMessage={formError}
         onClose={handleCloseForm}
         onSubmit={handleFormSubmit}
+      />
+
+      {/* 게시판별 카테고리(태그) 관리 모달 */}
+      <BoardCategoryModal
+        board={categoryBoard}
+        open={Boolean(categoryBoard)}
+        onClose={() => {
+          setCategoryBoard(null);
+          // 카테고리를 지우면 그 게시판의 글 수는 그대로지만, 기본 카테고리 같은 값이 바뀌었을 수 있다
+          fetchBoards();
+        }}
       />
 
       {/* 안내 모달 */}

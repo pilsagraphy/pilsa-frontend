@@ -15,6 +15,8 @@ import { REPORT_TARGET_LABELS } from '@/constants/adminReports';
 import useBoardStore from '@/stores/useBoardStore';
 
 import ReportRow from './ReportRow';
+import ReportCardList from './ReportCardList';
+import { AdminSelectAllBar } from '@/components/shared/admin/AdminCardList';
 
 // 체크박스 열까지 포함한 전체 열 개수 (빈 목록 안내문 가로 병합에 사용)
 const COLUMN_COUNT = 8;
@@ -74,7 +76,31 @@ export default function ReportTable({
         : '';
 
   return (
-    <div className="overflow-x-auto border-t border-[#212121]">
+    <>
+      {/* 폰: 카드 목록 */}
+      <div className="border-t border-[#212121] md:hidden">
+        {!emptyMessage && (
+          <AdminSelectAllBar
+            checked={allSelected}
+            disabled={!reports?.length}
+            onCheckedChange={onSelectAll}
+            label={`신고된 ${targetLabel} 전체 선택`}
+            selectedCount={selectedIds.length}
+          />
+        )}
+        <ReportCardList
+          reports={reports ?? []}
+          selectedIds={selectedIds}
+          allowCommentByBoardId={allowCommentByBoardId}
+          onSelectOne={onSelectOne}
+          onRestore={onRestore}
+          onDelete={onDelete}
+          emptyMessage={emptyMessage}
+        />
+      </div>
+
+      {/* 태블릿 이상: 기존 표 */}
+      <div className="hidden overflow-x-auto border-t border-[#212121] md:block">
       {/* 열이 8개라 좁은 화면에서는 가로 스크롤로 처리한다.
           table-fixed로 둬야 위에서 잡은 열 너비가 그대로 지켜지고,
           미리보기 내용이 길어도 행 높이(58px)가 늘어나지 않는다. */}
@@ -122,6 +148,7 @@ export default function ReportTable({
           )}
         </TableBody>
       </Table>
-    </div>
+      </div>
+    </>
   );
 }

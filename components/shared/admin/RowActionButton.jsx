@@ -16,12 +16,15 @@ export default function RowActionButton({
   disabled = false,
   className,
   onClick,
+  // 눌리지 않는 이유를 붙인다 (예: '이미 처리된 신고예요')
+  title,
   children,
 }) {
   return (
     <button
       type="button"
       disabled={disabled}
+      title={title}
       onClick={onClick}
       className={cn(
         'inline-flex h-[26px] shrink-0 items-center justify-center whitespace-nowrap rounded-[3px] px-[8px] text-[14px] leading-[1.6] tracking-[-0.28px] transition-colors',

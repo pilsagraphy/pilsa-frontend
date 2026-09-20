@@ -8,9 +8,43 @@ export const REPORT_GRID = 'grid grid-cols-[repeat(6,minmax(0,1fr))] items-cente
 
 // 신고 내역 개별 행
 export default function ReportRow({ report, number }) {
+  // 원문 링크는 두 모양에서 같은 것을 쓴다
+  const link = report.link ? (
+    <a
+      href={report.link}
+      target="_blank"
+      rel="noreferrer"
+      title={report.targetTitle}
+      aria-label={report.linkLabel}
+      className="underline decoration-solid underline-offset-2"
+      onClick={(e) => e.stopPropagation()}
+    >
+      원문 보기
+    </a>
+  ) : (
+    <span className="text-[#919191]">-</span>
+  );
+
   return (
-    <div
-      className={`${REPORT_GRID} h-[46px] border-b border-[#dedede] font-['Pretendard',sans-serif] text-[14px] tracking-[-0.28px] text-[#454545]`}
+    <>
+      {/* 폰: 카드 한 장. 6열을 그대로 욱여넣으면 글자가 한 자씩 끊긴다 */}
+      <div className="flex flex-col gap-[4px] border-b border-[#dedede] py-[10px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-[#454545] md:hidden">
+        <div className="flex items-center justify-between gap-2">
+          <span className="min-w-0 truncate font-medium text-[#212121]">
+            {number}. {report.board}
+          </span>
+          <span className="shrink-0 text-[#919191]">{report.status}</span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="min-w-0 truncate">{report.reason}</span>
+          <span className="shrink-0">{link}</span>
+        </div>
+        {report.date && <div className="text-[12px] text-[#919191]">{report.date}</div>}
+      </div>
+
+      {/* 태블릿 이상: 기존 6열 그리드 */}
+      <div
+      className={`${REPORT_GRID} hidden h-[46px] border-b border-[#dedede] font-['Pretendard',sans-serif] text-[14px] tracking-[-0.28px] text-[#454545] md:grid`}
     >
       <div className="text-center">{number}</div>
       <div className="text-center">{report.board}</div>
@@ -20,25 +54,10 @@ export default function ReportRow({ report, number }) {
           (텍스트가 있으면 title 은 접근성 이름이 되지 않아 aria-label 이 따로 필요하다)
           경로를 모르는 게시판이면 link 가 없다 → 누를 수 없는 'Link' 대신 '-' 로 둔다.
           (관리자 댓글 관리의 CommentRow 가 '바로가기' 열을 같게 처리한다) */}
-      <div className="text-center">
-        {report.link ? (
-          <a
-            href={report.link}
-            target="_blank"
-            rel="noreferrer"
-            title={report.targetTitle}
-            aria-label={report.linkLabel}
-            className="underline decoration-solid underline-offset-2"
-            onClick={(e) => e.stopPropagation()}
-          >
-            Link
-          </a>
-        ) : (
-          <span className="text-[#919191]">-</span>
-        )}
-      </div>
+      <div className="text-center">{link}</div>
       <div className="text-center">{report.status}</div>
       <div className="text-center">{report.date}</div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -123,16 +123,17 @@ export default function PenaltyDashboardSection() {
   const selectedComments = forSelected(reportedComments, []);
 
   return (
-    <section className="mx-auto flex w-full max-w-[980px] flex-col gap-[24px] bg-white p-8 font-['Pretendard',sans-serif]">
+    <section className="mx-auto flex w-full max-w-[980px] flex-col gap-[24px] bg-white p-4 font-['Pretendard',sans-serif] md:p-8">
       {/* 화면 정체성 */}
       <h2 className="text-[24px] font-medium tracking-[-0.48px] text-[#212121]">제재 회원 관리</h2>
 
-      <div className="flex gap-[28px]">
+      {/* 좁은 화면에서는 목록 위 · 상세 아래로 쌓는다 (나란히 두면 오른쪽이 화면 밖으로 나간다) */}
+      <div className="flex flex-col gap-[20px] lg:flex-row lg:gap-[28px]">
         {/* 좌측: 회원 목록 */}
         <MemberListSection selectedId={selectedId} onSelect={setSelectedId} />
 
-        {/* 우측: 선택 회원 상세 (디자인 폭에 맞춰 고정) */}
-        <div className="w-[618px] shrink-0">
+        {/* 우측: 선택 회원 상세 (넓은 화면에서만 디자인 폭으로 고정) */}
+        <div className="w-full min-w-0 lg:w-[618px] lg:shrink-0">
           {selectedUser ? (
             <div className="flex flex-col">
               {/* 회원명 (아이디) + 회색 가로선 */}
@@ -166,7 +167,7 @@ export default function PenaltyDashboardSection() {
                   {selectedDetail.error}
                 </div>
               ) : selectedDetail.data ? (
-                <div className="mt-[24px] flex justify-between">
+                <div className="mt-[24px] grid grid-cols-2 gap-[10px] sm:flex sm:justify-between">
                   <PenaltyStatCard
                     value={`${selectedDetail.data.cautionRemainder}/10`}
                     label="누적 주의"

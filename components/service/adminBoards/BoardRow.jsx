@@ -13,6 +13,7 @@ import { getReadScopeLabel, getWriteLevelLabel } from '@/constants/adminBoards';
 export default function BoardRow({
   board,
   onEdit,
+  onManageCategories,
   // 저장 중에는 행 버튼을 잠근다 (연달아 눌러 요청이 겹치는 것을 막는다)
   disabled = false,
   // 드래그로 순서 변경
@@ -62,7 +63,19 @@ export default function BoardRow({
         {getWriteLevelLabel(board.writeLevel)}
       </TableCell>
 
-      {/* 3. 관리 - 수정 모달을 연다 (시안에 삭제 버튼은 없다) */}
+      {/* 3. 카테고리 - 이 게시판에서 쓸 태그를 등록·수정·삭제한다.
+             게시판을 만들어도 태그는 DB 를 직접 고쳐야 했던 것을 여기로 꺼냈다 */}
+      <TableCell className="text-center">
+        <RowActionButton
+          className="min-w-[44px]"
+          disabled={disabled}
+          onClick={() => onManageCategories?.(board)}
+        >
+          관리
+        </RowActionButton>
+      </TableCell>
+
+      {/* 4. 관리 - 수정 모달을 연다 (시안에 삭제 버튼은 없다) */}
       <TableCell className="text-center">
         <RowActionButton
           className="min-w-[44px]"
@@ -73,7 +86,7 @@ export default function BoardRow({
         </RowActionButton>
       </TableCell>
 
-      {/* 4. 순서 변경 핸들 - 실제로 끄는 동작은 여기서만 시작된다
+      {/* 5. 순서 변경 핸들 - 실제로 끄는 동작은 여기서만 시작된다
           마우스 드래그 전용이라(키보드·터치 미지원) 보조기기에는 노출하지 않는다.
           TODO: 키보드/터치로도 순서를 바꿔야 하면 방향키 조작이나 위·아래 버튼을 추가할 것 */}
       <TableCell className="text-center">

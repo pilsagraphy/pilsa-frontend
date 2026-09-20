@@ -27,8 +27,9 @@ export default function ReportSection({ title, reports = [], isLoading = false, 
       <p className="mb-[10px] text-[16px] tracking-[-0.32px] text-black">{title}</p>
 
       {/* 맨 위 헤더 행 (회색 글씨) */}
+      {/* 머리글은 6열 그리드일 때만 뜻이 있다 — 폰에서는 카드가 이름표를 직접 달고 있다 */}
       <div
-        className={`${REPORT_GRID} h-[46px] pr-[10px] text-[14px] tracking-[-0.28px] text-[#919191]`}
+        className={`${REPORT_GRID} hidden h-[46px] pr-[10px] text-[14px] tracking-[-0.28px] text-[#919191] md:grid`}
       >
         {HEADERS.map((header) => (
           <div key={header} className="text-center">
@@ -41,7 +42,7 @@ export default function ReportSection({ title, reports = [], isLoading = false, 
       <div className="border-b border-[#919191]" />
 
       {/* 스크롤 범위: row 1~5 (46px * 5). 6개 이상이면 세로 스크롤 (화살표 없이) */}
-      <div className="mp-scroll-y h-[230px] overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable]">
+      <div className="mp-scroll-y h-[280px] overflow-x-hidden overflow-y-auto [scrollbar-gutter:stable] md:h-[230px]">
         {isLoading ? (
           // 1) 로딩 중
           <div className="flex h-full items-center justify-center text-[14px] tracking-[-0.28px] text-[#919191]">

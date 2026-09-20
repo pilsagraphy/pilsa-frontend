@@ -11,13 +11,17 @@ import {
 import { Menu } from 'lucide-react';
 
 import BoardRow from './BoardRow';
+import BoardCardList from './BoardCardList';
 
 // 순서 열까지 포함한 전체 열 개수 (빈 목록 안내문 가로 병합에 사용)
-const COLUMN_COUNT = 6;
+const COLUMN_COUNT = 7;
 
 export default function BoardTable({
   boards,
   onEdit,
+  onManageCategories,
+  onMove,
+  totalCount = 0,
   draggingId = null,
   dropTargetId = null,
   dropPosition = null,
@@ -40,7 +44,22 @@ export default function BoardTable({
         : '';
 
   return (
-    <div className="overflow-x-auto border-t border-[#212121]">
+    <>
+      {/* 폰: 카드. 표는 가로 915px 이 필요해 좌우로 밀어야 했다 */}
+      <div className="border-t border-[#212121] md:hidden">
+        <BoardCardList
+          boards={boards ?? []}
+          onEdit={onEdit}
+          onManageCategories={onManageCategories}
+          onMove={onMove}
+          totalCount={totalCount}
+          disabled={saving}
+          emptyMessage={emptyMessage}
+        />
+      </div>
+
+      {/* 태블릿 이상: 기존 표 */}
+      <div className="hidden overflow-x-auto border-t border-[#212121] md:block">
       <Table className="w-full min-w-[915px]">
         <TableHeader>
           {/* 열 너비는 시안의 열 제목 중심 좌표에서 역산했다.
@@ -57,6 +76,9 @@ export default function BoardTable({
             </TableHead>
             <TableHead className="w-[15%] whitespace-nowrap text-center text-[#919191]">
               작성 권한
+            </TableHead>
+            <TableHead className="w-[13%] whitespace-nowrap text-center text-[#919191]">
+              카테고리
             </TableHead>
             <TableHead className="w-[13%] whitespace-nowrap text-center text-[#919191]">
               관리
@@ -91,11 +113,13 @@ export default function BoardTable({
                 onDragOver={onDragOver}
                 onDrop={onDrop}
                 onDragEnd={onDragEnd}
+                onManageCategories={onManageCategories}
               />
             ))
           )}
         </TableBody>
       </Table>
-    </div>
+      </div>
+    </>
   );
 }

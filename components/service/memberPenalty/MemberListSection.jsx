@@ -56,7 +56,7 @@ export default function MemberListSection({ selectedId, onSelect }) {
   };
 
   return (
-    <div className="flex w-[270px] shrink-0 flex-col gap-[16px] font-['Pretendard',sans-serif]">
+    <div className="flex w-full flex-col gap-[16px] font-['Pretendard',sans-serif] lg:w-[270px] lg:shrink-0">
       {/* '목록' + 우측 초기화 버튼(돋보기와 같은 열, 같은 색) */}
       <div className="flex items-center justify-between">
         <h3 className="text-[18px] tracking-[-0.36px] text-[#212121]">목록</h3>
@@ -100,7 +100,8 @@ export default function MemberListSection({ selectedId, onSelect }) {
       </InputGroup>
 
       {/* 스크롤 범위. 검색으로 한정된 목록을 노출 (세로 스크롤, 화살표 없이) */}
-      <div className="mp-scroll-y h-[720px] overflow-x-hidden overflow-y-auto pr-[6px]">
+      {/* 폰에서는 목록이 화면을 다 먹지 않게 짧게 — 아래 상세가 보여야 무엇을 고른 건지 안다 */}
+      <div className="mp-scroll-y h-[300px] overflow-x-hidden overflow-y-auto pr-[6px] lg:h-[720px]">
         {isLoading ? (
           // 1) 로딩 중
           <div className="flex h-full items-center justify-center text-[16px] tracking-[-0.32px] text-[#919191]">

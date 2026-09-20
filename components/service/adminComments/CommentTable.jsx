@@ -10,6 +10,8 @@ import {
 } from '@/components/ui/table';
 import SelectAllCheckbox from '@/components/shared/admin/SelectAllCheckbox';
 import CommentRow from './CommentRow';
+import CommentCardList from './CommentCardList';
+import { AdminSelectAllBar } from '@/components/shared/admin/AdminCardList';
 
 // 체크박스 열까지 포함한 전체 열 개수 (빈 목록 안내문 가로 병합에 사용)
 const COLUMN_COUNT = 8;
@@ -55,7 +57,32 @@ export default function CommentTable({
         : '';
 
   return (
-    <div className="overflow-x-auto border-t border-[#212121]">
+    <>
+      {/* 폰: 카드 목록 */}
+      <div className="border-t border-[#212121] md:hidden">
+        {!emptyMessage && (
+          <AdminSelectAllBar
+            checked={allSelected}
+            disabled={!comments?.length}
+            onCheckedChange={onSelectAll}
+            label="댓글 전체 선택"
+            selectedCount={selectedIds.length}
+          />
+        )}
+        <CommentCardList
+          comments={comments ?? []}
+          selectedIds={selectedIds}
+          onSelectOne={onSelectOne}
+          onBlind={onBlind}
+          onDelete={onDelete}
+          onMoveToReport={onMoveToReport}
+          disabled={saving}
+          emptyMessage={emptyMessage}
+        />
+      </div>
+
+      {/* 태블릿 이상: 기존 표 */}
+      <div className="hidden overflow-x-auto border-t border-[#212121] md:block">
       {/* 좁은 화면에서는 가로 스크롤로 처리한다.
           table-fixed로 둬야 위에서 잡은 열 너비가 그대로 지켜지고,
           댓글 내용이 길어도 행 높이(46px)가 늘어나지 않는다. */}
@@ -105,6 +132,7 @@ export default function CommentTable({
           )}
         </TableBody>
       </Table>
-    </div>
+      </div>
+    </>
   );
 }
