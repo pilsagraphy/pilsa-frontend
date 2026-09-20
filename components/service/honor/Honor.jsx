@@ -35,6 +35,11 @@ export default function Honor() {
 
   const totalCount = sortedDonors.length;
 
+  // 후원자가 이 수 이하면 1등만 크게 세우지 않고 모두 같은 크기로 보여 준다.
+  // 두세 명뿐인데 한 명만 크고 나머지가 작으면 줄 세우기처럼 보이고, 화면도 휑하다.
+  const EQUAL_LAYOUT_MAX = 4;
+  const showEqually = totalCount > 0 && totalCount <= EQUAL_LAYOUT_MAX;
+
   const firstRanker = sortedDonors.slice(0, 1);
   const topRankers = sortedDonors.slice(1, 4);
   const normalRankers = sortedDonors.slice(4);
@@ -72,27 +77,21 @@ export default function Honor() {
         </p>
       )}
 
-      {/* 등수별 그리드 영역 */}
+      {/* 후원자가 적으면 모두 같은 크기로, 많아지면 등수별 크기로 */}
       <section className="flex flex-col">
-        {/* 1등 (데이터가 1개 이상일 경우 표시) */}
-        {totalCount >= 1 && (
-          <HonorGrid items={firstRanker} rankType="first" />
-        )}
+        {showEqually ? (
+          <HonorGrid items={sortedDonors} rankType="equal" />
+        ) : (
+          <>
+            {/* 1등 */}
+            {totalCount >= 1 && <HonorGrid items={firstRanker} rankType="first" />}
 
-        {/* 2-4등 (데이터가 2개 이상일 경우 표시) */}
-        {totalCount >= 2 && (
-          <HonorGrid
-            items={topRankers}
-            rankType="top"
-          />
-        )}
+            {/* 2~4등 */}
+            {totalCount >= 2 && <HonorGrid items={topRankers} rankType="top" />}
 
-        {/* 5~n등 (데이터가 5개 이상일 경우 표시) */}
-        {totalCount >= 5 && (
-          <HonorGrid
-            items={normalRankers}
-            rankType="normal"
-          />
+            {/* 5등부터 */}
+            {totalCount >= 5 && <HonorGrid items={normalRankers} rankType="normal" />}
+          </>
         )}
       </section>
     </div>

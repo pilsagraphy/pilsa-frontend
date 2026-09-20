@@ -20,6 +20,13 @@ const HonorCard = ({ data, rankType }) => {
       info: 'text-[12px]',
       insert: 'inset-[12%]',
     },
+    // 후원자가 몇 명 없을 때. 등수로 크기를 가르지 않고 모두 같은 크기로 세운다
+    equal: {
+      w: 'w-full max-w-[200px]',
+      gap: 'gap-4',
+      info: 'text-[16px] font-semibold leading-[28px]',
+      insert: 'inset-[12%]',
+    },
   };
 
   const style = props[rankType];
@@ -50,11 +57,11 @@ const HonorCard = ({ data, rankType }) => {
         />
       </div>
 
-      {/* 인포 영역 */}
+      {/* 인포 영역. 남긴 말은 1등과 '모두 같은 크기'에서만 보여 준다 (작은 칸에는 들어가지 않는다) */}
       <div className={`text-center ${style.info}`}>
-        {rankType === 'first' ? (
+        {rankType === 'first' || rankType === 'equal' ? (
           <>
-            {/* 1등 (first) */}
+            {/* 1등(first) · 모두 같은 크기(equal) */}
             <p>{displayName}</p>
             {!isAnonymous && (
               <>
@@ -62,7 +69,7 @@ const HonorCard = ({ data, rankType }) => {
                 <p>{data.major}</p>
               </>
             )}
-            <p>&quot; {data.message} &quot;</p>
+            {data.message && <p>&quot; {data.message} &quot;</p>}
           </>
         ) : (
           <>
