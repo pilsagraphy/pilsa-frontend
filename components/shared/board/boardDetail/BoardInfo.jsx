@@ -5,6 +5,7 @@ import { formatKoreanDate } from '@/lib/boardDetail';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
 
 import StateChip from './StateChip';
+import CategoryBadge from '@/components/shared/board/boardList/CategoryBadge';
 
 function Divider({ dark = false }) {
   return <div className={['w-full h-px', dark ? 'bg-[#B9B9B9]' : 'bg-[#DEDEDE]'].join(' ')} />;
@@ -15,12 +16,9 @@ function VLine() {
 }
 
 // 카테고리명 또는 '중요' 같은 배지
+// 배지 모양·색 규칙은 CategoryBadge 한 곳에 있다 ('중요'·'공지'만 채움)
 function Badge({ label }) {
-  return (
-    <div className="bg-[#212121] h-[27px] rounded-[103px] px-[12px] flex items-center justify-center">
-      <span className="text-white text-[12px] tracking-[-0.24px] leading-none">{label}</span>
-    </div>
-  );
+  return <CategoryBadge variant="mobile">{label}</CategoryBadge>;
 }
 
 // 제목 · 배지 · 등록일 · 작성자 영역

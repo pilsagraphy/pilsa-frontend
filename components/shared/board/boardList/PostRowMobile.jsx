@@ -4,7 +4,7 @@ import { Eye, Heart, Paperclip } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 import { ROUTES } from '@/constants/routes';
-import { cn } from '@/lib/utils';
+import CategoryBadge from './CategoryBadge';
 
 // 모바일 전용 목록 아이템 (피그마 기준)
 // - 윗줄: 칩(공지=검정 채움 / 카테고리=흰 바탕 테두리) + 제목(말줄임)
@@ -19,9 +19,8 @@ export default function PostRowMobile({ post, boardId, listQuery = '' }) {
 
   const formattedDate = post.created?.slice(0, 10).replace(/-/g, '.');
 
-  // 배지: 카테고리명 우선, 없으면 중요글만 '중요'. '중요'/'공지'는 채움, 일반 카테고리는 테두리.
+  // 배지: 카테고리명 우선, 없으면 중요글만 '중요'. 색을 줄지는 CategoryBadge 가 라벨로 판단한다
   const badgeLabel = post.categoryName || (post.isPinned ? '중요' : '');
-  const filled = Boolean(post.isPinned) || badgeLabel === '중요' || badgeLabel === '공지';
 
   return (
     <div
@@ -30,16 +29,7 @@ export default function PostRowMobile({ post, boardId, listQuery = '' }) {
     >
       {/* 윗줄: 칩 + 제목 */}
       <div className="flex items-center gap-[10px] px-5">
-        {badgeLabel && (
-          <span
-            className={cn(
-              'inline-flex h-[27px] shrink-0 items-center rounded-full px-3 text-[14px] leading-none tracking-[-0.02em]',
-              filled ? 'bg-[#212121] text-white' : 'border border-[#919191] text-[#212121]'
-            )}
-          >
-            {badgeLabel}
-          </span>
-        )}
+        {badgeLabel && <CategoryBadge variant="mobile">{badgeLabel}</CategoryBadge>}
         <span className="min-w-0 flex-1 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-[#454545]">
           {post.title}
         </span>
