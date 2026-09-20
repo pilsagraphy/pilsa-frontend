@@ -49,7 +49,7 @@ export default function ManagerDashboardSection() {
   }, [fetchStats, fetchRecentReports, fetchRecentMembers, reset]);
 
   return (
-    <section className="mx-auto flex w-full max-w-[1016px] flex-col gap-[24px] bg-white p-4 sm:p-6 md:gap-[30px] md:p-8">
+    <section className="mx-auto flex w-full max-w-[1016px] flex-col gap-[24px] bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[30px] md:p-10">
       {/* 영역 1: 인사말 */}
       <div className="flex w-full flex-col">
         {/* 글자 크기·자간·줄 간격은 메인 인사말(StudentsDashboardIntro)과 같은 값이다 */}

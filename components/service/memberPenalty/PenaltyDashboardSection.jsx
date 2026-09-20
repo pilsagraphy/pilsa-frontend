@@ -155,7 +155,7 @@ export default function PenaltyDashboardSection() {
   const selectedComments = forSelected(reportedComments, []);
 
   return (
-    <section className="mx-auto flex w-full max-w-[980px] flex-col gap-[24px] bg-white p-4 font-['Pretendard',sans-serif] md:p-8">
+    <section className="mx-auto flex w-full max-w-[1016px] flex-col gap-[24px] bg-white px-4 py-4 font-['Pretendard',sans-serif] sm:px-6 sm:py-7 md:p-10">
       {/* 화면 정체성 */}
       <h2 className="text-[24px] font-medium tracking-[-0.48px] text-[#212121]">제재 회원 관리</h2>
 

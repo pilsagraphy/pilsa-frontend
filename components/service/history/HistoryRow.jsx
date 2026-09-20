@@ -4,8 +4,9 @@ const HistoryRow = ({ year, activities, isFirst = false, focused = false }) => (
   <div
     id={`year-${year}`}
     // 역대 회장에서 링크로 오면 이 줄이 화면 가운데로 오고 연도가 진해진다
-    className={`flex scroll-mt-[100px] gap-[70px] border-t py-10 transition-colors ${
-      isFirst ? 'border-t-[1.5px] border-[#919191]' : 'border-[#DEDEDE]'
+    // 첫 행은 윗줄을 긋지 않는다 — 제목 칸의 밑줄과 겹쳐 두 줄로 보였다
+    className={`flex scroll-mt-[100px] gap-[70px] py-10 transition-colors ${
+      isFirst ? '' : 'border-t border-[#DEDEDE]'
     } ${focused ? 'bg-[#FAFAFA]' : ''}`}
   >
     <span
