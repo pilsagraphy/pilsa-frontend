@@ -84,9 +84,11 @@ export default function AddSingleEventDialog({ schedule, open, onClose }) {
         </DialogDescription>
 
         <DialogFooter className="flex flex-col gap-[8px] sm:flex-col sm:space-x-0">
-          {/* 이 기기에서 잘 되는 방법을 위에 둔다 */}
-          {onApple ? icsButton : googleButton}
-          {onApple ? googleButton : icsButton}
+          {/* 애플 기기: 캘린더 파일이 곧바로 '추가' 창을 띄우니 그걸 앞에, 구글은 뒤에.
+              그 외(안드로이드·PC): .ics 는 다운로드로 끝나 파일을 다시 열어야 한다 — 그런 버튼은 없는 게 낫다.
+              구글 캘린더 추가 화면 하나만 둔다 (크롬·삼성 인터넷·엣지 모두 한 번에 열린다) */}
+          {onApple ? icsButton : null}
+          {googleButton}
           <Button type="button" variant="outline" onClick={onClose} className={outlineBtn}>
             닫기
           </Button>

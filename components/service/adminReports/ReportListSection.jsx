@@ -379,8 +379,8 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
         <div className="mb-[5px] mt-[10px] flex flex-col gap-3 md:mb-4 md:mt-[20px] lg:flex-row lg:items-center lg:justify-between">
           {/* flex-wrap이 핵심이다. 안쪽 요소들이 고정 폭이라 줄바꿈을 허용하지 않으면
               컨테이너 밖으로 삐져나와 오른쪽 버튼과 겹친다. */}
-          {/* 폰: 드롭다운 셋을 2열로, 검색은 한 줄 전체. 세로로 넷을 쌓으면 목록이 화면 밖으로 밀린다 */}
-          <div className="grid grid-cols-2 items-center gap-2 sm:flex sm:flex-wrap">
+          {/* 폰: 드롭다운 셋을 한 줄에, 검색은 그 아래 한 줄 전체. 세로로 넷을 쌓으면 목록이 화면 밖으로 밀린다 */}
+          <div className="grid grid-cols-3 items-center gap-2 sm:flex sm:flex-wrap">
             {/* 서버가 받는 정렬 값이 latest 하나뿐이라 고를 것이 없다. 시안의 드롭다운 자리만 지킨다. */}
             <SortSelect
               value={REPORT_SORT_LATEST}
@@ -398,7 +398,7 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
               onValueChange={handleStatusFilterChange}
               options={STATUS_FILTER_OPTIONS}
             />
-            <div className="col-span-2 w-full sm:w-[180px]">
+            <div className="col-span-3 w-full sm:w-[180px]">
               {/* 서버 검색 대상은 본문 또는 글쓴이명 부분일치. 안내 문구는 시안대로 '검색어 입력'으로 둔다. */}
               <SearchInput
                 value={searchQuery}

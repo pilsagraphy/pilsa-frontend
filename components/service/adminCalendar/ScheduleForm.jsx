@@ -370,7 +370,8 @@ export default function ScheduleForm({
         </ScheduleFormRow>
       </div>
 
-      <div className="mt-[22px] flex items-center justify-center gap-[12px] md:justify-end">
+      {/* 취소는 왼쪽 끝, 확인은 오른쪽 끝 — 글쓰기 화면의 버튼 배치와 같다 */}
+      <div className="mt-[22px] flex items-center justify-between gap-[12px]">
         <button
           type="button"
           onClick={onCancel}

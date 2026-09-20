@@ -1,16 +1,15 @@
 import React from 'react';
 
-// 게시글 · 댓글의 상태(공개 · 블라인드 · 삭제)를 네모 테두리로 감싼 표시.
-// 관리자 상세에서만 쓴다 (사용자 화면에는 상태를 보여주지 않는다).
+// 게시글 · 댓글의 상태(공개 · 블라인드 · 삭제) 표시. 관리자 상세에서만 쓴다 (사용자 화면에는 상태를 보여주지 않는다).
 //
-// 테두리로 감싸는 이유는 제목·작성자 이름 바로 옆에 붙기 때문이다.
-// 글자만 두면 '테스트재학생 삭제'처럼 이름의 일부로 읽힌다.
-// 카테고리 배지(검정 채우기)와도 구분돼야 해서 채우지 않고 테두리만 쓴다.
+// '상태: 공개'처럼 이름을 붙인다 — 글자만 두면 '테스트재학생 삭제'처럼 작성자 이름의 일부로 읽힌다.
+// 모양은 다른 배지(카테고리·재학생·권한)와 같은 둥근 알약이다. 채우지 않고 테두리만 써서 카테고리(검정 채우기)와 갈린다.
 export default function StateChip({ label }) {
   if (!label) return null;
 
   return (
-    <span className="shrink-0 rounded-[3px] border border-[#212121] px-[8px] py-[1px] text-[12px] leading-[1.6] tracking-[-0.24px] text-[#212121]">
+    <span className="shrink-0 whitespace-nowrap rounded-full border border-[#B9B9B9] px-[9px] py-[1px] text-[12px] leading-[1.6] tracking-[-0.24px] text-[#454545]">
+      <span className="text-[#919191]">상태: </span>
       {label}
     </span>
   );
