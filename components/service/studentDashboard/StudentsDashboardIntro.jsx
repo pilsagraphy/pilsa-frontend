@@ -95,7 +95,7 @@ export default function StudentsDashboardIntro() {
         {/* 왼쪽: 인사말 */}
         <div className="flex min-w-0 flex-col gap-[6px]">
           <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[20px]">
-            {userName}님, 안녕하세요! :) ✍️
+            {userName}님, 안녕하세요! :)
           </h2>
           {greetingSubText && (
             <p className="text-[14px] font-normal leading-[1.6] tracking-[-0.02em] text-[#212121] md:text-[15px]">
