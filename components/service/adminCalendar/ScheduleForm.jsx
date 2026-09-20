@@ -238,12 +238,14 @@ export default function ScheduleForm({
           <div className="flex flex-col gap-[12px]">
             {/* 시작 · 종료를 한 줄에 — 각각 날짜 칸(달력) 옆에 그날의 시각. 폰에서는 종료가 아래로 내려온다.
                 예전엔 년·월·일 셀렉트 여섯 개 + 달력 버튼 + 시각 셀렉트 네 개가 따로 놀았다 (PM, 2026-09-20) */}
-            <div className="flex flex-col gap-[12px] lg:flex-row lg:items-center lg:gap-[20px]">
+            {/* 시작·종료 묶음은 안에서 줄을 바꾸지 않는다 — 폭이 모자라면 종료 묶음이 통째로 다음 줄로 내려간다.
+                안에서 바뀌면 '시작 날짜' 아래에 시각만 덜렁 남아 어느 줄 것인지 헷갈렸다 (1100px 안팎 화면) */}
+            <div className="flex flex-wrap items-center gap-x-[24px] gap-y-[12px]">
             {[
               { label: '시작', parts: start, setParts: setStart, time: startTime, setTime: setStartTimeField, min: null },
               { label: '종료', parts: end, setParts: setEnd, time: endTime, setTime: setEndTimeField, min: partsToInput(start) },
             ].map((row) => (
-              <div key={row.label} className="flex flex-wrap items-center gap-[8px]">
+              <div key={row.label} className="flex flex-wrap items-center gap-[8px] sm:flex-nowrap">
                 <span className="w-[32px] shrink-0 text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">
                   {row.label}
                 </span>
