@@ -21,6 +21,13 @@ export const DUMMY_HISTORY = [
   },
   {
     year: "2026",
-    activities: ["필사그래피 웹사이트 개설", "EBS 촬영"],
+    activities: [
+      "필사그래피 웹사이트 개설",
+      // 영상은 서버 public/videos 에 있다 (77MB 엔딩 크레딧 클립 — 레포에는 넣지 않는다)
+      {
+        text: "26.08.31. EBS 다큐프라임 '당신의 글씨는 안녕한가요?'",
+        video: "/videos/ebs-ending-credit.mp4",
+      },
+    ],
   },
 ];

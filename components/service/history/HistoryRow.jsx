@@ -18,7 +18,7 @@ const HistoryRow = ({ year, activities, isFirst = false, focused = false }) => (
     </span>
     <div className="flex flex-1 flex-col gap-1">
       {activities.map((activity, index) => (
-        <ActivityItem key={`${year}-${index}`} text={activity} />
+        <ActivityItem key={`${year}-${index}`} activity={activity} />
       ))}
     </div>
   </div>
