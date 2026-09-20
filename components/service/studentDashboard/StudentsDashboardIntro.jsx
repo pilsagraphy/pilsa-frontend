@@ -95,11 +95,17 @@ export default function StudentsDashboardIntro() {
           )}
         </div>
 
-        {/* 이 주의 문장: 모바일 전체 너비 · lg 이상 인사말과 같은 줄에서 우측 정렬 */}
+        {/* 이 주의 문장: 모바일 전체 너비 · lg 이상 인사말과 같은 줄에서 우측 정렬.
+            문장만 덩그러니 두면 무엇인지 알기 어려워 안내 한 줄을 위에 붙인다 */}
         {quote && (
-          <p className="min-w-0 max-w-full break-words text-[13px] font-normal tracking-[-0.02em] text-[#B9B9B9] md:text-[14px] lg:pb-[4px] lg:text-right">
-            &quot;{quote}&quot;
-          </p>
+          <div className="flex min-w-0 flex-col gap-[2px] lg:pb-[4px] lg:text-right">
+            <p className="text-[12px] font-medium tracking-[-0.02em] text-[#919191] md:text-[13px]">
+              오늘도 이 주의 문장과 함께 좋은 하루 보내세요
+            </p>
+            <p className="max-w-full break-words text-[13px] font-normal tracking-[-0.02em] text-[#B9B9B9] md:text-[14px]">
+              &quot;{quote}&quot;
+            </p>
+          </div>
         )}
       </div>
     </div>

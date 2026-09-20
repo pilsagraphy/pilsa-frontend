@@ -31,7 +31,7 @@ const GalleryTile = ({ photo, activeSrc = null, onActivate }) => {
 
   return (
     <div
-      className="group relative size-full overflow-hidden rounded-[8px] bg-[#D9D9D9]"
+      className="group relative size-full overflow-hidden rounded-[4px] bg-[#D9D9D9]"
       onClick={handleClick}
     >
       <Image
