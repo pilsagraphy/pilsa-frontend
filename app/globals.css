@@ -284,6 +284,14 @@
   animation: gateHintRipple 2.2s ease-out infinite;
 }
 
+/* PC(가로가 세로보다 넓은 화면): 시계가 세로에 꽉 차게 그려져 20vh 는 다이얼 안에 걸린다.
+   바닥 쪽으로 더 내린다. 폰은 위 값이 맞아서 손대지 않는다 */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .gateHint {
+    bottom: max(7vh, 40px);
+  }
+}
+
 @keyframes gateHintPulse {
   0%, 100% { opacity: 0.95; }
   50% { opacity: 0.4; }
