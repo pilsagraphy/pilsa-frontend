@@ -4,6 +4,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ChevronDown, ChevronUp, ImagePlus, Trash2 } from 'lucide-react';
 import { EditorContent, NodeViewWrapper, ReactNodeViewRenderer, useEditor } from '@tiptap/react';
 import { NodeSelection } from '@tiptap/pm/state';
+import { Extension } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
 import Image from '@tiptap/extension-image';
@@ -134,6 +135,17 @@ const ColoredTextStyle = TextStyle.extend({
   },
 });
 
+// ESC: 커서 자리에 걸린 서식(굵게·기울임·색)과 블록 서식(제목·목록)을 전부 풀어 평문으로 돌아간다 (PM, 2026-09-21).
+// 글자를 고르지 않고 눌러도 이어서 칠 글자에 서식이 붙지 않는다
+const EscapeClearsFormatting = Extension.create({
+  name: 'escapeClearsFormatting',
+  addKeyboardShortcuts() {
+    return {
+      Escape: () => this.editor.chain().focus().unsetAllMarks().clearNodes().run(),
+    };
+  },
+});
+
 const pickImageFiles = (fileList) =>
   Array.from(fileList ?? []).filter((file) => file?.type?.startsWith('image/'));
 
@@ -175,6 +187,7 @@ export default function BoardRichEditor({
       BackgroundColor,
       EditorImage.configure({ inline: false, allowBase64: false }),
       Placeholder.configure({ placeholder }),
+      EscapeClearsFormatting,
     ],
     editorProps: {
       attributes: {
