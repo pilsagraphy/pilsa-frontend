@@ -407,14 +407,17 @@ const Sidebar = () => {
               </Link>
             </>
           ) : isLoggedIn ? (
-            /* 로그인 상태: (관리자면) 관리자 페이지 이동 · 로그아웃.
-               마이페이지는 헤더 오른쪽 프로필 아이콘이 맡는다 — 두 군데 두면 같은 곳으로 가는 길이 중복된다 */
+            /* 로그인 상태: (관리자면) 관리자 페이지 이동 · 마이페이지 · 로그아웃.
+               마이페이지는 헤더 프로필 아이콘과 겹친다고 한 번 뺐다가 다시 살렸다 (PM, 2026-09-21) */
             <>
               {isAdmin && (
                 <Link href={ROUTES.ADMIN_HOME}>
                   <p className={bottomItemClass}>관리자 페이지 이동</p>
                 </Link>
               )}
+              <Link href={ROUTES.MY_PAGE}>
+                <p className={bottomItemClass}>마이페이지</p>
+              </Link>
               <Link href={`${ROUTES.LOGIN}?logout=1`}>
                 <button onClick={toggleLogin} className={bottomItemClass}>
                   로그아웃
