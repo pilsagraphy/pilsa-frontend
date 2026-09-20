@@ -2,33 +2,31 @@ import { cn } from '@/lib/utils';
 
 // 제목 옆 배지 — 목록(PC·모바일)·상세·이전다음이 모두 이걸 쓴다. 규칙을 한 곳에만 둔다.
 //
-// 색은 '중요'와 '공지'에만 준다. 그 둘은 운영진이 올린 것이라 눈에 띄어야 하지만,
-// 일상·질문 같은 일반 카테고리까지 칠하면 목록이 검은 알약으로 가득 차 제목이 안 읽힌다.
-// 일반 카테고리는 바탕도 테두리도 없이 회색 글자만 둔다.
+// 모양(크기·여백·둥글기)은 어느 카테고리든 같고 색만 다르다.
+// '중요'·'공지'는 운영진이 올린 것이라 눈에 띄어야 해서 검정으로 채운다.
+// 일상·질문 같은 일반 카테고리는 채우지 않고 테두리만 — 다 칠하면 목록이 검은 알약으로 가득 차
+// 제목이 안 읽히고, 테두리까지 없애면 배지인지 그냥 글자인지 구분이 안 된다.
 const EMPHASIZED = ['중요', '공지'];
 
 export const isEmphasizedCategory = (label) => EMPHASIZED.includes(String(label ?? '').trim());
 
-export default function CategoryBadge({ children, variant = 'default' }) {
-  const emphasized = isEmphasizedCategory(children);
+// variant 는 놓이는 자리에 따른 크기만 정한다 (색은 라벨이 정한다)
+const SHAPE = {
+  default: 'rounded-full px-2 py-0.5 text-[12px] leading-[1.4]',
+  pinned:
+    'rounded-md px-1.5 py-0.5 text-[11px] leading-[1.35] md:rounded-full md:px-2 md:text-[12px] md:leading-[1.4]',
+  mobile: 'h-[27px] rounded-full px-3 text-[14px] leading-none',
+};
 
+export default function CategoryBadge({ children, variant = 'default' }) {
   return (
     <span
       className={cn(
         'inline-flex shrink-0 items-center tracking-[-0.02em]',
-        emphasized
-          ? 'rounded-full bg-[#212121] text-white'
-          : // 색 없는 쪽은 좌우 여백도 빼서 제목과의 간격이 두 배로 벌어지지 않게 한다
-            'text-[#919191]',
-        variant === 'default' &&
-          cn('text-[12px] leading-[1.4]', emphasized ? 'px-2 py-0.5' : 'py-0.5'),
-        variant === 'pinned' &&
-          cn(
-            'text-[11px] leading-[1.35] md:text-[12px] md:leading-[1.4]',
-            emphasized ? 'rounded-md px-1.5 py-0.5 md:rounded-full md:px-2' : 'py-0.5'
-          ),
-        variant === 'mobile' &&
-          cn('text-[14px] leading-none', emphasized ? 'h-[27px] px-3' : 'h-[27px]')
+        SHAPE[variant] ?? SHAPE.default,
+        isEmphasizedCategory(children)
+          ? 'bg-[#212121] text-white'
+          : 'border border-[#919191] text-[#212121]'
       )}
     >
       {children}
