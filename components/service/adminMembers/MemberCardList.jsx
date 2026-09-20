@@ -160,19 +160,14 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
         </span>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-[6px]">
+          {/* 이름 오른쪽에 배지, 아이디는 그 아래 */}
+          <div className="flex flex-wrap items-center gap-x-[8px] gap-y-[4px]">
             <EditableText
               label="이름"
               value={member.name}
               onChange={change('name')}
               className="text-[16px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121]"
             />
-            <span className="min-w-0 truncate text-[13px] leading-[1.6] text-[#919191]">
-              {member.loginId}
-            </span>
-          </div>
-
-          <div className="mt-[6px] flex flex-wrap items-center gap-[6px]">
             <EditablePill
               label="재학상태"
               value={member.enrollmentStatus}
@@ -194,6 +189,9 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
               </span>
             )}
           </div>
+          <p className="mt-[2px] truncate pl-1 text-[13px] leading-[1.6] text-[#919191]">
+            {member.loginId}
+          </p>
         </div>
 
         <button

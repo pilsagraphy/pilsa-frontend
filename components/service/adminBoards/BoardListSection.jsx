@@ -12,6 +12,7 @@ import {
   listTitleClass,
 } from '@/components/shared/admin/CommunityListStyles';
 import useAdminBoardStore from '@/stores/useAdminBoardStore';
+import useBoardStore from '@/stores/useBoardStore';
 
 import BoardTable from './BoardTable';
 import BoardFormModal from './BoardFormModal';
@@ -235,6 +236,9 @@ export default function BoardListSection({ title = '게시판 관리' }) {
     }
 
     handleCloseForm();
+    // 회원 화면의 게시판 목록(사이드바·댓글창의 익명/비밀댓글 체크박스)은 따로 캐시돼 있다.
+    // 여기서 바꾼 값이 그쪽에 바로 보이도록 다시 받는다 — 안 그러면 새로고침 전까지 옛 값이다
+    useBoardStore.getState().fetchBoards?.();
   };
 
   return (

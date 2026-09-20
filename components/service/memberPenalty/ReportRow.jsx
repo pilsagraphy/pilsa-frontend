@@ -8,6 +8,18 @@ export const REPORT_GRID = 'grid grid-cols-[repeat(6,minmax(0,1fr))] items-cente
 
 // 신고 내역 개별 행
 export default function ReportRow({ report, number }) {
+  // 사유는 줄 여러 개다 (신고 사유 · 처리 사유). 문자열 하나로 와도 그린다
+  const reasonLines = Array.isArray(report.reason) ? report.reason : [report.reason];
+  const reasonBlock = (
+    <span className="flex flex-col gap-[1px]">
+      {reasonLines.map((line) => (
+        <span key={line} className="[word-break:keep-all]">
+          {line}
+        </span>
+      ))}
+    </span>
+  );
+
   // 원문 링크는 두 모양에서 같은 것을 쓴다
   const link = report.link ? (
     <a
@@ -35,8 +47,8 @@ export default function ReportRow({ report, number }) {
           </span>
           <span className="shrink-0 text-[#919191]">{report.status}</span>
         </div>
-        <div className="flex items-center justify-between gap-2">
-          <span className="min-w-0 truncate">{report.reason}</span>
+        <div className="flex items-start justify-between gap-2">
+          <span className="min-w-0">{reasonBlock}</span>
           <span className="shrink-0">{link}</span>
         </div>
         {report.date && <div className="text-[12px] text-[#919191]">{report.date}</div>}
@@ -44,11 +56,12 @@ export default function ReportRow({ report, number }) {
 
       {/* 태블릿 이상: 기존 6열 그리드 */}
       <div
-      className={`${REPORT_GRID} hidden h-[46px] border-b border-[#dedede] font-['Pretendard',sans-serif] text-[14px] tracking-[-0.28px] text-[#454545] md:grid`}
+      // 사유가 두 줄이라 높이를 고정하지 않는다 (최소 46px)
+      className={`${REPORT_GRID} hidden min-h-[46px] border-b border-[#dedede] py-[6px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-[#454545] md:grid`}
     >
       <div className="text-center">{number}</div>
       <div className="text-center">{report.board}</div>
-      <div className="text-center">{report.reason}</div>
+      <div className="px-[4px] text-left">{reasonBlock}</div>
       {/* 원문 링크. 열이 좁아 글자는 'Link' 하나뿐이라 어느 글인지 구분되지 않는다.
           제목은 마우스오버(title)와 보조기기(aria-label)로만 알린다.
           (텍스트가 있으면 title 은 접근성 이름이 되지 않아 aria-label 이 따로 필요하다)

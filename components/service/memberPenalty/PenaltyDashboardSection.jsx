@@ -31,6 +31,22 @@ function toBanText(detail) {
 // 대상 표시 상태(normal/blind/deleted) → 한글
 const STATE_LABEL = { normal: '정상', blind: '블라인드', deleted: '삭제' };
 
+// 사유 줄들. 신고 사유와 처리 사유는 다른 것이다 — 신고는 '기타'로 들어와도 관리자는 '욕설'로 지울 수 있다.
+// 기타면 적어 둔 내용을 괄호로 붙인다 (안 보여 주면 '기타'만 남아 무슨 일인지 알 수 없다).
+function toReasonLines(report) {
+  const withDetail = (label, detail) => (detail ? `${label} (${detail})` : label);
+  const lines = [];
+  if (report.reportId != null) {
+    lines.push(`신고 사유: ${withDetail(report.reasonLabel ?? '-', report.detail)}`);
+  }
+  if (report.actionState) {
+    const what = report.actionState === 'blind' ? '블라인드' : '삭제';
+    lines.push(`${what} 사유: ${withDetail(report.actionReasonLabel ?? '-', report.actionDetail)}`);
+  }
+  if (lines.length === 0) lines.push('미처리');
+  return lines;
+}
+
 // 신고된 게시글 응답 → ReportSection 이 쓰는 row 모양
 // 원문 링크의 글자는 열 너비 때문에 'Link' 하나뿐이라, 어느 글로 가는지는
 // 서버가 주는 제목을 title(마우스오버) / linkLabel(보조기기) 로만 알릴 수 있다.
@@ -43,7 +59,7 @@ function toPostRow(report) {
   return {
     reportId: rowKey(report, report.postId),
     board: report.boardName,
-    reason: report.reasonLabel ?? '관리자 직접 조치',
+    reason: toReasonLines(report),
     link: getPostDetailHref(report.boardId, report.postId),
     targetTitle: report.title,
     linkLabel: report.title ? `게시글 보기: ${report.title}` : undefined,
@@ -66,7 +82,7 @@ function toCommentRow(report) {
   return {
     reportId: rowKey(report, report.commentId),
     board: report.boardName,
-    reason: report.reasonLabel ?? '관리자 직접 조치',
+    reason: toReasonLines(report),
     link,
     targetTitle: report.postTitle,
     linkLabel: report.postTitle ? `원글 보기: ${report.postTitle}` : undefined,

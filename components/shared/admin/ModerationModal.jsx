@@ -59,8 +59,8 @@ export default function ModerationModal({
       // 대상 회원 · 게시글이 길면 그만큼 넓어지되 화면을 넘지 않도록 상한을 둔다.
       // min-width는 max-width보다 우선하므로 하한에도 92vw를 걸어야
       // 좁은 화면에서 모달이 화면 밖으로 잘려나가지 않는다.
-      contentClassName="w-auto min-w-[min(505px,92vw)] max-w-[min(900px,92vw)]"
-      triggerClassName="w-[296px]"
+      contentClassName="w-[calc(100vw-32px)] sm:w-auto sm:min-w-[min(505px,92vw)] sm:max-w-[min(900px,92vw)]"
+      triggerClassName="w-full sm:w-[296px]"
       title={
         <>
           선택된 {targetLabel}을 <span className="font-extrabold">{actionLabel}</span> 처리
@@ -72,7 +72,25 @@ export default function ModerationModal({
     >
       {/* 위아래 진한 선은 표 바깥에 둔다.
           TableBody가 마지막 행의 아래선을 지워주므로, 마지막 행 밑에는 이 진한 선만 남는다. */}
-      <div className="border-b border-t border-[#454545]">
+      {/* 폰: 표 대신 줄 목록. 열 셋을 폰 폭에 넣으면 오른쪽이 잘린다 */}
+      <div className="border-b border-t border-[#454545] sm:hidden">
+        {items.map((item, index) => (
+          <div
+            key={item.id}
+            className="flex flex-col gap-[2px] border-b border-[#b9b9b9] py-[8px] last:border-b-0"
+          >
+            <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+              {index + 1}. {formatMemberLabel(item.user)}
+            </span>
+            <span className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545] [word-break:keep-all]">
+              {item.boardName && `[${item.boardName}] `}
+              {truncateContent(item.content)}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="hidden border-b border-t border-[#454545] sm:block">
         {/* table-fixed가 아니라 내용에 맞춰 열이 늘어나는 기본(auto) 레이아웃이다.
             앞 두 열은 시안 너비를 최소값으로만 잡아두고, 길어지면 그만큼 넓어진다. */}
         <Table>

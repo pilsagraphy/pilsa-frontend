@@ -22,7 +22,8 @@ const defaultEnd = () => {
   return d.toISOString().slice(0, 10);
 };
 
-const EMPTY_FORM = { quoteId: null, content: '', startDate: '', endDate: '' };
+// 새 문장 폼은 날짜를 미리 채워 둔다 — 비워 두면 매번 두 칸을 채워야 하고, 잊으면 문장이 안 뜬다
+const freshForm = () => ({ quoteId: null, content: '', startDate: today(), endDate: defaultEnd() });
 
 // 서버는 문장을 한 번에 다 준다(GET /api/admin/quotes 에 page 가 없다) — 화면에서 끊어 보여 준다
 const PAGE_SIZE = 10;
@@ -40,7 +41,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
   const [quotes, setQuotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState(freshForm);
   const [saving, setSaving] = useState(false);
   const [page, setPage] = useState(1);
 
@@ -65,9 +66,6 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
   }, [load]);
 
   const isEdit = form.quoteId != null;
-
-  const startCreate = () =>
-    setForm({ quoteId: null, content: '', startDate: today(), endDate: defaultEnd() });
 
   const startEdit = (quote) => {
     setForm({
@@ -104,7 +102,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
       else await createQuote(body);
 
       toast.success(isEdit ? '문장을 수정했습니다.' : '문장을 등록했습니다.');
-      setForm(EMPTY_FORM);
+      setForm(freshForm());
       await load();
     } catch (err) {
       toast.error(getErrorMessage(err, '문장을 저장하지 못했습니다.'));
@@ -120,7 +118,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
     try {
       await deleteQuote(quote.quoteId);
       toast.success('문장을 삭제했습니다.');
-      if (form.quoteId === quote.quoteId) setForm(EMPTY_FORM);
+      if (form.quoteId === quote.quoteId) setForm(freshForm());
       await load();
     } catch (err) {
       toast.error(getErrorMessage(err, '문장을 삭제하지 못했습니다.'));
@@ -182,7 +180,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
           {isEdit && (
             <button
               type="button"
-              onClick={() => setForm(EMPTY_FORM)}
+              onClick={() => setForm(freshForm())}
               className="text-[13px] text-[#919191] underline hover:text-[#212121]"
             >
               취소하기
@@ -219,25 +217,14 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
               className={inputClass}
             />
           </label>
-          <div className="col-span-2 flex justify-end gap-2">
-            {!isEdit && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={startCreate}
-                className="h-[44px] rounded-[4px] border-[#b9b9b9] px-4 text-[15px] text-[#212121]"
-              >
-                기간 채우기
-              </Button>
-            )}
-            <Button
-              type="submit"
-              disabled={saving}
-              className="h-[44px] rounded-[4px] bg-[#212121] px-5 text-[15px] text-white"
-            >
-              {saving ? '저장 중...' : isEdit ? '수정' : '등록'}
-            </Button>
-          </div>
+          {/* 폰: 날짜 두 칸 아래 한 줄 전체. 넓은 화면: 날짜 옆 오른쪽 끝 */}
+          <Button
+            type="submit"
+            disabled={saving}
+            className="col-span-2 h-[44px] rounded-[4px] bg-[#212121] px-6 text-[15px] text-white sm:w-auto"
+          >
+            {saving ? '저장 중...' : isEdit ? '수정' : '등록'}
+          </Button>
         </div>
       </form>
 

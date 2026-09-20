@@ -5,8 +5,11 @@ import { GripVertical } from 'lucide-react';
 
 import { getReadScopeLabel, getWriteLevelLabel } from '@/constants/adminBoards';
 
-// 꾹 누른 뒤 끌기로 인정하는 시간. 스크롤하려고 손을 댄 것과 구분한다
-const HOLD_MS = 350;
+// 손가락: 꾹 누른 뒤 끌기로 인정하는 시간. 스크롤하려고 손을 댄 것과 구분한다.
+// 마우스: 기다릴 이유가 없다 — 누르는 즉시 든다 (표에서 끌던 손맛 그대로)
+const HOLD_MS = 300;
+// 기다리는 동안 이만큼 안에서 흔들리는 건 그냥 손떨림이다. 이보다 크게 움직이면 스크롤로 본다
+const SLOP_PX = 8;
 
 // 좁은 화면의 게시판 목록.
 //
@@ -45,30 +48,51 @@ export default function BoardCardList({
 
   const cancelDrag = () => {
     clearTimeout(holdTimerRef.current);
+    pendingRef.current = null;
     dragRef.current = null;
     setDragging(null);
     setDropIndex(null);
   };
 
+  const pendingRef = useRef(null); // 기다리는 동안의 시작 좌표
+
+  const lift = (target, board, index, pointerId, y) => {
+    dragRef.current = { boardId: board.boardId, fromIndex: index, pointerId };
+    target.setPointerCapture?.(pointerId);
+    setDragging({ boardId: board.boardId, y });
+    setDropIndex(index);
+    if (navigator.vibrate) navigator.vibrate(10);
+  };
+
   const handlePointerDown = (event, board, index) => {
     if (disabled || event.button !== 0) return;
-    const { pointerId } = event;
+    const { pointerId, clientX, clientY } = event;
     const target = event.currentTarget;
 
-    // 바로 들지 않고 잠깐 기다린다 — 그냥 스크롤하려는 손과 가르기 위해
+    if (event.pointerType === 'mouse') {
+      lift(target, board, index, pointerId, clientY);
+      return;
+    }
+
+    // 손가락은 바로 들지 않고 잠깐 기다린다 — 그냥 스크롤하려는 손과 가르기 위해
+    pendingRef.current = { x: clientX, y: clientY };
     holdTimerRef.current = setTimeout(() => {
-      dragRef.current = { boardId: board.boardId, fromIndex: index, pointerId };
-      target.setPointerCapture?.(pointerId);
-      setDragging({ boardId: board.boardId, y: event.clientY });
-      setDropIndex(index);
-      if (navigator.vibrate) navigator.vibrate(10);
+      pendingRef.current = null;
+      lift(target, board, index, pointerId, clientY);
     }, HOLD_MS);
   };
 
   const handlePointerMove = (event) => {
     if (!dragRef.current) {
-      // 들리기 전에 손이 움직이면 스크롤이다 — 끌기 대기를 접는다
-      clearTimeout(holdTimerRef.current);
+      // 들리기 전: 손떨림 정도는 봐주고, 그 이상 움직이면 스크롤이라 끌기 대기를 접는다
+      const start = pendingRef.current;
+      if (
+        start &&
+        Math.hypot(event.clientX - start.x, event.clientY - start.y) > SLOP_PX
+      ) {
+        clearTimeout(holdTimerRef.current);
+        pendingRef.current = null;
+      }
       return;
     }
     event.preventDefault();

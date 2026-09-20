@@ -12,7 +12,7 @@ import ConfirmModal from '@/components/common/ConfirmModal';
 import AlertModal from '@/components/common/AlertModal';
 import { REPORT_SUCCESS_ALERT, REPORT_DUPLICATE_ALERT, getReasonId } from '@/constants/report';
 import { submitReport } from '@/apis/report';
-import { CornerDownRight, ArrowBigRight } from 'lucide-react';
+import { CornerDownRight, ArrowBigRight, Lock } from 'lucide-react';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { formatSlashDateTime } from '@/lib/boardDetail';
 
@@ -531,6 +531,15 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                       <span className="shrink-0 rounded-[3px] bg-[#212121] px-1.5 py-[1px] text-[11px] font-medium leading-[16px] tracking-[-0.2px] text-white">
                         내 댓글
                       </span>
+                    )}
+                    {/* 비밀 댓글 표식 — 글쓴이와 운영진만 본다는 뜻 */}
+                    {comment.isPrivate && (
+                      <Lock
+                        size={13}
+                        strokeWidth={1.8}
+                        aria-label="비밀 댓글"
+                        className="shrink-0 text-[#757575]"
+                      />
                     )}
                   </span>
                   <div className="flex shrink-0 items-center gap-[10px] px-[4px] py-[2px] md:hidden">

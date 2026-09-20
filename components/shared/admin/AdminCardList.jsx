@@ -122,7 +122,7 @@ export function AdminCard({
         )}
       </div>
 
-      {actions && <div className="mt-[10px] flex flex-wrap gap-2">{actions}</div>}
+      {actions && <div className="mt-[10px] flex flex-wrap justify-end gap-2">{actions}</div>}
     </div>
   );
 }
