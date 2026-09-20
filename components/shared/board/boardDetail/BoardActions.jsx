@@ -221,15 +221,15 @@ export default function BoardActions({
   }
 
   return (
-    <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
-      <div className="flex w-full flex-col gap-[10px] md:w-auto">
+    <div className="flex w-full flex-col gap-3 xl:flex-row xl:items-center xl:justify-between xl:gap-0">
+      <div className="flex w-full flex-col gap-[10px] xl:w-auto">
         {/* 좋아요 버튼 */}
         <button
           type="button"
           onClick={handleLike}
           disabled={likeLoading}
           aria-pressed={liked}
-          className={`flex h-12 w-full items-center justify-center gap-[6px] rounded-[4px] border text-[15px] tracking-[-0.32px] transition-colors disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px] ${
+          className={`flex h-12 w-full items-center justify-center gap-[6px] rounded-[4px] border text-[15px] tracking-[-0.32px] transition-colors disabled:opacity-60 xl:h-[52px] xl:w-[135px] xl:text-[16px] ${
             liked
               ? 'border-[#212121] bg-[#212121] text-white hover:bg-black'
               : 'border-[#b9b9b9] bg-white text-[#212121] hover:bg-[#f5f5f5]'
@@ -240,16 +240,16 @@ export default function BoardActions({
           <span>좋아요 {likeCount}</span>
         </button>
 
-        {afterLikeOnMobile != null && <div className="w-full md:hidden">{afterLikeOnMobile}</div>}
+        {afterLikeOnMobile != null && <div className="w-full xl:hidden">{afterLikeOnMobile}</div>}
       </div>
 
       {/* 작성자: 수정(흰 테두리) / 삭제(검정) — 폰(#183 피그마)과 같은 규칙. 그 외: 신고 */}
       {canEdit || canDelete ? (
-        <div className="flex w-full gap-2 md:w-auto md:gap-5">
+        <div className="flex w-full gap-2 xl:w-auto xl:gap-5">
           {canEdit && (
             <button
               type="button"
-              className="h-12 flex-1 rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] transition-colors hover:bg-[#f5f5f5] md:h-[52px] md:w-[135px] md:flex-none"
+              className="h-12 flex-1 rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] transition-colors hover:bg-[#f5f5f5] xl:h-[52px] xl:w-[135px] xl:flex-none"
               onClick={handleEdit}
             >
               수정
@@ -259,7 +259,7 @@ export default function BoardActions({
             <button
               type="button"
               disabled={deleteLoading}
-              className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white transition-colors hover:bg-black disabled:opacity-60 md:h-[52px] md:w-[135px] md:flex-none"
+              className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white transition-colors hover:bg-black disabled:opacity-60 xl:h-[52px] xl:w-[135px] xl:flex-none"
               onClick={handleDelete}
             >
               {deleteLoading ? '삭제 중...' : '삭제'}
@@ -270,7 +270,7 @@ export default function BoardActions({
         <button
           type="button"
           onClick={() => setReportOpen(true)}
-          className="h-12 w-full rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] transition-colors hover:bg-[#f5f5f5] md:h-[52px] md:w-[135px]"
+          className="h-12 w-full rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] transition-colors hover:bg-[#f5f5f5] xl:h-[52px] xl:w-[135px]"
         >
           신고
         </button>

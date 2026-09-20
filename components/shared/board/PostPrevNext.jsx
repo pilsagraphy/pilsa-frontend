@@ -29,10 +29,10 @@ import { formatDotDate } from '@/lib/boardDetail';
 
 function Row({ label, categoryName, title, date, href, empty, borderClass }) {
   const inner = (
-    <div className="flex h-[56px] items-center justify-between gap-3 px-[10px] md:gap-4">
-      <div className="flex min-w-0 flex-1 items-center gap-3 md:gap-[20px]">
+    <div className="flex h-[56px] items-center justify-between gap-3 px-[10px] xl:gap-4">
+      <div className="flex min-w-0 flex-1 items-center gap-3 xl:gap-[20px]">
         {/* whitespace-nowrap: '이전 글' 이 공백에서 두 줄로 쪼개지지 않게 한다 */}
-        <span className="w-[52px] shrink-0 whitespace-nowrap text-center text-[14px] tracking-[-0.02em] text-[#454545] md:w-[80px] md:text-[16px]">
+        <span className="w-[52px] shrink-0 whitespace-nowrap text-center text-[14px] tracking-[-0.02em] text-[#454545] xl:w-[80px] xl:text-[16px]">
           {label}
         </span>
 
@@ -40,7 +40,7 @@ function Row({ label, categoryName, title, date, href, empty, borderClass }) {
           {categoryName ? <CategoryBadge>{categoryName}</CategoryBadge> : null}
           <span
             className={cn(
-              'min-w-0 truncate text-[14px] tracking-[-0.02em] md:text-[16px]',
+              'min-w-0 truncate text-[14px] tracking-[-0.02em] xl:text-[16px]',
               empty ? 'text-[#C4C4C4]' : 'text-[#454545]'
             )}
           >
@@ -50,7 +50,7 @@ function Row({ label, categoryName, title, date, href, empty, borderClass }) {
       </div>
 
       {date ? (
-        <span className="shrink-0 text-[13px] tracking-[-0.02em] text-[#919191] md:text-[16px]">
+        <span className="shrink-0 text-[13px] tracking-[-0.02em] text-[#919191] xl:text-[16px]">
           {date}
         </span>
       ) : null}
@@ -84,7 +84,7 @@ export default function PostPrevNext({
     <div className="mx-auto w-full max-w-[920px]">
       {/* 헤더: 게시판 이름 + 목록으로 돌아가는 화살표 */}
       <div className="flex h-[56px] items-center justify-between border-t border-t-[#919191] px-[10px]">
-        <span className="truncate text-[14px] tracking-[-0.02em] text-[#919191] md:text-[16px]">
+        <span className="truncate text-[14px] tracking-[-0.02em] text-[#919191] xl:text-[16px]">
           {boardLabel}
         </span>
 

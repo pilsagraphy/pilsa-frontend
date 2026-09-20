@@ -65,32 +65,32 @@ export default function PostTable({
 
   return (
     <div className="overflow-x-auto border-t border-[#212121]">
-      <Table className="w-full min-w-0 table-fixed md:min-w-[600px]">
+      <Table className="w-full min-w-0 table-fixed xl:min-w-[600px]">
         <TableHeader>
-          <TableRow className="h-12 border-b border-[#B9B9B9] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#919191] md:h-14 md:text-[16px]">
+          <TableRow className="h-12 border-b border-[#B9B9B9] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#919191] xl:h-14 xl:text-[16px]">
             <TableHead
               className={cn(
-                'text-center md:w-20',
-                categoryMode ? 'hidden w-14 md:table-cell' : 'w-14'
+                'text-center xl:w-20',
+                categoryMode ? 'hidden w-14 xl:table-cell' : 'w-14'
               )}
             >
               번호
             </TableHead>
             <TableHead className="min-w-0 text-left">제목</TableHead>
             {allowComment && (
-              <TableHead className="hidden w-14 text-center md:table-cell md:w-[80px]">
+              <TableHead className="hidden w-14 text-center xl:table-cell xl:w-[80px]">
                 댓글
               </TableHead>
             )}
-            <TableHead className="hidden w-[80px] text-center md:table-cell">좋아요</TableHead>
-            <TableHead className="hidden w-[80px] text-center md:table-cell">조회수</TableHead>
-            <TableHead className="w-[88px] text-center md:w-[100px]">등록일</TableHead>
+            <TableHead className="hidden w-[80px] text-center xl:table-cell">좋아요</TableHead>
+            <TableHead className="hidden w-[80px] text-center xl:table-cell">조회수</TableHead>
+            <TableHead className="w-[88px] text-center xl:w-[100px]">등록일</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {loading ? (
-            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] md:h-14 md:text-[16px]">
+            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] xl:h-14 xl:text-[16px]">
               <TableCell
                 colSpan={colSpan}
                 suppressHydrationWarning
@@ -100,7 +100,7 @@ export default function PostTable({
               </TableCell>
             </TableRow>
           ) : errorMessage ? (
-            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] md:h-14 md:text-[16px]">
+            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] xl:h-14 xl:text-[16px]">
               <TableCell
                 colSpan={colSpan}
                 suppressHydrationWarning
@@ -110,7 +110,7 @@ export default function PostTable({
               </TableCell>
             </TableRow>
           ) : !posts?.length ? (
-            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] md:h-14 md:text-[16px]">
+            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] xl:h-14 xl:text-[16px]">
               <TableCell
                 colSpan={colSpan}
                 suppressHydrationWarning

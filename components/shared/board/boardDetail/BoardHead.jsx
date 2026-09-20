@@ -28,14 +28,14 @@ export default function BoardHead({ label, listPath }) {
   }
 
   return (
-    <div className="flex w-full flex-col gap-4 md:flex-row md:items-start md:justify-between">
-      <h1 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] md:mt-[36px] md:text-[24px]">
+    <div className="flex w-full flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+      <h1 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] xl:mt-[36px] xl:text-[24px]">
         {label}
       </h1>
 
       <button
         type="button"
-        className="hidden h-[52px] w-[135px] shrink-0 items-center justify-center rounded-[4px] bg-[#212121] text-white md:flex md:self-start md:translate-y-[60px]"
+        className="hidden h-[52px] w-[135px] shrink-0 items-center justify-center rounded-[4px] bg-[#212121] text-white xl:flex xl:self-start xl:translate-y-[60px]"
         onClick={() => router.push(listPath)}
       >
         목록

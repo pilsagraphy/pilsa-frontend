@@ -32,13 +32,13 @@ const components = {
   ),
 
   h1: ({ node, ...props }) => (
-    <h1 className="mt-6 mb-3 text-[22px] font-semibold text-[#212121] md:text-[24px]" {...props} />
+    <h1 className="mt-6 mb-3 text-[22px] font-semibold text-[#212121] xl:text-[24px]" {...props} />
   ),
   h2: ({ node, ...props }) => (
-    <h2 className="mt-6 mb-3 text-[20px] font-semibold text-[#212121] md:text-[22px]" {...props} />
+    <h2 className="mt-6 mb-3 text-[20px] font-semibold text-[#212121] xl:text-[22px]" {...props} />
   ),
   h3: ({ node, ...props }) => (
-    <h3 className="mt-5 mb-2 text-[18px] font-semibold text-[#212121] md:text-[20px]" {...props} />
+    <h3 className="mt-5 mb-2 text-[18px] font-semibold text-[#212121] xl:text-[20px]" {...props} />
   ),
 
   p: ({ node, ...props }) => <p className="my-3 break-words" {...props} />,
@@ -84,7 +84,7 @@ export default function BoardMarkdown({ content = '' }) {
 
   return (
     <div
-      className="w-full break-words text-[15px] leading-[1.65] tracking-[-0.32px] text-[#212121] md:text-[16px] md:leading-[1.6]
+      className="w-full break-words text-[15px] leading-[1.65] tracking-[-0.32px] text-[#212121] xl:text-[16px] xl:leading-[1.6]
         [&_:not(pre)>code]:rounded-[3px] [&_:not(pre)>code]:bg-[#f5f5f5]
         [&_:not(pre)>code]:px-[5px] [&_:not(pre)>code]:py-[2px] [&_:not(pre)>code]:text-[14px]
         [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"

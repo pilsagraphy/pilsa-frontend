@@ -8,7 +8,7 @@ import BoardMarkdown from '@/components/shared/board/BoardMarkdown';
 export default function BoardContent({ content = '' }) {
   // select-text: 모바일 전역 user-select:none(globals.css) 예외 — 본문은 복사할 수 있어야 한다
   return (
-    <section className="min-h-[140px] w-full select-text pb-8 pt-2 md:min-h-[200px] md:pb-12 md:pt-3">
+    <section className="min-h-[140px] w-full select-text pb-8 pt-2 xl:min-h-[200px] xl:pb-12 xl:pt-3">
       {content ? <BoardMarkdown content={content} /> : null}
     </section>
   );

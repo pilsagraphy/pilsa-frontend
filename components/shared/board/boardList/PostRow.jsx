@@ -34,11 +34,11 @@ export default function PostRow({ post, boardId, board, listQuery = '' }) {
   return (
     <TableRow
       onClick={handleRowClick}
-      className="h-12 cursor-pointer border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] hover:bg-muted/50 md:h-14 md:text-[16px]"
+      className="h-12 cursor-pointer border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] hover:bg-muted/50 xl:h-14 xl:text-[16px]"
     >
       {/* 1. 게시글 번호 — 중요글도 번호를 그대로 보여준다 ('중요' 표시는 제목 옆 배지가 담당).
              카테고리 게시판은 모바일에서 번호 숨김 */}
-      <TableCell className={cn('text-center', categoryMode && 'hidden md:table-cell')}>
+      <TableCell className={cn('text-center', categoryMode && 'hidden xl:table-cell')}>
         {post.postId}
       </TableCell>
 
@@ -57,16 +57,16 @@ export default function PostRow({ post, boardId, board, listQuery = '' }) {
 
       {/* 3. 댓글 (댓글을 쓰는 게시판만) */}
       {allowComment && (
-        <TableCell className="hidden text-center md:table-cell">
+        <TableCell className="hidden text-center xl:table-cell">
           {post.commentCount?.toLocaleString() || 0}
         </TableCell>
       )}
 
       {/* 4. 좋아요, 조회수, 등록일 (모바일·좁은 화면에서는 숨김) */}
-      <TableCell className="hidden text-center md:table-cell">
+      <TableCell className="hidden text-center xl:table-cell">
         {post.likeCount?.toLocaleString() || 0}
       </TableCell>
-      <TableCell className="hidden text-center md:table-cell">
+      <TableCell className="hidden text-center xl:table-cell">
         {post.viewCount?.toLocaleString() || 0}
       </TableCell>
       <TableCell className="text-center">{formattedDate}</TableCell>

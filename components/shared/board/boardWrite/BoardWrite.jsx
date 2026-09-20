@@ -15,7 +15,7 @@ import { AUTO_SAVE_INTERVAL_MS, buildDraftBody, draftSignature, isDraftEmpty } f
 import { createDraft } from '@/apis/draft';
 import { alertDialog, confirmDialog } from '@/stores/useDialogStore';
 
-const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base';
+const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] xl:py-20 xl:text-base';
 
 // 자동저장 안내 문구에 쓰는 'HH:mm'
 const formatClock = (date) =>
@@ -392,8 +392,8 @@ export default function BoardWrite({ boardId }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto flex max-w-[1000px] flex-col gap-[20px] px-4 py-4 sm:px-6 sm:py-7 md:p-8">
-      <div className="flex w-full flex-col gap-6 md:gap-[36px]">
+    <form onSubmit={handleSubmit} className="mx-auto flex max-w-[1000px] flex-col gap-[20px] px-4 py-4 sm:px-6 sm:py-7 xl:p-8">
+      <div className="flex w-full flex-col gap-6 xl:gap-[36px]">
         <h1 className="text-[24px] leading-[1.5] tracking-[-0.48px] font-bold text-black">
           {board?.boardName ?? ''} 글쓰기
         </h1>
@@ -420,11 +420,11 @@ export default function BoardWrite({ boardId }) {
 
       {/* 작성 · 임시저장 · 취소를 한 줄에. 임시저장은 예전에 모바일에만 있어서 PC 에서는 초안을 만들 길이
           아예 없었다(2026-09-20). 세 버튼 모두 폰·PC 공통이다 */}
-      <div className="mt-4 flex w-full flex-row gap-2 md:gap-[12px]">
+      <div className="mt-4 flex w-full flex-row gap-2 xl:gap-[12px]">
         <button
           type="submit"
           disabled={submitting || savingDraft || autoSaving}
-          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] px-2 text-[14px] tracking-[-0.28px] text-white transition-colors hover:bg-black disabled:opacity-60 md:h-[52px] md:text-[16px] md:tracking-[-0.32px]"
+          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] px-2 text-[14px] tracking-[-0.28px] text-white transition-colors hover:bg-black disabled:opacity-60 xl:h-[52px] xl:text-[16px] xl:tracking-[-0.32px]"
         >
           {submitting ? '처리 중...' : '글 작성하기'}
         </button>
@@ -433,7 +433,7 @@ export default function BoardWrite({ boardId }) {
           type="button"
           onClick={handleSaveDraft}
           disabled={submitting || savingDraft || autoSaving}
-          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] bg-[#919191] px-2 text-[14px] tracking-[-0.28px] text-white transition-colors hover:bg-[#7d7d7d] disabled:opacity-60 md:h-[52px] md:text-[16px] md:tracking-[-0.32px]"
+          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] bg-[#919191] px-2 text-[14px] tracking-[-0.28px] text-white transition-colors hover:bg-[#7d7d7d] disabled:opacity-60 xl:h-[52px] xl:text-[16px] xl:tracking-[-0.32px]"
         >
           {savingDraft ? '저장 중...' : '임시저장'}
         </button>
@@ -442,7 +442,7 @@ export default function BoardWrite({ boardId }) {
           type="button"
           onClick={handleCancel}
           disabled={submitting || savingDraft || autoSaving}
-          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white px-2 text-[14px] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-gray-50 disabled:opacity-60 md:h-[52px] md:text-[16px] md:tracking-[-0.32px]"
+          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white px-2 text-[14px] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-gray-50 disabled:opacity-60 xl:h-[52px] xl:text-[16px] xl:tracking-[-0.32px]"
         >
           취소
         </button>
