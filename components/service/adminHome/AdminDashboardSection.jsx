@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import StatsSection from './StatsSection';
 import Schedule from './Schedule';
 import RecentActivitySection from './RecentActivitySection';
+import PolicySummarySection from './PolicySummarySection';
 import useAdminDashboardStore from '@/stores/useAdminDashboardStore';
 import useMyPageStore from '@/stores/useMyPageStore';
 
@@ -79,6 +80,10 @@ export default function ManagerDashboardSection() {
         isMembersLoading={isMembersLoading}
         membersError={membersError}
       />
+
+      {/* 영역 5: 운영 정책 요약 — 조치 전에 훑어보는 용도 */}
+      <div className="w-full border-b border-[#DEDEDE]" />
+      <PolicySummarySection />
     </section>
   );
 }

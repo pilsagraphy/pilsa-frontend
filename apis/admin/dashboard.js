@@ -34,5 +34,15 @@ export const getRecentMembers = async (size) => {
   return response.data;
 };
 
-// 4. (연동 메모) 대시보드 일정 달력
+// 4. 운영 정책 요약 (GET /api/admin/dashboard/policies) [ADMIN]
+//    응답: { settings: { auto_blind_threshold, caution_per_delete, cautions_per_warning, caution_ttl_days,
+//                       warning_ttl_days, rejoin_cooldown_days, withdrawn_purge_days },
+//            banPolicies: [{ warningNo, banType, banDays, description }] }
+//    서버가 실제로 읽어 쓰는 policy_settings · ban_policy 값 그대로
+export const getDashboardPolicies = async () => {
+  const response = await axiosInstance.get('/api/admin/dashboard/policies');
+  return response.data;
+};
+
+// 5. (연동 메모) 대시보드 일정 달력
 //    별도 API 없음 — apis/event.js 의 기간별 일정 목록(GET /api/event)을 재사용한다
