@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import useBoardWriteStore from '@/stores/useBoardWriteStore';
 import useDraftStore from '@/stores/useDraftStore';
 import DraftLoadModal from './DraftLoadModal';
+import { alertDialog, confirmDialog } from '@/stores/useDialogStore';
 
 // '저장 | N' 버튼 — N 은 지금 보관 중인 임시저장 개수(응답에 count 가 없어 목록 길이로 센다).
 // 누르면 불러오기 모달이 열린다. 저장은 아래 '글 저장하기' 가 하고 이 버튼은 불러오기 전용이다.
@@ -50,14 +51,14 @@ export default function DraftLoadButton({ boardId, disabled = false }) {
     const hasDraftInProgress = Boolean(title.trim() || content.trim() || files.length > 0);
     if (
       hasDraftInProgress &&
-      !window.confirm('불러오면 지금 작성 중인 내용이 사라집니다. 계속하시겠습니까?')
+      !await confirmDialog('불러오면 지금 작성 중인 내용이 사라집니다. 계속하시겠습니까?')
     ) {
       return;
     }
 
     const detail = await loadDraft(boardId, draftId);
     if (!detail) {
-      alert(useDraftStore.getState().actionError ?? '임시저장한 글을 불러오지 못했습니다.');
+      alertDialog(useDraftStore.getState().actionError ?? '임시저장한 글을 불러오지 못했습니다.');
       return;
     }
 
@@ -82,7 +83,7 @@ export default function DraftLoadButton({ boardId, disabled = false }) {
   const handleDelete = async (draft) => {
     const label = draft.title?.trim() || '(제목 없음)';
     if (
-      !window.confirm(
+      !await confirmDialog(
         `'${label}' 임시저장 글을 삭제하시겠습니까?\n첨부한 파일까지 함께 지워지고 되돌릴 수 없습니다.`
       )
     ) {
@@ -97,7 +98,7 @@ export default function DraftLoadButton({ boardId, disabled = false }) {
       // 응답 본문이 비어도 삭제는 된 것이므로 반환값으로 판단하지 않는다.
       const message = useDraftStore.getState().actionError;
       if (message) {
-        alert(message);
+        alertDialog(message);
         return;
       }
 

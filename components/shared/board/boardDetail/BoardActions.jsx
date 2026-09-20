@@ -13,6 +13,7 @@ import ReportModal from '@/components/shared/board/boardList/ReportModal';
 import AlertModal from '@/components/common/AlertModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import { REPORT_SUCCESS_ALERT, REPORT_DUPLICATE_ALERT, getReasonId } from '@/constants/report';
+import { alertDialog } from '@/stores/useDialogStore';
 
 // 좋아요 + (권한이 있을 때만) 수정/삭제 버튼
 //  - 수정·삭제: 작성자 본인만. 관리자는 남의 글을 고치지 않는다 — 조치(블라인드·삭제)는 관리자 게시글 관리에서
@@ -75,7 +76,7 @@ export default function BoardActions({
     } catch (error) {
       setLiked(prevLiked);
       setLikeCount(prevCount);
-      alert(getErrorMessage(error, '좋아요 처리에 실패했습니다.'));
+      alertDialog(getErrorMessage(error, '좋아요 처리에 실패했습니다.'));
     } finally {
       setLikeLoading(false);
     }

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { getFile } from '@/apis/file';
 import { getErrorMessage } from '@/apis/auth';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
+import { alertDialog } from '@/stores/useDialogStore';
 
 function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
@@ -40,7 +41,7 @@ export default function BoardAttachments({ attachments = [] }) {
       anchor.remove();
       URL.revokeObjectURL(url);
     } catch (error) {
-      alert(getErrorMessage(error, '파일을 내려받지 못했습니다.'));
+      alertDialog(getErrorMessage(error, '파일을 내려받지 못했습니다.'));
     } finally {
       setDownloadingId(null);
     }

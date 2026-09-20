@@ -9,6 +9,7 @@ import useBoardWriteStore from '@/stores/useBoardWriteStore';
 import { getBoardPost, getBoardCategories, updateBoardPost } from '@/apis/board';
 import { getErrorMessage } from '@/apis/auth';
 import { ROUTES } from '@/constants/routes';
+import { alertDialog, confirmDialog } from '@/stores/useDialogStore';
 
 const MESSAGE_CLASS = 'py-20 text-center text-[#919191]';
 
@@ -60,7 +61,7 @@ export default function Edit({ boardId, postId }) {
         });
       } catch (error) {
         if (!isMounted) return;
-        alert(getErrorMessage(error, '게시글 정보를 불러오지 못했습니다.'));
+        await alertDialog(getErrorMessage(error, '게시글 정보를 불러오지 못했습니다.'));
         router.push(ROUTES.BOARD(boardId));
       } finally {
         if (isMounted) setLoading(false);
@@ -78,11 +79,11 @@ export default function Edit({ boardId, postId }) {
     e.preventDefault();
 
     if (!title?.trim()) {
-      alert('제목을 입력해주세요.');
+      alertDialog('제목을 입력해주세요.');
       return;
     }
     if (!content?.trim()) {
-      alert('내용을 입력해주세요.');
+      alertDialog('내용을 입력해주세요.');
       return;
     }
     // 카테고리는 선택 사항이다 — 고르지 않으면 categoryId 없이 보낸다.
@@ -111,18 +112,18 @@ export default function Edit({ boardId, postId }) {
 
       await updateBoardPost(boardId, postId, formData);
 
-      alert('수정이 완료되었습니다.');
+      await alertDialog('수정이 완료되었습니다.');
       resetForm();
       router.push(ROUTES.BOARD_POST(boardId, postId));
     } catch (error) {
-      alert(getErrorMessage(error, '게시글 수정에 실패했습니다.'));
+      alertDialog(getErrorMessage(error, '게시글 수정에 실패했습니다.'));
     } finally {
       setSubmitting(false);
     }
   };
 
-  const handleCancel = () => {
-    if (window.confirm('수정을 취소하시겠습니까?')) {
+  const handleCancel = async () => {
+    if (await confirmDialog('수정을 취소하시겠습니까?', { cancelText: '계속 수정', confirmText: '취소하기' })) {
       resetForm();
       router.back();
     }

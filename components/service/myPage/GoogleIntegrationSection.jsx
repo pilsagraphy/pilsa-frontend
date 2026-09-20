@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { confirmDialog } from '@/stores/useDialogStore';
 import {
   getGoogleLinkStatus,
   getGoogleLinkUrl,
@@ -83,8 +84,9 @@ export default function GoogleIntegrationSection() {
     }
 
     // 이미 담긴 일정을 말없이 지우면 안 된다 — 그걸 보고 일정을 잡았을 수 있다
-    const removeEvents = window.confirm(
-      '연동을 해제합니다.\n\n그동안 등록된 일정도 구글 캘린더에서 삭제할까요?\n\n[확인] 일정도 삭제   [취소] 일정은 그대로 두기'
+    const removeEvents = await confirmDialog(
+      '연동을 해제합니다.\n그동안 등록된 일정도 구글 캘린더에서 삭제할까요?',
+      { confirmText: '일정도 삭제', cancelText: '일정은 두기' }
     );
 
     setBusy(true);

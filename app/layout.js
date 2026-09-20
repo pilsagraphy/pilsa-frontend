@@ -2,6 +2,7 @@ import './globals.css';
 import AuthBootstrap from '@/components/common/AuthBootstrap';
 import DesktopSiteNotice from '@/components/shared/DesktopSiteNotice';
 import IosInstallGuide from '@/components/shared/IosInstallGuide';
+import DialogHost from '@/components/common/DialogHost';
 
 export const metadata = {
   // 브라우저 탭·북마크·공유 카드에 그대로 나가는 이름이라 앱·스토어 표기와 같은 값을 쓴다
@@ -54,6 +55,8 @@ export default function RootLayout({ children }) {
         {/* 아이폰으로 사이트 링크를 열고 들어온 사람에게 '홈 화면에 추가' 설치법 안내 (설치형 앱에서는 안 뜬다) */}
         <IosInstallGuide />
         <AuthBootstrap>{children}</AuthBootstrap>
+        {/* confirmDialog / alertDialog 가 띄우는 공용 확인·안내 창 */}
+        <DialogHost />
       </body>
     </html>
   );

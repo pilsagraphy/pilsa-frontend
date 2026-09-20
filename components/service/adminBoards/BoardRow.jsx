@@ -86,16 +86,16 @@ export default function BoardRow({
           >
             정보 수정
           </RowActionButton>
-          {board.boardName !== '공지사항' && (
-            <RowActionButton
-              filled
-              className="min-w-[44px]"
-              disabled={disabled}
-              onClick={() => onDelete?.(board)}
-            >
-              삭제
-            </RowActionButton>
-          )}
+          {/* 공지사항은 지울 수 없다 — 버튼은 두되 눌리지 않게 (서버도 막는다) */}
+          <RowActionButton
+            filled
+            className="min-w-[44px]"
+            disabled={disabled || board.boardName === '공지사항'}
+            title={board.boardName === '공지사항' ? '공지사항 게시판은 삭제할 수 없어요' : undefined}
+            onClick={() => onDelete?.(board)}
+          >
+            삭제
+          </RowActionButton>
         </div>
       </TableCell>
 

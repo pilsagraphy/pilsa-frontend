@@ -10,6 +10,7 @@ import useAuthStore from '@/stores/useAuthStore';
 import useBoardStore from '@/stores/useBoardStore';
 import { ROUTES, ALLOWED_BOARD_MEMBER_TYPES, ADMIN_DRIVE_URL } from '@/constants/routes';
 import { loginUrlWithReturnTo, stashReturnTo } from '@/lib/returnTo';
+import { confirmDialog } from '@/stores/useDialogStore';
 
 const Sidebar = () => {
   const router = useRouter();
@@ -242,9 +243,19 @@ const Sidebar = () => {
 
             {/* 동아리 공용 드라이브 (외부 링크) — 새 탭으로 연다.
                 편집 권한은 구글 드라이브 쪽 공유 설정이 정하는 것이라 앱에서는 열어 주는 것까지만 한다 */}
-            <a href={ADMIN_DRIVE_URL} target="_blank" rel="noopener noreferrer">
+            <button
+              type="button"
+              className="text-left"
+              onClick={async () => {
+                const go = await confirmDialog(
+                  '필사그래피 임원용 구글 드라이브 폴더로 이동됩니다.\n이동하시겠습니까?',
+                  { confirmText: '이동', cancelText: '취소' }
+                );
+                if (go) window.open(ADMIN_DRIVE_URL, '_blank', 'noopener,noreferrer');
+              }}
+            >
               <p className={singleLinkClass(false)}>구글 드라이브</p>
-            </a>
+            </button>
 
             {/* ABOUT 필사 링크는 뺐다 (2026-09-20 PM). 아래 '메인 페이지로 이동'이 그 역할을 한다 */}
           </div>

@@ -1,9 +1,9 @@
 // 관리자 목록 페이지(회원 · 게시판 · 게시글 · 댓글)가 공유하는 클래스
 // 같은 시안에서 나온 화면들이라 래퍼 · 제목 · 액션 버튼 크기가 모두 같다.
 
-// 페이지 전체를 감싸는 섹션 래퍼
+// 페이지 전체를 감싸는 섹션 래퍼. 폭 제한이 없다 — 신고 관리처럼 본문을 꽉 채운다 (PM, 2026-09-20)
 export const listSectionClass =
-  'mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10';
+  'mx-auto flex w-full max-w-none flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10';
 
 // 페이지 제목 (예: 게시글 관리)
 export const listTitleClass =

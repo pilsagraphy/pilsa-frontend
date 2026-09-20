@@ -30,7 +30,7 @@ export default function ConfirmModal({
         hideCloseButton
         className="max-w-[271px] gap-[12px] rounded-[4px] border-[#212121] px-[16px] py-[24px] md:max-w-[300px] md:gap-[24px] md:border-[#dedede] md:p-[24px]"
       >
-        <DialogTitle className="text-center text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-[#454545] md:text-[#212121]">
+        <DialogTitle className="whitespace-pre-line text-center text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-[#454545] md:text-[#212121]">
           {title}
         </DialogTitle>
 

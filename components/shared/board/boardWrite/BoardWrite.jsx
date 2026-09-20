@@ -13,6 +13,7 @@ import { ROUTES } from '@/constants/routes';
 import AppLoading from '@/components/common/AppLoading';
 import { AUTO_SAVE_INTERVAL_MS, buildDraftBody, draftSignature, isDraftEmpty } from '@/lib/draft';
 import { createDraft } from '@/apis/draft';
+import { alertDialog, confirmDialog } from '@/stores/useDialogStore';
 
 const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base';
 
@@ -90,11 +91,11 @@ export default function BoardWrite({ boardId }) {
     e.preventDefault();
 
     if (!title.trim()) {
-      alert('제목을 입력해주세요.');
+      alertDialog('제목을 입력해주세요.');
       return;
     }
     if (!content.trim()) {
-      alert('내용을 입력해주세요.');
+      alertDialog('내용을 입력해주세요.');
       return;
     }
     // 카테고리는 선택 사항이다 — 고르지 않으면 categoryId 없이 보낸다.
@@ -130,11 +131,11 @@ export default function BoardWrite({ boardId }) {
 
       await createBoardPost(boardId, formData);
 
-      alert('작성이 완료되었습니다.');
+      await alertDialog('작성이 완료되었습니다.');
       resetForm();
       router.push(ROUTES.BOARD(boardId));
     } catch (error) {
-      alert(getErrorMessage(error, '게시글 작성에 실패했습니다.'));
+      alertDialog(getErrorMessage(error, '게시글 작성에 실패했습니다.'));
     } finally {
       setSubmitting(false);
       busyRef.current = false;
@@ -150,7 +151,7 @@ export default function BoardWrite({ boardId }) {
 
     // 서버는 제목·내용이 둘 다 비면 400 을 준다. 요청을 보내기 전에 걸러낸다.
     if (isDraftEmpty(title, content)) {
-      alert('제목이나 내용 중 하나는 입력해주세요.');
+      alertDialog('제목이나 내용 중 하나는 입력해주세요.');
       return;
     }
 
@@ -205,7 +206,7 @@ export default function BoardWrite({ boardId }) {
       promoteFilesToDraft(uploaded, consumedFiles);
 
       if (uploadError) {
-        alert(uploadError);
+        alertDialog(uploadError);
         return;
       }
 
@@ -221,7 +222,7 @@ export default function BoardWrite({ boardId }) {
       // 보관 상한(5개)이 사용자 모르게 차버리므로 성공으로 처리하지 않는다.
       const message = useDraftStore.getState().actionError;
       if (message || !savedId) {
-        alert(message ?? '임시저장 결과를 확인하지 못했습니다. 목록에서 확인해 주세요.');
+        alertDialog(message ?? '임시저장 결과를 확인하지 못했습니다. 목록에서 확인해 주세요.');
         return;
       }
 
@@ -235,9 +236,9 @@ export default function BoardWrite({ boardId }) {
 
       // 개수는 저장 응답에 없다 → 목록을 다시 받아 쓴다 (추측하지 않는다)
       await fetchDrafts(boardId);
-      alert('임시저장되었습니다.');
+      alertDialog('임시저장되었습니다.');
     } catch (error) {
-      alert(getErrorMessage(error, '임시저장에 실패했습니다.'));
+      alertDialog(getErrorMessage(error, '임시저장에 실패했습니다.'));
     } finally {
       setSavingDraft(false);
       busyRef.current = false;
@@ -364,8 +365,8 @@ export default function BoardWrite({ boardId }) {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, []);
 
-  const handleCancel = () => {
-    if (window.confirm('작성을 취소하시겠습니까? 작성 중인 내용은 저장되지 않습니다.')) {
+  const handleCancel = async () => {
+    if (await confirmDialog('작성을 취소하시겠습니까?', { cancelText: '계속 쓰기', confirmText: '취소하기' })) {
       resetForm();
       router.back();
     }

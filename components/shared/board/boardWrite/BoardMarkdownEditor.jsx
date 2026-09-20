@@ -7,6 +7,7 @@ import BoardMarkdown from '@/components/shared/board/BoardMarkdown';
 import { uploadFile } from '@/apis/file';
 import { getErrorMessage } from '@/apis/auth';
 import { uploadPlaceholder } from '@/lib/markdown';
+import { alertDialog } from '@/stores/useDialogStore';
 
 const TAB_WRITE = 'write';
 const TAB_PREVIEW = 'preview';
@@ -79,7 +80,7 @@ export default function BoardMarkdownEditor({
           } catch (error) {
             // 실패하면 자리표시자를 걷어내고 알린다 (본문에 찌꺼기가 남지 않도록)
             onChange((current) => (current ?? '').replace(placeholder, () => ''));
-            alert(getErrorMessage(error, '이미지를 업로드하지 못했습니다.'));
+            alertDialog(getErrorMessage(error, '이미지를 업로드하지 못했습니다.'));
           }
         }
       } finally {
