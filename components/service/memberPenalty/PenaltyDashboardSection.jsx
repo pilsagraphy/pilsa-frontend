@@ -40,7 +40,7 @@ function toPostRow(report) {
     reportId: report.reportId,
     board: report.boardName,
     reason: report.reasonLabel,
-    link: getPostDetailHref(report.boardName, report.postId),
+    link: getPostDetailHref(report.boardId, report.postId),
     targetTitle: report.title,
     linkLabel: report.title ? `게시글 보기: ${report.title}` : undefined,
     status: STATE_LABEL[report.state] ?? report.state,
@@ -54,7 +54,7 @@ function toPostRow(report) {
 // 신고된 댓글 응답 → ReportSection row (댓글은 소속 게시글 + 댓글 앵커로 이동)
 // 댓글엔 제목이 없어 이동할 원글의 제목(postTitle)을 대신 알린다.
 function toCommentRow(report) {
-  const postHref = getPostDetailHref(report.boardName, report.postId);
+  const postHref = getPostDetailHref(report.boardId, report.postId);
   const link =
     postHref && boardHasComments(report.boardName)
       ? `${postHref}#${getCommentAnchorId(report.commentId)}`
