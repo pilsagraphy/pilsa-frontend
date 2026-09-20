@@ -64,7 +64,8 @@ export default function PolicySummarySection() {
   const perDelete = Number(num(s, 'caution_per_delete', 2));
 
   const reportRows = [
-    [`같은 글·댓글 신고 ${num(s, 'auto_blind_threshold')}건`, '자동 블라인드'],
+    [`같은 글·댓글에 서로 다른 ${num(s, 'auto_blind_threshold')}명이 신고`, '자동 블라인드'],
+    ['비밀 댓글 신고', '1건이면 자동 블라인드'],
     ['신고 처리(삭제·반려)', '대상의 대기 신고 전부 종료'],
     ['관리자가 직접 블라인드·삭제', '신고 없이도 가능 (기록 남음)'],
   ];

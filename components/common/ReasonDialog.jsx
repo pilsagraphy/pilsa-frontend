@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,13 +12,6 @@ import {
   DialogFooter,
   DialogTitle,
 } from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 import { REPORT_REASONS, REPORT_REASON_ETC, REPORT_DETAIL_MAX_LENGTH } from '@/constants/report';
 
@@ -58,6 +52,18 @@ export default function ReasonDialog({
   const [detail, setDetail] = useState('');
   // 사유 목록의 열림 상태. ESC를 눌렀을 때 목록만 닫기 위해 직접 들고 있는다.
   const [reasonOpen, setReasonOpen] = useState(false);
+  const reasonRootRef = useRef(null);
+  const selectedLabel = REPORT_REASONS.find((item) => item.code === reason)?.label ?? '';
+
+  // 목록 바깥을 누르면 닫는다 (모달은 그대로)
+  useEffect(() => {
+    if (!reasonOpen) return undefined;
+    const onPointerDown = (event) => {
+      if (!reasonRootRef.current?.contains(event.target)) setReasonOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, [reasonOpen]);
 
   // 열릴 때마다 입력값 초기화
   useEffect(() => {
@@ -108,47 +114,52 @@ export default function ReasonDialog({
             <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
               사유
             </span>
-            <Select
-              open={reasonOpen}
-              onOpenChange={setReasonOpen}
-              value={reason}
-              onValueChange={setReason}
-            >
-              <SelectTrigger
+            {/* 직접 그린 드롭다운. Radix Select 는 목록을 열 때 뒤의 모달에 aria-hidden 을 붙이는데,
+                포커스는 모달 안 버튼에 남아 있어 크롬이 접근성 경고를 19개씩 냈다.
+                목록을 모달 안에 absolute 로 붙이면 숨길 것도, 경고도 없다 */}
+            <div ref={reasonRootRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setReasonOpen((prev) => !prev)}
+                aria-haspopup="listbox"
+                aria-expanded={reasonOpen}
                 className={cn(
-                  'h-[52px] rounded-[4px] border-[#b9b9b9] text-[16px] tracking-[-0.32px] text-[#454545] shadow-none data-[placeholder]:text-[#b9b9b9]',
+                  'flex h-[52px] w-full items-center justify-between rounded-[4px] border border-[#b9b9b9] bg-white px-3 text-left text-[16px] tracking-[-0.32px] shadow-none',
+                  reason ? 'text-[#454545]' : 'text-[#b9b9b9]',
                   triggerClassName
                 )}
               >
-                <SelectValue placeholder="선택" />
-              </SelectTrigger>
-              {/*
-                side="bottom": 아래로 펼치는 것을 기본으로 한다.
-                max-h: 화면에 남은 높이(--radix-select-content-available-height)를 넘지 않게 제한해
-                목록이 화면을 벗어나지 않고 내부 스크롤되도록 한다.
-              */}
-              <SelectContent
-                side="bottom"
-                sideOffset={4}
-                className="max-h-[min(240px,var(--radix-select-content-available-height))]"
-              >
-                {REPORT_REASONS.map(({ code, label }) => (
-                  <SelectItem
-                    key={code}
-                    value={code}
-                    // 기본 hover 색은 Radix가 항목에 포커스를 줄 때(data-highlighted)만 켜지는데,
-                    // 모달(Dialog) 안에서는 포커스가 트리거에 묶여 있어 마우스를 올려도 아무 색이 안 뜬다.
-                    // 그래서 포커스와 무관한 :hover로 직접 회색을 준다. (키보드 이동용으로 highlighted도 함께 둔다)
-                    //
-                    // #183 모바일: 항목 사이 구분선(#B9B9B9)·텍스트 #9E9E9E·행 높이 52px(피그마).
-                    // 데스크톱(md↑)은 기존 그대로.
-                    className="cursor-pointer rounded-none border-b border-[#B9B9B9] py-[13px] text-[16px] text-[#9E9E9E] last:border-b-0 hover:bg-[#dedede] data-[highlighted]:bg-[#dedede] md:rounded-sm md:border-b-0 md:py-1.5 md:text-[#454545]"
-                  >
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <span className="truncate">{selectedLabel || '선택'}</span>
+                <ChevronDown size={18} className="shrink-0 text-[#919191]" aria-hidden />
+              </button>
+
+              {reasonOpen && (
+                <ul
+                  role="listbox"
+                  aria-label="사유"
+                  className="absolute left-0 right-0 top-[56px] z-20 max-h-[240px] overflow-y-auto rounded-[4px] border border-[#dedede] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.1)]"
+                >
+                  {REPORT_REASONS.map(({ code, label }) => (
+                    <li key={code} role="option" aria-selected={reason === code}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReason(code);
+                          setReasonOpen(false);
+                        }}
+                        // #183 모바일: 항목 사이 구분선(#B9B9B9)·텍스트 #9E9E9E·행 높이 52px(피그마). 데스크톱(md↑)은 기존 그대로
+                        className={cn(
+                          'block w-full border-b border-[#B9B9B9] px-3 py-[13px] text-left text-[16px] text-[#9E9E9E] last:border-b-0 hover:bg-[#dedede] md:border-b-0 md:py-1.5 md:text-[#454545]',
+                          reason === code && 'bg-[#f0f0f0] text-[#212121]'
+                        )}
+                      >
+                        {label}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
         )}
 
