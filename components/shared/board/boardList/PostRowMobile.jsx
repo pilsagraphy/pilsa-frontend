@@ -59,7 +59,8 @@ export default function PostRowMobile({ post, boardId, listQuery = '', allowComm
             {post.commentCount?.toLocaleString() ?? 0}
           </span>
         )}
-        <span>{formattedDate}</span>
+        {/* 날짜는 글쓴이 아래 오른쪽 끝 — 마이페이지 카드와 같은 자리 */}
+        <span className="ml-auto shrink-0">{formattedDate}</span>
       </div>
     </div>
   );
