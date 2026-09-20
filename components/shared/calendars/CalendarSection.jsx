@@ -14,6 +14,8 @@ import { Calendar } from '@/components/ui/calendar';
 import MonthlyScheduleList from '@/components/shared/calendars/MonthlyScheduleList';
 import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
 import CalendarSubscribeButton from '@/components/shared/calendars/CalendarSubscribeButton';
+import AddSingleEventDialog from '@/components/shared/calendars/AddSingleEventDialog';
+import { CalendarPlus } from 'lucide-react';
 import { getEventList } from '@/apis/event';
 import { CALENDAR_COLUMN_MAX_W } from '@/components/shared/calendars/calendarLayout';
 
@@ -61,6 +63,8 @@ export default function CalendarSection({
 
   const [selectedDate, setSelectedDate] = React.useState(undefined);
   const [selectedScheduleId, setSelectedScheduleId] = React.useState(null);
+  // '이 일정만 담기' 대상 (null 이면 닫힘)
+  const [addTarget, setAddTarget] = React.useState(null);
 
   // 조회 단위는 'yyyy-MM'이므로 이걸 기준으로 삼는다.
   // currentMonth(Date)를 그대로 쓰면 같은 달 안에서 날짜만 바뀌어도 재조회가 돌아,
@@ -228,6 +232,21 @@ export default function CalendarSection({
     setSelectedScheduleId(found ? found.scheduleId : null);
   };
 
+  // 카드 오른쪽 + 로 '이 일정만' 담기. 관리자 화면은 그 자리에 ⋮ 메뉴를 넣으므로 그때는 그대로 둔다
+  const renderAddAction = (schedule) => (
+    <button
+      type="button"
+      aria-label={`${schedule.title} 일정을 내 캘린더에 담기`}
+      onClick={(event) => {
+        event.stopPropagation();
+        setAddTarget(schedule);
+      }}
+      className="grid size-6 place-items-center rounded-full text-[#919191] transition hover:bg-black/5 hover:text-[#212121]"
+    >
+      <CalendarPlus size={20} strokeWidth={1.5} aria-hidden />
+    </button>
+  );
+
   return (
     <section
       className={`mx-auto flex w-full flex-col gap-6 sm:gap-8 lg:gap-[40px] ${CALENDAR_COLUMN_MAX_W}`}
@@ -280,7 +299,7 @@ export default function CalendarSection({
             onSelect={handleSelectSchedule}
             isLoading={isLoading}
             hasError={hasFetchError}
-            renderAction={renderScheduleAction}
+            renderAction={renderScheduleAction ?? renderAddAction}
             scrollable={scrollableScheduleList}
             visibleCount={scheduleListVisibleCount}
           />
@@ -295,6 +314,11 @@ export default function CalendarSection({
       ) : (
         <ScheduleDetail schedule={selectedSchedule} />
       )}
+      <AddSingleEventDialog
+        schedule={addTarget}
+        open={Boolean(addTarget)}
+        onClose={() => setAddTarget(null)}
+      />
     </section>
   );
 }

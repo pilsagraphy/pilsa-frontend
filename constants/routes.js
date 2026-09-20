@@ -56,6 +56,7 @@ export const ROUTES = {
   ADMIN_REPORTS_TAB: (targetType) =>
     `${BASE_PATH}admin/community/reports?tab=${encodeURIComponent(targetType)}`,
   ADMIN_CALENDAR: `${BASE_PATH}admin/calendar`,
+  ADMIN_QUOTES: `${BASE_PATH}admin/quotes`,
 };
 
 // 비로그인 접근 가능

@@ -233,6 +233,13 @@ const Sidebar = () => {
               </p>
             </Link>
 
+            {/* 이 주의 문장 (메인·마이페이지 인사말 옆에 뜨는 문장) */}
+            <Link href={ROUTES.ADMIN_QUOTES}>
+              <p className={singleLinkClass(pathname.startsWith(ROUTES.ADMIN_QUOTES))}>
+                이 주의 문장
+              </p>
+            </Link>
+
             {/* 동아리 공용 드라이브 (외부 링크) — 새 탭으로 연다.
                 편집 권한은 구글 드라이브 쪽 공유 설정이 정하는 것이라 앱에서는 열어 주는 것까지만 한다 */}
             <a href={ADMIN_DRIVE_URL} target="_blank" rel="noopener noreferrer">

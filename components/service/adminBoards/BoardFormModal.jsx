@@ -27,6 +27,27 @@ import {
 
 // 모달의 권한 드롭박스 (디자인: 높이 40px, 폭 120px, 아래 화살표는 SelectTrigger 기본 아이콘)
 // 열람 · 작성 두 칸이 같은 모양이라 하나로 묶어 쓴다.
+// 게시판별로 켜고 끄는 기능. 키 이름은 서버(BoardSaveRequest)와 같다
+const BOARD_FEATURE_FIELDS = [
+  { key: 'allowComment', label: '댓글 사용', hint: '끄면 이 게시판 글에는 댓글을 달 수 없어요' },
+  { key: 'allowAttachment', label: '첨부파일 사용', hint: '끄면 파일·이미지 첨부 버튼이 사라져요' },
+  {
+    key: 'categoryMode',
+    label: '카테고리(태그) 사용',
+    hint: '끄면 글쓰기에서 카테고리를 고르지 않고, 목록에도 배지가 없어요',
+  },
+  {
+    key: 'allowAnonymous',
+    label: '익명 글·댓글 허용',
+    hint: '작성자 이름을 가려요. 운영·신고 처리에는 실제 작성자가 남아요',
+  },
+  {
+    key: 'allowPrivateComment',
+    label: '비밀댓글 허용',
+    hint: '글쓴이와 운영진만 볼 수 있는 댓글을 달 수 있어요',
+  },
+];
+
 function FormSelect({ label, value, options, onChange }) {
   return (
     <Select value={value} onValueChange={onChange}>
@@ -77,12 +98,30 @@ export default function BoardFormModal({
   // 저장 중에 확인을 두 번 눌러 요청이 겹치는 것을 막는다
   const [submitting, setSubmitting] = useState(false);
 
+  // 게시판별 사용 여부. 서버는 처음부터 받고 있었는데 화면에 없어 DB 를 직접 고쳐야 했다 (2026-09-20)
+  const [flags, setFlags] = useState({
+    allowComment: true,
+    allowAttachment: true,
+    categoryMode: true,
+    allowAnonymous: false,
+    allowPrivateComment: false,
+  });
+
   // 열릴 때마다 초기값을 채운다 (수정은 기존 값, 생성은 빈 값)
   useEffect(() => {
     if (!open) return;
     setBoardName(isEdit ? (board?.boardName ?? '') : '');
     setReadScope(isEdit ? (board?.readScope ?? '') : '');
     setWriteLevelValue(isEdit && board ? toWriteLevelValue(board.writeLevel) : '');
+    // 새 게시판의 기본값은 '댓글·첨부·카테고리는 쓰고, 익명과 비밀댓글은 끈다' —
+    // 익명은 운영 부담이 크고 비밀댓글은 정보게시판처럼 필요한 곳에서만 켜는 기능이다
+    setFlags({
+      allowComment: isEdit ? board?.allowComment !== false : true,
+      allowAttachment: isEdit ? board?.allowAttachment !== false : true,
+      categoryMode: isEdit ? board?.categoryMode !== false : true,
+      allowAnonymous: isEdit ? Boolean(board?.allowAnonymous) : false,
+      allowPrivateComment: isEdit ? Boolean(board?.allowPrivateComment) : false,
+    });
     setSubmitting(false);
   }, [open, isEdit, board]);
 
@@ -97,6 +136,7 @@ export default function BoardFormModal({
       name: boardName.trim(),
       readScope,
       writeLevel: fromWriteLevelValue(writeLevelValue),
+      ...flags,
     });
 
     setSubmitting(false);
@@ -155,6 +195,35 @@ export default function BoardFormModal({
             options={BOARD_WRITE_LEVEL_OPTIONS}
             onChange={setWriteLevelValue}
           />
+        </div>
+
+        <div className="flex flex-col gap-[4px]">
+          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+            사용 기능
+          </span>
+          <div className="rounded-[4px] border border-[#b9b9b9]">
+            {BOARD_FEATURE_FIELDS.map(({ key, label, hint }, index) => (
+              <label
+                key={key}
+                className={`flex cursor-pointer items-start gap-[10px] px-[14px] py-[12px] ${
+                  index > 0 ? 'border-t border-[#EEEEEE]' : ''
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={flags[key]}
+                  onChange={(e) => setFlags((prev) => ({ ...prev, [key]: e.target.checked }))}
+                  className="mt-[2px] size-[18px] shrink-0 cursor-pointer rounded-[2px] border border-[#919191] accent-[#212121]"
+                />
+                <span className="min-w-0">
+                  <span className="block text-[14px] tracking-[-0.28px] text-[#212121]">{label}</span>
+                  <span className="mt-[2px] block text-[12px] leading-[1.5] tracking-[-0.24px] text-[#919191]">
+                    {hint}
+                  </span>
+                </span>
+              </label>
+            ))}
+          </div>
         </div>
 
         {/* 저장 실패 사유 (예: 이미 존재하는 게시판 이름입니다.)
