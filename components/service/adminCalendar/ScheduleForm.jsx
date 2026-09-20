@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { getDaysInMonth } from 'date-fns';
 import { Pencil, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,31 +16,8 @@ const pad2 = (n) => String(n).padStart(2, '0');
 const range = (length, start = 0, step = 1) =>
   Array.from({ length }, (_, i) => pad2(start + i * step));
 
-const MONTH_OPTIONS = range(12, 1);
 const HOUR_OPTIONS = range(24);
 const MINUTE_OPTIONS = range(12, 0, 5);
-
-// 년은 고른 값을 가운데 두고 앞뒤 5년. 시안처럼 최근 연도가 위로 오게 내림차순으로 둔다.
-// 시작 · 종료가 각자 자기 값을 기준으로 만든다. 한쪽 기준으로 목록을 공유하면
-// 다른 쪽 값이 목록 밖으로 밀려나 다시 고를 수 없게 된다.
-function buildYearOptions(year) {
-  return Array.from({ length: 11 }, (_, i) => String(year + 5 - i));
-}
-
-// 그 해 그 달의 마지막 날. (2월 28 · 29일, 30일인 달)
-function lastDayOf({ year, month }) {
-  return getDaysInMonth(new Date(Number(year), Number(month) - 1));
-}
-
-// 일 후보는 년 · 월에 따라 달라진다. 늘 31일까지 열어 두면 2월 31일 같은 날짜를 만들 수 있고,
-// 그 값으로 Date를 만들면 조용히 다음 달로 넘어간다. (new Date(2026, 1, 31) → 3월 3일)
-const dayOptionsOf = (parts) => range(lastDayOf(parts), 1);
-
-// 년 · 월을 바꿔 그 달의 일수가 줄면 고른 일자를 마지막 날로 당긴다.
-function clampDay(parts) {
-  const last = lastDayOf(parts);
-  return Number(parts.day) > last ? { ...parts, day: pad2(last) } : parts;
-}
 
 const partsToInput = ({ year, month, day }) => `${year}-${month}-${day}`;
 

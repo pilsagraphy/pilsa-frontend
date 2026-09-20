@@ -266,7 +266,7 @@ const Sidebar = () => {
                 // 확인 창이 사이드바 위에 겹치지 않게 먼저 닫는다
                 setIsMobileOpen(false);
                 const go = await confirmDialog(
-                  '필사그래피 임원용 구글 드라이브 폴더로 이동됩니다.\n이동하시겠습니까?',
+                  '필사그래피 구글 드라이브로 이동됩니다.\n이동하시겠습니까?',
                   { confirmText: '이동', cancelText: '취소' }
                 );
                 if (go) window.open(ADMIN_DRIVE_URL, '_blank', 'noopener,noreferrer');
