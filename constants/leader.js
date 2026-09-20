@@ -28,26 +28,28 @@ export const DUMMY_LEADER = [
     name: '최재연',
     period: '(2026~현재)',
     imageSrc: '/images/leader/leader_5.png',
-    // 재임 중 임원진 — 학기별. 회장단(회장 제외)과 각 팀장. 명단은 조직도(constants/organization.js) 이력에서 (PM, 2026-09-21)
+    // 재임 중 임원진 — 학기별. 조직도(constants/organization.js)와 같은 모양이고, 명단은 그 파일의 이력에서 (PM, 2026-09-21).
+    // 카드의 '임원진 보기' 버튼을 누르면 팝업으로 보여 준다
     officers: [
       {
         term: '2026-1학기',
-        groups: [
-          { label: '회장단', names: ['최성현', '안예지'] },
-          { label: '제작스터디 팀장', names: ['박수민'] },
-          { label: '정기모임 팀장', names: ['한서은'] },
-          { label: '큐레이션팀 팀장', names: ['김서진'] },
-          { label: '자문', names: ['가성연', '정도이', '김예령'] },
+        chairman: { title: '회장단', leader: '최재연', members: ['최성현', '안예지'] },
+        teams: [
+          { title: '제작스터디', leader: '박수민', members: ['최예윤', '유해담'] },
+          { title: '정기모임', leader: '한서은', members: ['김서현', '김수현', '최서진', '하종연'] },
+          { title: '큐레이션팀', leader: '김서진', members: [] },
         ],
+        advisors: ['가성연', '정도이', '김예령'],
       },
       {
         term: '2026-2학기',
-        groups: [
-          { label: '회장단', names: ['최성현', '안예지'] },
-          { label: '제작스터디 팀장', names: ['박수민'] },
-          { label: '정기모임 팀장', names: ['한서은'] },
-          { label: '큐레이션팀 팀장', names: ['김서진'] },
+        chairman: { title: '회장단', leader: '최재연', members: ['최성현', '안예지'] },
+        teams: [
+          { title: '제작스터디', leader: '박수민', members: ['김아란', '남가현', '박시현', '유해담', '최보은', '최예윤'] },
+          { title: '정기모임', leader: '한서은', members: ['김서현', '김성은', '김수현', '이민승', '최서진', '홍준화'] },
+          { title: '큐레이션팀', leader: '김서진', members: ['정현준', '하민재'] },
         ],
+        advisors: [],
       },
     ],
   },
