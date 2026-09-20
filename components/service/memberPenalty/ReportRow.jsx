@@ -15,16 +15,27 @@ export default function ReportRow({ report, number }) {
       <div className="text-center">{number}</div>
       <div className="text-center">{report.board}</div>
       <div className="text-center">{report.reason}</div>
+      {/* 원문 링크. 열이 좁아 글자는 'Link' 하나뿐이라 어느 글인지 구분되지 않는다.
+          제목은 마우스오버(title)와 보조기기(aria-label)로만 알린다.
+          (텍스트가 있으면 title 은 접근성 이름이 되지 않아 aria-label 이 따로 필요하다)
+          경로를 모르는 게시판이면 link 가 없다 → 누를 수 없는 'Link' 대신 '-' 로 둔다.
+          (관리자 댓글 관리의 CommentRow 가 '바로가기' 열을 같게 처리한다) */}
       <div className="text-center">
-        <a
-          href={report.link}
-          target="_blank"
-          rel="noreferrer"
-          className="underline decoration-solid underline-offset-2"
-          onClick={(e) => e.stopPropagation()}
-        >
-          Link
-        </a>
+        {report.link ? (
+          <a
+            href={report.link}
+            target="_blank"
+            rel="noreferrer"
+            title={report.targetTitle}
+            aria-label={report.linkLabel}
+            className="underline decoration-solid underline-offset-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Link
+          </a>
+        ) : (
+          <span className="text-[#919191]">-</span>
+        )}
       </div>
       <div className="text-center">{report.status}</div>
       <div className="text-center">{report.date}</div>
