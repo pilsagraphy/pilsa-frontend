@@ -171,7 +171,7 @@ const Sidebar = () => {
         onClick={closeOnLinkClick}
         className={`
           fixed top-0 left-0 h-[100dvh] overflow-y-auto overscroll-contain bg-white z-[60] flex flex-col border-r border-gray-100
-          w-[200px] pl-6 py-6 tablet:w-[240px] tablet:pl-[80px] tablet:py-10
+          w-[210px] pl-9 py-6 tablet:w-[240px] tablet:pl-[80px] tablet:py-10
           transition-transform duration-300 ease-in-out
           tablet:h-full tablet:overflow-visible
           ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'}

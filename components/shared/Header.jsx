@@ -48,7 +48,7 @@ export default function Header() {
             크기는 남는 폭에 맞춰 줄어든다 — (100vw - 200px) 는 좌우 아이콘 칸과 바깥 여백을 뺀 폭이고,
             8.6 은 이 글꼴에서 'PILSAGRAPHY' 11글자가 글자 크기의 몇 배를 차지하는지다. */}
         <h1
-          className={`${zenDots.className} min-w-0 flex-1 overflow-hidden whitespace-nowrap pl-1 text-left tablet:pl-0 tablet:text-center`}
+          className={`${zenDots.className} min-w-0 flex-1 overflow-hidden whitespace-nowrap pl-3 text-left tablet:pl-0 tablet:text-center`}
           style={{ fontSize: 'clamp(15px, min(6.5vw, (100vw - 200px) / 8.6), 48px)' }}
         >
           {/* 시계 게이트(/)로는 보내지 않는다 — 로그인 상태면 학생 홈, 아니면 소개 페이지 */}

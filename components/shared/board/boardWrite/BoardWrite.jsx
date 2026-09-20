@@ -13,7 +13,6 @@ import { ROUTES } from '@/constants/routes';
 import AppLoading from '@/components/common/AppLoading';
 import { AUTO_SAVE_INTERVAL_MS, buildDraftBody, draftSignature, isDraftEmpty } from '@/lib/draft';
 import { createDraft } from '@/apis/draft';
-import { useMinWidthMd } from '@/lib/useMinWidthMd';
 
 const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base';
 
@@ -25,7 +24,6 @@ const formatClock = (date) =>
 // 게시판 정책(플래그)에 따라 카테고리·첨부·익명 입력 노출 여부가 달라진다.
 export default function BoardWrite({ boardId }) {
   const router = useRouter();
-  const isMdUp = useMinWidthMd();
   const { board, boards, error: boardError } = useBoard(boardId);
 
   const {
@@ -409,69 +407,45 @@ export default function BoardWrite({ boardId }) {
       {/* 자동저장 안내. 이미 초안이 된 글만 자동으로 지키므로, 저장하기 전에는 아무것도 띄우지 않는다.
           조용히 도는 동작이라 성공·실패를 알려줄 자리가 필요해서 둔 한 줄이다.
           문구가 생길 때 요소까지 새로 생기면 읽어주지 않는 보조기기가 있어, 자리는 늘 두고 내용만 바꾼다. */}
-      {/* 자동저장 안내는 임시저장을 사용하는 모바일에서만 노출 */}
-      {!isMdUp && (
-        <p
-          role="status"
-          aria-live="polite"
-          className={`min-h-[22px] text-[14px] tracking-[-0.28px] ${
-            autoSaveError ? 'text-[#e5484d]' : 'text-[#919191]'
-          }`}
+      <p
+        role="status"
+        aria-live="polite"
+        className={`min-h-[22px] text-[14px] tracking-[-0.28px] ${
+          autoSaveError ? 'text-[#e5484d]' : 'text-[#919191]'
+        }`}
+      >
+        {draftId ? autoSaveError || savedNotice : ''}
+      </p>
+
+      {/* 작성 · 임시저장 · 취소를 한 줄에. 임시저장은 예전에 모바일에만 있어서 PC 에서는 초안을 만들 길이
+          아예 없었다(2026-09-20). 세 버튼 모두 폰·PC 공통이다 */}
+      <div className="mt-4 flex w-full flex-row gap-2 md:gap-[12px]">
+        <button
+          type="submit"
+          disabled={submitting || savingDraft || autoSaving}
+          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] px-2 text-[14px] tracking-[-0.28px] text-white transition-colors hover:bg-black disabled:opacity-60 md:h-[52px] md:text-[16px] md:tracking-[-0.32px]"
         >
-          {draftId ? autoSaveError || savedNotice : ''}
-        </p>
-      )}
+          {submitting ? '처리 중...' : '글 작성하기'}
+        </button>
 
-      {isMdUp ? (
-        // 데스크톱 → 기존 UI 그대로
-        <div className="mt-4 flex w-full flex-col gap-[12px]">
-          <button
-            type="submit"
-            disabled={submitting}
-            className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white transition-colors hover:bg-black disabled:opacity-60"
-          >
-            {submitting ? '작성 중...' : '글 작성하기'}
-          </button>
+        <button
+          type="button"
+          onClick={handleSaveDraft}
+          disabled={submitting || savingDraft || autoSaving}
+          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] bg-[#919191] px-2 text-[14px] tracking-[-0.28px] text-white transition-colors hover:bg-[#7d7d7d] disabled:opacity-60 md:h-[52px] md:text-[16px] md:tracking-[-0.32px]"
+        >
+          {savingDraft ? '저장 중...' : '임시저장'}
+        </button>
 
-          <button
-            type="button"
-            onClick={handleCancel}
-            disabled={submitting}
-            className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white text-[16px] tracking-[-0.32px] text-[#212121] transition-colors hover:bg-gray-50 disabled:opacity-60"
-          >
-            취소
-          </button>
-        </div>
-      ) : (
-        // 모바일 → 임시저장 추가
-        <div className="mt-4 flex w-full flex-col gap-[12px]">
-          <button
-            type="submit"
-            disabled={submitting || savingDraft || autoSaving}
-            className="flex h-[40px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white transition-colors hover:bg-black disabled:opacity-60"
-          >
-            {submitting ? '처리 중...' : '글 작성하기'}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleSaveDraft}
-            disabled={submitting || savingDraft || autoSaving}
-            className="flex h-[40px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-[#919191] text-[16px] tracking-[-0.32px] text-white transition-colors hover:bg-[#7d7d7d] disabled:opacity-60"
-          >
-            {savingDraft ? '저장 중...' : '글 임시저장하기'}
-          </button>
-
-          <button
-            type="button"
-            onClick={handleCancel}
-            disabled={submitting || savingDraft || autoSaving}
-            className="flex h-[40px] w-full cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white text-[16px] tracking-[-0.32px] text-[#212121] transition-colors hover:bg-gray-50 disabled:opacity-60"
-          >
-            취소
-          </button>
-        </div>
-      )}
+        <button
+          type="button"
+          onClick={handleCancel}
+          disabled={submitting || savingDraft || autoSaving}
+          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white px-2 text-[14px] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-gray-50 disabled:opacity-60 md:h-[52px] md:text-[16px] md:tracking-[-0.32px]"
+        >
+          취소
+        </button>
+      </div>
     </form>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Info } from 'lucide-react';
 
 import useMyPageStore from '@/stores/useMyPageStore';
@@ -18,14 +18,34 @@ export default function MyActivityCard() {
 
   const semester = summary?.semester ?? null; // 불러오기 전에는 null
 
+  // '이번 학기'가 언제부터인지 묻는 사람이 많아 i 를 누르면 기준을 알려 준다.
+  // 경계는 서버 정책값(policy_settings semester1_start_month / semester2_start_month)이고 기본이 3월·9월이다.
+  const [helpOpen, setHelpOpen] = useState(false);
+
   return (
     <div className="flex h-full w-full flex-col rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px] lg:flex-1">
       <div className="flex items-center gap-[8px]">
         <h3 className="text-[16px] font-bold leading-[1.5] tracking-[-0.02em] text-black">
           이번 학기 활동 요약
         </h3>
-        <Info size={16} className="text-[#B9B9B9]" strokeWidth={1.5} />
+        <button
+          type="button"
+          aria-label="이번 학기 기준 설명"
+          aria-expanded={helpOpen}
+          onClick={() => setHelpOpen((prev) => !prev)}
+          className="grid size-5 place-items-center rounded-full text-[#B9B9B9] transition hover:bg-[#F5F5F5] hover:text-[#757575]"
+        >
+          <Info size={16} strokeWidth={1.5} />
+        </button>
       </div>
+
+      {helpOpen && (
+        <p className="mt-2 rounded-[6px] bg-[#F5F5F5] px-3 py-2 text-[12px] leading-[1.6] tracking-[-0.02em] text-[#757575]">
+          학기는 <strong className="font-semibold">3월</strong>과{' '}
+          <strong className="font-semibold">9월</strong>에 시작해요. 지금 학기에 쓴 글·댓글과, 그
+          기간에 받은 좋아요를 셉니다.
+        </p>
+      )}
 
       {/* 선을 '작성한 글' 바로 위(목록 상단)에 붙임 */}
       <dl className="-mx-[12px] mt-auto flex flex-col border-t border-[#BDBDBD] px-[12px] lg:mt-[40px]">
