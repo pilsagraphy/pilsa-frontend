@@ -5,7 +5,7 @@ export const DUMMY_HISTORY = [
   },
   {
     year: "2022",
-    activities: ["특별지원금 수령", "삼성 갤럭시 캠퍼스 큐레이터 공모전 당선"],
+    activities: ["특별지원금 대상 선정", "삼성 갤럭시 캠퍼스 큐레이터 공모전 당선"],
   },
   {
     year: "2023",
