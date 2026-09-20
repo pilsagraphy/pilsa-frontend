@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { CircleUser } from 'lucide-react';
 
 import useMyPageStore from '@/stores/useMyPageStore';
 import { getCurrentQuote } from '@/apis/quote';
@@ -25,10 +24,7 @@ export default function MyPageIntro() {
   }, []);
 
   return (
-    <div className="flex w-full items-center gap-[16px]">
-      {/* 사용자 프로필 아이콘 */}
-      <CircleUser className="h-[64px] w-[64px] shrink-0 text-[#212121]" strokeWidth={1.5} />
-
+    <div className="flex w-full items-center">
       <div className="flex min-w-0 flex-col gap-[4px]">
         <h2 className="text-[18px] font-bold leading-[1.5] tracking-[-0.02em] text-black md:text-[20px]">
           {userName}님, 안녕하세요! :) ✍️

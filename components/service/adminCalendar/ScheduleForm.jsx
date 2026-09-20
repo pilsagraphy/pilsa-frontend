@@ -67,13 +67,9 @@ function toTimeParts(value) {
   return { hour: pad2(Number(matched[1])), minute: matched[2] };
 }
 
-// 등록 · 수정 요청 본문에 시각 필드가 없어 시 · 분과 '종일 해제'는 저장되지 않는다.
-// (2026-08-28 `GET /v3/api-docs` 확인 — title/category/description/startDate/endDate 5개뿐)
-// 시안의 마크업은 그대로 두되 조작만 막는다. 그냥 열어 두면 관리자가 14:00~16:00을 고르고
-// 성공 토스트까지 본 뒤 종일로 저장되는, 화면이 거짓말하는 상태가 된다.
-// 서버에 startTime/endTime 이 생기면 이 상수를 true 로 바꾸는 것만으로 되돌아간다.
-// (보내는 쪽은 apis/admin/event.js 의 toEventPayload)
-const IS_TIME_SUPPORTED = false;
+// 서버가 startTime/endTime('HH:mm')을 받고 내려준다 (2026-09-20).
+// 비워 보내면 종일 일정으로 저장되고, 조회 응답도 종일이면 null 을 준다.
+const IS_TIME_SUPPORTED = true;
 
 /**
  * 관리자 일정 추가 · 수정 폼.
@@ -89,8 +85,7 @@ const IS_TIME_SUPPORTED = false;
  *   categoriesError는 그 조회가 실패했다는 뜻이다. 둘 다 비어 있는 상태가 '조회 중'과 '실패'로
  *   갈리므로, 잠긴 셀렉트에 띄울 문구를 가리는 데만 쓴다.
  *
- * ※ 시각(시 · 분)과 종일 체크박스는 서버에 담을 곳이 없어 IS_TIME_SUPPORTED로 잠가 뒀다.
- *   모든 일정이 종일로 저장되고, 폼에도 그렇게 적힌다. 위 상수 주석 참고.
+ * ※ 종일 체크를 풀면 시 · 분을 고를 수 있고, 그 시각이 구글 캘린더·ICS 구독에도 그대로 반영된다.
  */
 export default function ScheduleForm({
   schedule = null,

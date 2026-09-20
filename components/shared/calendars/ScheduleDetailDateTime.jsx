@@ -15,7 +15,7 @@ function formatFullDate(value) {
   return format(date, 'yyyy년 MM월 dd일 (E)', { locale: ko });
 }
 
-// 시간(startTime · endTime)은 아직 API에 없어 있을 때만 덧붙인다.
+// 시간(startTime · endTime)은 종일 일정이면 null 이라, 있을 때만 덧붙인다.
 function buildDateTimeText({ startDate, endDate, startTime, endTime }) {
   const start = formatFullDate(startDate);
   if (!start) return '';

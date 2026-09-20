@@ -15,6 +15,7 @@ import SortSelect from '@/components/shared/board/boardList/SortSelect';
 import BoardSelect, { BOARD_FILTER_ALL } from '@/components/shared/board/boardList/BoardSelect';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
 
+import { Eye, Heart } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getBoards } from '@/apis/board';
 import { ROUTES } from '@/constants/routes';
@@ -158,8 +159,61 @@ export default function MyPageBoard() {
         </div>
       </div>
 
-      {/* 목록 테이블 (마지막 행 아래 줄까지 표시) */}
-      <div className="overflow-x-auto border-b border-[#B9B9B9]">
+      {/* 폰: 게시판 목록과 같은 카드 줄. 좁은 화면에서 표를 쓰면 열이 잘려 제목만 남는다 */}
+      <div className="flex flex-col border-b border-[#B9B9B9] md:hidden">
+        {isLoading ? (
+          <p className="py-8 text-center text-[14px] text-[#919191]">불러오는 중...</p>
+        ) : error ? (
+          <p className="py-8 text-center text-[14px] text-[#919191]">{error}</p>
+        ) : items.length === 0 ? (
+          <p className="py-8 text-center text-[14px] text-[#919191]">
+            {isComments ? '작성한 댓글이 없습니다.' : '게시글이 없습니다.'}
+          </p>
+        ) : (
+          items.map((row) => (
+            <div
+              key={isComments ? row.commentId : row.postId}
+              onClick={() => goToRow(row)}
+              className="flex cursor-pointer flex-col gap-[6px] border-t border-[#DEDEDE] pb-2 pt-3 transition-colors active:bg-[#F6F6F6]"
+            >
+              {/* 윗줄: 게시판 + 제목 */}
+              <div className="flex items-center gap-[10px] px-1">
+                {row.boardName && (
+                  <span className="shrink-0 rounded-full border border-[#919191] px-2 py-[2px] text-[12px] leading-none text-[#212121]">
+                    {row.boardName}
+                  </span>
+                )}
+                <span className="min-w-0 flex-1 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-[#454545]">
+                  {isComments ? row.postTitle : row.title}
+                </span>
+              </div>
+
+              {/* 아랫줄: 댓글이면 내용, 글이면 좋아요·조회수 + 작성일 */}
+              <div className="flex items-center gap-3 px-2 text-[13px] leading-[1.6] text-[#919191]">
+                {isComments ? (
+                  <span className="min-w-0 flex-1 truncate">{row.content}</span>
+                ) : (
+                  <>
+                    <span className="inline-flex items-center gap-1">
+                      <Heart size={16} strokeWidth={1.5} />
+                      {row.likeCount ?? 0}
+                    </span>
+                    <span className="inline-flex items-center gap-1">
+                      <Eye size={16} strokeWidth={1.5} />
+                      {row.viewCount ?? 0}
+                    </span>
+                    <span className="flex-1" />
+                  </>
+                )}
+                <span className="shrink-0">{formatDotDate(row.created)}</span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* PC: 표 (마지막 행 아래 줄까지 표시) */}
+      <div className="hidden overflow-x-auto border-b border-[#B9B9B9] md:block">
         <Table className="w-full table-fixed">
           <TableHeader>
             <TableRow className="h-12 border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#424242] md:text-[16px]">

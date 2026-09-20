@@ -6,10 +6,8 @@ import axiosInstance from '@/apis/axiosInstance';
 // 반대 방향(서버 → 화면)은 apis/event.js 의 toSchedule 이 맡는다.
 //
 // description 은 DB NOT NULL 이라 빈 문자열이라도 채워 보낸다.
-// 시각(startTime/endTime)·종일 여부는 서버에 담을 곳이 없어 여기서 버린다 —
-// startDate/endDate 를 YYYY-MM-DD 그대로 datetime 컬럼에 넣으므로 시각은 00:00:00 이 된다.
-// (폼의 시/분 셀렉트와 종일 체크박스는 마크업만 남긴 상태 — PM 확인 대기, apis/README.md 5번)
-const toEventPayload = ({ title, category, content, startDate, endDate }) => ({
+// 시각(startTime/endTime)은 'HH:mm' 또는 null 이다. null 이면 서버가 00:00:00 으로 넣어 종일 일정이 된다.
+const toEventPayload = ({ title, category, content, startDate, endDate, startTime, endTime }) => ({
   title,
   // 카테고리 목록 조회가 실패하면 폼의 구분 셀렉트가 빈 값('')으로 잠긴 채 제출될 수 있다.
   // '' 를 그대로 넣으면 '구분 없음'을 IS NULL 로 세는 쪽에서 새므로 NULL 로 보낸다.
@@ -17,6 +15,8 @@ const toEventPayload = ({ title, category, content, startDate, endDate }) => ({
   description: content ?? '',
   startDate,
   endDate,
+  startTime: startTime || null,
+  endTime: endTime || null,
 });
 
 // 1. 일정 등록 (POST /api/admin/event) [ADMIN]

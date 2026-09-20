@@ -18,7 +18,9 @@ export const listSubtitleClass = 'text-[18px] leading-[1.6] tracking-[-0.36px] t
 // 만큼(약 132px)까지 좁아진다 — 왼쪽 검색창에는 최소 너비가 걸려 있어서
 // 줄어드는 몫을 이 버튼들이 먼저 받는다.
 // px-3 은 좁아졌을 때의 하한을 조금 낮춘다. 180px 일 때는 글자가 가운데 정렬이라 표시에 차이가 없다.
-export const actionButtonClass = 'h-[52px] w-[180px] shrink px-3 rounded-[4px] text-[16px] font-normal';
+// 좁은 화면에서는 줄어들 수 있어야 한다 — 고정 폭이면 옆의 검색창을 밀어 찌그러뜨린다
+export const actionButtonClass =
+  'h-[52px] w-full min-w-[110px] shrink px-3 rounded-[4px] text-[16px] font-normal sm:w-[150px] lg:w-[180px]';
 
 // 목록 표의 체크박스 (헤더 · 행 공용)
 export const checkboxClass =

@@ -183,8 +183,8 @@ export default function MemberListSection({ title = '회원 목록' }) {
       <h2 className={listTitleClass}>{title}</h2>
 
       {/* 정렬 · 검색 (왼쪽) / 회원 정지 · 영구 차단 (오른쪽) */}
-      <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:items-center md:justify-between">
-        <div className="flex min-w-0 flex-row items-center gap-2">
+      <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:items-center md:justify-between md:gap-4">
+        <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
           <div className="w-[110px] shrink-0 sm:w-auto">
             <SortSelect
               value={sortOrder}
@@ -201,7 +201,7 @@ export default function MemberListSection({ title = '회원 목록' }) {
           </div>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center">
           {/* 회원 정지는 단건 처리 → 한 명 선택했을 때만 활성화 */}
           <Button
             type="button"

@@ -27,6 +27,9 @@ const toSchedule = (event) => ({
   content: event.description,
   startDate: toDateOnly(event.startDate),
   endDate: toDateOnly(event.endDate),
+  // 종일 일정이면 서버가 null 을 준다 — 화면은 값이 있을 때만 시각을 덧붙인다
+  startTime: event.startTime ?? null,
+  endTime: event.endTime ?? null,
 });
 
 // ─────────────────────────── 조회 ───────────────────────────

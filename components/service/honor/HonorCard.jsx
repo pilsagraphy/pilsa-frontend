@@ -57,30 +57,13 @@ const HonorCard = ({ data, rankType }) => {
         />
       </div>
 
-      {/* 인포 영역. 남긴 말은 1등과 '모두 같은 크기'에서만 보여 준다 (작은 칸에는 들어가지 않는다) */}
+      {/* 인포 영역 — 이름과 소속만. 남긴 말은 칸 크기에 따라 넘치거나 줄이 뒤틀려 빼 두었다 */}
       <div className={`text-center ${style.info}`}>
-        {rankType === 'first' || rankType === 'equal' ? (
+        <p className="font-semibold">{displayName}</p>
+        {!isAnonymous && (
           <>
-            {/* 1등(first) · 모두 같은 크기(equal) */}
-            <p>{displayName}</p>
-            {!isAnonymous && (
-              <>
-                <p>{data.affiliation}</p>
-                <p>{data.major}</p>
-              </>
-            )}
-            {data.message && <p>&quot; {data.message} &quot;</p>}
-          </>
-        ) : (
-          <>
-            {/* 2등 ~ n등 (top, normal) */}
-            <p className="font-semibold">{displayName}</p>
-            {!isAnonymous && (
-              <>
-                <p>{data.affiliation}</p>
-                <p>{data.major}</p>
-              </>
-            )}
+            <p>{data.affiliation}</p>
+            <p>{data.major}</p>
           </>
         )}
       </div>

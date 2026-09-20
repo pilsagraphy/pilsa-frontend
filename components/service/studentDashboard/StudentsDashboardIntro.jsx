@@ -78,11 +78,11 @@ export default function StudentsDashboardIntro() {
           TODO: 대시보드 배너 이미지가 확정되면 이 자리에 <img>(또는 next/image)로 교체 */}
       <div
         aria-hidden
-        className="mb-[40px] h-[160px] w-full rounded-[4px] bg-[#DEDEDE] md:h-[200px]"
+        className="mb-5 h-[160px] w-full rounded-[4px] bg-[#DEDEDE] md:mb-[40px] md:h-[200px]"
       />
 
       {/* 2. 넓은 화면: 인사말 / 이 주의 문장 한 줄 · 좁은 화면: 문장은 다음 줄 */}
-      <div className="flex w-full flex-col gap-2 pb-[28px] lg:flex-row lg:items-end lg:justify-between lg:gap-8 lg:pb-[40px]">
+      <div className="flex w-full flex-col gap-2 lg:flex-row lg:items-end lg:justify-between lg:gap-8 lg:pb-[40px]">
         {/* 왼쪽: 인사말 */}
         <div className="flex min-w-0 flex-col gap-[6px]">
           <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[20px]">
