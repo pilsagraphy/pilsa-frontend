@@ -302,20 +302,20 @@ export default function ScheduleForm({
         </ScheduleFormRow>
       </div>
 
-      {/* 취소는 왼쪽 끝, 확인은 오른쪽 끝 — 글쓰기 화면의 버튼 배치와 같다 */}
-      <div className="mt-[22px] flex items-center justify-between gap-[12px]">
+      {/* 폰: 취소 왼쪽 끝 · 확인 오른쪽 끝. PC: 둘 다 오른쪽에 나란히 (PM, 2026-09-20) */}
+      <div className="mt-[22px] flex items-center justify-between gap-[12px] md:justify-end">
         <button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="h-[44px] w-[calc(50%-6px)] max-w-[180px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6] disabled:opacity-50"
+          className="h-[44px] w-[calc(50%-6px)] max-w-[180px] rounded-[4px] border border-[#b9b9b9] md:w-[140px] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6] disabled:opacity-50"
         >
           취소
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-[44px] w-[calc(50%-6px)] max-w-[180px] rounded-[4px] bg-[#212121] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242] disabled:opacity-50"
+          className="h-[44px] w-[calc(50%-6px)] max-w-[180px] rounded-[4px] bg-[#212121] md:w-[140px] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242] disabled:opacity-50"
         >
           확인
         </button>
