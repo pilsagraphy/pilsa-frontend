@@ -15,6 +15,7 @@ import { submitReport } from '@/apis/report';
 import { CornerDownRight, ArrowBigRight, Lock } from 'lucide-react';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { formatSlashDateTime } from '@/lib/boardDetail';
+import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 
 function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
@@ -207,6 +208,9 @@ function CommentComposer({
 // 익명/비밀 허용 여부는 게시판 플래그(board.allowAnonymous / board.allowPrivateComment)로 결정한다.
 // 익명·비밀 마스킹(익명 authorName='익명', 비밀 content='비밀댓글입니다.')은 서버가 처리하므로
 // 프론트는 받은 값을 그대로 그린다 (다시 마스킹하지 않는다).
+// 한 페이지에 보이는 최상위 댓글 수
+const COMMENTS_PER_PAGE = 20;
+
 export default function BoardComments({ boardId, postId, board, commentCount }) {
   const boardLabel = board?.boardName ?? '';
   const allowAnonymous = Boolean(board?.allowAnonymous);
@@ -230,8 +234,10 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     if (boardId && postId) refetch();
   }, [refetch, boardId, postId]);
 
-  // URL 해시(#comment-3)로 지목된 댓글 강조 (관리자 신고 관리 링크용)
-  const focusedAnchor = useCommentAnchor(list);
+  // 댓글이 많으면 최상위 댓글 20개씩 끊는다. 답글은 부모 댓글과 같은 페이지에 있다 (PM, 2026-09-21)
+  const [commentPage, setCommentPage] = useState(1);
+  // 새 댓글은 맨 뒤에 붙으므로, 쓰고 나면 마지막 페이지로 간다 (목록이 새로 온 뒤에)
+  const goLastPageRef = useRef(false);
 
   // 링크가 가리키는 댓글이 목록에 없으면(지워졌거나 가려졌거나) 왜 없는지 알려 준다.
   // 알림을 눌렀는데 아무 일도 안 일어나면 어리둥절하다 (2026-09-20 PM)
@@ -330,11 +336,42 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     Number(a.commentId) - Number(b.commentId);
   repliesByGroup.forEach((replies) => replies.sort(byCreated));
 
-  const visibleComments = displayRoots.flatMap((root) => {
+  const totalCommentPages = Math.max(1, Math.ceil(displayRoots.length / COMMENTS_PER_PAGE));
+  const safePage = Math.min(Math.max(1, commentPage), totalCommentPages);
+  const pagedRoots = displayRoots.slice((safePage - 1) * COMMENTS_PER_PAGE, safePage * COMMENTS_PER_PAGE);
+
+  const visibleComments = pagedRoots.flatMap((root) => {
     const key = root.isPlaceholder ? `placeholder:${root.commentId}` : `comment:${root.commentId}`;
     const replies = repliesByGroup.get(key) ?? [];
     return [{ comment: root, depth: 0 }, ...replies.map((reply) => ({ comment: reply, depth: 1 }))];
   });
+
+  // 링크(#comment-3)가 가리키는 댓글이 다른 페이지에 있으면 그 페이지로 옮긴다 — 처음 한 번만
+  const hashPageHandledRef = useRef(false);
+  useEffect(() => {
+    if (hashPageHandledRef.current || list.length === 0) return;
+    const anchor = typeof window !== 'undefined' ? window.location.hash.slice(1) : '';
+    if (!anchor.startsWith('comment-')) return;
+    const commentId = Number(anchor.slice('comment-'.length));
+    const target = list.find((c) => Number(c.commentId) === commentId);
+    if (!target) return;
+    hashPageHandledRef.current = true;
+    const rootKey = target.parentCommentId ? groupKeyOf(target) : `comment:${target.commentId}`;
+    const rootIndex = displayRoots.findIndex(
+      (root) => (root.isPlaceholder ? `placeholder:${root.commentId}` : `comment:${root.commentId}`) === rootKey
+    );
+    if (rootIndex >= 0) setCommentPage(Math.floor(rootIndex / COMMENTS_PER_PAGE) + 1);
+  });
+
+  useEffect(() => {
+    if (!goLastPageRef.current) return;
+    goLastPageRef.current = false;
+    setCommentPage(totalCommentPages);
+  }, [list, totalCommentPages]);
+
+  // URL 해시(#comment-3)로 지목된 댓글 강조 (관리자 신고 관리 링크용).
+  // 지금 페이지에 그려진 댓글을 넘긴다 — 페이지가 바뀌어 대상이 나타나면 그때 스크롤한다
+  const focusedAnchor = useCommentAnchor(visibleComments);
 
   // 본인 댓글 판별.
   // 서버가 isMine 을 주면 그것을 쓴다 — 익명 댓글은 userId 가 null 로 마스킹돼 비교 자체가 불가능하다.
@@ -387,7 +424,10 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
       setIsSubmitting(true);
       await createComment(boardId, postId, { content, parentCommentId, isAnonymous, isPrivate });
       if (parentCommentId) closeInline();
-      else setNewComposerKey((k) => k + 1);
+      else {
+        setNewComposerKey((k) => k + 1);
+        goLastPageRef.current = true;
+      }
       refetch();
     } catch (error) {
       setAlertState({ title: getErrorMessage(error, '댓글 등록에 실패했습니다.') });
@@ -687,6 +727,19 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
             {idx !== visibleComments.length - 1 && <Divider />}
           </React.Fragment>
         ))}
+
+        {totalCommentPages > 1 && (
+          <div className="flex w-full justify-center pt-6">
+            <PaginationWithEllipsis
+              currentPage={safePage}
+              totalPages={totalCommentPages}
+              onPageChange={(page) => {
+                setCommentPage(page);
+                closeInline();
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* 댓글 신고 모달 */}

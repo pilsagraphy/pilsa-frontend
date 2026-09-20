@@ -208,7 +208,8 @@ export default function BoardWriteToolbar({
   return (
     <div className="flex h-full w-full items-center justify-center gap-[8px] overflow-x-auto px-[10px] sm:gap-[14px] lg:gap-[20px] lg:px-[16px]">
       {/* 제목: 누르면 H1~H6 중에 고른다. 켜져 있으면 단계가 아이콘 옆에 보인다 */}
-      <span className="relative shrink-0">
+      {/* flex 여야 다른 버튼과 세로 가운데가 맞는다 — inline span 이면 글자 기준선에 붙어 혼자 떠 보였다 */}
+      <span className="relative flex shrink-0 items-center">
         {popoverButton('heading', headingRef, '제목', Heading, Boolean(active?.headingLevel))}
         {active?.headingLevel && (
           <span className="pointer-events-none absolute -right-[2px] -top-[2px] text-[10px] font-bold leading-none text-[#212121]">

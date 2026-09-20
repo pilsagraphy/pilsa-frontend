@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ImagePlus } from 'lucide-react';
+import { ChevronDown, ChevronUp, ImagePlus, Trash2 } from 'lucide-react';
 import { EditorContent, NodeViewWrapper, ReactNodeViewRenderer, useEditor } from '@tiptap/react';
+import { NodeSelection } from '@tiptap/pm/state';
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from '@tiptap/markdown';
 import Image from '@tiptap/extension-image';
@@ -27,17 +28,68 @@ const UPLOADING_PREFIX = 'uploading:';
 
 // 우리 서버 이미지(/api/user/files/{id})는 Authorization 이 필요해 <img src> 로는 안 뜬다.
 // 상세 화면과 같은 AuthedImage 로 그리되, 노드의 src 는 서버 주소 그대로 둬야 마크다운으로 저장된다.
-function EditorImageView({ node, selected }) {
+//
+// PC 는 끌어서 옮기지만 폰은 HTML 드래그가 안 되고 꾹 누르면 브라우저 메뉴(이미지 저장…)가 뜬다.
+// 그래서 이미지를 누르면(선택) 위로·아래로·삭제 버튼이 떠서 그걸로 옮긴다 (PM, 2026-09-21)
+function EditorImageView({ node, selected, editor, getPos, deleteNode }) {
   const { src, alt } = node.attrs;
   const uploading = typeof src === 'string' && src.startsWith(UPLOADING_PREFIX);
+
+  // 이웃 블록과 자리를 바꾼다. 이미지는 최상위 블록이라 부모는 doc 이다
+  const moveBy = (direction) => {
+    const pos = typeof getPos === 'function' ? getPos() : null;
+    if (pos == null || !editor) return;
+    const { state } = editor;
+    const $pos = state.doc.resolve(pos);
+    const parent = $pos.parent;
+    const index = $pos.index();
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= parent.childCount) return;
+
+    const current = parent.child(index);
+    const neighbor = parent.child(targetIndex);
+    // 지운 뒤 좌표: 위로 가면 이웃이 시작하던 자리, 아래로 가면 이웃(이제 pos 에서 시작) 바로 뒤
+    const insertAt = direction < 0 ? pos - neighbor.nodeSize : pos + neighbor.nodeSize;
+    const tr = state.tr.delete(pos, pos + current.nodeSize).insert(insertAt, current);
+    tr.setSelection(NodeSelection.create(tr.doc, insertAt)).scrollIntoView();
+    editor.view.dispatch(tr);
+  };
+
+  const controlClass =
+    'flex size-[30px] items-center justify-center rounded-full bg-white/95 text-[#212121] shadow-[0_2px_8px_rgba(0,0,0,0.18)] disabled:opacity-30';
 
   return (
     <NodeViewWrapper className="my-3" data-drag-handle>
       {uploading ? (
         <span className="inline-block h-[120px] w-full max-w-[320px] animate-pulse rounded-[4px] bg-[#f5f5f5]" />
       ) : (
-        <span className={`inline-block rounded-[4px] ${selected ? 'ring-2 ring-[#212121]/40' : ''}`}>
-          <AuthedImage src={src} alt={alt ?? ''} />
+        <span
+          className={`relative inline-block rounded-[4px] ${selected ? 'ring-2 ring-[#212121]/40' : ''}`}
+          // 폰에서 꾹 눌러도 브라우저의 이미지 메뉴가 뜨지 않게 (편집 중에는 옮기는 게 목적이다)
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <span className="[&_img]:pointer-events-none [&_img]:select-none [-webkit-touch-callout:none]">
+            <AuthedImage src={src} alt={alt ?? ''} />
+          </span>
+
+          {selected && (
+            <span
+              className="absolute right-2 top-2 flex gap-1"
+              contentEditable={false}
+              // 버튼을 눌러도 편집기 선택이 풀리지 않게
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <button type="button" onClick={() => moveBy(-1)} aria-label="위로" title="위로" className={controlClass}>
+                <ChevronUp size={18} strokeWidth={2} />
+              </button>
+              <button type="button" onClick={() => moveBy(1)} aria-label="아래로" title="아래로" className={controlClass}>
+                <ChevronDown size={18} strokeWidth={2} />
+              </button>
+              <button type="button" onClick={() => deleteNode?.()} aria-label="삭제" title="삭제" className={controlClass}>
+                <Trash2 size={16} strokeWidth={2} />
+              </button>
+            </span>
+          )}
         </span>
       )}
     </NodeViewWrapper>
@@ -113,7 +165,7 @@ export default function BoardRichEditor({
     ],
     editorProps: {
       attributes: {
-        class: 'board-editor h-full w-full outline-none',
+        class: 'board-editor w-full outline-none',
       },
     },
     onCreate: () => {
@@ -217,7 +269,7 @@ export default function BoardRichEditor({
   };
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="flex w-full flex-col">
       {allowUpload && (
         <div className="flex items-center justify-end border-b border-[#DEDEDE] px-2 py-1">
           <button
@@ -245,9 +297,10 @@ export default function BoardRichEditor({
         </div>
       )}
 
-      {/* 편집 영역 — 빈 곳을 눌러도 커서가 들어가게 상자 전체가 클릭 대상이다 */}
+      {/* 편집 영역 — 빈 곳을 눌러도 커서가 들어가게 상자 전체가 클릭 대상이다.
+          안쪽 스크롤은 두지 않는다: 본문이 길어지면 상자가 자라고 페이지가 스크롤된다 */}
       <div
-        className="min-h-0 w-full flex-1 cursor-text overflow-y-auto p-[16px]"
+        className="w-full flex-1 cursor-text p-[16px]"
         onPaste={handlePaste}
         onDrop={handleDrop}
         onDragOver={(e) => allowUpload && e.preventDefault()}
@@ -260,7 +313,7 @@ export default function BoardRichEditor({
           editor.view.focus();
         }}
       >
-        <EditorContent editor={editor} className="h-full" />
+        <EditorContent editor={editor} />
       </div>
     </div>
   );

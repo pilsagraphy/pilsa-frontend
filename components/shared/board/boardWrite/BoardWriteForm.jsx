@@ -173,8 +173,8 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
           </div>
         )}
 
-        {/* 툴바 (라벨 없는 42px 박스) */}
-        <div className="relative flex h-[42px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+        {/* 툴바 (라벨 없는 42px 박스). 본문이 자라도 서식 버튼이 보이게 화면 위에 붙어 따라온다 */}
+        <div className="sticky top-0 z-30 flex h-[42px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
           <BoardWriteToolbar
             editor={editor}
             files={files}
@@ -185,8 +185,8 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
 
         {attachmentChips}
 
-        {/* 본문 (라벨 없는 박스) */}
-        <div className="relative flex h-[360px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+        {/* 본문 (라벨 없는 박스) — 최소 높이만 두고 내용만큼 자란다 */}
+        <div className="relative flex min-h-[360px] w-full items-stretch rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
           <BoardRichEditor
             boardId={boardId}
             value={content}
@@ -228,8 +228,9 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
         />
       </BoardWriteBox>
 
-      {/* 툴바·카테고리는 모바일에서도 한 줄 — 세로로 쌓으면 폼이 화면 두 장 길이가 된다 */}
-      <div className="flex w-full flex-row gap-[12px]">
+      {/* 툴바·카테고리는 모바일에서도 한 줄 — 세로로 쌓으면 폼이 화면 두 장 길이가 된다.
+          본문이 자라도 서식 버튼이 보이게 이 줄은 화면 위에 붙어 따라온다 */}
+      <div className="sticky top-0 z-30 flex w-full flex-row gap-[12px] bg-white pb-[4px]">
         <BoardWriteBox label="툴바">
           <BoardWriteToolbar
             editor={editor}
@@ -356,7 +357,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
         </div>
       )}
 
-      <BoardWriteBox label="내용" heightClass="h-[615px]">
+      <BoardWriteBox label="내용" heightClass="min-h-[560px] !items-stretch">
         <BoardRichEditor
           boardId={boardId}
           value={content}
