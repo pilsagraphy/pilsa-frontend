@@ -117,6 +117,7 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
             badgeLabel={badgeLabel}
             title={post.title}
             date={post.created}
+            viewCount={post.viewCount}
             author={post.authorName}
           />
           <BoardAttachments attachments={post.attachments} />

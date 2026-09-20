@@ -26,7 +26,8 @@ function Badge({ label }) {
 //   넘기지 않으면 그리지 않으므로 사용자 상세의 모양은 그대로다.
 //   게시판 이름 옆에 붙이면 '게시판이 공개'라는 뜻으로 읽히므로 제목 옆에 둔다.
 //   (dev 머지 때 시그니처에서 빠졌는데 본문은 계속 써서 게시글 상세가 통째로 죽었다 — 2026-09-20)
-export default function BoardInfo({ badgeLabel, title, date, author, stateLabel }) {
+// viewCount: 조회수. 넘기면 등록일 오른쪽에 붙인다 (회원 상세). 관리자 상세는 안 넘겨 모양이 그대로다
+export default function BoardInfo({ badgeLabel, title, date, author, stateLabel, viewCount }) {
   const isMdUp = useMinWidthMd();
   const safeTitle = title ?? '';
   const safeAuthor = author ?? '';
@@ -50,10 +51,17 @@ export default function BoardInfo({ badgeLabel, title, date, author, stateLabel 
         <Divider />
 
         <div className="flex items-center justify-between gap-2 py-3 text-[14px] tracking-[-0.28px]">
-          <div className="flex items-center gap-[12px]">
+          <div className="flex min-w-0 items-center gap-[12px]">
             <span className="shrink-0 text-[#919191] leading-none">등록일</span>
             <VLine />
             <span className="text-[#454545] leading-none">{safeDate}</span>
+            {viewCount != null && (
+              <>
+                <VLine />
+                <span className="shrink-0 text-[#919191] leading-none">조회</span>
+                <span className="text-[#454545] leading-none">{Number(viewCount).toLocaleString()}</span>
+              </>
+            )}
           </div>
 
           <div className="flex items-center gap-[12px]">
@@ -94,6 +102,14 @@ export default function BoardInfo({ badgeLabel, title, date, author, stateLabel 
           <span className="shrink-0 text-[#919191] leading-none">등록일</span>
           <VLine />
           <span className="break-all text-[#454545] leading-none">{safeDate}</span>
+          {viewCount != null && (
+            <>
+              <VLine />
+              <span className="shrink-0 text-[#919191] leading-none">조회수</span>
+              <VLine />
+              <span className="text-[#454545] leading-none">{Number(viewCount).toLocaleString()}</span>
+            </>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2 lg:gap-[12px]">

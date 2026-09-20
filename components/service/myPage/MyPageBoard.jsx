@@ -15,7 +15,7 @@ import SortSelect from '@/components/shared/board/boardList/SortSelect';
 import BoardSelect, { BOARD_FILTER_ALL } from '@/components/shared/board/boardList/BoardSelect';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
 
-import { Eye, Heart, MessageCircle } from 'lucide-react';
+import { Eye, Heart, MessageCircle, Paperclip } from 'lucide-react';
 import CategoryBadge from '@/components/shared/board/boardList/CategoryBadge';
 import { useRouter } from 'next/navigation';
 import { getBoards } from '@/apis/board';
@@ -179,9 +179,13 @@ export default function MyPageBoard() {
               {/* 윗줄: 게시판 + 제목 */}
               <div className="flex items-center gap-[10px] px-1">
                 {row.categoryName && <CategoryBadge>{row.categoryName}</CategoryBadge>}
-                <span className="min-w-0 flex-1 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-[#454545]">
+                {/* 제목은 flex-1 을 주지 않는다 — 클립이 제목(말줄임이면 … ) 바로 옆에 붙어야 한다 */}
+                <span className="min-w-0 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-[#454545]">
                   {isComments ? row.postTitle : row.title}
                 </span>
+                {!isComments && row.hasAttachment && (
+                  <Paperclip size={16} className="shrink-0 text-[#919191]" />
+                )}
                 {/* 글쓴이는 줄의 오른쪽 끝에 — 게시판 목록과 같은 자리 */}
                 {!isComments && row.authorName && (
                   <span className="ml-auto max-w-[96px] shrink-0 truncate text-[13px] leading-[1.6] text-[#919191]">
@@ -279,7 +283,14 @@ export default function MyPageBoard() {
                     className="h-[50px] cursor-pointer border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] transition-colors hover:bg-[#FAFAFA] md:text-[16px]"
                   >
                     <TableCell className="text-center">{no}</TableCell>
-                    <TableCell className="max-w-0 truncate text-left">{title}</TableCell>
+                    <TableCell className="max-w-0 text-left">
+                      <div className="flex min-w-0 items-center gap-2">
+                        <span className="min-w-0 truncate">{title}</span>
+                        {!isComments && row.hasAttachment && (
+                          <Paperclip size={16} className="shrink-0 text-[#919191]" />
+                        )}
+                      </div>
+                    </TableCell>
                     {isComments ? (
                       <TableCell className="hidden max-w-0 truncate text-left text-[#424242] xl:table-cell">
                         {row.content}

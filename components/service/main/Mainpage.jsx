@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Zen_Dots } from 'next/font/google';
 import ClockScene from './ClockScene';
+import useAuthStore, { AUTO_LOGIN_KEY } from '@/stores/useAuthStore';
+import { ROUTES } from '@/constants/routes';
 
 // 헤더 로고와 같은 서체 — 안내 문구가 로고의 일부처럼 보이게
 const zenDots = Zen_Dots({ weight: '400', subsets: ['latin'] });
@@ -40,15 +42,34 @@ export default function Page() {
     // middleware 가 게이트로 돌려보내며 붙인 원래 목적지(?from=/students/...). 알림을 눌러 들어온
     // 사람이 게시글 대신 소개 페이지로 떨어지지 않게 그쪽으로 보낸다. 같은 사이트 안 경로만 허용한다.
     const from = new URLSearchParams(window.location.search).get('from');
-    const next = from && from.startsWith('/') && !from.startsWith('//') ? from : '/about/intro';
+    const fromPath = from && from.startsWith('/') && !from.startsWith('//') ? from : null;
 
     // 바늘을 10배로 돌리고 화면을 한 번 번쩍인 뒤 넘어간다
     setFlashOn(true);
     requestAnimationFrame(() => setFlashOn(false));
 
-    timeoutRef.current = setTimeout(() => {
-      router.push(next);
-    }, 1000);
+    // 자동 로그인으로 들어온 회원은 소개 페이지가 아니라 메인(회원 대시보드)으로 (PM, 2026-09-21).
+    // 세션 복원(AuthBootstrap)은 게이트에서 비동기로 도는 중일 수 있어, 넘어가는 순간의 상태를 보고
+    // 자동 로그인 표시는 있는데 아직 복원이 안 끝났으면 잠깐(최대 2초) 기다린다
+    const wantsAutoLogin = (() => {
+      try {
+        return localStorage.getItem(AUTO_LOGIN_KEY) === '1';
+      } catch {
+        return false;
+      }
+    })();
+    const destination = () =>
+      fromPath ?? (useAuthStore.getState().isLoggedIn ? ROUTES.STUDENTS_DASHBOARD : ROUTES.ABOUT_INTRO);
+
+    const go = (waitedMs) => {
+      if (!fromPath && wantsAutoLogin && !useAuthStore.getState().isLoggedIn && waitedMs < 2000) {
+        timeoutRef.current = setTimeout(() => go(waitedMs + 100), 100);
+        return;
+      }
+      router.push(destination());
+    };
+
+    timeoutRef.current = setTimeout(() => go(0), 1000);
   };
 
   return (
