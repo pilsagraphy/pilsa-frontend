@@ -8,7 +8,7 @@ import { toast } from 'sonner';
 import useSidebarStore from '@/stores/sidebar';
 import useAuthStore from '@/stores/useAuthStore';
 import useBoardStore from '@/stores/useBoardStore';
-import { ROUTES, ALLOWED_BOARD_MEMBER_TYPES } from '@/constants/routes';
+import { ROUTES, ALLOWED_BOARD_MEMBER_TYPES, ADMIN_DRIVE_URL } from '@/constants/routes';
 import { loginUrlWithReturnTo, stashReturnTo } from '@/lib/returnTo';
 
 const Sidebar = () => {
@@ -232,6 +232,12 @@ const Sidebar = () => {
                 일정 달력 관리
               </p>
             </Link>
+
+            {/* 동아리 공용 드라이브 (외부 링크) — 새 탭으로 연다.
+                편집 권한은 구글 드라이브 쪽 공유 설정이 정하는 것이라 앱에서는 열어 주는 것까지만 한다 */}
+            <a href={ADMIN_DRIVE_URL} target="_blank" rel="noopener noreferrer">
+              <p className={singleLinkClass(false)}>구글 드라이브</p>
+            </a>
 
             {/* ABOUT 필사 (공개 소개 영역으로 이동 → 일반 사이드바로 복귀).
                 /about 이 아니라 첫 화면인 /about/intro 로 보낸다 — /about 은 목차가 없는 빈 경로다 */}

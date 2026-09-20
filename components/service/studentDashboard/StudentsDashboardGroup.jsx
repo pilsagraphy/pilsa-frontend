@@ -57,7 +57,8 @@ function BoardList({ boardId, title, posts = [], loading = false, emptyText, cla
             >
               <div className="w-[80px] flex justify-center items-center flex-shrink-0">
                 {pinned ? (
-                  <CategoryBadge variant="pinned">중요</CategoryBadge>
+                  // 목록·상세와 같은 알약 배지 (pinned 변형은 폰에서 모서리가 각져 여기서는 쓰지 않는다)
+                  <CategoryBadge>중요</CategoryBadge>
                 ) : (
                   <span className="text-[16px] font-normal leading-[1.6] tracking-[-0.02em] text-[#454545]">
                     {number}
@@ -65,7 +66,11 @@ function BoardList({ boardId, title, posts = [], loading = false, emptyText, cla
                 )}
               </div>
 
-              <div className="flex items-center flex-1 pr-[20px] overflow-hidden">
+              <div className="flex items-center gap-2 flex-1 pr-[20px] overflow-hidden">
+                {/* 카테고리가 있는 글은 메인에서도 배지를 띄운다 (중요글은 왼쪽 자리에 이미 배지가 있다) */}
+                {!pinned && post.categoryName && (
+                  <CategoryBadge>{post.categoryName}</CategoryBadge>
+                )}
                 <p className="text-[16px] font-normal leading-[1.6] tracking-[-0.02em] text-[#454545] truncate">
                   {post.title}
                 </p>

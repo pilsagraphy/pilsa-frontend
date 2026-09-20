@@ -16,6 +16,7 @@ import BoardSelect, { BOARD_FILTER_ALL } from '@/components/shared/board/boardLi
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
 
 import { Eye, Heart } from 'lucide-react';
+import CategoryBadge from '@/components/shared/board/boardList/CategoryBadge';
 import { useRouter } from 'next/navigation';
 import { getBoards } from '@/apis/board';
 import { ROUTES } from '@/constants/routes';
@@ -125,10 +126,9 @@ export default function MyPageBoard() {
       </div>
 
       {/* 정렬 · 게시판 · 검색 — 라인 왼쪽 시작을 아래 표 번호↔제목 경계(≈64px)에 맞추고, 검색창이 오른쪽 경계까지 채움 */}
-      <div className="mt-[12px] flex flex-row items-center gap-2 sm:pl-[40px]">
-        {/* 정렬·게시판: 트리거 폭 135px → 138px (검색창은 flex-1이라 그만큼 자동 축소) */}
+      <div className="mt-[12px] flex flex-row items-center gap-2">
         {/* 댓글 탭은 서버가 최신순 고정이라 고를 수 있게 두면 안 된다 → compactSort(읽기 전용 '최신순') */}
-        <div className="w-[96px] shrink-0 sm:w-auto md:[&>div]:!w-[140px] md:[&_button]:!w-[140px]">
+        <div className="w-[96px] shrink-0 sm:w-auto">
           <SortSelect
             compactSort={isComments}
             value={sortOrder}
@@ -138,7 +138,7 @@ export default function MyPageBoard() {
             }}
           />
         </div>
-        <div className="w-[96px] shrink-0 sm:w-auto md:[&_button]:!w-[140px]">
+        <div className="w-[96px] shrink-0 sm:w-auto">
           <BoardSelect
             boards={boards}
             value={boardFilter}
@@ -178,11 +178,7 @@ export default function MyPageBoard() {
             >
               {/* 윗줄: 게시판 + 제목 */}
               <div className="flex items-center gap-[10px] px-1">
-                {row.boardName && (
-                  <span className="shrink-0 rounded-full border border-[#919191] px-2 py-[2px] text-[12px] leading-none text-[#212121]">
-                    {row.boardName}
-                  </span>
-                )}
+                {row.categoryName && <CategoryBadge>{row.categoryName}</CategoryBadge>}
                 <span className="min-w-0 flex-1 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-[#454545]">
                   {isComments ? row.postTitle : row.title}
                 </span>
@@ -217,10 +213,10 @@ export default function MyPageBoard() {
         <Table className="w-full table-fixed">
           <TableHeader>
             <TableRow className="h-12 border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#424242] md:text-[16px]">
-              <TableHead className="w-[64px] text-center text-[#424242]">번호</TableHead>
-              <TableHead className="min-w-0 pl-[48px] text-left text-[#424242]">제목</TableHead>
+              <TableHead className="w-[56px] text-center text-[#424242]">번호</TableHead>
+              <TableHead className="w-auto text-left text-[#424242]">제목</TableHead>
               {isComments ? (
-                <TableHead className="hidden w-[300px] pr-[128px] text-center text-[#424242] md:table-cell">
+                <TableHead className="hidden w-[40%] text-left text-[#424242] md:table-cell">
                   내용
                 </TableHead>
               ) : (
@@ -233,7 +229,7 @@ export default function MyPageBoard() {
                   </TableHead>
                 </>
               )}
-              <TableHead className="w-[92px] text-center text-[#424242]">작성일</TableHead>
+              <TableHead className="w-[104px] text-center text-[#424242]">작성일</TableHead>
             </TableRow>
           </TableHeader>
 
@@ -267,9 +263,9 @@ export default function MyPageBoard() {
                     className="h-[50px] cursor-pointer border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] transition-colors hover:bg-[#FAFAFA] md:text-[16px]"
                   >
                     <TableCell className="text-center">{no}</TableCell>
-                    <TableCell className="truncate pl-[28px] text-left">{title}</TableCell>
+                    <TableCell className="max-w-0 truncate text-left">{title}</TableCell>
                     {isComments ? (
-                      <TableCell className="hidden w-[300px] truncate pr-[128px] text-center text-[#424242] md:table-cell">
+                      <TableCell className="hidden max-w-0 truncate text-left text-[#424242] md:table-cell">
                         {row.content}
                       </TableCell>
                     ) : (

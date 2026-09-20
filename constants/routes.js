@@ -80,6 +80,12 @@ export const PUBLIC_ROUTES = [
 // 관리자는 신분과 별개 축(adminLevel >= 1)이므로 접근 판정 시 함께 허용한다.
 export const ALLOWED_BOARD_MEMBER_TYPES = ['STUDENT', 'ALUMNI'];
 
+// 동아리 공용 구글 드라이브 (관리자 사이드바 바로가기).
+// 편집 권한은 드라이브 공유 설정에서 주는 것이라 앱은 주소만 연다 — '링크가 있는 사람: 편집자' 로 두거나
+// 운영진 계정을 편집자로 추가해 두면 눌렀을 때 바로 편집할 수 있다.
+export const ADMIN_DRIVE_URL =
+  'https://drive.google.com/drive/folders/1bIePMLr96hAS9VidRy01WdeTj7-4vkXU?usp=drive_link';
+
 // 외부 도움말 사이트 (Google Play 정책·법적 고지 문서)
 export const HELP_SITE_URL = 'https://help.pilsa.co.kr';
 
