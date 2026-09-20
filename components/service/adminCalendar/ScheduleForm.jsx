@@ -2,13 +2,13 @@
 
 import * as React from 'react';
 import { getDaysInMonth } from 'date-fns';
-import { CalendarDays, Pencil, Plus } from 'lucide-react';
+import { Pencil, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { DEFAULT_SCHEDULE_CATEGORY } from '@/constants/calendar';
 
-import ScheduleDatePicker from './ScheduleDatePicker';
+import DateField from '@/components/shared/DateField';
 import ScheduleSelect from './ScheduleSelect';
 import { FIELD_CLASS, ScheduleFormRow } from './ScheduleFormField';
 
@@ -42,6 +42,8 @@ function clampDay(parts) {
   const last = lastDayOf(parts);
   return Number(parts.day) > last ? { ...parts, day: pad2(last) } : parts;
 }
+
+const partsToInput = ({ year, month, day }) => `${year}-${month}-${day}`;
 
 // 'yyyy-MM-dd' → { year, month, day }. 값이 없으면 오늘로 채운다.
 function toDateParts(value) {
@@ -110,8 +112,6 @@ export default function ScheduleForm({
   const [end, setEnd] = React.useState(() =>
     toDateParts(schedule?.endDate ?? schedule?.startDate ?? defaultDate)
   );
-  const [isDatePickerOpen, setIsDatePickerOpen] = React.useState(false);
-  const datePickerTriggerRef = React.useRef(null);
   const [startTime, setStartTime] = React.useState(() => toTimeParts(schedule?.startTime));
   const [endTime, setEndTime] = React.useState(() => toTimeParts(schedule?.endTime));
 
@@ -148,8 +148,6 @@ export default function ScheduleForm({
       return normalize ? normalize(next) : next;
     });
 
-  const setStartField = patch(setStart, clampDay);
-  const setEndField = patch(setEnd, clampDay);
   const setStartTimeField = patch(setStartTime);
   const setEndTimeField = patch(setEndTime);
 
@@ -199,32 +197,6 @@ export default function ScheduleForm({
       endTime: isAllDay ? null : to,
     });
   };
-
-  const renderDateGroup = (parts, setField, prefix) => (
-    <div className="flex shrink-0 items-center gap-[12px]">
-      <ScheduleSelect
-        value={parts.year}
-        onChange={setField('year')}
-        options={buildYearOptions(Number(parts.year) || new Date().getFullYear())}
-        width={85}
-        ariaLabel={`${prefix} 년`}
-      />
-      <ScheduleSelect
-        value={parts.month}
-        onChange={setField('month')}
-        options={MONTH_OPTIONS}
-        width={66}
-        ariaLabel={`${prefix} 월`}
-      />
-      <ScheduleSelect
-        value={parts.day}
-        onChange={setField('day')}
-        options={dayOptionsOf(parts)}
-        width={64}
-        ariaLabel={`${prefix} 일`}
-      />
-    </div>
-  );
 
   const renderTimeGroup = (parts, setField, prefix) => (
     <div className="flex shrink-0 items-center gap-[8px]">
@@ -288,52 +260,32 @@ export default function ScheduleForm({
 
         <ScheduleFormRow label="날짜 / 시간">
           <div className="flex flex-col gap-[12px]">
-            {/* 시작일 ~ 종료일 + 달력에서 고르기 */}
-            <div className="flex flex-wrap items-center gap-[12px] md:gap-[20px]">
-              {renderDateGroup(start, setStartField, '시작')}
-              <span className="w-[26px] text-center text-[16px] leading-[1.6] tracking-[-0.32px] text-[#919191]">
-                ~
-              </span>
-              {renderDateGroup(end, setEndField, '종료')}
-
-              <div className="relative shrink-0">
-                <button
-                  ref={datePickerTriggerRef}
-                  type="button"
-                  onClick={() => setIsDatePickerOpen((prev) => !prev)}
-                  aria-label="달력에서 날짜 고르기"
-                  aria-haspopup="dialog"
-                  aria-expanded={isDatePickerOpen}
-                  className="flex size-[40px] items-center justify-center rounded-[6px] border border-[#dedede] bg-white text-[#454545] transition-colors hover:bg-[#f6f6f6]"
-                >
-                  <CalendarDays aria-hidden="true" strokeWidth={1.6} className="size-6" />
-                </button>
-
-                {isDatePickerOpen && (
-                  <ScheduleDatePicker
-                    start={start}
-                    end={end}
-                    triggerRef={datePickerTriggerRef}
-                    // 확인을 눌렀을 때만 폼에 반영하고 닫는다.
-                    onConfirm={(nextStart, nextEnd) => {
-                      setStart(nextStart);
-                      setEnd(nextEnd);
-                      setIsDatePickerOpen(false);
+            {/* 시작 · 종료를 한 줄씩 — 날짜 칸(달력) 옆에 그날의 시각.
+                예전엔 년·월·일 셀렉트 여섯 개 + 달력 버튼 + 시각 셀렉트 네 개가 따로 놀았다 (PM, 2026-09-20) */}
+            {[
+              { label: '시작', parts: start, setParts: setStart, time: startTime, setTime: setStartTimeField, min: null },
+              { label: '종료', parts: end, setParts: setEnd, time: endTime, setTime: setEndTimeField, min: partsToInput(start) },
+            ].map((row) => (
+              <div key={row.label} className="flex flex-wrap items-center gap-[8px]">
+                <span className="w-[32px] shrink-0 text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">
+                  {row.label}
+                </span>
+                <div className="w-[160px] shrink-0 [&_button]:h-[40px] [&_button]:text-[14px]">
+                  <DateField
+                    value={partsToInput(row.parts)}
+                    min={row.min}
+                    ariaLabel={`${row.label}일`}
+                    onChange={(v) => {
+                      const next = toDateParts(v);
+                      row.setParts(next);
+                      // 시작일이 종료일을 넘으면 종료일도 같은 날로 당긴다
+                      if (row.label === '시작' && partsToInput(end) < v) setEnd(next);
                     }}
-                    onClose={() => setIsDatePickerOpen(false)}
                   />
-                )}
+                </div>
+                {renderTimeGroup(row.time, row.setTime, row.label)}
               </div>
-            </div>
-
-            {/* 시작 시각 ~ 종료 시각 */}
-            <div className="flex flex-wrap items-center gap-[8px]">
-              {renderTimeGroup(startTime, setStartTimeField, '시작')}
-              <span className="w-[13px] text-center text-[16px] leading-[1.6] tracking-[-0.32px] text-[#dedede]">
-                ~
-              </span>
-              {renderTimeGroup(endTime, setEndTimeField, '종료')}
-            </div>
+            ))}
 
             <label
               className={`flex w-fit items-center gap-[6px] md:ms-[2px] ${

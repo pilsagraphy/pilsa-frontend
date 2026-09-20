@@ -15,7 +15,7 @@ import SortSelect from '@/components/shared/board/boardList/SortSelect';
 import BoardSelect, { BOARD_FILTER_ALL } from '@/components/shared/board/boardList/BoardSelect';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
 
-import { Eye, Heart } from 'lucide-react';
+import { Eye, Heart, MessageCircle } from 'lucide-react';
 import CategoryBadge from '@/components/shared/board/boardList/CategoryBadge';
 import { useRouter } from 'next/navigation';
 import { getBoards } from '@/apis/board';
@@ -59,7 +59,7 @@ export default function MyPageBoard() {
 
   // '내가 쓴 댓글' 탭은 좋아요·조회수 대신 '내용' 컬럼을 노출 (번호/제목/내용/작성일)
   const isComments = activeTab === 'comments';
-  const colSpan = isComments ? 4 : 5;
+  const colSpan = isComments ? 4 : 6;
 
   // 게시판 필터 선택지 — 진입 시 한 번만. 목록 조회와 독립이라 실패해도 목록은 그대로 뜬다.
   useEffect(() => {
@@ -198,6 +198,10 @@ export default function MyPageBoard() {
                       <Eye size={16} strokeWidth={1.5} />
                       {row.viewCount ?? 0}
                     </span>
+                    <span className="inline-flex items-center gap-1">
+                      <MessageCircle size={16} strokeWidth={1.5} />
+                      {row.commentCount ?? 0}
+                    </span>
                     <span className="flex-1" />
                   </>
                 )}
@@ -226,6 +230,9 @@ export default function MyPageBoard() {
                   </TableHead>
                   <TableHead className="hidden w-[72px] text-center text-[#424242] md:table-cell">
                     조회수
+                  </TableHead>
+                  <TableHead className="hidden w-[72px] text-center text-[#424242] md:table-cell">
+                    댓글
                   </TableHead>
                 </>
               )}
@@ -275,6 +282,9 @@ export default function MyPageBoard() {
                         </TableCell>
                         <TableCell className="hidden text-center text-[#424242] md:table-cell">
                           {row.viewCount}
+                        </TableCell>
+                        <TableCell className="hidden text-center text-[#424242] md:table-cell">
+                          {row.commentCount ?? 0}
                         </TableCell>
                       </>
                     )}

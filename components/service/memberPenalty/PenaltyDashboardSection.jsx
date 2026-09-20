@@ -204,7 +204,7 @@ export default function PenaltyDashboardSection() {
               </div>
 
               {/* 회원 상태 + 회색 가로선 */}
-              <div className="flex items-center justify-between border-b border-[#b9b9b9] py-[12px]">
+              <div className="flex items-center justify-between border-b border-[#b9b9b9] py-[12px] pr-[14px]">
                 <span className="text-[14px] font-medium tracking-[-0.28px] text-[#b9b9b9]">
                   회원 상태
                 </span>

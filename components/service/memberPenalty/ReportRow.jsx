@@ -78,12 +78,12 @@ export default function ReportRow({ report, number }) {
   return (
     <>
       {/* 폰: 카드 한 장. 6열을 그대로 욱여넣으면 글자가 한 자씩 끊긴다 */}
-      <div className="flex flex-col gap-[6px] border-b border-[#dedede] py-[10px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-[#454545] md:hidden">
+      <div className="flex flex-col gap-[6px] border-b border-[#dedede] px-[6px] py-[10px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-[#454545] md:hidden">
         <div className="flex items-center justify-between gap-2">
           <span className="min-w-0 truncate font-medium text-[#212121]">
             {number}. {report.board}
           </span>
-          <span className="flex shrink-0 items-center gap-[8px]">
+          <span className="flex shrink-0 items-center gap-[14px] pr-[6px]">
             <span className="text-[#919191]">{report.status}</span>
             {link}
           </span>

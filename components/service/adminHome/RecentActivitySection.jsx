@@ -1,7 +1,6 @@
 'use client';
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowRight } from 'lucide-react';
 import { formatDotDate } from '@/lib/utils';
 import { ROUTES } from '@/constants/routes';
 
@@ -15,13 +14,23 @@ function ActivityHeader({ title, onViewAll }) {
       <h3 className="text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121]">
         {title}
       </h3>
+      {/* 메인 탑5 · 글 하단 '목록'과 같은 선 화살표 — 사이트 안의 '더 보기' 화살표를 하나로 */}
       <button
         type="button"
         onClick={onViewAll}
-        className="flex cursor-pointer items-center gap-[6px] text-[#B9B9B9] transition hover:text-[#919191]"
+        aria-label={`${title} 전체보기`}
+        title="전체보기"
+        className="flex h-[24px] cursor-pointer items-center justify-center rounded-sm px-[2px] text-[#212121] transition hover:bg-[#F6F6F6]"
       >
-        <span className="text-[16px] leading-[1.6] tracking-[-0.32px]">전체보기</span>
-        <ArrowRight size={16} strokeWidth={2} />
+        <svg width="50" height="10" viewBox="0 0 50 10" fill="none" aria-hidden="true">
+          <path
+            d="M0 5H49M44 1L49 5L44 9"
+            stroke="currentColor"
+            strokeWidth="1"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </button>
     </div>
   );

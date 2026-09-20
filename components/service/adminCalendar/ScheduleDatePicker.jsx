@@ -33,7 +33,7 @@ export function toParts(date) {
  * triggerRef: 이 창을 여는 달력 버튼. 버튼 클릭을 '바깥 클릭'으로 세면
  *             닫자마자 버튼의 토글이 다시 열어 버려서 예외로 둔다.
  */
-export default function ScheduleDatePicker({ start, end, triggerRef, onConfirm, onClose }) {
+export default function ScheduleDatePicker({ start, end, triggerRef, onConfirm, onClose, single = false }) {
   const [month, setMonth] = React.useState(() => toDate(start));
 
   // 고르는 중인 구간. 시작만 찍힌 상태에서는 end가 null이다.
@@ -96,6 +96,12 @@ export default function ScheduleDatePicker({ start, end, triggerRef, onConfirm, 
 
     const picked = startOfDay(date);
 
+    // 하루만 고르는 칸(DateField)은 누르는 즉시 확정 — 확인 버튼까지 가지 않는다
+    if (single) {
+      onConfirm?.(toParts(picked), toParts(picked));
+      return;
+    }
+
     setDraft((prev) => {
       // 구간이 다 잡혀 있으면 새로 시작한다.
       if (!prev.start || prev.end) return { start: picked, end: null };
@@ -147,7 +153,7 @@ export default function ScheduleDatePicker({ start, end, triggerRef, onConfirm, 
       >
       <div className="mb-[8px] flex items-center justify-between gap-2">
         <p className="min-w-0 truncate text-[13px] leading-[1.6] tracking-[-0.26px] text-[#454545]">
-          {rangeLabel}
+          {single ? '날짜를 누르면 바로 담깁니다' : rangeLabel}
         </p>
         <button
           type="button"
@@ -168,7 +174,7 @@ export default function ScheduleDatePicker({ start, end, triggerRef, onConfirm, 
         className="w-full"
       />
 
-      <div className="mt-[12px] flex items-center justify-end gap-[12px]">
+      <div className={`mt-[12px] flex items-center justify-end gap-[12px] ${single ? 'hidden' : ''}`}>
         <button
           type="button"
           onClick={onClose}

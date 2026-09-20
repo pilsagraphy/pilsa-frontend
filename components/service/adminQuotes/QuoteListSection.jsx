@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
 import { getErrorMessage } from '@/apis/auth';
@@ -10,24 +10,11 @@ import SearchInput from '@/components/shared/board/boardList/SearchInput';
 import { listSectionClass, listTitleClass } from '@/components/shared/admin/CommunityListStyles';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import ConfirmModal from '@/components/common/ConfirmModal';
-import { CalendarDays } from 'lucide-react';
-import ScheduleDatePicker from '@/components/service/adminCalendar/ScheduleDatePicker';
+import DateField from '@/components/shared/DateField';
 
 // 'YYYY-MM-DD'
 const toInputDate = (value) => String(value ?? '').slice(0, 10);
 
-// 달력(ScheduleDatePicker)은 { year, month, day } 로 주고받는다
-const toDateParts = (value) => {
-  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(value ?? ''));
-  if (m) return { year: m[1], month: m[2], day: m[3] };
-  const d = new Date();
-  return {
-    year: String(d.getFullYear()),
-    month: String(d.getMonth() + 1).padStart(2, '0'),
-    day: String(d.getDate()).padStart(2, '0'),
-  };
-};
-const partsToInput = ({ year, month, day }) => `${year}-${month}-${day}`;
 
 const today = () => new Date().toISOString().slice(0, 10);
 
@@ -64,11 +51,6 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
   const [keyword, setKeyword] = useState('');
   const [searchDate, setSearchDate] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null); // 삭제 확인 중인 문장
-  // 날짜는 일정 등록과 같은 달력으로 고른다 (브라우저 기본 날짜 입력은 폰·PC 모양이 제각각이었다)
-  const [rangeOpen, setRangeOpen] = useState(false);
-  const rangeTriggerRef = useRef(null);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const searchTriggerRef = useRef(null);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -222,44 +204,36 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
           className="w-full resize-none rounded-[4px] border border-[#b9b9b9] px-3 py-2 text-[15px] leading-[1.6] text-[#212121] outline-none focus:border-[#212121]"
         />
 
-        {/* 노출 기간: 버튼을 누르면 일정 등록과 같은 달력이 뜬다 (시작일 → 종료일 두 번 클릭) */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="text-[12px] text-[#919191]">노출 기간</span>
-            <div className="relative">
-              <button
-                ref={rangeTriggerRef}
-                type="button"
-                onClick={() => setRangeOpen((prev) => !prev)}
-                aria-haspopup="dialog"
-                aria-expanded={rangeOpen}
-                className={`${inputClass} flex items-center justify-between text-left`}
-              >
-                <span>
-                  {form.startDate && form.endDate
-                    ? `${form.startDate} ~ ${form.endDate}`
-                    : '기간을 골라 주세요'}
-                </span>
-                <CalendarDays size={18} strokeWidth={1.6} className="shrink-0 text-[#757575]" aria-hidden />
-              </button>
-              {rangeOpen && (
-                <ScheduleDatePicker
-                  start={toDateParts(form.startDate)}
-                  end={toDateParts(form.endDate || form.startDate)}
-                  triggerRef={rangeTriggerRef}
-                  onConfirm={(s, e) => {
-                    setForm((prev) => ({ ...prev, startDate: partsToInput(s), endDate: partsToInput(e) }));
-                    setRangeOpen(false);
-                  }}
-                  onClose={() => setRangeOpen(false)}
-                />
-              )}
-            </div>
-          </div>
+        {/* 시작일 · 종료일 각각 날짜 칸. 누르면 일정 등록과 같은 달력이 뜨고 하루를 고르면 바로 닫힌다 */}
+        <div className="grid grid-cols-2 gap-3 sm:flex sm:items-end">
+          <label className="flex min-w-0 flex-col gap-1 sm:flex-1">
+            <span className="text-[12px] text-[#919191]">노출 시작일</span>
+            <DateField
+              value={form.startDate}
+              ariaLabel="노출 시작일"
+              onChange={(v) =>
+                setForm((prev) => ({
+                  ...prev,
+                  startDate: v,
+                  // 시작일이 종료일을 넘으면 종료일도 같은 날로 당긴다
+                  endDate: prev.endDate && prev.endDate < v ? v : prev.endDate,
+                }))
+              }
+            />
+          </label>
+          <label className="flex min-w-0 flex-col gap-1 sm:flex-1">
+            <span className="text-[12px] text-[#919191]">노출 종료일</span>
+            <DateField
+              value={form.endDate}
+              min={form.startDate}
+              ariaLabel="노출 종료일"
+              onChange={(v) => setForm((prev) => ({ ...prev, endDate: v }))}
+            />
+          </label>
           <Button
             type="submit"
             disabled={saving}
-            className="h-[44px] rounded-[4px] bg-[#212121] px-6 text-[15px] text-white sm:w-auto"
+            className="col-span-2 h-[44px] rounded-[4px] bg-[#212121] px-6 text-[15px] text-white sm:w-auto"
           >
             {saving ? '저장 중...' : isEdit ? '수정' : '등록'}
           </Button>
@@ -272,32 +246,13 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
           <div className="min-w-0 flex-1 sm:w-[260px] sm:flex-none">
             <SearchInput value={keyword} onChange={setKeyword} placeholder="문장 검색" />
           </div>
-          <div className="relative shrink-0">
-            <button
-              ref={searchTriggerRef}
-              type="button"
-              onClick={() => setSearchOpen((prev) => !prev)}
-              title="이 날 노출되는 문장 찾기"
-              aria-haspopup="dialog"
-              aria-expanded={searchOpen}
-              className="flex h-12 items-center gap-[6px] rounded-md border border-input bg-white px-3 text-[14px] text-[#212121] md:h-[52px]"
-            >
-              <CalendarDays size={16} strokeWidth={1.6} className="text-[#757575]" aria-hidden />
-              {searchDate || '날짜로 찾기'}
-            </button>
-            {searchOpen && (
-              <ScheduleDatePicker
-                start={toDateParts(searchDate || today())}
-                end={toDateParts(searchDate || today())}
-                triggerRef={searchTriggerRef}
-                // 하루만 고르면 되니 시작일만 쓴다
-                onConfirm={(s) => {
-                  setSearchDate(partsToInput(s));
-                  setSearchOpen(false);
-                }}
-                onClose={() => setSearchOpen(false)}
-              />
-            )}
+          <div className="w-[160px] shrink-0 [&_button]:h-12 md:[&_button]:h-[52px]">
+            <DateField
+              value={searchDate}
+              placeholder="날짜로 찾기"
+              ariaLabel="이 날 노출되는 문장 찾기"
+              onChange={setSearchDate}
+            />
           </div>
         </div>
         <span className="text-[13px] text-[#919191] sm:text-right">
