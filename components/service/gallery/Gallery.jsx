@@ -35,11 +35,11 @@ const Gallery = () => {
         </h2>
       </header>
 
-      {/* 줄들을 여백 없이 세로로 붙인다. 각 줄 높이는 가로폭÷6로 동일하게 유지된다
-          (한 줄에 사진이 2개든 4개든 높이는 같고, 폭만 나눠 갖는다). */}
-      <div className="flex w-full flex-col">
+      {/* 줄 높이는 가로폭÷6 로 같고(한 줄에 2장이든 4장이든), 폭만 나눠 갖는다.
+          타일 사이에 8px 여백을 둔다 — 붙여 놓으면 서른 장이 한 덩어리 콜라주로 보여 사진이 눈에 안 들어온다. */}
+      <div className="flex w-full flex-col gap-2">
         {rows.map((row, rowIndex) => (
-          <div key={rowIndex} className="flex w-full aspect-[6/1] overflow-hidden">
+          <div key={rowIndex} className="flex w-full aspect-[6/1] gap-2 overflow-hidden">
             {row.map((photo) => (
               <div key={photo.imageSrc} className="relative flex-1">
                 <GalleryTile photo={photo} activeSrc={activeSrc} onActivate={setActiveSrc} />

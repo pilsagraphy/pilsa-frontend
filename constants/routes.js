@@ -84,12 +84,12 @@ export const ALLOWED_BOARD_MEMBER_TYPES = ['STUDENT', 'ALUMNI'];
 export const HELP_SITE_URL = 'https://help.pilsa.co.kr';
 
 // 이용 제한 정책 — 이의 신청 절차가 적혀 있어 제재 안내 화면의 문의 경로로도 사용
-export const SANCTION_POLICY_URL = `${HELP_SITE_URL}/sanction-policy.html`;
+// 이용 제한 정책과 계정 삭제 안내는 한 문서(account-policy.html)다 — 1부 제재, 2부 삭제. 옛 두 주소는 이 문서로 넘어간다
+export const SANCTION_POLICY_URL = `${HELP_SITE_URL}/account-policy.html#sanction`;
 export const HELP_LINKS = [
   { label: '이용약관', href: `${HELP_SITE_URL}/terms-of-service.html` },
   { label: '개인정보처리방침', href: `${HELP_SITE_URL}/privacy-policy.html` },
-  { label: '이용 제한 정책', href: SANCTION_POLICY_URL },
-  { label: '계정 삭제 안내', href: `${HELP_SITE_URL}/account-deletion.html` },
+  { label: '이용 제한·계정 삭제 안내', href: `${HELP_SITE_URL}/account-policy.html` },
   { label: '아동 안전 표준', href: `${HELP_SITE_URL}/child-safety.html` },
 ];
 
