@@ -13,7 +13,7 @@ export const DUMMY_HISTORY = [
   },
   {
     year: "2024",
-    activities: ["회칙 전면 개편", "정기모임 아스카아트 작품 중앙도서관 전시"],
+    activities: ["회칙 전면 개편", "정기모임 아스키아트 작품 중앙도서관 전시"],
   },
   {
     year: "2025",
