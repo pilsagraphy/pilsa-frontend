@@ -15,6 +15,22 @@
     scrollbar-gutter: stable;
   }
 
+  /* 모달이 열려 스크롤을 잠글 때(react-remove-scroll) 스크롤바 폭만큼 margin-right 를 !important 로 넣는데,
+     위에서 스크롤바 자리를 이미 비워 두므로 그 여백은 이중이라 화면이 좌우로 움찔했다 (2026-09-21 제보).
+     선택자 특이도를 높여 그 여백을 없앤다 */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* 모달이 열려 스크롤을 잠글 때(react-remove-scroll) 스크롤바 폭만큼 margin-right 를 !important 로 넣는데,
+     위에서 스크롤바 자리를 이미 비워 두므로 그 여백은 이중이라 화면이 좌우로 움찔했다 (2026-09-21 제보).
+     선택자 특이도를 높여 그 여백을 없앤다 */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;

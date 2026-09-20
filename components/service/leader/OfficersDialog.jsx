@@ -56,27 +56,31 @@ export default function OfficersDialog({ order, name, officers = [] }) {
           </div>
 
           <section className="flex flex-col gap-[10px]">
-            {current.chairman && (
+            {/* 회장단: 직책(회장·부회장·총무·서기…)마다 한 줄 */}
+            {(current.roles ?? []).length > 0 && (
               <Group
-                title={current.chairman.title ?? '회장단'}
-                leader={current.chairman.leader}
-                leaderLabel="회장"
-                members={current.chairman.members}
+                title="회장단"
+                rows={(current.roles ?? []).map(({ role, names }) => ({ label: role, names }))}
               />
             )}
 
+            {/* 팀: 팀장이 있으면 '팀장 / 팀원' 두 줄, 없으면 이름만 */}
             {(current.teams ?? []).map((team) => (
               <Group
                 key={team.title}
                 title={team.title}
-                leader={team.leader}
-                leaderLabel="팀장"
-                membersLabel="팀원"
-                members={team.members}
+                rows={
+                  team.leader
+                    ? [
+                        { label: '팀장', names: [team.leader] },
+                        ...(team.members?.length ? [{ label: '팀원', names: team.members }] : []),
+                      ]
+                    : [{ names: team.members ?? [] }]
+                }
               />
             ))}
 
-            {(current.advisors ?? []).length > 0 && <Group title="자문" members={current.advisors} />}
+            {(current.advisors ?? []).length > 0 && <Group title="자문" rows={[{ names: current.advisors }]} />}
           </section>
 
           <DialogFooter className="flex flex-row justify-center sm:justify-center sm:space-x-0">
@@ -94,27 +98,19 @@ export default function OfficersDialog({ order, name, officers = [] }) {
   );
 }
 
-// 구성원은 문자열('홍길동') 또는 { name, role }('부회장' 같은 직책이 있을 때)
-const memberText = (member) =>
-  typeof member === 'string' ? member : `${member?.name ?? ''}${member?.role ? ` (${member.role})` : ''}`;
-
-// 한 묶음: 제목 · 대표(회장/팀장) · 구성원. membersLabel 이 없으면(회장단·자문) 이름만 적는다
-function Group({ title, leader, leaderLabel, membersLabel, members = [] }) {
+// 한 묶음: 제목(회장단·팀 이름·자문) 옆에 줄들. 줄은 { label?, names } — label(회장·부회장·팀장…)은 회색으로 앞에,
+// 이름은 ' · ' 로 잇는다. 직책은 괄호가 아니라 회장·팀장과 같은 자리(앞 라벨)에 적는다 (PM, 2026-09-21)
+function Group({ title, rows = [] }) {
   return (
     <div className="grid grid-cols-[84px_1fr] gap-x-3 gap-y-[2px] text-[14px] leading-[1.6] tracking-[-0.28px]">
       <span className="font-medium text-[#212121]">{title}</span>
       <div className="flex flex-col text-[#454545]">
-        {leader && (
-          <span>
-            <span className="text-[#919191]">{leaderLabel}</span> {leader}
+        {rows.map(({ label, names = [] }, index) => (
+          <span key={label ?? index}>
+            {label && <span className="mr-1 text-[#919191]">{label}</span>}
+            {names.join(' · ')}
           </span>
-        )}
-        {members.length > 0 && (
-          <span>
-            {membersLabel && <span className="text-[#919191]">{membersLabel} </span>}
-            {members.map(memberText).join(' · ')}
-          </span>
-        )}
+        ))}
       </div>
     </div>
   );
