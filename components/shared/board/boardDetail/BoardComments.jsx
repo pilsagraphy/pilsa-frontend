@@ -346,7 +346,36 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
 
   const totalCommentPages = Math.max(1, Math.ceil(allComments.length / COMMENTS_PER_PAGE));
   const safePage = Math.min(Math.max(1, commentPage), totalCommentPages);
-  const visibleComments = allComments.slice((safePage - 1) * COMMENTS_PER_PAGE, safePage * COMMENTS_PER_PAGE);
+  const pageSlice = allComments.slice((safePage - 1) * COMMENTS_PER_PAGE, safePage * COMMENTS_PER_PAGE);
+  // 페이지가 답글로 시작하면(묶음이 경계에서 끊김) 어느 댓글의 답글인지 알 수 있게 부모를 맨 위에 한 번 더 보여 준다.
+  // 부모는 앞 페이지에도 있으므로 양쪽에 다 나온다 (PM, 2026-09-21)
+  const visibleComments = (() => {
+    const first = pageSlice[0];
+    if (!first || first.depth === 0) return pageSlice;
+    // findLastIndex 는 구형 폰 브라우저에 없어 직접 거슬러 올라간다
+    let parentIndex = -1;
+    for (let i = (safePage - 1) * COMMENTS_PER_PAGE - 1; i >= 0; i -= 1) {
+      if (allComments[i].depth === 0) {
+        parentIndex = i;
+        break;
+      }
+    }
+    if (parentIndex < 0) return pageSlice;
+    return [{ ...allComments[parentIndex], isContext: true }, ...pageSlice];
+  })();
+
+  // 페이지를 옮기면 그 페이지의 첫 댓글이 보이게 위로 올린다 (처음 그릴 때는 건드리지 않는다)
+  const listTopRef = useRef(null);
+  const lastScrolledPageRef = useRef(null);
+  useEffect(() => {
+    if (lastScrolledPageRef.current == null) {
+      lastScrolledPageRef.current = safePage;
+      return;
+    }
+    if (lastScrolledPageRef.current === safePage) return;
+    lastScrolledPageRef.current = safePage;
+    listTopRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [safePage]);
 
   // 링크(#comment-3)가 가리키는 댓글이 다른 페이지에 있으면 그 페이지로 옮긴다 — 처음 한 번만
   const hashPageHandledRef = useRef(false);
@@ -511,7 +540,18 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     reportTarget ? `${boardLabel} / ${reportTarget.content ?? ''}` : '';
 
   // 댓글 1개 렌더 (depth 0 = 최상위 댓글, 1 이상 = 답글)
-  const renderComment = (comment, depth) => {
+  // isContext: 앞 페이지에서 이어진 답글 묶음의 부모를 다시 보여 주는 줄 — 흐리게, 안내 문구를 붙인다
+  const renderComment = (comment, depth, { isContext = false } = {}) => {
+    if (isContext) {
+      return (
+        <div className="w-full opacity-60">
+          <p className="px-2 pt-2 text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191] lg:px-5">
+            앞 페이지에서 이어지는 답글의 원 댓글
+          </p>
+          {renderComment(comment, depth)}
+        </div>
+      );
+    }
     // 자리표시(삭제된 부모)는 원래 답글이었으므로 최상위처럼 보이지 않게 화살표를 붙인다
     const isReply = depth > 0 || Boolean(comment.isPlaceholder);
     const indentDepth = Math.min(depth, MAX_INDENT_DEPTH);
@@ -719,9 +759,12 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
           </div>
         )}
 
-        {visibleComments.map(({ comment, depth }, idx) => (
-          <React.Fragment key={comment.commentId}>
-            {renderComment(comment, depth)}
+        {/* 페이지 이동 때 여기로 스크롤한다 (헤더 아래 조금 띄운다) */}
+        <div ref={listTopRef} className="h-0 w-full scroll-mt-4" aria-hidden />
+
+        {visibleComments.map(({ comment, depth, isContext }, idx) => (
+          <React.Fragment key={isContext ? `context-${comment.commentId}` : comment.commentId}>
+            {renderComment(comment, depth, { isContext })}
             {idx !== visibleComments.length - 1 && <Divider />}
           </React.Fragment>
         ))}
