@@ -235,7 +235,8 @@ export default function CalendarSection({
   };
 
   // 카드 오른쪽 + 로 '이 일정만' 담기. 관리자 화면은 그 자리에 ⋮ 메뉴를 넣으므로 그때는 그대로 둔다
-  const renderAddAction = (schedule) => (
+  // 선택된 카드는 배경이 어두워서(#454545) 마우스를 올렸을 때 검정으로 바뀌면 사라졌다 → 흰색 유지 (PM, 2026-09-21)
+  const renderAddAction = (schedule, isSelected = false) => (
     <button
       type="button"
       aria-label={`${schedule.title} 일정을 내 캘린더에 담기`}
@@ -243,7 +244,9 @@ export default function CalendarSection({
         event.stopPropagation();
         setAddTarget(schedule);
       }}
-      className="grid size-6 place-items-center rounded-full text-[#919191] transition hover:bg-black/5 hover:text-[#212121]"
+      className={`grid size-6 place-items-center rounded-full transition ${
+        isSelected ? 'text-white hover:bg-white/20' : 'text-[#919191] hover:bg-black/5 hover:text-[#212121]'
+      }`}
     >
       {/* 팀이 만든 원래 모양(+)을 그대로 쓴다 (PM, 2026-09-21) */}
       <Plus size={20} strokeWidth={1.8} aria-hidden />
