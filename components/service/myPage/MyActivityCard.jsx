@@ -21,7 +21,7 @@ export default function MyActivityCard() {
   return (
     <div className="flex h-full w-full flex-col rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px] lg:flex-1">
       <div className="flex items-center gap-[8px]">
-        <h3 className="text-[16px] font-bold leading-[1.5] tracking-[-0.02em] text-black">
+        <h3 className="break-keep text-[15px] font-bold leading-[1.5] tracking-[-0.02em] text-black md:text-[16px]">
           이번 학기 활동 요약
         </h3>
 

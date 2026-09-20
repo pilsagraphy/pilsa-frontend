@@ -5,12 +5,12 @@ const HistoryRow = ({ year, activities, isFirst = false, focused = false }) => (
     id={`year-${year}`}
     // 역대 회장에서 링크로 오면 이 줄이 화면 가운데로 오고 연도가 진해진다
     // 첫 행은 윗줄을 긋지 않는다 — 제목 칸의 밑줄과 겹쳐 두 줄로 보였다
-    className={`-mx-4 flex scroll-mt-[100px] gap-[70px] px-4 py-10 transition-colors md:-mx-6 md:px-6 ${
+    className={`-mx-4 flex scroll-mt-[100px] gap-6 px-4 py-8 transition-colors md:-mx-6 md:gap-[70px] md:px-6 md:py-10 ${
       isFirst ? '' : 'border-t border-[#DEDEDE]'
     } ${focused ? 'rounded-[8px] bg-[#FAFAFA]' : ''}`}
   >
     <span
-      className={`w-20 text-[24px] font-bold leading-none ${
+      className={`w-[68px] shrink-0 text-[22px] font-bold leading-none md:w-20 md:text-[24px] ${
         focused ? 'text-[#212121]' : 'text-[#757575]'
       }`}
     >
