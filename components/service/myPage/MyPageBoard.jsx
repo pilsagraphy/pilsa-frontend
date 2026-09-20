@@ -160,7 +160,7 @@ export default function MyPageBoard() {
       </div>
 
       {/* 폰: 게시판 목록과 같은 카드 줄. 좁은 화면에서 표를 쓰면 열이 잘려 제목만 남는다 */}
-      <div className="flex flex-col border-b border-[#B9B9B9] lg:hidden">
+      <div className="flex flex-col border-b border-[#B9B9B9] xl:hidden">
         {isLoading ? (
           <p className="py-8 text-center text-[14px] text-[#919191]">불러오는 중...</p>
         ) : error ? (
@@ -213,26 +213,26 @@ export default function MyPageBoard() {
       </div>
 
       {/* PC: 표 (마지막 행 아래 줄까지 표시) */}
-      {/* 표는 lg(1024) 부터 — 그 아래에서는 옆의 내 정보 패널 때문에 제목이 두 글자만 남았다 */}
-      <div className="hidden overflow-x-auto border-b border-[#B9B9B9] lg:block">
+      {/* 표는 xl(1280) 부터 — 그 아래에서는 폰과 같은 카드 (PM). 옆의 내 정보 패널 때문에 표는 제목이 두 글자만 남았다 */}
+      <div className="hidden overflow-x-auto border-b border-[#B9B9B9] xl:block">
         <Table className="w-full table-fixed">
           <TableHeader>
             <TableRow className="h-12 border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#424242] md:text-[16px]">
               <TableHead className="w-[56px] text-center text-[#424242]">번호</TableHead>
               <TableHead className="w-auto text-left text-[#424242]">제목</TableHead>
               {isComments ? (
-                <TableHead className="hidden w-[40%] text-left text-[#424242] lg:table-cell">
+                <TableHead className="hidden w-[40%] text-left text-[#424242] xl:table-cell">
                   내용
                 </TableHead>
               ) : (
                 <>
-                  <TableHead className="hidden w-[72px] text-center text-[#424242] lg:table-cell">
+                  <TableHead className="hidden w-[72px] text-center text-[#424242] xl:table-cell">
                     좋아요
                   </TableHead>
-                  <TableHead className="hidden w-[72px] text-center text-[#424242] lg:table-cell">
+                  <TableHead className="hidden w-[72px] text-center text-[#424242] xl:table-cell">
                     조회수
                   </TableHead>
-                  <TableHead className="hidden w-[72px] text-center text-[#424242] lg:table-cell">
+                  <TableHead className="hidden w-[72px] text-center text-[#424242] xl:table-cell">
                     댓글
                   </TableHead>
                 </>
@@ -273,18 +273,18 @@ export default function MyPageBoard() {
                     <TableCell className="text-center">{no}</TableCell>
                     <TableCell className="max-w-0 truncate text-left">{title}</TableCell>
                     {isComments ? (
-                      <TableCell className="hidden max-w-0 truncate text-left text-[#424242] lg:table-cell">
+                      <TableCell className="hidden max-w-0 truncate text-left text-[#424242] xl:table-cell">
                         {row.content}
                       </TableCell>
                     ) : (
                       <>
-                        <TableCell className="hidden text-center text-[#424242] lg:table-cell">
+                        <TableCell className="hidden text-center text-[#424242] xl:table-cell">
                           {row.likeCount}
                         </TableCell>
-                        <TableCell className="hidden text-center text-[#424242] lg:table-cell">
+                        <TableCell className="hidden text-center text-[#424242] xl:table-cell">
                           {row.viewCount}
                         </TableCell>
-                        <TableCell className="hidden text-center text-[#424242] lg:table-cell">
+                        <TableCell className="hidden text-center text-[#424242] xl:table-cell">
                           {row.commentCount ?? 0}
                         </TableCell>
                       </>
