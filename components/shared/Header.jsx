@@ -28,7 +28,9 @@ export default function Header() {
 
   return (
     <header className="w-full h-16 tablet:h-40">
-      <div className="flex h-full items-center px-3 tablet:grid tablet:grid-cols-[auto_1fr_auto] tablet:px-6 lg:px-24">
+      {/* PC 에서는 안쪽 폭을 1180px 로 묶는다 — 화면이 넓을수록 알림·프로필이 로고에서 멀어져 오른쪽 끝에 붙어 있었다.
+          가운데 로고는 그대로 화면 정중앙이다 (칸 자체가 가운데 정렬) */}
+      <div className="flex h-full items-center px-3 tablet:mx-auto tablet:grid tablet:w-full tablet:max-w-[1180px] tablet:grid-cols-[auto_1fr_auto] tablet:px-6 lg:px-10">
         {/* 왼쪽: 폰에서만 사이드바 여는 버튼. PC 는 사이드바가 늘 보여서 자리만 남긴다.
             태블릿 이상에서만 좌우 칸 폭을 같게 둔다 — 그래야 가운데 로고가 화면 정중앙에 선다 */}
         <div className="flex shrink-0 items-center tablet:w-24">
