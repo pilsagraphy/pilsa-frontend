@@ -10,7 +10,7 @@ export default function BrandCI() {
           브랜드 CI
         </h2>
         <p className="text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
-          LOGO Design
+          필사그래피의 로고와 브랜드 컬러
         </p>
       </header>
 

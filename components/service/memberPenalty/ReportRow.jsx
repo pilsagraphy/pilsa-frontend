@@ -13,7 +13,7 @@ export default function ReportRow({ report, number }) {
   const reasonBlock = (
     <span className="flex flex-col gap-[1px]">
       {reasonLines.map((line) => (
-        <span key={line} className="[word-break:keep-all]">
+        <span key={line} className="whitespace-pre-wrap break-words [word-break:keep-all]">
           {line}
         </span>
       ))}

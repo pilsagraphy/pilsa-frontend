@@ -11,7 +11,7 @@ export default function Intro() {
           동아리 소개
         </h2>
         <p className="font-['Pretendard',sans-serif] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
-          필사그래피
+          경희대학교 국제캠퍼스 필사 동아리, 필사그래피를 소개합니다
         </p>
       </header>
 

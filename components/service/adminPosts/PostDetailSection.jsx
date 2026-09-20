@@ -17,6 +17,7 @@ import {
 import { ROUTES } from '@/constants/routes';
 
 import PostDetailComments from './PostDetailComments';
+import ModerationNote from '@/components/shared/admin/ModerationNote';
 
 const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base';
 
@@ -128,6 +129,8 @@ export default function PostDetailSection({ postId, from }) {
             author={post.authorName}
             stateLabel={getPostStateLabel(post.state)}
           />
+          {/* 왜 이 상태인지 — 관리자 조치 / 신고 누적 자동 / 작성자 삭제 */}
+          <ModerationNote state={post.state} moderation={post.moderation} className="mt-[8px]" />
           {/* 블라인드·삭제된 글의 첨부도 관리자는 열람할 수 있다.
               fileUrl 은 토큰이 필요한 주소라 눌렀을 때 blob 으로 받아 내려준다.
               첨부가 없으면 BoardAttachments 가 아무것도 그리지 않는데, 등록일 아래 구분선을

@@ -51,6 +51,7 @@ export default function ReportCardList({
                     ? `${report.reasonLabel} (${report.reportCount})`
                     : report.reasonLabel,
               },
+              { label: '신고자', value: report.reporterNames },
               { label: '최초 신고', value: formatReportedAt(report.firstReportedAt) },
               // 원글 보기는 맨 아래 (게시글·댓글 카드와 같은 자리)
               {

@@ -9,8 +9,8 @@ const HistoryRow = ({ year, activities, isFirst = false, focused = false }) => (
     } ${focused ? 'bg-[#FAFAFA]' : ''}`}
   >
     <span
-      className={`w-20 text-[24px] font-semibold leading-none ${
-        focused ? 'text-[#212121]' : 'text-[#b9b9b9]'
+      className={`w-20 text-[24px] font-bold leading-none ${
+        focused ? 'text-[#212121]' : 'text-[#757575]'
       }`}
     >
       {year}

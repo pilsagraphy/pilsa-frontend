@@ -71,7 +71,7 @@ function ReportTargetBlock({ item }) {
                     <TableCell
                       className={`w-[56px] whitespace-nowrap px-0 font-semibold text-[#212121] ${bodyTypeClass}`}
                     >
-                      {getReporterAlias(index)}
+                      {report.reporterName ?? getReporterAlias(index)}
                     </TableCell>
                     <TableCell className={`whitespace-nowrap px-[8px] ${bodyTextClass}`}>
                       {report.reasonLabel}

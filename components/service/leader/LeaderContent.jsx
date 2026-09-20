@@ -40,9 +40,6 @@ const LeaderContent = ({ order, name, period, imageSrc }) => {
       <div className="flex flex-col items-center font-['Pretendard',sans-serif] text-black">
         <span className="text-[18px] font-semibold leading-tight md:text-[30px]">{name}</span>
         <span className="mt-1 text-[13px] font-medium text-[#454545] md:text-[20px]">{period}</span>
-        <span className="mt-[6px] text-[12px] text-[#919191] underline underline-offset-2 md:text-[13px]">
-          연혁 보기
-        </span>
       </div>
     </Link>
   );

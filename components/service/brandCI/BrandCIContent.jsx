@@ -17,7 +17,8 @@ export default function BrandCIContent() {
           ))}
         </BrandCIText>
 
-        <div className="flex w-full items-start justify-center gap-[12px] md:w-auto md:justify-start">
+        {/* 오른쪽 칸은 두 섹션이 같은 폭(md:w-[360px])이어야 로고와 색상 견본의 왼쪽 선이 맞는다 */}
+        <div className="flex w-full items-start justify-center gap-[12px] md:w-[360px] md:shrink-0 md:justify-start">
           <BrandCILogo />
           <DownloadButton />
         </div>
@@ -32,7 +33,7 @@ export default function BrandCIContent() {
         </BrandCIText>
 
         {/* 로고 섹션과 같은 규칙 — md 미만에서는 색상 견본도 가운데 */}
-        <div className="flex w-full items-start justify-center md:w-auto md:justify-start">
+        <div className="flex w-full items-start justify-center md:w-[360px] md:shrink-0 md:justify-start">
           <BrandColor />
         </div>
       </section>

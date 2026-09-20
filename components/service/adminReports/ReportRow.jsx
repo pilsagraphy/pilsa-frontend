@@ -73,10 +73,18 @@ export default function ReportRow({
       {/* 4. 신고 사유 - 여러 건이 들어와도 대표(최초) 사유 하나만 보여준다.
              서버가 라벨까지 완성해 주므로 코드→이름 변환이 필요 없다.
              같은 대상에 신고가 여럿이면 건수를 덧붙여 대표 사유 하나만 보이는 것을 알린다. */}
-      <TableCell className="truncate px-[4px] text-center" title={report.reasonLabel}>
-        {report.reasonLabel}
-        {report.reportCount > 1 && (
-          <span className="text-[#919191]"> ({report.reportCount})</span>
+      <TableCell className="px-[4px] text-center" title={report.reasonLabel}>
+        <span className="block truncate">
+          {report.reasonLabel}
+          {report.reportCount > 1 && (
+            <span className="text-[#919191]"> ({report.reportCount})</span>
+          )}
+        </span>
+        {/* 신고자 이름 — 운영진에게는 숨기지 않는다 (2026-09-20 PM) */}
+        {report.reporterNames && (
+          <span className="block truncate text-[12px] text-[#919191]" title={report.reporterNames}>
+            신고자: {report.reporterNames}
+          </span>
         )}
       </TableCell>
 

@@ -10,7 +10,7 @@ export default function Leader() {
           역대 회장
         </h2>
         <p className="font-['Pretendard',sans-serif] font-normal text-[16px] leading-[1.6] tracking-[-0.32px] text-[#919191]">
-          2021~
+          2021년 창립부터 지금까지 필사그래피를 이끈 회장들입니다. 사진을 누르면 그 해 연혁으로 갑니다
         </p>
       </header>
 

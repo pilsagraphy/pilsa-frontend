@@ -38,11 +38,14 @@ function toReasonLines(report) {
   const withDetail = (label, detail) => (detail ? `${label} (${detail})` : label);
   const lines = [];
   if (report.reportId != null) {
+    lines.push(`신고자: ${report.reporterName ?? '(탈퇴)'}`);
     lines.push(`신고 사유: ${withDetail(report.reasonLabel ?? '-', report.detail)}`);
   }
   if (report.actionState) {
     const what = report.actionState === 'blind' ? '블라인드' : '삭제';
+    const who = report.isAuto ? '신고 누적 자동' : `관리자 ${report.actorName ?? '(탈퇴)'}`;
     lines.push(`${what} 사유: ${withDetail(report.actionReasonLabel ?? '-', report.actionDetail)}`);
+    lines.push(`처리: ${who}`);
   }
   if (lines.length === 0) lines.push('미처리');
   return lines;

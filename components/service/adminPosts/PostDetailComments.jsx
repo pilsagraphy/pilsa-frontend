@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { CornerDownRight, Lock } from 'lucide-react';
 
 import StateChip from '@/components/shared/board/boardDetail/StateChip';
+import ModerationNote from '@/components/shared/admin/ModerationNote';
 import { getCommentAnchorId } from '@/lib/utils';
 import { formatSlashDateTime } from '@/lib/boardDetail';
 import { getCommentStateLabel } from '@/constants/adminComments';
@@ -102,6 +103,8 @@ export default function PostDetailComments({ comments = [], focusedAnchor = null
                   <p className="whitespace-pre-line break-words text-[16px] leading-[26px] tracking-[-0.32px] text-[#454545]">
                     {comment.content}
                   </p>
+
+                  <ModerationNote state={comment.state} moderation={comment.moderation} />
 
                   <span className="text-[14px] leading-[22px] tracking-[-0.28px] text-[#919191]">
                     {formatSlashDateTime(comment.updated ?? comment.created)}
