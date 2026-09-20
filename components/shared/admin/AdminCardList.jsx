@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
-
 import RowCheckbox from '@/components/shared/admin/RowCheckbox';
 import SelectAllCheckbox from '@/components/shared/admin/SelectAllCheckbox';
 
@@ -73,7 +71,7 @@ export function AdminStatePill({ label }) {
  * 카드 한 장.
  *
  * @param title      무엇에 대한 줄인가 (글 제목·댓글 내용·신고 대상 미리보기)
- * @param titleHref  제목을 누르면 갈 곳. 있으면 밑줄로 링크임을 알린다
+ * @param titleHref  (안 쓴다) 제목은 글자만 둔다 — 갈 곳은 '자세히' 안에 '원글 보기'로 넣는다
  * @param metaRows   [{ label, value }] — '자세히'를 누르면 펼쳐진다. 값이 비면 그 줄은 없다
  * @param stateLabel 제목 오른쪽 상태 배지 (공개/블라인드/삭제 등)
  * @param actions    상태 옆 조치 버튼들
@@ -106,16 +104,7 @@ export function AdminCard({
         )}
 
         <div className="min-w-0 flex-1">
-          {titleHref ? (
-            <Link
-              href={titleHref}
-              className={`${titleClass} underline decoration-[#B9B9B9] underline-offset-[3px] hover:decoration-[#212121]`}
-            >
-              {title}
-            </Link>
-          ) : (
-            <p className={titleClass}>{title}</p>
-          )}
+          <p className={titleClass}>{title}</p>
 
           {rows.length > 0 && (
             <button

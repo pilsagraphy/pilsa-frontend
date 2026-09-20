@@ -92,23 +92,31 @@ function RecentMembers({ members, isLoading, error, onViewAll }) {
               key={member.userId}
               className="flex h-[44px] items-center border-b border-[#B9B9B9] pl-[10px] pr-[8px]"
             >
-              <span className="text-[16px] font-semibold leading-[1.6] tracking-[-0.32px] text-[#212121]">
+              {/* 폭이 모자라면 줄을 바꾸지 않고 말줄임한다 — '재학/생' 처럼 글자가 끊기면 못 읽는다.
+                  신분과 날짜는 그대로 두고 아이디·이름이 줄어든다 */}
+              <span className="shrink-0 whitespace-nowrap text-[15px] font-semibold leading-[1.6] tracking-[-0.3px] text-[#212121] md:text-[16px]">
                 {MEMBER_TYPE_LABELS[member.memberType] ?? member.memberType}
               </span>
 
-              <span className="mx-[10px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9]" />
+              <span className="mx-[8px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9] md:mx-[10px]" />
 
-              <span className="text-[16px] leading-[1.6] tracking-[-0.32px] text-[#212121]">
+              <span
+                title={member.loginId}
+                className="min-w-0 max-w-[38%] truncate text-[15px] leading-[1.6] tracking-[-0.3px] text-[#212121] md:text-[16px]"
+              >
                 {member.loginId}
               </span>
 
-              <span className="mx-[10px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9]" />
+              <span className="mx-[8px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9] md:mx-[10px]" />
 
-              <span className="text-[16px] leading-[1.6] tracking-[-0.32px] text-[#212121]">
+              <span
+                title={member.name}
+                className="min-w-0 flex-1 truncate text-[15px] leading-[1.6] tracking-[-0.3px] text-[#212121] md:text-[16px]"
+              >
                 {member.name}
               </span>
 
-              <span className="ml-auto text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
+              <span className="ml-[8px] shrink-0 whitespace-nowrap text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191] md:ml-auto md:text-[14px]">
                 {formatDotDate(member.joinedAt)} 가입
               </span>
             </div>

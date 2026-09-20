@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import RowActionButton from '@/components/shared/admin/RowActionButton';
 import { AdminCard, AdminCardList } from '@/components/shared/admin/AdminCardList';
 import { formatShortDotDate } from '@/lib/boardDetail';
@@ -29,9 +31,19 @@ export default function PostCardList({
             onSelectChange={(checked) => onSelectOne?.(post.postId, checked)}
             selectLabel={`${post.title} 선택`}
             title={post.title}
-            titleHref={getAdminPostDetailHref(post.postId)}
             stateLabel={getPostStateLabel(post.state)}
             metaRows={[
+              {
+                label: '원글',
+                value: (
+                  <Link
+                    href={getAdminPostDetailHref(post.postId)}
+                    className="underline underline-offset-2"
+                  >
+                    원글 보기
+                  </Link>
+                ),
+              },
               { label: '게시판', value: post.boardName },
               { label: '글쓴이', value: post.authorName },
               {

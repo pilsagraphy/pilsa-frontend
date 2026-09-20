@@ -376,14 +376,14 @@ export default function ScheduleForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="h-[40px] w-[80px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6] disabled:opacity-50"
+          className="h-[44px] w-[calc(50%-6px)] max-w-[180px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6] disabled:opacity-50"
         >
           취소
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-[40px] w-[80px] rounded-[4px] bg-[#212121] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242] disabled:opacity-50"
+          className="h-[44px] w-[calc(50%-6px)] max-w-[180px] rounded-[4px] bg-[#212121] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242] disabled:opacity-50"
         >
           확인
         </button>

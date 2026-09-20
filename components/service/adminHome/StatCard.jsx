@@ -24,7 +24,7 @@ function formatStatNumber(value) {
 // 통계 카드: 진한 숫자 + 그 아래 회색 라벨
 export default function StatCard({ value, label }) {
   return (
-    <div className="flex min-h-[84px] w-full flex-col items-center justify-center gap-[4px] text-center md:min-h-[96px] md:gap-[6px]">
+    <div className="flex min-h-[64px] w-full flex-col items-center justify-center gap-[2px] text-center md:min-h-[96px] md:gap-[6px]">
       <span className="whitespace-pre-line break-words font-['Pretendard',sans-serif] text-[28px] font-bold leading-[1.3] tracking-[-0.56px] text-[#212121] md:text-[36px] md:tracking-[-0.72px]">
         {formatStatNumber(value)}
       </span>

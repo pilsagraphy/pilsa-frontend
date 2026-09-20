@@ -31,7 +31,7 @@ export default function StatsSection({ stats, isLoading, error }) {
 
   return (
     // 폰: 2×2. 네 장을 한 줄에 놓으면 라벨이 글자 단위로 끊긴다. 세로선은 한 줄일 때만 뜻이 있다
-    <div className="grid w-full grid-cols-2 gap-y-[12px] py-[10px] sm:flex sm:items-stretch sm:justify-center sm:gap-y-0">
+    <div className="grid w-full grid-cols-2 gap-y-[4px] py-[4px] sm:flex sm:items-stretch sm:justify-center sm:gap-y-0 sm:py-[10px]">
       {items.map((stat, index) => (
         <React.Fragment key={stat.label}>
           <div

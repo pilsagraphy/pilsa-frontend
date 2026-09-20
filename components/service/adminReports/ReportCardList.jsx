@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import RowActionButton from '@/components/shared/admin/RowActionButton';
 import { AdminCard, AdminCardList } from '@/components/shared/admin/AdminCardList';
 import {
@@ -29,6 +31,7 @@ export default function ReportCardList({
         const allowComment = allowCommentByBoardId?.get(report.boardId) ?? true;
         const preview = truncatePreview(report.preview);
         const deletable = isDeletable(report);
+        const targetHref = getReportTargetHref(report, allowComment);
 
         return (
           <AdminCard
@@ -37,9 +40,18 @@ export default function ReportCardList({
             onSelectChange={(checked) => onSelectOne?.(report.targetId, checked)}
             selectLabel={`${preview} 선택`}
             title={preview}
-            titleHref={getReportTargetHref(report, allowComment) || undefined}
             stateLabel={getReportStatusLabel(report)}
             metaRows={[
+              {
+                label: '대상',
+                value: targetHref ? (
+                  <Link href={targetHref} className="underline underline-offset-2">
+                    원글 보기
+                  </Link>
+                ) : (
+                  '-'
+                ),
+              },
               { label: '게시판', value: report.boardName },
               { label: '작성자', value: report.authorName },
               {
