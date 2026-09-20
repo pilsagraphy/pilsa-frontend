@@ -100,6 +100,8 @@ export default function LoginSection() {
   const [loggingOut, setLoggingOut] = useState(false);
   // 구글 동의 화면으로 나가는 중 (버튼 중복 클릭 방지)
   const [googleBusy, setGoogleBusy] = useState(false);
+  // 아이디·비밀번호가 틀렸을 때 '구글로 로그인' 안내를 띄울지
+  const [showGoogleHint, setShowGoogleHint] = useState(false);
   // [구글로 로그인] 했는데 연결된 회원이 없어 돌아온 상태 — 서버가 그 구글 계정을 10분간 보관 중이다.
   // GET /api/auth/google/pending 응답: { googleEmail, maskedEmail, emailMatched, maskedLoginId }
   // 지금 아이디로 로그인하면 그 구글 계정을 붙인다.
@@ -345,6 +347,12 @@ export default function LoginSection() {
 
       const message = data?.message ?? (typeof data === 'string' ? data : null) ?? err.message;
       toast.error(message);
+
+      // 아이디·비밀번호가 틀렸을 때만 구글 안내를 띄운다.
+      // 구글 계정을 연결해 둔 사람은 비밀번호를 잊어도 구글로 그냥 들어올 수 있는데, 그 길을 모른 채
+      // 비밀번호 찾기만 반복하는 경우가 있다. 다만 '이 아이디에 구글이 연결돼 있는지' 를 알려 주면
+      // 아이디가 존재하는지까지 알려 주는 셈이라, 계정을 가리지 않는 일반 안내로만 둔다.
+      if (err.response?.status === 401) setShowGoogleHint(true);
     }
   };
 
@@ -450,6 +458,16 @@ export default function LoginSection() {
               회원가입
             </Button>
           </div>
+
+          {/* 아이디·비밀번호가 틀렸을 때 띄우는 안내.
+              구글 계정을 연결해 둔 사람은 비밀번호를 몰라도 아래 [구글로 로그인]으로 들어올 수 있다 */}
+          {showGoogleHint && (
+            <p className="rounded-[4px] bg-[#F5F5F5] px-4 py-3 text-[13px] leading-[1.6] tracking-[-0.02em] text-[#757575]">
+              구글 계정을 연결해 두셨다면 아래 <strong className="font-semibold">구글로 로그인</strong>으로
+              바로 들어올 수 있어요. 연결한 적이 없다면 위 <strong className="font-semibold">비밀번호 재설정</strong>을
+              이용해 주세요.
+            </p>
+          )}
 
           {/* 간편로그인 — 구글 계정을 연결한 회원만 사용할 수 있다.
               구글만으로는 가입되지 않는다(학번·전화가 필수라서). 미연결 계정은 콜백에서
