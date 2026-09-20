@@ -1,7 +1,30 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
 import HistoryRow from './HistoryRow';
 import { DUMMY_HISTORY } from '@/constants/history';
 
 export default function History() {
+  const [focusYear, setFocusYear] = useState(null);
+
+  // 역대 회장 카드에서 #year-2021 처럼 들어온다. 그 해가 없으면 그다음 있는 해로 내려간다
+  useEffect(() => {
+    const apply = () => {
+      const matched = /^#year-(\d{4})$/.exec(window.location.hash);
+      if (!matched) return;
+      const wanted = Number(matched[1]);
+      const years = DUMMY_HISTORY.map((d) => Number(d.year)).sort((a, b) => a - b);
+      const target = years.find((y) => y >= wanted) ?? years[years.length - 1];
+      if (!target) return;
+      setFocusYear(String(target));
+      document.getElementById(`year-${target}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    apply();
+    window.addEventListener('hashchange', apply);
+    return () => window.removeEventListener('hashchange', apply);
+  }, []);
+
   return (
     <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-[40px] bg-white p-8">
       {/* 타이틀 및 서브타이틀 영역 */}
@@ -22,6 +45,7 @@ export default function History() {
             year={data.year}
             activities={data.activities}
             isFirst={index === 0}
+            focused={focusYear === data.year}
           />
         ))}
       </div>

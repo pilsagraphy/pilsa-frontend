@@ -29,6 +29,8 @@ export const getReasonId = (code) =>
 
 // detail 최대 길이 (DB varchar(500))
 export const REPORT_DETAIL_MAX_LENGTH = 500;
+// '기타' 상세 최소 글자 — 서버(ReportService·ReportAdminService)와 같은 값
+export const REPORT_DETAIL_MIN_LENGTH = 5;
 
 // 신고 접수 완료 안내
 // mobileBodyMinHeightClass: 모바일에서 피그마 모달 높이(362×270)를 맞추기 위한 본문 영역 최소 높이

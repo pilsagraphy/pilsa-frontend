@@ -1,9 +1,21 @@
 import Image from 'next/image';
+import Link from 'next/link';
+
+import { ROUTES } from '@/constants/routes';
+
+// '(2021~2022)' → 2021. 재임 시작 연도의 연혁으로 보낸다
+const startYearOf = (period) => /(\d{4})/.exec(String(period ?? ''))?.[1] ?? null;
 
 const LeaderContent = ({ order, name, period, imageSrc }) => {
+  const year = startYearOf(period);
   return (
-    // 전체 너비를 부모 그리드에 맡기고, 내부 요소들만 중앙 정렬
-    <div className="mx-auto flex w-full max-w-[227px] flex-col items-center gap-3 md:gap-[25px]">
+    // 전체 너비를 부모 그리드에 맡기고, 내부 요소들만 중앙 정렬.
+    // 카드를 누르면 그 회장의 재임 시작 연도 연혁으로 간다 (연혁 페이지가 #year-XXXX 를 받아 그 줄로 내려간다)
+    <Link
+      href={year ? `${ROUTES.ABOUT_HISTORY}#year-${year}` : ROUTES.ABOUT_HISTORY}
+      title={`${year ?? ''}년 연혁 보기`}
+      className="mx-auto flex w-full max-w-[227px] flex-col items-center gap-3 md:gap-[25px]"
+    >
       {/* 순서 레이블: 01, 02 처럼 보일 수 있게 스타일링 */}
       <span className="whitespace-nowrap text-center font-['Pretendard',sans-serif] text-[20px] font-bold leading-normal tracking-[-0.64px] text-black md:text-[32px]">
         {order}
@@ -28,8 +40,11 @@ const LeaderContent = ({ order, name, period, imageSrc }) => {
       <div className="flex flex-col items-center font-['Pretendard',sans-serif] text-black">
         <span className="text-[18px] font-semibold leading-tight md:text-[30px]">{name}</span>
         <span className="mt-1 text-[13px] font-medium text-[#454545] md:text-[20px]">{period}</span>
+        <span className="mt-[6px] text-[12px] text-[#919191] underline underline-offset-2 md:text-[13px]">
+          연혁 보기
+        </span>
       </div>
-    </div>
+    </Link>
   );
 };
 

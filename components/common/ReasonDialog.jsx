@@ -13,7 +13,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
-import { REPORT_REASONS, REPORT_REASON_ETC, REPORT_DETAIL_MAX_LENGTH } from '@/constants/report';
+import {
+  REPORT_REASONS,
+  REPORT_REASON_ETC,
+  REPORT_DETAIL_MAX_LENGTH,
+  REPORT_DETAIL_MIN_LENGTH,
+} from '@/constants/report';
 
 /**
  * 사유를 골라서 확인하는 모달의 공통 껍데기 (신고 · 관리자 조치)
@@ -76,8 +81,10 @@ export default function ReasonDialog({
   const isEtc = !hideReason && reason === REPORT_REASON_ETC;
   // 기타를 선택했으면 상세 사유까지 입력해야 확인할 수 있다
   // (사유를 받지 않는 모달은 대상만 있으면 바로 확인할 수 있다)
-  const canSubmit =
-    !disabled && (hideReason || (Boolean(reason) && (!isEtc || detail.trim().length > 0)));
+  // 기타를 선택했으면 상세를 5자 이상 적어야 확인할 수 있다 ('.' 하나로 지운 조치가 실제로 있었다)
+  const detailLength = detail.trim().length;
+  const detailTooShort = isEtc && detailLength < REPORT_DETAIL_MIN_LENGTH;
+  const canSubmit = !disabled && (hideReason || (Boolean(reason) && !detailTooShort));
 
   const handleConfirm = () => {
     if (!canSubmit) return;
@@ -168,10 +175,21 @@ export default function ReasonDialog({
           <Textarea
             value={detail}
             onChange={(e) => setDetail(e.target.value)}
-            placeholder="상세 사유를 입력하세요"
+            placeholder={`상세 사유를 ${REPORT_DETAIL_MIN_LENGTH}자 이상 입력하세요`}
             maxLength={REPORT_DETAIL_MAX_LENGTH}
             className="h-[190px] resize-none rounded-[4px] border-[#b9b9b9] p-[16px] text-[16px] tracking-[-0.32px] shadow-none placeholder:text-[#b9b9b9]"
           />
+        )}
+        {isEtc && (
+          <p
+            className={`-mt-[8px] text-[12px] leading-[1.6] tracking-[-0.24px] ${
+              detailTooShort ? 'text-[#e02d2d]' : 'text-[#919191]'
+            }`}
+          >
+            {detailTooShort
+              ? `${REPORT_DETAIL_MIN_LENGTH}자 이상 적어 주세요 (${detailLength}/${REPORT_DETAIL_MIN_LENGTH})`
+              : `${detailLength}/${REPORT_DETAIL_MAX_LENGTH}`}
+          </p>
         )}
         {/* #183 모바일 기본 신고 모달 높이를 피그마(371px)에 맞추는 여백.
             기타 선택 시엔 상세 사유 입력칸이 그 자리를 채우므로 넣지 않는다. */}
