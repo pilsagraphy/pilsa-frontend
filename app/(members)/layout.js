@@ -29,8 +29,12 @@ export default function MembersLayout({ children }) {
 
         <main className="flex-1 flex flex-col min-w-0">
           <div className="flex-1">{children}</div>
-          <Footer />
         </main>
+      </div>
+
+      {/* 푸터는 사이드바 옆이 아니라 아래 — 사이드바·본문 묶음 밖에서 전체 폭을 쓴다 (PM, 2026-09-20) */}
+      <div className="w-full max-w-[1440px] mx-auto">
+        <Footer />
       </div>
     </>
   );
