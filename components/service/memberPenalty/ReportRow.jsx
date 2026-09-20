@@ -1,25 +1,62 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 
 // 헤더 행과 데이터 행이 동일한 열 정렬을 쓰도록 공유하는 그리드 템플릿.
-// 6개 열은 남는 너비를 균등 분배해 왼쪽으로 몰리지 않게 한다.
-// [번호][작성 위치][처리 사유][원문 링크][상태][처리일]
-export const REPORT_GRID = 'grid grid-cols-[repeat(6,minmax(0,1fr))] items-center';
+// [번호][작성 위치][사유][원문][상태][처리일] — 사유 칸만 남는 폭을 다 가져간다.
+// 여섯 칸을 똑같이 나누면 사유가 한 자씩 세로로 끊기고 나머지 칸은 비어 있었다.
+export const REPORT_GRID =
+  'grid grid-cols-[36px_84px_minmax(0,1fr)_64px_52px_64px] items-start gap-x-[6px]';
+
+// 상세 사유는 이 글자 수까지만 보이고, 넘치면 '더 보기'로 편다
+const DETAIL_PREVIEW = 40;
+
+// 사유 한 줄: { label, value, detail?, muted? }
+function ReasonLine({ line }) {
+  const [open, setOpen] = useState(false);
+  const detail = line.detail ?? '';
+  const long = detail.length > DETAIL_PREVIEW || detail.includes('\n');
+  const shown = open || !long ? detail : `${detail.replace(/\s+/g, ' ').slice(0, DETAIL_PREVIEW)}…`;
+
+  return (
+    <div className={`flex flex-col ${line.muted ? 'text-[#919191]' : 'text-[#454545]'}`}>
+      <span className="[word-break:keep-all]">
+        {line.label && <span className="text-[#919191]">{line.label} </span>}
+        {line.value}
+      </span>
+      {detail && (
+        <span className="whitespace-pre-wrap break-words text-[12px] leading-[1.6] text-[#757575] [word-break:keep-all]">
+          {shown}
+          {long && (
+            <button
+              type="button"
+              onClick={() => setOpen((prev) => !prev)}
+              className="ml-[4px] underline underline-offset-2 hover:text-[#212121]"
+            >
+              {open ? '접기' : '더 보기'}
+            </button>
+          )}
+        </span>
+      )}
+    </div>
+  );
+}
+
+function ReasonBlock({ reason }) {
+  // 옛 모양(문자열·문자열 배열)도 받아 준다
+  const lines = Array.isArray(reason)
+    ? reason.map((l) => (typeof l === 'string' ? { label: '', value: l } : l))
+    : [{ label: '', value: String(reason ?? '') }];
+  return (
+    <div className="flex flex-col gap-[3px]">
+      {lines.map((line, index) => (
+        <ReasonLine key={`${line.label}-${index}`} line={line} />
+      ))}
+    </div>
+  );
+}
 
 // 신고 내역 개별 행
 export default function ReportRow({ report, number }) {
-  // 사유는 줄 여러 개다 (신고 사유 · 처리 사유). 문자열 하나로 와도 그린다
-  const reasonLines = Array.isArray(report.reason) ? report.reason : [report.reason];
-  const reasonBlock = (
-    <span className="flex flex-col gap-[1px]">
-      {reasonLines.map((line) => (
-        <span key={line} className="whitespace-pre-wrap break-words [word-break:keep-all]">
-          {line}
-        </span>
-      ))}
-    </span>
-  );
-
   // 원문 링크는 두 모양에서 같은 것을 쓴다
   const link = report.link ? (
     <a
@@ -31,7 +68,7 @@ export default function ReportRow({ report, number }) {
       className="underline decoration-solid underline-offset-2"
       onClick={(e) => e.stopPropagation()}
     >
-      원문 보기
+      원문
     </a>
   ) : (
     <span className="text-[#919191]">-</span>
@@ -40,36 +77,34 @@ export default function ReportRow({ report, number }) {
   return (
     <>
       {/* 폰: 카드 한 장. 6열을 그대로 욱여넣으면 글자가 한 자씩 끊긴다 */}
-      <div className="flex flex-col gap-[4px] border-b border-[#dedede] py-[10px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-[#454545] md:hidden">
+      <div className="flex flex-col gap-[6px] border-b border-[#dedede] py-[10px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-[#454545] md:hidden">
         <div className="flex items-center justify-between gap-2">
           <span className="min-w-0 truncate font-medium text-[#212121]">
             {number}. {report.board}
           </span>
-          <span className="shrink-0 text-[#919191]">{report.status}</span>
+          <span className="flex shrink-0 items-center gap-[8px]">
+            <span className="text-[#919191]">{report.status}</span>
+            {link}
+          </span>
         </div>
-        <div className="flex items-start justify-between gap-2">
-          <span className="min-w-0">{reasonBlock}</span>
-          <span className="shrink-0">{link}</span>
-        </div>
+        <ReasonBlock reason={report.reason} />
         {report.date && <div className="text-[12px] text-[#919191]">{report.date}</div>}
       </div>
 
-      {/* 태블릿 이상: 기존 6열 그리드 */}
+      {/* 태블릿 이상: 6열 그리드. 사유가 여러 줄이라 높이를 고정하지 않는다 */}
       <div
-      // 사유가 두 줄이라 높이를 고정하지 않는다 (최소 46px)
-      className={`${REPORT_GRID} hidden min-h-[46px] border-b border-[#dedede] py-[6px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-[#454545] md:grid`}
-    >
-      <div className="text-center">{number}</div>
-      <div className="text-center">{report.board}</div>
-      <div className="px-[4px] text-left">{reasonBlock}</div>
-      {/* 원문 링크. 열이 좁아 글자는 'Link' 하나뿐이라 어느 글인지 구분되지 않는다.
-          제목은 마우스오버(title)와 보조기기(aria-label)로만 알린다.
-          (텍스트가 있으면 title 은 접근성 이름이 되지 않아 aria-label 이 따로 필요하다)
-          경로를 모르는 게시판이면 link 가 없다 → 누를 수 없는 'Link' 대신 '-' 로 둔다.
-          (관리자 댓글 관리의 CommentRow 가 '바로가기' 열을 같게 처리한다) */}
-      <div className="text-center">{link}</div>
-      <div className="text-center">{report.status}</div>
-      <div className="text-center">{report.date}</div>
+        className={`${REPORT_GRID} hidden min-h-[46px] border-b border-[#dedede] py-[8px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-[#454545] md:grid`}
+      >
+        <div className="pt-[2px] text-center">{number}</div>
+        <div className="truncate pt-[2px] text-center" title={report.board}>
+          {report.board}
+        </div>
+        <div className="min-w-0 pr-[4px] text-left">
+          <ReasonBlock reason={report.reason} />
+        </div>
+        <div className="pt-[2px] text-center">{link}</div>
+        <div className="pt-[2px] text-center">{report.status}</div>
+        <div className="pt-[2px] text-center">{report.date}</div>
       </div>
     </>
   );

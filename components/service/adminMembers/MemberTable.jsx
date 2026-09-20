@@ -42,7 +42,7 @@ export default function MemberTable({
   return (
     <>
       {/* 폰: 한 명을 카드 하나로. 열 12개짜리 표를 가로로 밀어 보는 건 쓸 수 없었다 */}
-      <div className="border-t border-[#212121] md:hidden">
+      <div className="border-t border-[#212121] xl:hidden">
         {!emptyMessage && (
           <div className="flex items-center gap-[10px] border-b border-[#B9B9B9] px-1 py-[10px]">
             <SelectAllCheckbox
@@ -69,7 +69,7 @@ export default function MemberTable({
       </div>
 
       {/* 태블릿 이상: 지금까지의 표 그대로 */}
-      <div className="hidden overflow-x-auto border-t border-[#212121] md:block">
+      <div className="hidden overflow-x-auto border-t border-[#212121] xl:block">
       <Table className="w-full min-w-[915px]">
         <TableHeader>
           <TableRow className="h-[46px] border-b border-[#919191] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">

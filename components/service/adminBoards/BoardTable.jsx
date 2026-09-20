@@ -46,7 +46,7 @@ export default function BoardTable({
   return (
     <>
       {/* 폰: 카드. 표는 가로 915px 이 필요해 좌우로 밀어야 했다 */}
-      <div className="border-t border-[#212121] md:hidden">
+      <div className="border-t border-[#212121] xl:hidden">
         <BoardCardList
           boards={boards ?? []}
           onEdit={onEdit}
@@ -59,7 +59,7 @@ export default function BoardTable({
       </div>
 
       {/* 태블릿 이상: 기존 표 */}
-      <div className="hidden overflow-x-auto border-t border-[#212121] md:block">
+      <div className="hidden overflow-x-auto border-t border-[#212121] xl:block">
       <Table className="w-full min-w-[915px]">
         <TableHeader>
           {/* 열 너비는 시안의 열 제목 중심 좌표에서 역산했다.

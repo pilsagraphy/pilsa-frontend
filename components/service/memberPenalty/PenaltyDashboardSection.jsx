@@ -35,19 +35,25 @@ const STATE_LABEL = { normal: '정상', blind: '블라인드', deleted: '삭제'
 // 사유 줄들. 신고 사유와 처리 사유는 다른 것이다 — 신고는 '기타'로 들어와도 관리자는 '욕설'로 지울 수 있다.
 // 기타면 적어 둔 내용을 괄호로 붙인다 (안 보여 주면 '기타'만 남아 무슨 일인지 알 수 없다).
 function toReasonLines(report) {
-  const withDetail = (label, detail) => (detail ? `${label} (${detail})` : label);
+  // { label, value, detail } — 라벨은 회색, 값은 본색, 상세는 작은 글씨로 접힌다 (ReportRow)
   const lines = [];
   if (report.reportId != null) {
-    lines.push(`신고자: ${report.reporterName ?? '(탈퇴)'}`);
-    lines.push(`신고 사유: ${withDetail(report.reasonLabel ?? '-', report.detail)}`);
+    lines.push({
+      label: '신고',
+      value: `${report.reporterName ?? '(탈퇴)'} · ${report.reasonLabel ?? '-'}`,
+      detail: report.detail,
+    });
   }
   if (report.actionState) {
     const what = report.actionState === 'blind' ? '블라인드' : '삭제';
-    const who = report.isAuto ? '신고 누적 자동' : `관리자 ${report.actorName ?? '(탈퇴)'}`;
-    lines.push(`${what} 사유: ${withDetail(report.actionReasonLabel ?? '-', report.actionDetail)}`);
-    lines.push(`처리: ${who}`);
+    const who = report.isAuto ? '자동' : (report.actorName ?? '(탈퇴)');
+    lines.push({
+      label: what,
+      value: `${who} · ${report.actionReasonLabel ?? '-'}`,
+      detail: report.actionDetail,
+    });
   }
-  if (lines.length === 0) lines.push('미처리');
+  if (lines.length === 0) lines.push({ label: '', value: '미처리', muted: true });
   return lines;
 }
 
@@ -155,7 +161,7 @@ export default function PenaltyDashboardSection() {
 
       {/* 좁은 화면에서는 목록 위 · 상세 아래로 쌓는다 (나란히 두면 오른쪽이 화면 밖으로 나간다).
           PC 는 나란히 두되, 폭이 모자라면 옆으로 스크롤한다 (overflow-x-auto) */}
-      <div className="flex flex-col gap-[20px] lg:flex-row lg:gap-[28px] lg:overflow-x-auto lg:pb-[8px]">
+      <div className="flex flex-col gap-[20px] xl:flex-row xl:gap-[28px] xl:overflow-x-auto xl:pb-[8px]">
         {/* 좌측: 회원 목록. PC 에서는 접을 수 있다 */}
         {listCollapsed ? (
           <button
@@ -163,12 +169,12 @@ export default function PenaltyDashboardSection() {
             onClick={() => setListCollapsed(false)}
             title="목록 펼치기"
             aria-label="회원 목록 펼치기"
-            className="hidden h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[6px] border border-[#dedede] text-[#454545] hover:bg-[#f6f6f6] lg:flex"
+            className="hidden h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[6px] border border-[#dedede] text-[#454545] hover:bg-[#f6f6f6] xl:flex"
           >
             <PanelLeftOpen size={18} />
           </button>
         ) : null}
-        <div className={listCollapsed ? 'lg:hidden' : 'contents'}>
+        <div className={listCollapsed ? 'xl:hidden' : 'contents'}>
           <MemberListSection
             selectedId={selectedId}
             onSelect={setSelectedId}
@@ -178,7 +184,7 @@ export default function PenaltyDashboardSection() {
                 onClick={() => setListCollapsed(true)}
                 title="목록 접기"
                 aria-label="회원 목록 접기"
-                className="hidden size-[24px] place-content-center text-[#919191] hover:text-[#212121] lg:grid"
+                className="hidden size-[24px] place-content-center text-[#919191] hover:text-[#212121] xl:grid"
               >
                 <PanelLeftClose size={18} />
               </button>
@@ -187,7 +193,7 @@ export default function PenaltyDashboardSection() {
         </div>
 
         {/* 우측: 선택 회원 상세 (넓은 화면에서만 디자인 폭으로 고정) */}
-        <div className="w-full min-w-0 lg:w-[618px] lg:shrink-0">
+        <div className="w-full min-w-0 xl:w-[618px] xl:shrink-0">
           {selectedUser ? (
             <div className="flex flex-col">
               {/* 회원명 (아이디) + 회색 가로선 */}

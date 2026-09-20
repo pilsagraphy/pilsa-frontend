@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Search, X, RefreshCcw } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { InputGroup, InputGroupInput, InputGroupButton } from '@/components/ui/input-group';
 import MemberList from './MemberList';
 import useSanctionStore from '@/stores/useSanctionStore';
@@ -49,28 +49,14 @@ export default function MemberListSection({ selectedId, onSelect, collapseButton
   // x 버튼: 검색어만 초기화(선택 회원은 유지) → 전체 목록 노출
   const clearKeyword = () => setKeyword('');
 
-  // 초기화 버튼: 검색어 + 보이는 목록 + 선택 회원 초기화 → 맨 위 회원을 선택
-  const handleReset = () => {
-    setKeyword('');
-    if (members[0]) onSelect?.(members[0].memberId);
-  };
 
   return (
-    <div className="flex w-full flex-col gap-[16px] font-['Pretendard',sans-serif] lg:w-[270px] lg:shrink-0">
+    <div className="flex w-full flex-col gap-[16px] font-['Pretendard',sans-serif] xl:w-[270px] xl:shrink-0">
       {/* '목록' + 우측 접기 · 초기화 버튼(돋보기와 같은 열, 같은 색) */}
       <div className="flex items-center justify-between">
         <h3 className="text-[18px] tracking-[-0.36px] text-[#212121]">목록</h3>
-        <div className="flex items-center gap-[4px]">
-        {collapseButton}
-        <button
-          type="button"
-          onClick={handleReset}
-          aria-label="목록 초기화"
-          className="grid size-[24px] place-content-center text-[#212121]"
-        >
-          <RefreshCcw size={18} />
-        </button>
-        </div>
+        {/* 새로고침 버튼은 뺐다 — 목록은 화면이 열릴 때 받고, 검색은 즉시 반영이라 누를 일이 없었다 */}
+        <div className="flex items-center gap-[4px]">{collapseButton}</div>
       </div>
 
       {/* 검색창: 입력 즉시 목록 한정(부분 검색), 엔터/돋보기를 눌러도 검색어 유지.
@@ -104,7 +90,7 @@ export default function MemberListSection({ selectedId, onSelect, collapseButton
 
       {/* 스크롤 범위. 검색으로 한정된 목록을 노출 (세로 스크롤, 화살표 없이) */}
       {/* 폰에서는 목록이 화면을 다 먹지 않게 짧게 — 아래 상세가 보여야 무엇을 고른 건지 안다 */}
-      <div className="mp-scroll-y max-h-[300px] min-h-[92px] overflow-x-hidden overflow-y-auto pr-[6px] lg:h-[720px] lg:max-h-none">
+      <div className="mp-scroll-y max-h-[300px] min-h-[92px] overflow-x-hidden overflow-y-auto pr-[6px] xl:h-[720px] xl:max-h-none">
         {isLoading ? (
           // 1) 로딩 중
           <div className="flex h-full items-center justify-center text-[16px] tracking-[-0.32px] text-[#919191]">

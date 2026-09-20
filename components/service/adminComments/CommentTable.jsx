@@ -59,7 +59,7 @@ export default function CommentTable({
   return (
     <>
       {/* 폰: 카드 목록 */}
-      <div className="border-t border-[#212121] md:hidden">
+      <div className="border-t border-[#212121] xl:hidden">
         {!emptyMessage && (
           <AdminSelectAllBar
             checked={allSelected}
@@ -82,7 +82,7 @@ export default function CommentTable({
       </div>
 
       {/* 태블릿 이상: 기존 표 */}
-      <div className="hidden overflow-x-auto border-t border-[#212121] md:block">
+      <div className="hidden overflow-x-auto border-t border-[#212121] xl:block">
       {/* 좁은 화면에서는 가로 스크롤로 처리한다.
           table-fixed로 둬야 위에서 잡은 열 너비가 그대로 지켜지고,
           댓글 내용이 길어도 행 높이(46px)가 늘어나지 않는다. */}

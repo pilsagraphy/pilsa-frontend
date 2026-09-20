@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import ReportRow, { REPORT_GRID } from './ReportRow';
 
-const HEADERS = ['번호', '작성 위치', '처리 사유', '원문 링크', '상태', '처리일'];
+const HEADERS = ['번호', '작성 위치', '사유', '원문', '상태', '처리일'];
 
 // ReportRow 들을 합쳐 하나의 신고 목록 섹션을 만든다.
 // title: '신고 게시글' | '신고 댓글'
@@ -29,7 +29,7 @@ export default function ReportSection({ title, reports = [], isLoading = false, 
       {/* 맨 위 헤더 행 (회색 글씨) */}
       {/* 머리글은 6열 그리드일 때만 뜻이 있다 — 폰에서는 카드가 이름표를 직접 달고 있다 */}
       <div
-        className={`${REPORT_GRID} hidden h-[46px] pr-[10px] text-[14px] tracking-[-0.28px] text-[#919191] md:grid`}
+        className={`${REPORT_GRID} hidden h-[46px] items-center text-[13px] tracking-[-0.26px] text-[#919191] md:grid`}
       >
         {HEADERS.map((header) => (
           <div key={header} className="text-center">

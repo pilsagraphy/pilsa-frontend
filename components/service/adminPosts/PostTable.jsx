@@ -61,7 +61,7 @@ export default function PostTable({
   return (
     <>
       {/* 폰: 카드 목록. 열 10개짜리 표는 가로 915px 이 필요해 좌우로 밀어야 했다 */}
-      <div className="border-t border-[#212121] md:hidden">
+      <div className="border-t border-[#212121] xl:hidden">
         {!emptyMessage && (
           <AdminSelectAllBar
             checked={allSelected}
@@ -84,7 +84,7 @@ export default function PostTable({
       </div>
 
       {/* 태블릿 이상: 기존 표 */}
-      <div className="hidden overflow-x-auto border-t border-[#212121] md:block">
+      <div className="hidden overflow-x-auto border-t border-[#212121] xl:block">
       {/* 열이 10개라 좁은 화면에서는 가로 스크롤로 처리한다.
           table-fixed로 둬야 위에서 잡은 열 너비가 그대로 지켜지고,
           제목이 길어도 행 높이(46px)가 늘어나지 않는다. */}
