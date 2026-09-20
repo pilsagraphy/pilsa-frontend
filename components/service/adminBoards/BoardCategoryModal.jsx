@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronUp, Lock } from 'lucide-react';
+import { GripVertical, Lock } from 'lucide-react';
+
+import usePressDrag from '@/hooks/usePressDrag';
 
 import { getErrorMessage } from '@/apis/auth';
 import {
@@ -99,16 +101,17 @@ export default function BoardCategoryModal({ board, open, onClose }) {
     await run(() => deleteBoardCategory(boardId, category.categoryId), '카테고리를 삭제했습니다.');
   };
 
-  // 순서는 '몇 번째 자리'를 보내면 서버가 나머지를 밀어 준다
-  const handleMove = async (category, delta) => {
-    const movable = categories.filter((item) => !item.isPinned);
-    const index = movable.findIndex((item) => item.categoryId === category.categoryId);
-    const next = index + delta;
-    if (index < 0 || next < 0 || next >= movable.length) return;
-    await run(() => updateBoardCategory(boardId, category.categoryId, { displayOrder: next + 1 }));
-  };
-
-  const movableCount = categories.filter((item) => !item.isPinned).length;
+  // 순서는 게시판 카드와 같은 손맛 — 손잡이를 꾹 눌러 들고 끌어 놓는다.
+  // '중요'는 늘 맨 뒤라 목록에서 빼고 센다. 서버에는 '몇 번째 자리'(1부터)만 보내면 나머지가 밀린다
+  const movable = categories.filter((item) => !item.isPinned);
+  const drag = usePressDrag({
+    disabled: busy,
+    onMove: (from, to) => {
+      const target = movable[from];
+      if (!target) return;
+      run(() => updateBoardCategory(boardId, target.categoryId, { displayOrder: to + 1 }));
+    },
+  });
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose?.()}>
@@ -124,7 +127,7 @@ export default function BoardCategoryModal({ board, open, onClose }) {
         </DialogDescription>
 
         {/* 목록 */}
-        <div className="flex flex-col border-t border-[#B9B9B9]">
+        <div ref={drag.listRef} className="flex flex-col border-t border-[#B9B9B9]">
           {loading ? (
             <p className="py-8 text-center text-[14px] text-[#919191]">불러오는 중...</p>
           ) : error ? (
@@ -143,36 +146,43 @@ export default function BoardCategoryModal({ board, open, onClose }) {
               카테고리가 없습니다. 아래에서 추가해 주세요.
             </p>
           ) : (
-            categories.map((category, index) => {
+            categories.map((category) => {
               const editing = editingId === category.categoryId;
               const inUse = (category.postCount ?? 0) > 0;
+              // 끌 수 있는 목록 안에서의 자리. '중요'는 -1 (안 움직인다)
+              const index = movable.findIndex((item) => item.categoryId === category.categoryId);
+              const lifted = index >= 0 && drag.liftedIndex === index;
+              const from = drag.liftedIndex ?? -1;
+              const lineAbove = index >= 0 && drag.dropIndex === index && index < from;
+              const lineBelow = index >= 0 && drag.dropIndex === index && index > from;
 
               return (
                 <div
                   key={category.categoryId}
-                  className="flex items-center gap-2 border-b border-[#EEEEEE] py-[10px]"
+                  data-drag-item={index >= 0 ? '' : undefined}
+                  className={`flex items-center gap-2 border-b border-[#EEEEEE] py-[10px] transition-opacity ${
+                    lifted ? 'opacity-40' : ''
+                  } ${lineAbove ? 'border-t-2 border-t-[#212121]' : ''} ${
+                    lineBelow ? '!border-b-2 !border-b-[#212121]' : ''
+                  }`}
                 >
-                  {/* 순서 — '중요'는 늘 맨 뒤라 움직이지 않는다 */}
-                  <div className="flex shrink-0 flex-col">
+                  {/* 순서 손잡이 — '중요'는 늘 맨 뒤라 손잡이가 없다 */}
+                  {category.isPinned ? (
+                    <span className="size-7 shrink-0" aria-hidden />
+                  ) : (
                     <button
                       type="button"
-                      aria-label="위로"
-                      disabled={busy || category.isPinned || index === 0}
-                      onClick={() => handleMove(category, -1)}
-                      className="text-[#919191] disabled:text-[#E0E0E0]"
+                      aria-label="꾹 눌러서 순서 바꾸기"
+                      title="꾹 눌러서 순서 바꾸기"
+                      disabled={busy}
+                      {...drag.handleProps(index)}
+                      className={`grid size-7 shrink-0 touch-none select-none place-items-center rounded-[4px] text-[#B9B9B9] ${
+                        lifted ? 'bg-[#F0F0F0] text-[#212121]' : 'active:bg-[#F5F5F5]'
+                      }`}
                     >
-                      <ChevronUp size={14} />
+                      <GripVertical size={16} />
                     </button>
-                    <button
-                      type="button"
-                      aria-label="아래로"
-                      disabled={busy || category.isPinned || index >= movableCount - 1}
-                      onClick={() => handleMove(category, 1)}
-                      className="text-[#919191] disabled:text-[#E0E0E0]"
-                    >
-                      <ChevronDown size={14} />
-                    </button>
-                  </div>
+                  )}
 
                   {editing ? (
                     <Input

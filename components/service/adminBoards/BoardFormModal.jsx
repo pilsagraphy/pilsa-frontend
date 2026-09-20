@@ -53,7 +53,7 @@ function FormSelect({ label, value, options, onChange }) {
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger
         aria-label={label}
-        className="h-[40px] w-[120px] justify-between rounded-[4px] border-[#b9b9b9] px-[10px] text-[14px] tracking-[-0.28px] text-[#454545] shadow-none data-[placeholder]:text-[#b9b9b9] [&>svg]:size-5 [&>svg]:opacity-100"
+        className="h-[40px] w-full justify-between rounded-[4px] border-[#b9b9b9] px-[10px] text-[14px] tracking-[-0.28px] text-[#454545] shadow-none data-[placeholder]:text-[#b9b9b9] [&>svg]:size-5 [&>svg]:opacity-100"
       >
         <SelectValue placeholder="선택" />
       </SelectTrigger>
@@ -173,7 +173,9 @@ export default function BoardFormModal({
           />
         </div>
 
-        <div className="flex flex-col gap-[4px]">
+        {/* 열람·작성 권한은 짝이라 한 줄에 나란히 — 세로로 쌓으면 모달이 길어지기만 한다 */}
+        <div className="flex gap-3">
+        <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
           <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
             열람 권한
           </span>
@@ -185,7 +187,7 @@ export default function BoardFormModal({
           />
         </div>
 
-        <div className="flex flex-col gap-[4px]">
+        <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
           <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
             작성 권한
           </span>
@@ -195,6 +197,7 @@ export default function BoardFormModal({
             options={BOARD_WRITE_LEVEL_OPTIONS}
             onChange={setWriteLevelValue}
           />
+        </div>
         </div>
 
         <div className="flex flex-col gap-[4px]">

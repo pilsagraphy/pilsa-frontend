@@ -51,11 +51,12 @@ export default function ManagerDashboardSection() {
     <section className="mx-auto flex w-full max-w-[1016px] flex-col gap-[24px] bg-white p-4 sm:p-6 md:gap-[30px] md:p-8">
       {/* 영역 1: 인사말 */}
       <div className="flex w-full flex-col">
-        <div className="flex flex-col gap-[12px] pb-[24px]">
-          <h2 className="font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.48px] text-[#212121] md:text-[24px]">
+        {/* 글자 크기·자간·줄 간격은 메인 인사말(StudentsDashboardIntro)과 같은 값이다 */}
+        <div className="flex flex-col gap-[6px] pb-[20px] md:pb-[24px]">
+          <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[20px]">
             {adminName}님, 안녕하세요 :)
           </h2>
-          <p className="font-['Pretendard',sans-serif] text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-[#919191]">
+          <p className="text-[14px] font-normal leading-[1.6] tracking-[-0.02em] text-[#919191] md:text-[15px]">
             오늘도 큰 사고 없이 무탈한 하루 되세요!
           </p>
         </div>
