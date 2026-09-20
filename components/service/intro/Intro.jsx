@@ -4,9 +4,9 @@ import { DUMMY_INTRO } from "@/constants/intro";
 
 export default function Intro() {
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-[51px] bg-white p-8">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
       {/* 타이틀 영역 */}
-      <header className="flex flex-col gap-[12px] pb-[40px] border-b-[1.5px]">
+      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-[#DEDEDE] pb-6 md:gap-[12px] md:pb-[40px]">
         <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.02em] text-[#212121]">
           동아리 소개
         </h2>

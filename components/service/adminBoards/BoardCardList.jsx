@@ -15,6 +15,7 @@ export default function BoardCardList({
   onEdit,
   onManageCategories,
   onMove,
+  onDelete,
   disabled = false,
   emptyMessage = '',
 }) {
@@ -97,6 +98,17 @@ export default function BoardCardList({
               >
                 카테고리 수정
               </button>
+              {/* 공지사항은 지울 수 없다 — 버튼을 두지 않는다 */}
+              {board.boardName !== '공지사항' && (
+                <button
+                  type="button"
+                  disabled={disabled}
+                  onClick={() => onDelete?.(board)}
+                  className="ml-auto rounded-[4px] border border-[#212121] bg-[#212121] px-3 py-[5px] text-[13px] leading-[1.6] text-white disabled:border-[#E0E0E0] disabled:bg-[#E0E0E0]"
+                >
+                  삭제
+                </button>
+              )}
             </div>
           </div>
         );

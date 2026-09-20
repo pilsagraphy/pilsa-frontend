@@ -253,15 +253,10 @@ export default function CalendarSection({
     <section
       className={`mx-auto flex w-full flex-col gap-6 sm:gap-8 lg:gap-[40px] ${CALENDAR_COLUMN_MAX_W}`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex flex-col gap-[6px]">
-          <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
-            일정 달력
-          </h2>
-          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191] sm:text-[16px]">
-            정기 모임 · 행사 · 마감일을 한눈에. 날짜를 누르면 그날 일정이 보입니다
-          </p>
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
+          일정 달력
+        </h2>
         {showSubscribe && <CalendarSubscribeButton />}
       </div>
 

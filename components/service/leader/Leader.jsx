@@ -3,14 +3,14 @@ import { DUMMY_LEADER } from '@/constants/leader';
 
 export default function Leader() {
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[51px] md:p-10">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
       {/* 타이틀 영역 */}
-      <header className="flex flex-col gap-[12px] border-b-[1.5px] pb-6 md:pb-[40px]">
+      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-[#DEDEDE] pb-6 md:gap-[12px] md:pb-[40px]">
         <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.48px] text-[#212121]">
           역대 회장
         </h2>
         <p className="font-['Pretendard',sans-serif] font-normal text-[16px] leading-[1.6] tracking-[-0.32px] text-[#919191]">
-          2021년 창립부터 지금까지 필사그래피를 이끈 회장들입니다. 사진을 누르면 그 해 연혁으로 갑니다
+          필사그래피를 이끌어 온 회장들
         </p>
       </header>
 

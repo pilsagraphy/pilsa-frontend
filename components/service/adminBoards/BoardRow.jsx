@@ -14,6 +14,7 @@ export default function BoardRow({
   board,
   onEdit,
   onManageCategories,
+  onDelete,
   // 저장 중에는 행 버튼을 잠근다 (연달아 눌러 요청이 겹치는 것을 막는다)
   disabled = false,
   // 드래그로 순서 변경
@@ -75,15 +76,27 @@ export default function BoardRow({
         </RowActionButton>
       </TableCell>
 
-      {/* 4. 관리 - 수정 모달을 연다 (시안에 삭제 버튼은 없다) */}
+      {/* 4. 관리 - 수정 모달 · 삭제. 공지사항은 지울 수 없어 삭제 버튼 자체를 두지 않는다 (서버도 막는다) */}
       <TableCell className="text-center">
-        <RowActionButton
-          className="min-w-[44px]"
-          disabled={disabled}
-          onClick={() => onEdit?.(board)}
-        >
-          정보 수정
-        </RowActionButton>
+        <div className="flex items-center justify-center gap-[6px]">
+          <RowActionButton
+            className="min-w-[44px]"
+            disabled={disabled}
+            onClick={() => onEdit?.(board)}
+          >
+            정보 수정
+          </RowActionButton>
+          {board.boardName !== '공지사항' && (
+            <RowActionButton
+              filled
+              className="min-w-[44px]"
+              disabled={disabled}
+              onClick={() => onDelete?.(board)}
+            >
+              삭제
+            </RowActionButton>
+          )}
+        </div>
       </TableCell>
 
       {/* 5. 순서 변경 핸들 - 실제로 끄는 동작은 여기서만 시작된다

@@ -87,13 +87,13 @@ const Gallery = () => {
   const desktopRows = buildRows(GALLERY_PHOTOS, ROW_TARGETS_DESKTOP);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-6 bg-white p-4 md:gap-[51px] md:p-8">
-      <header className="flex flex-col gap-[8px] border-b-[1.5px] pb-[24px] md:gap-[12px] md:pb-[40px]">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
+      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-[#DEDEDE] pb-6 md:gap-[12px] md:pb-[40px]">
         <h2 className="font-semibold text-[20px] leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]">
           활동 사진
         </h2>
         <p className="text-[14px] leading-[1.6] tracking-[-0.02em] text-[#919191] md:text-[16px]">
-          정기 모임과 행사에서 남긴 필사그래피의 순간들
+          우리가 함께한 모든 순간들
         </p>
       </header>
 

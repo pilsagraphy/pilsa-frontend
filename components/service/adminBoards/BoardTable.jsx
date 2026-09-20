@@ -21,6 +21,7 @@ export default function BoardTable({
   onEdit,
   onManageCategories,
   onMove,
+  onDelete,
   draggingId = null,
   dropTargetId = null,
   dropPosition = null,
@@ -51,6 +52,7 @@ export default function BoardTable({
           onEdit={onEdit}
           onManageCategories={onManageCategories}
           onMove={onMove}
+          onDelete={onDelete}
           disabled={saving}
           emptyMessage={emptyMessage}
         />
@@ -112,6 +114,7 @@ export default function BoardTable({
                 onDrop={onDrop}
                 onDragEnd={onDragEnd}
                 onManageCategories={onManageCategories}
+                onDelete={onDelete}
               />
             ))
           )}

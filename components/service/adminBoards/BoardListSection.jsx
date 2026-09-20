@@ -17,6 +17,7 @@ import useBoardStore from '@/stores/useBoardStore';
 import BoardTable from './BoardTable';
 import BoardFormModal from './BoardFormModal';
 import BoardCategoryModal from './BoardCategoryModal';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 const PAGE_SIZE = 10;
 
@@ -38,6 +39,8 @@ export default function BoardListSection({ title = '게시판 관리' }) {
   const [formModal, setFormModal] = useState(null); // { mode, board }
   // 카테고리 관리 모달의 대상 게시판 (null 이면 닫힘)
   const [categoryBoard, setCategoryBoard] = useState(null);
+  // 삭제 확인 중인 게시판 (null 이면 닫힘). 글이 남아 있으면 서버가 409 로 막고, 그 문장을 안내 모달로 보여 준다
+  const [deleteTarget, setDeleteTarget] = useState(null);
   // 모달 안에 띄우는 저장 실패 사유. 모달을 닫지 않고 여기에만 보여준다.
   const [formError, setFormError] = useState('');
   const [alertState, setAlertState] = useState(null); // { title, description }
@@ -49,6 +52,7 @@ export default function BoardListSection({ title = '게시판 관리' }) {
   const fetchBoards = useAdminBoardStore((state) => state.fetchBoards);
   const createBoard = useAdminBoardStore((state) => state.createBoard);
   const updateBoard = useAdminBoardStore((state) => state.updateBoard);
+  const deleteBoard = useAdminBoardStore((state) => state.deleteBoard);
 
   useEffect(() => {
     const load = async () => {
@@ -169,6 +173,16 @@ export default function BoardListSection({ title = '게시판 관리' }) {
     }
   };
 
+  const handleDeleteConfirm = async () => {
+    const target = deleteTarget;
+    setDeleteTarget(null);
+    if (!target) return;
+    const result = await deleteBoard(target.boardId);
+    if (!result) {
+      setAlertState({ title: takeStoreError('게시판을 삭제하지 못했습니다.') });
+    }
+  };
+
   // 폰에서는 끌 수 없어 위·아래 버튼으로 옮긴다. 보내는 값은 드래그와 같다 — '몇 번째 자리'.
   const handleMove = async (boardId, delta) => {
     if (reorderingRef.current) return;
@@ -265,6 +279,7 @@ export default function BoardListSection({ title = '게시판 관리' }) {
         onEdit={handleOpenEdit}
         onManageCategories={setCategoryBoard}
         onMove={handleMove}
+        onDelete={setDeleteTarget}
         loading={isFirstLoading}
         saving={isSaving}
         errorMessage={listErrorMessage}
@@ -304,6 +319,13 @@ export default function BoardListSection({ title = '게시판 관리' }) {
           // 카테고리를 지우면 그 게시판의 글 수는 그대로지만, 기본 카테고리 같은 값이 바뀌었을 수 있다
           fetchBoards();
         }}
+      />
+
+      <ConfirmModal
+        open={Boolean(deleteTarget)}
+        title={`'${deleteTarget?.boardName ?? ''}' 게시판을 삭제할까요? 글이 남아 있으면 삭제되지 않습니다.`}
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setDeleteTarget(null)}
       />
 
       {/* 안내 모달 */}
