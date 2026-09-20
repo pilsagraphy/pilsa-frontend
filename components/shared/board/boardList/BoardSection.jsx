@@ -19,6 +19,7 @@ import { PenLine } from 'lucide-react';
 import { getBoardPosts, getBoardCategories } from '@/apis/board';
 import { getErrorMessage } from '@/apis/auth';
 import AppLoading from '@/components/common/AppLoading';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { ROUTES } from '@/constants/routes';
 
 const PAGE_SIZE = 10;
@@ -55,6 +56,8 @@ export default function BoardSection({ boardId }) {
   const [searchKeyword, setSearchKeyword] = useState(() => searchParams.get('keyword') || '');
   const [category, setCategory] = useState(() => searchParams.get('categoryId') || 'all'); // 'all' | String(categoryId)
 
+  // 폰에서는 정렬 셀렉트를 짧은 라벨로 (dev 머지 때 이 훅이 빠져 게시판 목록이 통째로 죽었다 — 2026-09-20)
+  const isMdUp = useMinWidthMd();
   const [categories, setCategories] = useState([]);
 
   // 첫 조회가 끝나기 전에 '등록된 게시글이 없습니다.' 가 스치지 않도록 true 로 시작한다
