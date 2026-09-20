@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import MemberListSection from './MemberListSection';
 import PenaltyStatCard from './PenaltyStatCard';
 import ReportSection from './ReportSection';
@@ -107,6 +108,9 @@ export default function PenaltyDashboardSection() {
   );
 
   const [selectedId, setSelectedId] = useState(null);
+  // PC 에서 본문 폭이 모자라면 오른쪽 상세가 잘린다(사이드바가 240px 을 가져간다).
+  // 목록을 접어 자리를 내주고, 그래도 모자라면 옆으로 밀어 볼 수 있게 한다
+  const [listCollapsed, setListCollapsed] = useState(false);
 
   // 목록(MemberListSection이 받아온다)이 채워지면 첫 회원을 기본 선택한다.
   useEffect(() => {
@@ -146,10 +150,38 @@ export default function PenaltyDashboardSection() {
       {/* 화면 정체성 */}
       <h2 className="text-[24px] font-medium tracking-[-0.48px] text-[#212121]">제재 회원 관리</h2>
 
-      {/* 좁은 화면에서는 목록 위 · 상세 아래로 쌓는다 (나란히 두면 오른쪽이 화면 밖으로 나간다) */}
-      <div className="flex flex-col gap-[20px] lg:flex-row lg:gap-[28px]">
-        {/* 좌측: 회원 목록 */}
-        <MemberListSection selectedId={selectedId} onSelect={setSelectedId} />
+      {/* 좁은 화면에서는 목록 위 · 상세 아래로 쌓는다 (나란히 두면 오른쪽이 화면 밖으로 나간다).
+          PC 는 나란히 두되, 폭이 모자라면 옆으로 스크롤한다 (overflow-x-auto) */}
+      <div className="flex flex-col gap-[20px] lg:flex-row lg:gap-[28px] lg:overflow-x-auto lg:pb-[8px]">
+        {/* 좌측: 회원 목록. PC 에서는 접을 수 있다 */}
+        {listCollapsed ? (
+          <button
+            type="button"
+            onClick={() => setListCollapsed(false)}
+            title="목록 펼치기"
+            aria-label="회원 목록 펼치기"
+            className="hidden h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[6px] border border-[#dedede] text-[#454545] hover:bg-[#f6f6f6] lg:flex"
+          >
+            <PanelLeftOpen size={18} />
+          </button>
+        ) : null}
+        <div className={listCollapsed ? 'lg:hidden' : 'contents'}>
+          <MemberListSection
+            selectedId={selectedId}
+            onSelect={setSelectedId}
+            collapseButton={
+              <button
+                type="button"
+                onClick={() => setListCollapsed(true)}
+                title="목록 접기"
+                aria-label="회원 목록 접기"
+                className="hidden size-[24px] place-content-center text-[#919191] hover:text-[#212121] lg:grid"
+              >
+                <PanelLeftClose size={18} />
+              </button>
+            }
+          />
+        </div>
 
         {/* 우측: 선택 회원 상세 (넓은 화면에서만 디자인 폭으로 고정) */}
         <div className="w-full min-w-0 lg:w-[618px] lg:shrink-0">

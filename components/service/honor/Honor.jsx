@@ -78,6 +78,18 @@ export default function Honor() {
         </p>
       )}
 
+      {/* 후원자 — 아래 '홈페이지 개발자'와 같은 급의 제목을 단다 */}
+      {!loading && !error && totalCount > 0 && (
+        <div className="flex flex-col gap-[4px]">
+          <h3 className="font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121] md:text-[22px]">
+            후원자
+          </h3>
+          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
+            필사그래피를 후원해 주신 분들입니다.
+          </p>
+        </div>
+      )}
+
       {/* 후원자가 적으면 모두 같은 크기로, 많아지면 등수별 크기로 */}
       <section className="flex flex-col">
         {showEqually ? (

@@ -19,7 +19,7 @@ function toMember(user) {
 
 // 회원목록(개별 회원 = MemberList)을 합치고, 검색으로 목록을 한정할 수 있는 컴포넌트.
 // selectedId / onSelect 로 선택 회원을 상위와 공유한다.
-export default function MemberListSection({ selectedId, onSelect }) {
+export default function MemberListSection({ selectedId, onSelect, collapseButton = null }) {
   const { isLoading, data, error } = useSanctionStore((s) => s.users);
   const fetchSanctionedUsers = useSanctionStore((s) => s.fetchSanctionedUsers);
 
@@ -57,9 +57,11 @@ export default function MemberListSection({ selectedId, onSelect }) {
 
   return (
     <div className="flex w-full flex-col gap-[16px] font-['Pretendard',sans-serif] lg:w-[270px] lg:shrink-0">
-      {/* '목록' + 우측 초기화 버튼(돋보기와 같은 열, 같은 색) */}
+      {/* '목록' + 우측 접기 · 초기화 버튼(돋보기와 같은 열, 같은 색) */}
       <div className="flex items-center justify-between">
         <h3 className="text-[18px] tracking-[-0.36px] text-[#212121]">목록</h3>
+        <div className="flex items-center gap-[4px]">
+        {collapseButton}
         <button
           type="button"
           onClick={handleReset}
@@ -68,6 +70,7 @@ export default function MemberListSection({ selectedId, onSelect }) {
         >
           <RefreshCcw size={18} />
         </button>
+        </div>
       </div>
 
       {/* 검색창: 입력 즉시 목록 한정(부분 검색), 엔터/돋보기를 눌러도 검색어 유지.
