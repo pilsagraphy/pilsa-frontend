@@ -100,7 +100,7 @@ export default function BoardRichEditor({
     contentType: 'markdown',
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
+        heading: { levels: [1, 2, 3, 4, 5, 6] },
         link: { openOnClick: false, autolink: true },
         // 코드블록·인용은 마크다운으로는 남지만 툴바에 없다 — 붙여넣기 글에 있으면 그대로 보존된다
       }),
@@ -252,7 +252,12 @@ export default function BoardRichEditor({
         onDrop={handleDrop}
         onDragOver={(e) => allowUpload && e.preventDefault()}
         onClick={(e) => {
-          if (e.target === e.currentTarget) editor?.commands.focus('end');
+          if (e.target !== e.currentTarget || !editor) return;
+          // commands.focus() 는 폰에서 dom.focus() 를 그냥 불러, 긴 본문이면 편집 영역 맨 위로 스크롤이 튀었다
+          // (이미지 아래 빈 곳을 누르면 위로 올라갔다가 타이핑하면 다시 내려오던 현상, PM 2026-09-21).
+          // 커서만 끝으로 보내고 ProseMirror 의 focus(preventScroll) 를 쓴다
+          editor.commands.setTextSelection(editor.state.doc.content.size);
+          editor.view.focus();
         }}
       >
         <EditorContent editor={editor} className="h-full" />

@@ -45,6 +45,16 @@ const components = {
   h3: ({ node, ...props }) => (
     <h3 className="mt-5 mb-2 text-[18px] font-semibold text-[#212121] lg:text-[20px]" {...props} />
   ),
+  // H4~H6 — 편집기 제목 메뉴가 여섯 단계라 아래 세 단계도 본문보다 조금씩 크게 그린다
+  h4: ({ node, ...props }) => (
+    <h4 className="mt-4 mb-2 text-[17px] font-semibold text-[#212121] lg:text-[18px]" {...props} />
+  ),
+  h5: ({ node, ...props }) => (
+    <h5 className="mt-4 mb-2 text-[16px] font-semibold text-[#212121] lg:text-[17px]" {...props} />
+  ),
+  h6: ({ node, ...props }) => (
+    <h6 className="mt-4 mb-2 text-[15px] font-semibold text-[#212121] lg:text-[16px]" {...props} />
+  ),
 
   p: ({ node, ...props }) => <p className="my-3 break-words" {...props} />,
 
