@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import HonorGrid from "./HonorGrid";
+import DeveloperCredits from "./DeveloperCredits";
 import AppLoading from "@/components/common/AppLoading";
 import { getDonations } from "@/apis/donation";
 import { getErrorMessage } from "@/apis/auth";
@@ -94,6 +95,9 @@ export default function Honor() {
           </>
         )}
       </section>
+
+      {/* 홈페이지를 만든 사람들 — 후원자 아래 */}
+      <DeveloperCredits />
     </div>
   );
 }

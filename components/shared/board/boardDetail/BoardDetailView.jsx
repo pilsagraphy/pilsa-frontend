@@ -85,7 +85,8 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
   );
 
   return (
-    <section className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-12 md:gap-[60px] md:px-0 md:pb-0">
+    // 위 여백은 목록 화면(BoardSection: py-4 · md:p-10)과 같게 — 목록에서 글로 들어가면 제목이 헤더에 붙어 보였다
+    <section className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-12 pt-4 md:gap-[60px] md:px-0 md:pb-0 md:pt-10">
       <BoardHead label={board?.boardName ?? ''} listPath={listPath} />
 
       {/* 글 정보(제목·등록일·작성자)와 본문은 한 덩어리로 묶고 사이 간격만 좁게 준다.

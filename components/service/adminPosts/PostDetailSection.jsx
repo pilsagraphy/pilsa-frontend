@@ -104,7 +104,7 @@ export default function PostDetailSection({ postId, from }) {
   // 익명이든 아니든 조치 판단과 벌점 대상이 달라지지 않는다.
 
   return (
-    <section className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-12 md:gap-[60px] md:px-0 md:pb-[60px]">
+    <section className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-12 pt-4 md:gap-[60px] md:px-0 md:pb-[60px] md:pt-10">
       {/* 게시판 이름이 먼저, 돌아가기는 그 아래 — 제목 위에 두면 어디로 가는 링크인지보다 먼저 눈에 걸린다 */}
       <div className="flex flex-col gap-[8px]">
         <h1 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] md:text-[24px]">
