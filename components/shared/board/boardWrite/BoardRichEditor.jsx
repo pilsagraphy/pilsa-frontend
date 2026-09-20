@@ -68,7 +68,18 @@ function EditorImageView({ node, selected, editor, getPos, deleteNode }) {
           // 폰에서 꾹 눌러도 브라우저의 이미지 메뉴가 뜨지 않게 (편집 중에는 옮기는 게 목적이다)
           onContextMenu={(e) => e.preventDefault()}
         >
-          <span className="[&_img]:pointer-events-none [&_img]:select-none [-webkit-touch-callout:none]">
+          <span
+            className="[&_img]:pointer-events-none [&_img]:select-none [-webkit-touch-callout:none]"
+            // 폰에서 이미지를 눌렀을 때 키보드가 올라오지 않게: 브라우저의 기본 포커스를 막고
+            // 이미지 노드만 직접 선택한다(위·아래·삭제 버튼은 selected 로 뜬다). 편집기에 포커스가 있었으면 내린다
+            onTouchEnd={(e) => {
+              if (typeof getPos !== 'function' || !editor) return;
+              e.preventDefault();
+              const pos = getPos();
+              editor.view.dispatch(editor.state.tr.setSelection(NodeSelection.create(editor.state.doc, pos)));
+              editor.view.dom.blur();
+            }}
+          >
             <AuthedImage src={src} alt={alt ?? ''} />
           </span>
 

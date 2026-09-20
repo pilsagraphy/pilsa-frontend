@@ -208,7 +208,7 @@ function CommentComposer({
 // 익명/비밀 허용 여부는 게시판 플래그(board.allowAnonymous / board.allowPrivateComment)로 결정한다.
 // 익명·비밀 마스킹(익명 authorName='익명', 비밀 content='비밀댓글입니다.')은 서버가 처리하므로
 // 프론트는 받은 값을 그대로 그린다 (다시 마스킹하지 않는다).
-// 한 페이지에 보이는 최상위 댓글 수
+// 한 페이지에 보이는 댓글 줄 수 (댓글·답글 합쳐서)
 const COMMENTS_PER_PAGE = 20;
 
 export default function BoardComments({ boardId, postId, board, commentCount }) {
@@ -234,7 +234,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     if (boardId && postId) refetch();
   }, [refetch, boardId, postId]);
 
-  // 댓글이 많으면 최상위 댓글 20개씩 끊는다. 답글은 부모 댓글과 같은 페이지에 있다 (PM, 2026-09-21)
+  // 댓글이 많으면 20줄씩 끊는다 — 부모·답글 구분 없이 화면에 그려지는 순서대로 (PM, 2026-09-21)
   const [commentPage, setCommentPage] = useState(1);
   // 새 댓글은 맨 뒤에 붙으므로, 쓰고 나면 마지막 페이지로 간다 (목록이 새로 온 뒤에)
   const goLastPageRef = useRef(false);
@@ -336,15 +336,17 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     Number(a.commentId) - Number(b.commentId);
   repliesByGroup.forEach((replies) => replies.sort(byCreated));
 
-  const totalCommentPages = Math.max(1, Math.ceil(displayRoots.length / COMMENTS_PER_PAGE));
-  const safePage = Math.min(Math.max(1, commentPage), totalCommentPages);
-  const pagedRoots = displayRoots.slice((safePage - 1) * COMMENTS_PER_PAGE, safePage * COMMENTS_PER_PAGE);
-
-  const visibleComments = pagedRoots.flatMap((root) => {
+  // 화면에 그리는 순서(댓글 → 그 답글들 → 다음 댓글 …)로 전부 펼친 뒤, 부모·답글 구분 없이 20줄씩 끊는다.
+  // 답글 묶음이 페이지 경계에 걸리면 다음 페이지로 이어진다 (PM: 개수 기준이 단순한 게 낫다, 2026-09-21)
+  const allComments = displayRoots.flatMap((root) => {
     const key = root.isPlaceholder ? `placeholder:${root.commentId}` : `comment:${root.commentId}`;
     const replies = repliesByGroup.get(key) ?? [];
     return [{ comment: root, depth: 0 }, ...replies.map((reply) => ({ comment: reply, depth: 1 }))];
   });
+
+  const totalCommentPages = Math.max(1, Math.ceil(allComments.length / COMMENTS_PER_PAGE));
+  const safePage = Math.min(Math.max(1, commentPage), totalCommentPages);
+  const visibleComments = allComments.slice((safePage - 1) * COMMENTS_PER_PAGE, safePage * COMMENTS_PER_PAGE);
 
   // 링크(#comment-3)가 가리키는 댓글이 다른 페이지에 있으면 그 페이지로 옮긴다 — 처음 한 번만
   const hashPageHandledRef = useRef(false);
@@ -353,14 +355,10 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     const anchor = typeof window !== 'undefined' ? window.location.hash.slice(1) : '';
     if (!anchor.startsWith('comment-')) return;
     const commentId = Number(anchor.slice('comment-'.length));
-    const target = list.find((c) => Number(c.commentId) === commentId);
-    if (!target) return;
+    const index = allComments.findIndex(({ comment }) => Number(comment.commentId) === commentId);
+    if (index < 0) return;
     hashPageHandledRef.current = true;
-    const rootKey = target.parentCommentId ? groupKeyOf(target) : `comment:${target.commentId}`;
-    const rootIndex = displayRoots.findIndex(
-      (root) => (root.isPlaceholder ? `placeholder:${root.commentId}` : `comment:${root.commentId}`) === rootKey
-    );
-    if (rootIndex >= 0) setCommentPage(Math.floor(rootIndex / COMMENTS_PER_PAGE) + 1);
+    setCommentPage(Math.floor(index / COMMENTS_PER_PAGE) + 1);
   });
 
   useEffect(() => {

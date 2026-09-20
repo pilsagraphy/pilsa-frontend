@@ -53,15 +53,16 @@ const Sidebar = () => {
   // 위 effect 는 pathname 이 바뀔 때만 돌아서, 지금 보고 있는 페이지의 메뉴를 다시 누르거나
   // (예: /students 에서 '메인페이지') 이동이 막힌 경우(권한 없음 토스트)에는 사이드바가 그대로 남았다.
   // 펼침 버튼(ABOUT PILSA · 회원 게시판 · 관리자 메뉴)은 <button> 이라 여기에 걸리지 않는다.
-  const swipeRef = useRef(null);
-
-  // 폰: 화면 왼쪽 가장자리에서 오른쪽으로 쓸면 사이드바가 열린다 (닫을 때 왼쪽으로 쓰는 것과 짝).
-  // 가장자리 24px 안에서 시작한 손가락만 본다 — 본문을 좌우로 문지르는 것과 헷갈리지 않게.
+  // 폰: 화면 어디서든 오른쪽으로 쓸면 사이드바가 열리고, 왼쪽으로 쓸면 닫힌다.
+  // 처음엔 왼쪽 가장자리 24px 에서 시작한 손가락만 봤는데 가장자리를 정확히 잡기 어려웠다 (PM, 2026-09-21).
+  // 세로 스크롤·가로 스크롤 표와 헷갈리지 않게 가로로 70px 넘게, 세로보다 1.5배 이상 움직였을 때만.
+  const isMobileOpenRef = useRef(isMobileOpen);
+  isMobileOpenRef.current = isMobileOpen;
   useEffect(() => {
     let start = null;
     const onStart = (event) => {
       const t = event.touches[0];
-      start = t && t.clientX <= 24 && window.innerWidth < 768 ? { x: t.clientX, y: t.clientY } : null;
+      start = t && window.innerWidth < 768 ? { x: t.clientX, y: t.clientY } : null;
     };
     const onEnd = (event) => {
       if (!start) return;
@@ -69,7 +70,9 @@ const Sidebar = () => {
       const dx = t.clientX - start.x;
       const dy = t.clientY - start.y;
       start = null;
-      if (dx > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) openMobile();
+      if (Math.abs(dx) < 70 || Math.abs(dx) <= Math.abs(dy) * 1.5) return;
+      if (dx > 0 && !isMobileOpenRef.current) openMobile();
+      else if (dx < 0 && isMobileOpenRef.current) closeMobile();
     };
     document.addEventListener('touchstart', onStart, { passive: true });
     document.addEventListener('touchend', onEnd, { passive: true });
@@ -77,7 +80,7 @@ const Sidebar = () => {
       document.removeEventListener('touchstart', onStart);
       document.removeEventListener('touchend', onEnd);
     };
-  }, [openMobile]);
+  }, [openMobile, closeMobile]);
 
   const closeOnLinkClick = useCallback((event) => {
     if (event.target.closest('a')) setIsMobileOpen(false);
@@ -196,20 +199,7 @@ const Sidebar = () => {
       {/* --- 사이드바 본체 --- */}
       <aside
         onClick={closeOnLinkClick}
-        // 왼쪽으로 쓸어 닫기 (폰). 세로 스크롤과 헷갈리지 않게 가로로 60px 넘게, 세로보다 많이 움직였을 때만
-        onTouchStart={(event) => {
-          const t = event.touches[0];
-          swipeRef.current = { x: t.clientX, y: t.clientY };
-        }}
-        onTouchEnd={(event) => {
-          const start = swipeRef.current;
-          swipeRef.current = null;
-          if (!start) return;
-          const t = event.changedTouches[0];
-          const dx = t.clientX - start.x;
-          const dy = t.clientY - start.y;
-          if (dx < -60 && Math.abs(dx) > Math.abs(dy) * 1.5) setIsMobileOpen(false);
-        }}
+        // 왼쪽으로 쓸어 닫기는 위 document 리스너가 화면 전체에서 처리한다
         className={`
           fixed top-0 left-0 h-[100dvh] overflow-y-auto overscroll-contain bg-white z-[60] flex flex-col border-r border-gray-100
           w-[210px] pl-9 py-6 tablet:w-[240px] tablet:pl-[80px] tablet:py-10
