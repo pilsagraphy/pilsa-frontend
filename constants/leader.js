@@ -108,7 +108,7 @@ export const DUMMY_LEADER = [
           { role: '총무', names: ['가성연'] },
         ],
         teams: [
-          { title: '정기모임', members: ['최재연', '박건희', '박지환', '정도이', '박수민'] },
+          { title: '정기모임', members: ['최재연', '박건희', '박지환', '정도이', '박수민', '안예지', '이우주'] },
           { title: '제작스터디', members: ['김예령'] },
         ],
         advisors: [],
@@ -120,6 +120,29 @@ export const DUMMY_LEADER = [
     name: '가성연',
     period: '(2025~2025)',
     imageSrc: '/images/leader/leader_4.jpeg',
+    officers: [
+      {
+        term: '2025-1학기',
+        roles: [
+          { role: '회장', names: ['가성연'] },
+          { role: '부회장', names: ['정도이'] },
+          { role: '총무', names: ['신승현'] },
+        ],
+        teams: [{ title: '정기모임', members: ['박지환', '안예지'] }],
+        advisors: [],
+      },
+      {
+        term: '2025-2학기',
+        roles: [
+          { role: '회장', names: ['가성연'] },
+          { role: '부회장', names: ['정도이'] },
+          { role: '총무', names: ['신승현'] },
+        ],
+        // 25-2 부터 안예지가 정기모임장
+        teams: [{ title: '정기모임', leader: '안예지', members: [] }],
+        advisors: [],
+      },
+    ],
   },
   {
     order: '5대 회장',
