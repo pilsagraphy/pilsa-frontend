@@ -546,7 +546,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
       return (
         <div className="w-full opacity-60">
           <p className="px-2 pt-2 text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191] lg:px-5">
-            앞 페이지에서 이어지는 답글의 원 댓글
+            앞 페이지에서 이어지는 답글
           </p>
           {renderComment(comment, depth)}
         </div>
