@@ -199,7 +199,7 @@ const Sidebar = () => {
       {/* 폰: 사이드바가 열렸을 때 오른쪽 빈 곳에 뜨는 둥근 바로가기 — 메인(관리자 화면에서는 관리자 홈) · 마이페이지.
           메뉴를 스크롤해 내려가지 않아도 자주 가는 두 곳은 바로 간다 (PM, 2026-09-21). 로그인한 사람에게만 */}
       {isMobileOpen && isLoggedIn && (
-        <div className="fixed bottom-[96px] right-5 z-[55] flex flex-col gap-3 tablet:hidden">
+        <div className="fixed right-5 z-[55] flex flex-col gap-3 tablet:hidden" style={{ bottom: "calc(20px + env(safe-area-inset-bottom, 0px))" }}>
           {[
             {
               label: isAdminArea ? '관리자 홈' : '메인페이지',
