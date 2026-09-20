@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 /**
  * 게시판별 카테고리(태그) 관리.
@@ -39,6 +40,7 @@ export default function BoardCategoryModal({ board, open, onClose }) {
   const [newName, setNewName] = useState('');
   const [editingId, setEditingId] = useState(null);
   const [editingName, setEditingName] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null); // 삭제 확인 중인 카테고리
 
   const load = useCallback(async () => {
     if (!boardId) return;
@@ -96,8 +98,12 @@ export default function BoardCategoryModal({ board, open, onClose }) {
     await run(() => updateBoardCategory(boardId, category.categoryId, { name }), '이름을 바꿨습니다.');
   };
 
-  const handleDelete = async (category) => {
-    if (!window.confirm(`'${category.name}' 카테고리를 삭제할까요?`)) return;
+  const handleDelete = (category) => setDeleteTarget(category);
+
+  const confirmDelete = async () => {
+    const category = deleteTarget;
+    setDeleteTarget(null);
+    if (!category) return;
     await run(() => deleteBoardCategory(boardId, category.categoryId), '카테고리를 삭제했습니다.');
   };
 
@@ -271,6 +277,13 @@ export default function BoardCategoryModal({ board, open, onClose }) {
           닫기
         </Button>
       </DialogContent>
+
+      <ConfirmModal
+        open={Boolean(deleteTarget)}
+        title={`'${deleteTarget?.name ?? ''}' 카테고리를 삭제할까요?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </Dialog>
   );
 }

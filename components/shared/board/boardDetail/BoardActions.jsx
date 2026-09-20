@@ -11,6 +11,7 @@ import { ROUTES } from '@/constants/routes';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import ReportModal from '@/components/shared/board/boardList/ReportModal';
 import AlertModal from '@/components/common/AlertModal';
+import ConfirmModal from '@/components/common/ConfirmModal';
 import { REPORT_SUCCESS_ALERT, REPORT_DUPLICATE_ALERT, getReasonId } from '@/constants/report';
 
 // 좋아요 + (권한이 있을 때만) 수정/삭제 버튼
@@ -42,6 +43,8 @@ export default function BoardActions({
   const [reportOpen, setReportOpen] = useState(false);
   const [reportError, setReportError] = useState('');
   const [alertState, setAlertState] = useState(null);
+  // 삭제 확인 — 브라우저 confirm 이 아니라 사이트 모달로 묻는다
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   const user = useAuthStore((s) => s.user);
 
@@ -82,19 +85,22 @@ export default function BoardActions({
     router.push(ROUTES.BOARD_POST_EDIT(boardId, postId));
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!postId || deleteLoading) return;
+    setDeleteConfirmOpen(true);
+  };
 
-    const confirmed = window.confirm('게시글을 삭제하시겠습니까?');
-    if (!confirmed) return;
-
+  const confirmDelete = async () => {
+    setDeleteConfirmOpen(false);
     try {
       setDeleteLoading(true);
       await deleteBoardPost(boardId, postId);
-      alert('삭제가 완료되었습니다.');
       onDeleted?.();
     } catch (error) {
-      alert(getErrorMessage(error, '게시글 삭제에 실패했습니다.'));
+      setAlertState({
+        title: '삭제하지 못했습니다',
+        description: getErrorMessage(error, '게시글 삭제에 실패했습니다.'),
+      });
     } finally {
       setDeleteLoading(false);
     }
@@ -138,6 +144,13 @@ export default function BoardActions({
         targetUser={authorName ? { name: authorName } : null}
         targetContent={boardLabel ? `${boardLabel} / ${postTitle}` : postTitle}
       />
+      <ConfirmModal
+        open={deleteConfirmOpen}
+        title="게시글을 삭제하시겠습니까?"
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteConfirmOpen(false)}
+      />
+
       <AlertModal
         open={Boolean(alertState)}
         title={alertState?.title ?? ''}

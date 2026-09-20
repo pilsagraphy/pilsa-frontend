@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
 import { listSectionClass, listTitleClass } from '@/components/shared/admin/CommunityListStyles';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
+import ConfirmModal from '@/components/common/ConfirmModal';
 
 // 'YYYY-MM-DD'
 const toInputDate = (value) => String(value ?? '').slice(0, 10);
@@ -47,6 +48,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
 
   const [keyword, setKeyword] = useState('');
   const [searchDate, setSearchDate] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null); // 삭제 확인 중인 문장
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -111,9 +113,12 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
     }
   };
 
-  const handleDelete = async (quote) => {
-    const preview = quote.content?.slice(0, 20) ?? '';
-    if (!window.confirm(`'${preview}…' 문장을 삭제할까요?`)) return;
+  const handleDelete = (quote) => setDeleteTarget(quote);
+
+  const confirmDelete = async () => {
+    const quote = deleteTarget;
+    setDeleteTarget(null);
+    if (!quote) return;
 
     try {
       await deleteQuote(quote.quoteId);
@@ -341,6 +346,13 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
           />
         </div>
       )}
+
+      <ConfirmModal
+        open={Boolean(deleteTarget)}
+        title={`'${(deleteTarget?.content ?? '').slice(0, 20)}…' 문장을 삭제할까요?`}
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

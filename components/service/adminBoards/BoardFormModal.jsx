@@ -145,6 +145,9 @@ export default function BoardFormModal({
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose?.()}>
       <DialogContent
+        // 열리자마자 이름 칸에 포커스가 가면서 글자가 통째로 선택돼 보였다 (폰에서는 키보드까지 올라온다).
+        // 고치러 들어온 사람이 이름부터 바꾸는 일은 드물다 — 자동 포커스를 끈다
+        onOpenAutoFocus={(event) => event.preventDefault()}
         hideCloseButton
         className="max-h-[90vh] max-w-[346px] gap-[20px] overflow-y-auto rounded-[4px] border-[#dedede] p-[25px]"
       >
