@@ -9,7 +9,6 @@ import {
   List,
   ListOrdered,
   Minus,
-  Baseline,
   Highlighter,
   FileText,
 } from 'lucide-react';
@@ -62,6 +61,27 @@ const BACKGROUND_COLORS = [
   { label: '보라', value: '#E1BEE7' },
   { label: '회색', value: '#EEEEEE' },
 ];
+
+// 글자색 버튼 아이콘 — 밑줄 없는 'A' 한 글자. lucide 의 Baseline 은 자체 밑줄이 있어 아래 색 띠와 겹쳐 두 줄로 보였다 (PM, 2026-09-21)
+function LetterAIcon({ size = 22, strokeWidth = 2, className = '' }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={strokeWidth}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden
+    >
+      <path d="M5 19 12 4l7 15" />
+      <path d="M8 13h8" />
+    </svg>
+  );
+}
 
 const sameColor = (a, b) => Boolean(a && b) && String(a).toLowerCase() === String(b).toLowerCase();
 
@@ -235,7 +255,7 @@ export default function BoardWriteToolbar({
         </button>
       ))}
 
-      {popoverButton('text', textColorRef, '글자색', Baseline, Boolean(active?.textColor), active?.textColor ?? null)}
+      {popoverButton('text', textColorRef, '글자색', LetterAIcon, Boolean(active?.textColor), active?.textColor ?? null)}
       {popoverButton(
         'background',
         bgColorRef,

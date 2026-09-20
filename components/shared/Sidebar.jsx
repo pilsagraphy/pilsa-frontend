@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, Home, User, X } from 'lucide-react';
 import { toast } from 'sonner';
 import useSidebarStore from '@/stores/sidebar';
 import useAuthStore from '@/stores/useAuthStore';
@@ -194,6 +194,35 @@ const Sidebar = () => {
           className="fixed inset-0 bg-black/40 z-[50] tablet:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setIsMobileOpen(false)}
         />
+      )}
+
+      {/* 폰: 사이드바가 열렸을 때 오른쪽 빈 곳에 뜨는 둥근 바로가기 — 메인(관리자 화면에서는 관리자 홈) · 마이페이지.
+          메뉴를 스크롤해 내려가지 않아도 자주 가는 두 곳은 바로 간다 (PM, 2026-09-21). 로그인한 사람에게만 */}
+      {isMobileOpen && isLoggedIn && (
+        <div className="fixed bottom-[96px] right-5 z-[55] flex flex-col gap-3 tablet:hidden">
+          {[
+            {
+              label: isAdminArea ? '관리자 홈' : '메인페이지',
+              href: isAdminArea ? ROUTES.ADMIN_HOME : ROUTES.STUDENTS_DASHBOARD,
+              Icon: Home,
+            },
+            { label: '마이페이지', href: ROUTES.MY_PAGE, Icon: User },
+          ].map(({ label, href, Icon }) => (
+            <button
+              key={href}
+              type="button"
+              aria-label={label}
+              title={label}
+              onClick={() => {
+                closeMobile();
+                router.push(href);
+              }}
+              className="flex size-[52px] items-center justify-center rounded-full bg-white text-[#212121] shadow-[0_4px_16px_rgba(0,0,0,0.25)] active:bg-[#F0F0F0]"
+            >
+              <Icon size={24} strokeWidth={1.8} />
+            </button>
+          ))}
+        </div>
       )}
 
       {/* --- 사이드바 본체 --- */}
