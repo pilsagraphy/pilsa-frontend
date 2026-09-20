@@ -7,6 +7,7 @@ import { getErrorMessage } from '@/apis/auth';
 import { createQuote, deleteQuote, getAdminQuotes, updateQuote } from '@/apis/admin/quotes';
 import { Button } from '@/components/ui/button';
 import { listSectionClass, listTitleClass } from '@/components/shared/admin/CommunityListStyles';
+import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 
 // 'YYYY-MM-DD'
 const toInputDate = (value) => String(value ?? '').slice(0, 10);
@@ -22,6 +23,9 @@ const defaultEnd = () => {
 
 const EMPTY_FORM = { quoteId: null, content: '', startDate: '', endDate: '' };
 
+// 서버는 문장을 한 번에 다 준다(GET /api/admin/quotes 에 page 가 없다) — 화면에서 끊어 보여 준다
+const PAGE_SIZE = 10;
+
 /**
  * 이 주의 문장 관리.
  *
@@ -35,12 +39,16 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
   const [error, setError] = useState('');
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [page, setPage] = useState(1);
 
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      setQuotes(await getAdminQuotes());
+      const next = await getAdminQuotes();
+      setQuotes(next);
+      // 마지막 문장을 지우면 빈 페이지에 남는다 — 있는 페이지로 당겨 준다
+      setPage((prev) => Math.min(prev, Math.max(1, Math.ceil(next.length / PAGE_SIZE))));
     } catch (err) {
       setError(getErrorMessage(err, '문장 목록을 불러오지 못했습니다.'));
       setQuotes([]);
@@ -118,6 +126,9 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
     (q) => toInputDate(q.startDate) <= now && now <= toInputDate(q.endDate)
   ).length;
 
+  const totalPages = Math.max(1, Math.ceil(quotes.length / PAGE_SIZE));
+  const pageQuotes = quotes.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
   const inputClass =
     'h-[44px] w-full rounded-[4px] border border-[#b9b9b9] px-3 text-[15px] text-[#212121] outline-none focus:border-[#212121]';
 
@@ -126,8 +137,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
       <h2 className={listTitleClass}>{title}</h2>
 
       <p className="mb-4 text-[14px] leading-[1.6] text-[#757575]">
-        메인·마이페이지 인사말 옆에 뜨는 문장입니다. 오늘이 노출 기간에 드는 문장 중 하나가 무작위로
-        나오므로, 기간이 겹치는 문장을 여러 개 두면 새로고침할 때마다 바뀝니다.{' '}
+        메인·마이페이지 인사말 옆에 뜨는 문장입니다.{' '}
         <strong className="font-semibold text-[#212121]">지금 노출 중인 문장 {showingCount}개</strong>
         {showingCount === 0 && ' — 오늘 보여 줄 문장이 없어 인사말 옆이 비어 있습니다.'}
       </p>
@@ -147,7 +157,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
               onClick={() => setForm(EMPTY_FORM)}
               className="text-[13px] text-[#919191] underline hover:text-[#212121]"
             >
-              새로 등록하기
+              취소하기
             </button>
           )}
         </div>
@@ -220,7 +230,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
         ) : quotes.length === 0 ? (
           <p className="py-10 text-center text-[14px] text-[#919191]">등록된 문장이 없습니다.</p>
         ) : (
-          quotes.map((quote) => {
+          pageQuotes.map((quote) => {
             const start = toInputDate(quote.startDate);
             const end = toInputDate(quote.endDate);
             const live = start <= now && now <= end;
@@ -267,6 +277,16 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
           })
         )}
       </div>
+
+      {!loading && !error && totalPages > 1 && (
+        <div className="mt-6 flex justify-center">
+          <PaginationWithEllipsis
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </div>
+      )}
     </div>
   );
 }

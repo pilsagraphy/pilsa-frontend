@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/table';
 import SelectAllCheckbox from '@/components/shared/admin/SelectAllCheckbox';
 import MemberRow from './MemberRow';
+import MemberCardList from './MemberCardList';
 
 // 체크박스 열까지 포함한 전체 열 개수 (빈 목록 안내문 가로 병합에 사용)
 const COLUMN_COUNT = 12;
@@ -36,9 +37,39 @@ export default function MemberTable({
         ? '등록된 회원이 없습니다.'
         : '';
 
+  const allSelectedLabel = allSelected ? '전체 해제' : '전체 선택';
+
   return (
-    <div className="overflow-x-auto border-t border-[#212121]">
-      {/* 열이 11개라 좁은 화면에서는 가로 스크롤로 처리한다. */}
+    <>
+      {/* 폰: 한 명을 카드 하나로. 열 12개짜리 표를 가로로 밀어 보는 건 쓸 수 없었다 */}
+      <div className="border-t border-[#212121] md:hidden">
+        {!emptyMessage && (
+          <div className="flex items-center gap-[10px] border-b border-[#B9B9B9] px-1 py-[10px]">
+            <SelectAllCheckbox
+              checked={allSelected}
+              disabled={!members?.length}
+              onCheckedChange={onSelectAll}
+              label="회원 전체 선택"
+            />
+            <span className="text-[13px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
+              {allSelectedLabel}
+              {selectedIds.length > 0 && ` · ${selectedIds.length}명 선택됨`}
+            </span>
+          </div>
+        )}
+        <MemberCardList
+          members={members ?? []}
+          selectedIds={selectedIds}
+          onSelectOne={onSelectOne}
+          onFieldChange={onFieldChange}
+          onWithdraw={onWithdraw}
+          canWithdraw={canWithdraw}
+          emptyMessage={emptyMessage}
+        />
+      </div>
+
+      {/* 태블릿 이상: 지금까지의 표 그대로 */}
+      <div className="hidden overflow-x-auto border-t border-[#212121] md:block">
       <Table className="w-full min-w-[915px]">
         <TableHeader>
           <TableRow className="h-[46px] border-b border-[#919191] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
@@ -90,6 +121,7 @@ export default function MemberTable({
           )}
         </TableBody>
       </Table>
-    </div>
+      </div>
+    </>
   );
 }

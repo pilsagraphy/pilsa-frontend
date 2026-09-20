@@ -1,5 +1,6 @@
 'use client';
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { format, isWithinInterval, parseISO, startOfDay } from 'date-fns';
 
 import useMyPageStore from '@/stores/useMyPageStore';
@@ -74,12 +75,20 @@ export default function StudentsDashboardIntro() {
 
   return (
     <div className="flex w-full flex-col">
-      {/* 1. 상단 배너
-          TODO: 대시보드 배너 이미지가 확정되면 이 자리에 <img>(또는 next/image)로 교체 */}
-      <div
-        aria-hidden
-        className="mb-5 h-[160px] w-full rounded-[4px] bg-[#DEDEDE] md:mb-[40px] md:h-[200px]"
-      />
+      {/* 1. 상단 배너.
+             사진이 가로로 긴 띠(1608x320)라 object-cover 로 가운데를 잘라 쓴다 —
+             폰에서는 높이를 줄여 첫 화면이 사진으로만 채워지지 않게 한다.
+             priority: 첫 화면 맨 위라 늦게 뜨면 글이 한 번 밀려 내려간다 */}
+      <div className="relative mb-5 h-[120px] w-full overflow-hidden rounded-[4px] bg-[#DEDEDE] md:mb-[40px] md:h-[200px]">
+        <Image
+          src="/images/main-banner.webp"
+          alt=""
+          fill
+          priority
+          sizes="(max-width: 768px) 100vw, 1200px"
+          className="object-cover"
+        />
+      </div>
 
       {/* 2. 넓은 화면: 인사말 / 이 주의 문장 한 줄 · 좁은 화면: 문장은 다음 줄 */}
       <div className="flex w-full flex-col gap-2 lg:flex-row lg:items-end lg:justify-between lg:gap-8 lg:pb-[40px]">

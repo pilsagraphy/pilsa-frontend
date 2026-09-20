@@ -35,6 +35,57 @@ function Pill({ filled = false, children }) {
   );
 }
 
+
+// 두 번 누르면 그 자리에서 고치는 칸.
+// 한 번 누르는 걸로 열면 행을 고르려다 실수로 편집이 열려 성가시다 — 그래서 더블클릭이다.
+// Enter 로 저장, Esc 로 되돌리기, 칸 밖을 눌러도 저장한다.
+function EditableText({ label, value, onChange, placeholder = '-' }) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(value ?? '');
+
+  const open = () => {
+    setDraft(value ?? '');
+    setIsEditing(true);
+  };
+
+  const commit = () => {
+    setIsEditing(false);
+    const next = draft.trim();
+    // 빈 값으로 지우는 건 실수일 때가 많아 되돌린다
+    if (!next || next === (value ?? '')) return;
+    onChange(next);
+  };
+
+  if (!isEditing) {
+    return (
+      <button
+        type="button"
+        onDoubleClick={open}
+        title={`${label} 수정 (두 번 클릭)`}
+        aria-label={`${label} 수정 (현재 ${value || '없음'})`}
+        className="w-full rounded-[4px] px-1 text-center hover:bg-[#F5F5F5] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+      >
+        {value || placeholder}
+      </button>
+    );
+  }
+
+  return (
+    <input
+      autoFocus
+      value={draft}
+      aria-label={`${label} 입력`}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') commit();
+        if (e.key === 'Escape') setIsEditing(false);
+      }}
+      className="w-full min-w-0 rounded-[4px] border border-[#212121] bg-white px-2 py-[2px] text-center text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121] outline-none"
+    />
+  );
+}
+
 // 평소에는 뱃지로 보이다가, 누르면 그 자리에 select가 열리는 셀.
 // 값을 고르거나 바깥을 클릭하면 다시 뱃지로 돌아간다.
 function EditablePill({ label, value, options, filled = false, onChange }) {
@@ -45,6 +96,7 @@ function EditablePill({ label, value, options, filled = false, onChange }) {
       <button
         type="button"
         onClick={() => setIsEditing(true)}
+        onDoubleClick={() => setIsEditing(true)}
         aria-label={`${label} 변경 (현재 ${value})`}
         className="rounded-[13px] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       >
@@ -111,12 +163,35 @@ export default function MemberRow({
         />
       </TableCell>
 
-      {/* 2. 기본 정보 */}
-      <TableCell className="whitespace-nowrap text-center">{member.loginId}</TableCell>
-      <TableCell className="whitespace-nowrap text-center">{member.name}</TableCell>
-      <TableCell className="whitespace-nowrap text-center">{member.phone}</TableCell>
-      <TableCell className="whitespace-nowrap text-center">{member.studentNumber}</TableCell>
-      <TableCell className="whitespace-nowrap text-center">{member.email}</TableCell>
+      {/* 2. 기본 정보 — 이름·전화번호·학번은 두 번 누르면 그 자리에서 고친다.
+             ID 와 Email 은 서버가 수정 대상에서 빼 둔 값이라(로그인 열쇠·본인 확인 수단) 잠가 둔다 */}
+      <TableCell className="whitespace-nowrap text-center" title="ID 는 수정할 수 없어요">
+        {member.loginId}
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-center">
+        <EditableText
+          label="이름"
+          value={member.name}
+          onChange={(next) => onFieldChange?.(member.memberId, 'name', next)}
+        />
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-center">
+        <EditableText
+          label="전화번호"
+          value={member.phone}
+          onChange={(next) => onFieldChange?.(member.memberId, 'phone', next)}
+        />
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-center">
+        <EditableText
+          label="학번"
+          value={member.studentNumber}
+          onChange={(next) => onFieldChange?.(member.memberId, 'studentNumber', next)}
+        />
+      </TableCell>
+      <TableCell className="whitespace-nowrap text-center" title="Email 은 수정할 수 없어요">
+        {member.email}
+      </TableCell>
 
       {/* 3. 재학상태 (누르면 select로 변경) */}
       <TableCell className="whitespace-nowrap text-center">

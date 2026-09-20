@@ -108,12 +108,20 @@ export default function MemberListSection({ title = '회원 목록' }) {
     setSelectedIds(checked ? members.map((member) => member.memberId) : []);
   };
 
-  // 행에서 재학상태·권한 select로 값을 바꿨을 때 → 서버에 부분 수정 요청 후 목록 갱신
+  // 목록에서 값을 바꿨을 때 → 서버에 부분 수정 요청 후 목록 갱신.
+  // 서버(PATCH /api/admin/users/{id})가 받는 이름은 studentNo·memberType·adminLevel 이라 여기서 바꿔 준다.
+  // Email 은 서버가 수정 대상에서 빼 두었고, ID 는 로그인 열쇠라 화면에서도 잠가 두었다.
+  const FIELD_TO_PAYLOAD = {
+    role: (value) => ({ adminLevel: ROLE_TO_ADMIN_LEVEL[value] }),
+    enrollmentStatus: (value) => ({ memberType: LABEL_TO_MEMBER_TYPE[value] }),
+    name: (value) => ({ name: value }),
+    phone: (value) => ({ phone: value }),
+    studentNumber: (value) => ({ studentNo: value }),
+  };
+
   const handleFieldChange = async (memberId, field, value) => {
-    const payload =
-      field === 'role'
-        ? { adminLevel: ROLE_TO_ADMIN_LEVEL[value] }
-        : { memberType: LABEL_TO_MEMBER_TYPE[value] };
+    const payload = FIELD_TO_PAYLOAD[field]?.(value);
+    if (!payload) return;
     try {
       await updateUser(memberId, payload);
       await loadUsers();
