@@ -207,37 +207,38 @@ export default function ScheduleForm({
       </h3>
 
       <div className="mt-6 flex flex-col gap-[26px] md:mt-[34px]">
+        {/* 제목과 일정 구분을 한 줄에 — 폰에서는 아래로 내려온다 */}
         <ScheduleFormRow label="제목" htmlFor="schedule-title">
-          <input
-            id="schedule-title"
-            type="text"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="제목을 입력하세요"
-            className={FIELD_CLASS}
-          />
-        </ScheduleFormRow>
-
-        <ScheduleFormRow label="일정 구분">
-          <ScheduleSelect
-            value={category}
-            onChange={setCategory}
-            options={categories}
-            ariaLabel="일정 구분"
-            variant="field"
-            // 목록을 못 받으면 고를 게 없다. 서버 시드가 바뀌면 어긋나므로 하드코딩 fallback 은
-            // 두지 않는다. 잠긴 셀렉트가 빈 칸으로만 보이면 왜 못 고르는지 알 수 없어 문구를 남긴다.
-            // 목록이 도착하면 위 effect가 값을 채우므로 placeholder는 잠긴 동안에만 보인다.
-            disabled={!categories.length}
-            placeholder={categoriesError ? '불러오지 못했습니다' : '불러오는 중입니다'}
-            className="w-full md:max-w-[318px]"
-          />
+          <div className="flex flex-col gap-[8px] sm:flex-row sm:items-center">
+            <input
+              id="schedule-title"
+              type="text"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="제목을 입력하세요"
+              className={`${FIELD_CLASS} sm:min-w-0 sm:flex-1`}
+            />
+            <ScheduleSelect
+              value={category}
+              onChange={setCategory}
+              options={categories}
+              ariaLabel="일정 구분"
+              variant="field"
+              // 목록을 못 받으면 고를 게 없다. 서버 시드가 바뀌면 어긋나므로 하드코딩 fallback 은
+              // 두지 않는다. 잠긴 셀렉트가 빈 칸으로만 보이면 왜 못 고르는지 알 수 없어 문구를 남긴다.
+              // 목록이 도착하면 위 effect가 값을 채우므로 placeholder는 잠긴 동안에만 보인다.
+              disabled={!categories.length}
+              placeholder={categoriesError ? '불러오지 못했습니다' : '불러오는 중입니다'}
+              className="w-full sm:w-[180px] sm:shrink-0"
+            />
+          </div>
         </ScheduleFormRow>
 
         <ScheduleFormRow label="날짜 / 시간">
           <div className="flex flex-col gap-[12px]">
-            {/* 시작 · 종료를 한 줄씩 — 날짜 칸(달력) 옆에 그날의 시각.
+            {/* 시작 · 종료를 한 줄에 — 각각 날짜 칸(달력) 옆에 그날의 시각. 폰에서는 종료가 아래로 내려온다.
                 예전엔 년·월·일 셀렉트 여섯 개 + 달력 버튼 + 시각 셀렉트 네 개가 따로 놀았다 (PM, 2026-09-20) */}
+            <div className="flex flex-col gap-[12px] lg:flex-row lg:items-center lg:gap-[20px]">
             {[
               { label: '시작', parts: start, setParts: setStart, time: startTime, setTime: setStartTimeField, min: null },
               { label: '종료', parts: end, setParts: setEnd, time: endTime, setTime: setEndTimeField, min: partsToInput(start) },
@@ -262,6 +263,7 @@ export default function ScheduleForm({
                 {renderTimeGroup(row.time, row.setTime, row.label)}
               </div>
             ))}
+            </div>
 
             <label
               className={`flex w-fit items-center gap-[6px] md:ms-[2px] ${
