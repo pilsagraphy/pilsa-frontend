@@ -3,6 +3,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkBreaks from 'remark-breaks';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 
@@ -12,6 +13,7 @@ import AuthedImage from './AuthedImage';
 // 게시글 본문(마크다운) 렌더러. 상세 화면과 글쓰기 미리보기가 함께 쓴다.
 //
 // - remarkGfm: 표·체크리스트·취소선·자동링크 등 GitHub 문법
+// - remarkBreaks: 엔터 한 번을 줄바꿈으로 — 마크다운 원칙(빈 줄이어야 문단)은 글 쓰는 회원에겐 낯설다 (PM, 2026-09-21)
 // - rehypeRaw: 본문에 섞인 raw HTML(<img width=... />) 처리
 // - rehypeSanitize: 그 raw HTML 로 스크립트가 들어오지 못하게 걸러낸다 (반드시 raw 다음에)
 //
@@ -90,7 +92,7 @@ export default function BoardMarkdown({ content = '' }) {
         [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, markdownSanitizeSchema]]}
         components={components}
       >

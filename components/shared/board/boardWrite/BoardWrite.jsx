@@ -133,7 +133,8 @@ export default function BoardWrite({ boardId }) {
 
       await alertDialog('작성이 완료되었습니다.');
       resetForm();
-      router.push(ROUTES.BOARD(boardId));
+      // replace: 글쓰기 화면을 히스토리에서 걷어낸다 — 목록에서 뒤로가기를 누르면 빈 글쓰기 화면이 아니라 그 전으로 간다
+      router.replace(ROUTES.BOARD(boardId));
     } catch (error) {
       alertDialog(getErrorMessage(error, '게시글 작성에 실패했습니다.'));
     } finally {

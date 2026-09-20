@@ -1,25 +1,25 @@
 'use client';
 
 import React, { useCallback, useRef, useState } from 'react';
-import { ImagePlus } from 'lucide-react';
+import { Eye, EyeOff, ImagePlus } from 'lucide-react';
 
 import BoardMarkdown from '@/components/shared/board/BoardMarkdown';
 import { uploadFile } from '@/apis/file';
 import { getErrorMessage } from '@/apis/auth';
 import { uploadPlaceholder } from '@/lib/markdown';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { alertDialog } from '@/stores/useDialogStore';
 
-const TAB_WRITE = 'write';
-const TAB_PREVIEW = 'preview';
-
-const tabClass = (active) =>
-  `px-3 py-1 text-[14px] transition-colors ${
-    active ? 'font-medium text-[#212121]' : 'text-[#919191] hover:text-[#212121]'
-  }`;
+const barButtonClass =
+  'flex items-center gap-1 px-2 py-1 text-[14px] text-[#919191] transition-colors hover:text-[#212121] disabled:opacity-60';
 
 // 마크다운 본문 편집기.
 // 텍스트는 마크다운 원문 그대로 다루고, 이미지는 고르는 즉시 업로드해
 // 서버가 준 markdown 문자열을 본문에 끼워 넣는다 (GitHub 방식).
+//
+// 미리보기는 탭이 아니라 입력창 옆(PC)·아래(폰)에 항상 같이 떠서, 쓰는 대로 바로 보인다.
+// 예전엔 '작성 / 미리보기' 탭이라 확인하려면 오가야 했다 (PM, 2026-09-21). 끄고 싶으면 버튼으로 접는다 —
+// PC 는 기본으로 펼치고, 폰은 세로 공간이 좁아 기본으로 접는다.
 //
 // allowUpload=false 인 게시판(파일 업로드 미사용)에서는 이미지 삽입 UI를 감춘다.
 export default function BoardMarkdownEditor({
@@ -30,7 +30,10 @@ export default function BoardMarkdownEditor({
   // 위쪽 툴바가 같은 textarea 에 서식을 넣어야 해서 ref 를 밖에서 받을 수 있게 열어둔다
   textareaRef: externalTextareaRef,
 }) {
-  const [tab, setTab] = useState(TAB_WRITE);
+  const isMdUp = useMinWidthMd();
+  // null 이면 아직 손대지 않은 것 → 화면 폭 기본값을 따른다
+  const [previewOverride, setPreviewOverride] = useState(null);
+  const showPreview = previewOverride ?? isMdUp;
   const [uploading, setUploading] = useState(false);
 
   const innerTextareaRef = useRef(null);
@@ -113,20 +116,21 @@ export default function BoardMarkdownEditor({
 
   return (
     <div className="flex h-full w-full flex-col">
-      {/* 탭 + 이미지 삽입 */}
+      {/* 미리보기 접기/펼치기 + 이미지 삽입 */}
       <div className="flex items-center justify-between border-b border-[#DEDEDE] px-2 py-1">
-        <div className="flex items-center gap-1">
-          <button type="button" className={tabClass(tab === TAB_WRITE)} onClick={() => setTab(TAB_WRITE)}>
-            작성
-          </button>
-          <button
-            type="button"
-            className={tabClass(tab === TAB_PREVIEW)}
-            onClick={() => setTab(TAB_PREVIEW)}
-          >
-            미리보기
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setPreviewOverride(!showPreview)}
+          aria-pressed={showPreview}
+          className={barButtonClass}
+        >
+          {showPreview ? (
+            <EyeOff size={16} strokeWidth={1.5} aria-hidden />
+          ) : (
+            <Eye size={16} strokeWidth={1.5} aria-hidden />
+          )}
+          {showPreview ? '미리보기 접기' : '미리보기'}
+        </button>
 
         {allowUpload && (
           <>
@@ -134,7 +138,7 @@ export default function BoardMarkdownEditor({
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
-              className="flex items-center gap-1 px-2 py-1 text-[14px] text-[#919191] transition-colors hover:text-[#212121] disabled:opacity-60"
+              className={barButtonClass}
             >
               <ImagePlus size={16} strokeWidth={1.5} aria-hidden />
               {uploading ? '올리는 중...' : '이미지'}
@@ -156,7 +160,8 @@ export default function BoardMarkdownEditor({
         )}
       </div>
 
-      {tab === TAB_WRITE ? (
+      {/* 입력창은 늘 있고(툴바가 커서 위치를 알아야 한다), 미리보기는 PC 에서 옆, 폰에서 아래에 붙는다 */}
+      <div className="flex min-h-0 w-full flex-1 flex-col lg:flex-row">
         <textarea
           ref={textareaRef}
           value={value}
@@ -170,17 +175,19 @@ export default function BoardMarkdownEditor({
               : '내용을 입력하세요. (마크다운 사용 가능)'
           }
           required
-          className="w-full flex-1 resize-none bg-transparent p-[16px] text-[16px] tracking-[-0.32px] outline-none"
+          className="min-h-0 w-full flex-1 resize-none bg-transparent p-[16px] text-[16px] tracking-[-0.32px] outline-none"
         />
-      ) : (
-        <div className="w-full flex-1 overflow-y-auto p-[16px]">
-          {value?.trim() ? (
-            <BoardMarkdown content={value} />
-          ) : (
-            <span className="text-[15px] text-[#919191]">미리볼 내용이 없습니다.</span>
-          )}
-        </div>
-      )}
+
+        {showPreview && (
+          <div className="min-h-0 w-full flex-1 overflow-y-auto border-t border-[#DEDEDE] bg-[#FAFAFA] p-[16px] lg:border-t-0 lg:border-l">
+            {value?.trim() ? (
+              <BoardMarkdown content={value} />
+            ) : (
+              <span className="text-[15px] text-[#919191]">여기에 미리보기가 나타납니다.</span>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

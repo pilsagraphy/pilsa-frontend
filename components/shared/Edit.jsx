@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import BoardWriteForm from '@/components/shared/board/boardWrite/BoardWriteForm';
 import useBoard from '@/hooks/useBoard';
 import useBoardWriteStore from '@/stores/useBoardWriteStore';
+import useAuthStore from '@/stores/useAuthStore';
 import { getBoardPost, getBoardCategories, updateBoardPost } from '@/apis/board';
 import { getErrorMessage } from '@/apis/auth';
 import { ROUTES } from '@/constants/routes';
@@ -24,7 +25,10 @@ export default function Edit({ boardId, postId }) {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const categoryMode = Boolean(board?.categoryMode);
+  const isAdmin = useAuthStore((s) => s.adminLevel) >= 1;
+  // 카테고리를 안 쓰는 게시판(공지사항)이라도 관리자에게는 '중요'(상단 고정)가 있다 — 글쓰기 폼과 같은 기준.
+  // 예전엔 board.categoryMode 만 봐서 공지사항 수정 때 '중요'를 골라도 서버로 보내지 않았다 (2026-09-21)
+  const categoryMode = Boolean(board?.categoryMode) || isAdmin;
   // 게시판 정책(플래그)이 확정된 뒤에 상세를 불러온다.
   // 먼저 불러오면 categoryMode 가 나중에 true 로 바뀌며 이 effect 가 재실행되고,
   // setForm 이 사용자가 그사이 고친 내용을 서버 값으로 덮어써 버린다.
@@ -47,7 +51,10 @@ export default function Edit({ boardId, postId }) {
         if (!isMounted) return;
 
         const categories = Array.isArray(categoryData) ? categoryData : [];
-        const matched = categories.find((c) => c.name === detail?.categoryName);
+        // 이름으로 맞추되, 고정 글인데 이름이 비어 있으면 '중요'(PINNED) 로 맞춘다
+        const matched =
+          categories.find((c) => c.name === detail?.categoryName) ??
+          (detail?.isPinned ? categories.find((c) => c.code === 'PINNED') : null);
 
         setForm({
           title: detail?.title ?? '',
@@ -94,7 +101,7 @@ export default function Edit({ boardId, postId }) {
       const formData = new FormData();
       formData.append('title', title.trim());
       formData.append('content', content.trim());
-      if (categoryMode && categoryId) formData.append('categoryId', String(categoryId));
+      if (categoryId) formData.append('categoryId', String(categoryId));
       if (board?.allowAnonymous) formData.append('isAnonymous', String(Boolean(isAnonymous)));
       // 첨부는 증분 방식이다 — 유지할 기존 첨부는 아무것도 보내지 않고,
       // 지울 기존 첨부만 deleteAttachmentIds 로, 새로 올릴 파일만 files 로 보낸다.
@@ -114,7 +121,8 @@ export default function Edit({ boardId, postId }) {
 
       await alertDialog('수정이 완료되었습니다.');
       resetForm();
-      router.push(ROUTES.BOARD_POST(boardId, postId));
+      // replace: 수정 화면을 히스토리에서 걷어낸다 — 상세에서 뒤로가기를 누르면 수정 화면이 아니라 그 전으로 간다
+      router.replace(ROUTES.BOARD_POST(boardId, postId));
     } catch (error) {
       alertDialog(getErrorMessage(error, '게시글 수정에 실패했습니다.'));
     } finally {

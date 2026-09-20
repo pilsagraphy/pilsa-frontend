@@ -188,7 +188,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
         {attachmentChips}
 
         {/* 본문 (라벨 없는 박스) */}
-        <div className="relative flex h-[330px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+        <div className="relative flex h-[420px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
           <BoardMarkdownEditor
             boardId={boardId}
             value={content}
