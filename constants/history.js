@@ -5,7 +5,7 @@ export const DUMMY_HISTORY = [
   },
   {
     year: "2022",
-    activities: ["삼성 갤럭시 캠퍼스 큐레이터 공모전 당선"],
+    activities: ["학생회관 614호 동아리방 수령", "삼성 갤럭시 캠퍼스 큐레이터 공모전 당선"],
   },
   {
     year: "2023",
@@ -13,7 +13,7 @@ export const DUMMY_HISTORY = [
   },
   {
     year: "2024",
-    activities: ["정기모임 아스카아트 작품 중앙도서관 전시"],
+    activities: ["회칙 전면 개편", "정기모임 아스카아트 작품 중앙도서관 전시"],
   },
   {
     year: "2025",
@@ -21,6 +21,6 @@ export const DUMMY_HISTORY = [
   },
   {
     year: "2026",
-    activities: ["필사그래피 웹사이트 개설"],
+    activities: ["필사그래피 웹사이트 개설", "EBS 촬영"],
   },
 ];

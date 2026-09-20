@@ -85,7 +85,7 @@ export default function Honor() {
             후원자
           </h3>
           <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
-            필사그래피를 후원해 주신 분들입니다.
+            이분들의 마음이 오늘의 필사그래피를 만들었습니다.
           </p>
         </div>
       )}
