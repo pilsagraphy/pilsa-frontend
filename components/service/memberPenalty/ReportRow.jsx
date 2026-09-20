@@ -1,11 +1,12 @@
 'use client';
 import React, { useState } from 'react';
+import Link from 'next/link';
 
 // 헤더 행과 데이터 행이 동일한 열 정렬을 쓰도록 공유하는 그리드 템플릿.
 // [번호][작성 위치][사유][원문][상태][처리일] — 사유 칸만 남는 폭을 다 가져간다.
 // 여섯 칸을 똑같이 나누면 사유가 한 자씩 세로로 끊기고 나머지 칸은 비어 있었다.
 export const REPORT_GRID =
-  'grid grid-cols-[36px_84px_minmax(0,1fr)_64px_52px_64px] items-start gap-x-[6px]';
+  'grid grid-cols-[36px_84px_minmax(0,1fr)_64px_52px_64px] items-start gap-x-[6px] pr-[14px]';
 
 // 상세 사유는 이 글자 수까지만 보이고, 넘치면 '더 보기'로 편다
 const DETAIL_PREVIEW = 40;
@@ -58,18 +59,18 @@ function ReasonBlock({ reason }) {
 // 신고 내역 개별 행
 export default function ReportRow({ report, number }) {
   // 원문 링크는 두 모양에서 같은 것을 쓴다
+  // 새 탭(target=_blank)이 아니라 같은 탭에서 앱 내 이동 — 앱(TWA)에서는 새 탭이 앱을 다시 켜는 것처럼 보였고,
+  // 전체 새로고침이라 로딩 화면 없이 흰 화면이 스쳤다
   const link = report.link ? (
-    <a
+    <Link
       href={report.link}
-      target="_blank"
-      rel="noreferrer"
       title={report.targetTitle}
       aria-label={report.linkLabel}
       className="underline decoration-solid underline-offset-2"
       onClick={(e) => e.stopPropagation()}
     >
       원문
-    </a>
+    </Link>
   ) : (
     <span className="text-[#919191]">-</span>
   );

@@ -121,7 +121,10 @@ export default function BoardCategoryModal({ board, open, onClose }) {
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose?.()}>
-      <DialogContent className="max-h-[85vh] w-[calc(100vw-32px)] max-w-[520px] gap-[16px] overflow-y-auto rounded-[6px] border-[#dedede] p-[20px] sm:p-[24px]">
+      <DialogContent
+        // 열리자마자 '새 카테고리 이름'에 커서가 가서 폰 키보드가 올라왔다 — 목록부터 보는 화면이다
+        onOpenAutoFocus={(event) => event.preventDefault()}
+        className="max-h-[85vh] w-[calc(100vw-32px)] max-w-[520px] gap-[16px] overflow-y-auto rounded-[6px] border-[#dedede] p-[20px] sm:p-[24px]">
         <DialogTitle className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121]">
           {board?.boardName ?? '게시판'} 카테고리
         </DialogTitle>
