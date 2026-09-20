@@ -15,6 +15,7 @@ import MonthlyScheduleList from '@/components/shared/calendars/MonthlyScheduleLi
 import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
 import CalendarSubscribeButton from '@/components/shared/calendars/CalendarSubscribeButton';
 import { getEventList } from '@/apis/event';
+import { CALENDAR_COLUMN_MAX_W } from '@/components/shared/calendars/calendarLayout';
 
 function isDateIncludedInSchedule(date, schedule) {
   return isWithinInterval(startOfDay(date), {
@@ -228,7 +229,9 @@ export default function CalendarSection({
   };
 
   return (
-    <section className="mx-auto flex w-full max-w-[915px] flex-col gap-6 sm:gap-8 lg:gap-[40px]">
+    <section
+      className={`mx-auto flex w-full flex-col gap-6 sm:gap-8 lg:gap-[40px] ${CALENDAR_COLUMN_MAX_W}`}
+    >
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
           일정 달력

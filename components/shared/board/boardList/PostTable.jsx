@@ -7,6 +7,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import PostRow from './PostRow';
+import PostRowMobile from './PostRowMobile';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { cn } from '@/lib/utils';
 
@@ -27,6 +28,39 @@ export default function PostTable({
   // md 이상: 번호 · 제목 · (댓글) · 좋아요 · 조회수 · 등록일
   // md 미만: (카테고리 게시판은 번호 숨김) 제목 · 등록일
   const colSpan = isMdUp ? 5 + (allowComment ? 1 : 0) : categoryMode ? 2 : 3;
+
+  // 모바일: 표 대신 '세로로 쌓는 목록'(피그마) 으로 렌더링. 데스크톱은 아래 표 그대로.
+  if (!isMdUp) {
+    const message = loading
+      ? '불러오는 중입니다.'
+      : errorMessage
+        ? errorMessage
+        : !posts?.length
+          ? '등록된 게시글이 없습니다.'
+          : null;
+
+    return (
+      <div>
+        {message ? (
+          <div
+            suppressHydrationWarning
+            className="border-t border-[#DEDEDE] py-8 text-center text-[14px] text-muted-foreground"
+          >
+            {message}
+          </div>
+        ) : (
+          posts.map((post) => (
+            <PostRowMobile
+              key={post.postId}
+              post={post}
+              boardId={boardId}
+              listQuery={listQuery}
+            />
+          ))
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto border-t border-[#212121]">

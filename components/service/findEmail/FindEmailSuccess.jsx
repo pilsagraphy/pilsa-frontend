@@ -2,10 +2,26 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { Copy } from 'lucide-react';
 import { ROUTES } from '@/constants/routes';
 
 export default function FindEmailSuccess({ email }) {
   const router = useRouter();
+
+  // 이메일 클립보드 복사
+  // 모바일 웹뷰는 텍스트 길게 눌러 선택하는 것이 막혀 있는 경우가 있어 버튼으로 제공한다.
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(email);
+      toast.success('이메일이 복사되었습니다.');
+    } catch {
+      // http 환경이나 구형 웹뷰에서는 클립보드 API를 못 쓸 수 있다
+      toast.error('복사하지 못했습니다.', {
+        description: '이메일을 직접 선택해 복사해 주세요.',
+      });
+    }
+  };
 
   return (
     <div className="flex flex-col gap-5 items-end w-full">
@@ -20,13 +36,21 @@ export default function FindEmailSuccess({ email }) {
           </p>
         </div>
 
-        {/* 조회된 이메일 표시 (회색 비활성 필드) */}
-        <div className="w-full">
-          <div className="bg-[#dedede] h-[52px] rounded-[4px] flex items-center px-[16px]">
-            <span className="text-[#212121] text-[16px] tracking-[-0.32px] leading-[1.6]">
+        {/* 조회된 이메일 표시 (시안대로 #dedede 채움, 테두리 없음) + 복사 버튼 */}
+        <div className="relative w-full">
+          <div className="bg-[#dedede] h-[52px] rounded-[4px] flex items-center px-[16px] pr-[52px]">
+            <span className="truncate text-[#212121] text-[16px] tracking-[-0.32px] leading-[1.6]">
               {email}
             </span>
           </div>
+          <button
+            type="button"
+            onClick={handleCopy}
+            aria-label="이메일 복사"
+            className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[#454545] transition-colors hover:text-[#212121]"
+          >
+            <Copy size={20} aria-hidden />
+          </button>
         </div>
       </div>
 

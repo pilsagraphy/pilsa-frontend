@@ -422,7 +422,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     const highlighted = replying || editing || focusedAnchor === anchorId;
 
     const actionClassName = (active) =>
-      `text-[14px] transition-colors ${
+      `text-[12px] md:text-[14px] transition-colors ${
         active ? 'font-medium text-[#212121]' : 'text-[#919191] hover:text-[#212121]'
       }`;
 
@@ -561,7 +561,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     <section className="flex w-full flex-col gap-8 md:gap-[60px]">
       <div className="flex w-full flex-col items-center">
         <div className="w-full py-2 md:px-5 md:py-[10px]">
-          <span className="text-[16px] leading-[1.6] tracking-[-0.36px] text-[#454545] md:text-[18px]">
+          <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#454545]">
             {/* 목록을 못 받은 동안에는 상세 응답의 commentCount 를 쓴다 (0개로 위장하지 않도록) */}
             댓글 {commentsError || commentsLoading ? (commentCount ?? 0) : list.length}개
           </span>
@@ -633,6 +633,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         open={Boolean(alertState)}
         title={alertState?.title ?? ''}
         description={alertState?.description ?? ''}
+        mobileBodyMinHeight={alertState?.mobileBodyMinHeight}
         onClose={() => setAlertState(null)}
       />
     </section>

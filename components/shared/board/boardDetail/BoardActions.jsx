@@ -7,6 +7,10 @@ import { toggleBoardPostLike, deleteBoardPost } from '@/apis/board';
 import { getErrorMessage } from '@/apis/auth';
 import useAuthStore from '@/stores/useAuthStore';
 import { ROUTES } from '@/constants/routes';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
+import ReportModal from '@/components/shared/board/boardList/ReportModal';
+import AlertModal from '@/components/common/AlertModal';
+import { REPORT_SUCCESS_ALERT } from '@/constants/report';
 
 // 좋아요 + (권한이 있을 때만) 수정/삭제 버튼
 //  - 수정: 작성자 또는 관리자
@@ -15,12 +19,16 @@ export default function BoardActions({
   boardId,
   postId,
   authorId,
+  authorName = '',
+  postTitle = '',
+  boardLabel = '',
   likeCount: initialLikeCount = 0,
   liked: initialLiked = false,
   onDeleted,
   afterLikeOnMobile = null,
 }) {
   const router = useRouter();
+  const isMdUp = useMinWidthMd();
 
   const [likeCount, setLikeCount] = useState(
     typeof initialLikeCount === 'number' ? initialLikeCount : 0
@@ -29,14 +37,18 @@ export default function BoardActions({
   const [likeLoading, setLikeLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  // 게시글 신고 (모바일 전용) — 댓글 신고처럼 접수 완료 안내만 (백엔드 신고 API 확정 후 연동)
+  const [reportOpen, setReportOpen] = useState(false);
+  const [alertState, setAlertState] = useState(null);
+
   const user = useAuthStore((s) => s.user);
+  const adminLevel = useAuthStore((s) => s.adminLevel);
 
   const currentUserId = Number(user?.userId ?? user?.id ?? user?.user_id);
+  const isAdmin = adminLevel >= 1;
   const isAuthor = Number.isFinite(currentUserId) && currentUserId === Number(authorId);
 
-  // 수정은 작성자 본인만 — 관리자가 남의 글 내용을 고치는 건 관리가 아니다.
-  // 관리자의 블라인드·삭제는 관리자 페이지(게시글·댓글 관리)에서 한다.
-  const canEdit = isAuthor;
+  const canEdit = isAdmin || isAuthor;
   const canDelete = isAuthor;
 
   useEffect(() => {
@@ -88,18 +100,95 @@ export default function BoardActions({
     }
   };
 
-  // 모바일: 좋아요·목록·수정·삭제를 한 줄에 — 감싸는 div 는 contents 로 풀어 버튼들이 같은 줄의 flex 항목이 되게 한다.
-  // 버튼은 댓글 작성 버튼과 같은 크기(h-11, 최대 120px)로 둔다 — 예전엔 h-12 에 flex-1 이라 화면 폭을 꽉 채운 검은 막대였다
+  // 신고 - 모달에서 사유 선택 후 확인 (지금은 접수완료 안내만)
+  const handleReportSubmit = () => {
+    setReportOpen(false);
+    setAlertState(REPORT_SUCCESS_ALERT);
+  };
+
+  // 모바일(#183): 좋아요 + (작성자) 수정/삭제 · (그 외) 신고하기 를 한 줄로. 데스크톱은 아래 return 그대로.
+  if (!isMdUp) {
+    return (
+      <>
+        <div className="flex w-full items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={handleLike}
+            disabled={likeLoading}
+            aria-pressed={liked}
+            className={`flex h-[40px] w-[100px] items-center justify-center gap-[6px] rounded-[4px] border text-[14px] tracking-[-0.28px] transition-colors disabled:opacity-60 ${
+              liked
+                ? 'border-[#212121] bg-[#212121] text-white'
+                : 'border-[#b9b9b9] bg-white text-[#212121]'
+            }`}
+          >
+            <ThumbsUp width={18} height={18} strokeWidth={1.5} aria-hidden="true" />
+            <span>{likeCount}</span>
+          </button>
+
+          {canEdit || canDelete ? (
+            <div className="flex items-center gap-[4px]">
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={handleEdit}
+                  className="h-[40px] w-[100px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] tracking-[-0.28px] text-[#212121]"
+                >
+                  수정하기
+                </button>
+              )}
+              {canDelete && (
+                <button
+                  type="button"
+                  disabled={deleteLoading}
+                  onClick={handleDelete}
+                  className="h-[40px] w-[100px] rounded-[4px] bg-[#212121] text-[14px] tracking-[-0.28px] text-white disabled:opacity-60"
+                >
+                  {deleteLoading ? '삭제 중...' : '삭제하기'}
+                </button>
+              )}
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setReportOpen(true)}
+              className="h-[40px] w-[100px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] tracking-[-0.28px] text-[#212121]"
+            >
+              신고하기
+            </button>
+          )}
+        </div>
+
+        <ReportModal
+          open={reportOpen}
+          onClose={() => setReportOpen(false)}
+          onSubmit={handleReportSubmit}
+          targetLabel="게시글"
+          targetUser={authorName ? { name: authorName } : null}
+          targetContent={boardLabel ? `${boardLabel} / ${postTitle}` : postTitle}
+        />
+
+        <AlertModal
+          open={Boolean(alertState)}
+          title={alertState?.title ?? ''}
+          description={alertState?.description ?? ''}
+          mobileBodyMinHeight={alertState?.mobileBodyMinHeight}
+          onClose={() => setAlertState(null)}
+        />
+      </>
+    );
+  }
+
   return (
-    <div className="flex w-full flex-row items-center justify-between gap-2 md:gap-0">
-      <div className="contents md:flex md:w-auto md:flex-col md:gap-[10px]">
+    <div className="flex w-full flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-0">
+      <div className="flex w-full flex-col gap-[10px] md:w-auto">
         {/* 좋아요 버튼 */}
         <button
           type="button"
           onClick={handleLike}
           disabled={likeLoading}
           aria-pressed={liked}
-          className={`flex h-11 min-w-0 flex-1 items-center justify-center gap-[6px] rounded-[4px] border text-[15px] tracking-[-0.32px] transition-colors disabled:opacity-60 max-w-[120px] md:h-[52px] md:w-[135px] md:max-w-none md:flex-none md:text-[16px] ${
+          className={`flex h-12 w-full items-center justify-center gap-[6px] rounded-[4px] border text-[15px] tracking-[-0.32px] transition-colors disabled:opacity-60 md:h-[52px] md:w-[135px] md:text-[16px] ${
             liked
               ? 'border-[#212121] bg-[#212121] text-white hover:bg-black'
               : 'border-[#b9b9b9] bg-white text-[#212121] hover:bg-[#f5f5f5]'
@@ -110,16 +199,16 @@ export default function BoardActions({
           <span>좋아요 {likeCount}</span>
         </button>
 
-        {afterLikeOnMobile != null && <div className="contents md:hidden">{afterLikeOnMobile}</div>}
+        {afterLikeOnMobile != null && <div className="w-full md:hidden">{afterLikeOnMobile}</div>}
       </div>
 
       {/* 수정 / 삭제 (권한 있을 때만) */}
       {(canEdit || canDelete) && (
-        <div className="contents md:flex md:w-auto md:gap-5">
+        <div className="flex w-full gap-2 md:w-auto md:gap-5">
           {canEdit && (
             <button
               type="button"
-              className="h-11 min-w-0 max-w-[120px] flex-1 rounded-[4px] bg-[#212121] text-[15px] text-white md:h-[52px] md:w-[135px] md:max-w-none md:flex-none md:text-[16px]"
+              className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white md:h-[52px] md:w-[135px] md:flex-none"
               onClick={handleEdit}
             >
               수정
@@ -129,7 +218,7 @@ export default function BoardActions({
             <button
               type="button"
               disabled={deleteLoading}
-              className="h-11 min-w-0 max-w-[120px] flex-1 rounded-[4px] bg-[#212121] text-[15px] text-white disabled:opacity-60 md:h-[52px] md:w-[135px] md:max-w-none md:flex-none md:text-[16px]"
+              className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white disabled:opacity-60 md:h-[52px] md:w-[135px] md:flex-none"
               onClick={handleDelete}
             >
               {deleteLoading ? '삭제 중...' : '삭제'}

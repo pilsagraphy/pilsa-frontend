@@ -13,6 +13,79 @@ export const MEMBER_ROLES = {
 export const MEMBER_ROLE_OPTIONS = Object.values(MEMBER_ROLES);
 export const ENROLLMENT_STATUSES = ['재학생', '동문회'];
 
+// ─────────────────────────── API ↔ 화면 값 매핑 ───────────────────────────
+// 서버는 memberType(STUDENT/ALUMNI) · adminLevel(0~3)로 주고받고,
+// 화면은 재학상태 뱃지('재학생'/'동문회') · 권한 뱃지('일반회원'/'관리 Lv.N')로 보여준다.
+
+// memberType(API) → 재학상태 라벨(화면)
+export const MEMBER_TYPE_LABELS = {
+  STUDENT: '재학생',
+  ALUMNI: '동문회',
+};
+// 재학상태 라벨(화면) → memberType(API)
+export const LABEL_TO_MEMBER_TYPE = {
+  재학생: 'STUDENT',
+  동문회: 'ALUMNI',
+};
+
+// adminLevel(API) → 권한 라벨(화면)
+export const ADMIN_LEVEL_ROLES = {
+  0: MEMBER_ROLES.GENERAL,
+  1: MEMBER_ROLES.ADMIN_LV1,
+  2: MEMBER_ROLES.ADMIN_LV2,
+  3: MEMBER_ROLES.ADMIN_LV3,
+};
+// 권한 라벨(화면) → adminLevel(API)
+export const ROLE_TO_ADMIN_LEVEL = {
+  [MEMBER_ROLES.GENERAL]: 0,
+  [MEMBER_ROLES.ADMIN_LV1]: 1,
+  [MEMBER_ROLES.ADMIN_LV2]: 2,
+  [MEMBER_ROLES.ADMIN_LV3]: 3,
+};
+
+// 'YYYY-MM-DD...' → 'YY.MM.DD' (정지 기간 표시용). 값이 없으면 빈 문자열.
+const formatBanDate = (value) => {
+  if (!value) return '';
+  const [year, month, day] = String(value).slice(0, 10).split('-');
+  if (!year || !month || !day) return '';
+  return `${year.slice(2)}.${month}.${day}`;
+};
+
+// 정지 기간 표시 문자열. 없으면 null → 목록에서 '-'로 표시된다.
+// banStatus: none | temporary | permanent
+export const formatBanPeriod = ({ banStatus, banStartAt, banEndAt } = {}) => {
+  if (banStatus === 'permanent') return '영구 차단';
+  const start = formatBanDate(banStartAt);
+  const end = formatBanDate(banEndAt);
+  if (start && end) return `${start} - ${end}`;
+  if (end) return `~ ${end}`;
+  return null;
+};
+
+// API 회원 응답 → 화면(MemberRow)이 쓰는 형태로 변환
+// 응답: { userId, loginId, name, phone, studentNo, email, memberType, adminLevel,
+//        postCount, commentCount, banStartAt, banEndAt, banStatus }
+export const mapApiMemberToRow = (member) => ({
+  memberId: member.userId,
+  loginId: member.loginId,
+  name: member.name,
+  phone: member.phone,
+  studentNumber: member.studentNo,
+  email: member.email,
+  enrollmentStatus: MEMBER_TYPE_LABELS[member.memberType] ?? member.memberType,
+  role: ADMIN_LEVEL_ROLES[member.adminLevel] ?? MEMBER_ROLES.GENERAL,
+  postCount: member.postCount,
+  commentCount: member.commentCount,
+  suspendedPeriod: formatBanPeriod(member),
+});
+
+// 정렬 옵션(화면) → sort 쿼리 값(API)
+// ※ 서버 정렬 enum이 명세에 없어 값을 그대로 넘긴다. 확정되면 여기만 고치면 된다.
+export const MEMBER_SORT_MAP = {
+  latest: 'latest',
+  oldest: 'oldest',
+};
+
 // 정렬 선택지
 // TODO: 실제 정렬 기준은 API 스펙 확정 후 디자인팀과 맞출 것
 export const MEMBER_SORT_OPTIONS = [
