@@ -86,6 +86,7 @@ export const HELP_SITE_URL = 'https://help.pilsa.co.kr';
 // 이용 제한 정책 — 이의 신청 절차가 적혀 있어 제재 안내 화면의 문의 경로로도 사용
 export const SANCTION_POLICY_URL = `${HELP_SITE_URL}/sanction-policy.html`;
 export const HELP_LINKS = [
+  { label: '이용약관', href: `${HELP_SITE_URL}/terms-of-service.html` },
   { label: '개인정보처리방침', href: `${HELP_SITE_URL}/privacy-policy.html` },
   { label: '이용 제한 정책', href: SANCTION_POLICY_URL },
   { label: '계정 삭제 안내', href: `${HELP_SITE_URL}/account-deletion.html` },
