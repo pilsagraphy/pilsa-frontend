@@ -261,23 +261,25 @@ export default function ScheduleForm({
                   />
                 </div>
                 {renderTimeGroup(row.time, row.setTime, row.label)}
+                {/* 종일은 종료 시각 옆에 — 시각을 쓸지 말지는 그 자리에서 정한다 (폰에서도 같은 줄) */}
+                {row.label === '종료' && (
+                  <label
+                    className={`ml-[4px] flex shrink-0 items-center gap-[6px] ${
+                      IS_TIME_SUPPORTED ? 'cursor-pointer' : 'cursor-not-allowed'
+                    }`}
+                  >
+                    <Checkbox
+                      checked={isAllDay}
+                      onCheckedChange={(next) => setIsAllDay(next === true)}
+                      disabled={!IS_TIME_SUPPORTED}
+                      className="size-5 rounded-[2px] border-[#dedede] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
+                    />
+                    <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-black">종일</span>
+                  </label>
+                )}
               </div>
             ))}
             </div>
-
-            <label
-              className={`flex w-fit items-center gap-[6px] md:ms-[2px] ${
-                IS_TIME_SUPPORTED ? 'cursor-pointer' : 'cursor-not-allowed'
-              }`}
-            >
-              <Checkbox
-                checked={isAllDay}
-                onCheckedChange={(next) => setIsAllDay(next === true)}
-                disabled={!IS_TIME_SUPPORTED}
-                className="size-5 rounded-[2px] border-[#dedede] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
-              />
-              <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-black">종일</span>
-            </label>
 
             {!IS_TIME_SUPPORTED && (
               <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191] md:ms-[2px]">
