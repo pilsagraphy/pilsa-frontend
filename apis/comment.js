@@ -8,6 +8,14 @@ import axiosInstance from '@/apis/axiosInstance';
 //    대댓글은 parentCommentId 로 표현 (무제한 깊이) — FE 가 트리로 조립
 //    익명댓글: authorName='익명', userId=null / 비밀댓글: content='비밀댓글입니다.'
 //    마스킹은 전부 서버 책임. state=normal 댓글만 내려온다 (블라인드·삭제 제외)
+// 댓글 상태 (GET /api/user/boards/{boardId}/comments/{commentId}/state)
+//    응답: { state: 'normal' | 'blind' | 'deleted' } / 404 없음
+//    회원 댓글 목록은 공개 댓글만 주므로, 링크의 댓글이 목록에 없을 때 이유를 이걸로 안다
+export const getCommentState = async (boardId, commentId) => {
+  const response = await axiosInstance.get(`/api/user/boards/${boardId}/comments/${commentId}/state`);
+  return response.data?.state ?? null;
+};
+
 export const getComments = async (boardId, postId) => {
   const response = await axiosInstance.get(
     `/api/user/boards/${boardId}/posts/${postId}/comments`

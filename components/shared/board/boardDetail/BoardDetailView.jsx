@@ -59,7 +59,25 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
   }
 
   if (!post) {
-    return <div className={MESSAGE_CLASS}>{error || '존재하지 않는 게시글입니다.'}</div>;
+    // 알림·링크를 타고 왔는데 글이 없으면 서버가 이유를 문장으로 준다 (삭제 / 블라인드 / 없음).
+    // 문장만 덜렁 두면 다음에 뭘 해야 할지 몰라 목록으로 가는 길을 같이 둔다
+    return (
+      <div className="mx-auto flex w-full max-w-[920px] flex-col items-center gap-4 px-4 py-16 text-center md:py-24">
+        <p className="text-[16px] leading-[1.6] tracking-[-0.32px] text-[#454545]">
+          {error || '존재하지 않는 게시글입니다.'}
+        </p>
+        <p className="text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">
+          작성자가 지웠거나 운영진이 조치한 글은 더 볼 수 없어요.
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push(listPath)}
+          className="mt-2 h-[44px] rounded-[4px] border border-[#b9b9b9] px-6 text-[15px] text-[#212121] hover:bg-[#f6f6f6]"
+        >
+          목록으로
+        </button>
+      </div>
+    );
   }
 
   // 카테고리가 있으면 카테고리, 없으면 중요글은 '중요' 배지

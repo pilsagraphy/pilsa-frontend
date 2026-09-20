@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { getComments, createComment, updateComment, deleteComment } from '@/apis/comment';
+import { getComments, createComment, updateComment, deleteComment, getCommentState } from '@/apis/comment';
 import { getErrorMessage } from '@/apis/auth';
 import useApiRequest from '@/hooks/useApiRequest';
 import useCommentAnchor from '@/hooks/useCommentAnchor';
@@ -232,6 +232,33 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
 
   // URL 해시(#comment-3)로 지목된 댓글 강조 (관리자 신고 관리 링크용)
   const focusedAnchor = useCommentAnchor(list);
+
+  // 링크가 가리키는 댓글이 목록에 없으면(지워졌거나 가려졌거나) 왜 없는지 알려 준다.
+  // 알림을 눌렀는데 아무 일도 안 일어나면 어리둥절하다 (2026-09-20 PM)
+  const [missingNotice, setMissingNotice] = useState('');
+  useEffect(() => {
+    if (commentsLoading || commentsError) return;
+    const anchor = typeof window !== 'undefined' ? window.location.hash.slice(1) : '';
+    if (!anchor.startsWith('comment-')) return;
+    const commentId = Number(anchor.slice('comment-'.length));
+    if (!Number.isFinite(commentId)) return;
+    if (list.some((c) => Number(c.commentId) === commentId)) {
+      setMissingNotice('');
+      return;
+    }
+    let alive = true;
+    getCommentState(boardId, commentId)
+      .then((state) => {
+        if (!alive) return;
+        if (state === 'deleted') setMissingNotice('링크의 댓글은 삭제되어 더 볼 수 없어요.');
+        else if (state === 'blind') setMissingNotice('링크의 댓글은 운영진이 블라인드 처리해 볼 수 없어요.');
+        else setMissingNotice('');
+      })
+      .catch(() => alive && setMissingNotice('링크의 댓글을 찾을 수 없어요.'));
+    return () => {
+      alive = false;
+    };
+  }, [list, commentsLoading, commentsError, boardId]);
 
   // 현재 로그인 사용자 (본인 댓글 판별용)
   const currentUserId = useAuthStore((s) => s.user?.userId);
@@ -615,6 +642,12 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
             댓글 {commentsError || commentsLoading ? (commentCount ?? 0) : list.length}개
           </span>
         </div>
+
+        {missingNotice && (
+          <p className="mb-3 w-full rounded-[6px] bg-[#F5F5F5] px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545] lg:mx-5 lg:w-auto lg:self-stretch">
+            {missingNotice}
+          </p>
+        )}
 
         {/* 새 댓글 입력 — 목록 위에 둔다. 아래에 두면 댓글이 많을수록 입력창까지 한참 내려가야 했다.
             답글·수정은 각 댓글 아래 인라인으로 뜬다 */}
