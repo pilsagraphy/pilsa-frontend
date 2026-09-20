@@ -154,6 +154,8 @@ export default function BoardRichEditor({
   // 편집기 안에서 쓰는 콜백들이 항상 최신 onChange 를 보게 한다 (useEditor 는 처음 한 번만 만든다)
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
+  // editorProps 는 편집기를 만들기 전에 정의돼서, 만들어진 편집기를 ref 로 넘겨 받는다
+  const editorRef = useRef(null);
 
   const editor = useEditor({
     // Next 는 서버에서 먼저 그린다 — 편집기는 브라우저에서만 만든다
@@ -178,6 +180,17 @@ export default function BoardRichEditor({
       attributes: {
         class: 'board-editor w-full outline-none',
       },
+      handleDOMEvents: {
+        // 폰(특히 안드로이드 한글 자판)의 엔터는 keydown 이 아니라 beforeinput(insertParagraph) 로 온다.
+        // 그대로 두면 브라우저가 DOM 을 직접 쪼개 <h2> 뒤에 <h2> 가 생겨 제목이 다음 줄까지 이어졌다 (PM, 2026-09-21).
+        // 여기서 가로채 편집기의 Enter 규칙(제목 끝이면 새 문단)으로 처리한다. 조합 중이면 건드리지 않는다
+        beforeinput: (view, event) => {
+          if (event.inputType !== 'insertParagraph' || view.composing) return false;
+          event.preventDefault();
+          editorRef.current?.commands.keyboardShortcut('Enter');
+          return true;
+        },
+      },
     },
     onCreate: () => {
       lastMarkdownRef.current = value ?? '';
@@ -200,6 +213,7 @@ export default function BoardRichEditor({
 
   // 툴바에 편집기를 넘긴다. onCreate 안에서 부모 state 를 바꾸면 React 가 렌더 중 flushSync 라고 경고한다 → effect 에서
   useEffect(() => {
+    editorRef.current = editor ?? null;
     onEditorReady?.(editor ?? null);
     return () => onEditorReady?.(null);
   }, [editor, onEditorReady]);
