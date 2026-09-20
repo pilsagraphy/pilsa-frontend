@@ -5,6 +5,7 @@ import { CornerDownRight, Lock } from 'lucide-react';
 
 import StateChip from '@/components/shared/board/boardDetail/StateChip';
 import ModerationNote from '@/components/shared/admin/ModerationNote';
+import ContentRevisions from '@/components/shared/admin/ContentRevisions';
 import { getCommentAnchorId } from '@/lib/utils';
 import { formatSlashDateTime } from '@/lib/boardDetail';
 import { getCommentStateLabel } from '@/constants/adminComments';
@@ -105,6 +106,7 @@ export default function PostDetailComments({ comments = [], focusedAnchor = null
                   </p>
 
                   <ModerationNote state={comment.state} moderation={comment.moderation} />
+                  <ContentRevisions revisions={comment.revisions} compact />
 
                   <span className="text-[14px] leading-[22px] tracking-[-0.28px] text-[#919191]">
                     {formatSlashDateTime(comment.updated ?? comment.created)}
