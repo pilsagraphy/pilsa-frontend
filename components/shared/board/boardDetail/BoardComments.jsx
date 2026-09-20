@@ -11,7 +11,8 @@ import ReportModal from '@/components/shared/board/boardList/ReportModal';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import AlertModal from '@/components/common/AlertModal';
 import { REPORT_SUCCESS_ALERT } from '@/constants/report';
-import { CornerDownRight } from 'lucide-react';
+import { CornerDownRight, ArrowBigRight } from 'lucide-react';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { formatSlashDateTime } from '@/lib/boardDetail';
 
 function Divider() {
@@ -91,97 +92,115 @@ function CommentComposer({
   const labels = COMPOSER_TEXT[mode] ?? COMPOSER_TEXT.new;
   const inline = mode !== 'new';
 
+  // 폰(#183 피그마): 입력칸 40px + 오른쪽 화살표 버튼 55px 한 줄, 체크박스 18px, 안내문 '내용을 입력하세요.'
+  // PC 는 예전 그대로(넓은 입력칸, 아래 줄에 체크박스와 글자 버튼). 마크업은 한 벌이고 클래스로 가른다.
+  const isMdUp = useMinWidthMd();
+  const placeholder = isMdUp ? labels.placeholder : '내용을 입력하세요.';
+  const checkboxClass =
+    'h-[18px] w-[18px] cursor-pointer rounded-[2px] border border-[#919191] accent-[#212121] md:h-[24px] md:w-[24px]';
+  const checkboxLabelClass = 'cursor-pointer text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]';
+
   return (
-    <div className="flex w-full flex-col gap-3 md:gap-4">
-      <textarea
-        ref={textareaRef}
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder={labels.placeholder}
-        rows={inline ? 2 : 3}
-        className={`w-full resize-none rounded-[4px] border border-[#b9b9b9] bg-white px-4 py-3 text-[15px] leading-[1.6] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#919191] md:text-[16px] ${
-          inline ? 'min-h-[72px]' : 'min-h-[96px] md:min-h-[112px]'
-        }`}
-        onKeyDown={(e) => {
-          if (e.nativeEvent.isComposing) return;
-          if (e.key === 'Escape' && onCancel) {
-            e.preventDefault();
-            onCancel();
-            return;
-          }
-          // Enter = 등록, Shift+Enter = 줄바꿈 (Ctrl/Cmd+Enter 도 등록)
-          if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            submit();
-          }
-        }}
-      />
+    <div className="flex w-full flex-col gap-2 md:gap-4">
+      {/* 폰: 입력칸과 화살표 버튼이 한 줄. PC: 입력칸만 한 줄 (버튼은 아래 줄) */}
+      <div className="flex w-full items-end gap-1 md:block">
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder={placeholder}
+          rows={1}
+          className={`min-h-[40px] w-full flex-1 resize-none rounded-[4px] border bg-white px-4 py-[10px] text-[16px] leading-[1.25] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#212121] md:border-[#b9b9b9] md:py-3 md:leading-[1.6] md:focus:border-[#919191] ${
+            inline ? 'border-[#212121] md:min-h-[72px]' : 'border-[#919191] md:min-h-[112px]'
+          }`}
+          onKeyDown={(e) => {
+            if (e.nativeEvent.isComposing) return;
+            if (e.key === 'Escape' && onCancel) {
+              e.preventDefault();
+              onCancel();
+              return;
+            }
+            // Enter = 등록, Shift+Enter = 줄바꿈 (Ctrl/Cmd+Enter 도 등록)
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              submit();
+            }
+          }}
+        />
+        <button
+          type="button"
+          onClick={submit}
+          disabled={!canSubmit}
+          aria-label={labels.submit}
+          className="flex h-[40px] w-[55px] shrink-0 items-center justify-center rounded-[4px] bg-[#212121] text-white disabled:opacity-60 md:hidden"
+        >
+          <ArrowBigRight width={24} height={24} strokeWidth={1.5} aria-hidden="true" />
+        </button>
+      </div>
 
-      {/* 아래 줄: 왼쪽 익명/비밀댓글 체크박스(게시판이 허용할 때만), 오른쪽 취소·등록 버튼 */}
-      <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-[20px]">
-          {allowAnonymous && (
-            <div className="flex items-center gap-[8px]">
-              <input
-                type="checkbox"
-                id={`${uid}-anonymous`}
-                checked={isAnonymous}
-                onChange={(e) => setIsAnonymous(e.target.checked)}
-                className="w-[24px] h-[24px] border border-[#919191] rounded-[2px] cursor-pointer accent-[#212121]"
-              />
-              <label
-                htmlFor={`${uid}-anonymous`}
-                className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[1.6] cursor-pointer"
+      {/* 아래 줄: 왼쪽 익명/비밀댓글 체크박스(게시판이 허용할 때만), 오른쪽 취소·등록.
+          폰에서는 등록이 위 화살표라 여기엔 취소만 남는다 */}
+      {(allowAnonymous || allowPrivateComment || onCancel || isMdUp) && (
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-[20px]">
+            {allowAnonymous && (
+              <div className="flex items-center gap-[8px]">
+                <input
+                  type="checkbox"
+                  id={`${uid}-anonymous`}
+                  checked={isAnonymous}
+                  onChange={(e) => setIsAnonymous(e.target.checked)}
+                  className={checkboxClass}
+                />
+                <label htmlFor={`${uid}-anonymous`} className={checkboxLabelClass}>
+                  익명
+                </label>
+              </div>
+            )}
+
+            {allowPrivateComment && (
+              <div className="flex items-center gap-[8px]">
+                <input
+                  type="checkbox"
+                  id={`${uid}-private`}
+                  checked={isPrivate}
+                  onChange={(e) => setIsPrivate(e.target.checked)}
+                  className={checkboxClass}
+                />
+                <label htmlFor={`${uid}-private`} className={checkboxLabelClass}>
+                  비밀 댓글
+                </label>
+              </div>
+            )}
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            {onCancel && (
+              <button
+                type="button"
+                onClick={onCancel}
+                className="h-9 rounded-[4px] px-3 text-[14px] tracking-[-0.28px] text-[#919191] transition-colors hover:text-[#212121] md:h-[52px] md:px-4 md:text-[16px]"
               >
-                익명
-              </label>
-            </div>
-          )}
-
-          {allowPrivateComment && (
-            <div className="flex items-center gap-[8px]">
-              <input
-                type="checkbox"
-                id={`${uid}-private`}
-                checked={isPrivate}
-                onChange={(e) => setIsPrivate(e.target.checked)}
-                className="w-[24px] h-[24px] border border-[#919191] rounded-[2px] cursor-pointer accent-[#212121]"
-              />
-              <label
-                htmlFor={`${uid}-private`}
-                className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[1.6] cursor-pointer"
-              >
-                비밀 댓글
-              </label>
-            </div>
-          )}
-        </div>
-
-        <div className="flex shrink-0 items-center gap-2">
-          {onCancel && (
+                취소
+              </button>
+            )}
             <button
               type="button"
-              onClick={onCancel}
-              className="h-11 rounded-[4px] px-4 text-[15px] tracking-[-0.32px] text-[#919191] transition-colors hover:text-[#212121] md:h-[52px] md:text-[16px]"
+              onClick={submit}
+              disabled={!canSubmit}
+              className={`hidden h-[52px] shrink-0 rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white disabled:opacity-60 md:block ${
+                inline ? 'px-5' : 'w-[135px]'
+              }`}
             >
-              취소
+              {submitting ? '등록 중...' : labels.submit}
             </button>
-          )}
-          <button
-            type="button"
-            onClick={submit}
-            disabled={!canSubmit}
-            className={`h-11 shrink-0 rounded-[4px] bg-[#212121] text-[15px] tracking-[-0.32px] text-white disabled:opacity-60 md:h-[52px] md:text-[16px] ${
-              inline ? 'px-5' : 'w-[120px] md:w-[135px]'
-            }`}
-          >
-            {submitting ? '등록 중...' : labels.submit}
-          </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
+
 
 // 공통게시판 댓글/대댓글.
 // 익명/비밀 허용 여부는 게시판 플래그(board.allowAnonymous / board.allowPrivateComment)로 결정한다.
@@ -426,112 +445,115 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         active ? 'font-medium text-[#212121]' : 'text-[#919191] hover:text-[#212121]'
       }`;
 
+    // 답글/수정/삭제·신고. 폰에서는 이름 줄 오른쪽에, PC 에서는 오른쪽 열에 — 같은 버튼을 자리만 달리 그린다
+    const actionButtons = (
+      <>
+        {/* 답글은 어느 댓글에나 단다. 부모 id 는 그 댓글 자신이라 알림이 그 사람에게 가고,
+            화면에서는 어차피 같은 묶음(최상위 댓글 아래) 한 줄에 시간순으로 놓인다 */}
+        <button type="button" className={actionClassName(replying)} onClick={() => toggleReply(comment)}>
+          답글
+        </button>
+        {owner ? (
+          <>
+            <button type="button" className={actionClassName(editing)} onClick={() => toggleEdit(comment)}>
+              수정
+            </button>
+            <button type="button" className={actionClassName(false)} onClick={() => handleDelete(comment.commentId)}>
+              삭제
+            </button>
+          </>
+        ) : (
+          canReport(comment) && (
+            <button type="button" className={actionClassName(false)} onClick={() => handleReport(comment)}>
+              신고
+            </button>
+          )
+        )}
+      </>
+    );
+
+    // 답글 표시. 폰(#183 피그마)은 꺾쇠(└) 모양의 좌·하 테두리 상자, PC 는 화살표 아이콘
+    const replyMark = isReply && (
+      <>
+        <span className="h-3 w-3 shrink-0 border-b border-l border-[#B9B9B9] md:hidden" aria-hidden />
+        <CornerDownRight className="hidden h-4 w-4 shrink-0 text-[#b9b9b9] md:block" aria-hidden />
+      </>
+    );
+
     return (
       <div
         key={comment.commentId}
         // 댓글 하나를 URL로 가리킬 수 있게 앵커를 붙인다 (예: /students/boards/2/posts/12#comment-3)
         id={anchorId}
-        className={`commentRow flex w-full scroll-mt-[100px] flex-col gap-3 py-4 md:py-5 ${
-          highlighted ? 'bg-[#f5f5f5]' : ''
+        className={`commentRow flex w-full scroll-mt-[100px] flex-col gap-[6px] md:gap-3 ${
+          highlighted ? 'bg-[#F6F6F6]' : ''
         }`}
         style={{ '--comment-depth': indentDepth }}
       >
-        <div className="flex w-full flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div className="flex min-w-0 flex-1 flex-col gap-[7px]">
+        <div className="flex w-full flex-col gap-[6px] md:flex-row md:items-start md:justify-between md:gap-3">
+          <div className="flex min-w-0 flex-1 flex-col gap-[4px] md:gap-[7px]">
             {deleted ? (
-              <p className="flex items-center gap-1 text-[16px] tracking-[-0.32px] text-[#919191] leading-[26px]">
-                {isReply && <CornerDownRight className="h-4 w-4 shrink-0 text-[#b9b9b9]" aria-hidden />}
+              <p className="flex items-center gap-[16px] text-[16px] leading-[19px] tracking-[-0.32px] text-[#919191] md:gap-1 md:leading-[26px]">
+                {replyMark}
                 삭제된 댓글입니다
               </p>
             ) : (
               <>
-                <span
-                  className={`flex items-center gap-1 text-[16px] tracking-[-0.32px] leading-[26px] ${
-                    owner ? 'font-semibold text-[#212121]' : 'text-[#454545]'
-                  }`}
-                >
-                  {isReply && (
-                    <CornerDownRight className="h-4 w-4 shrink-0 text-[#b9b9b9]" aria-hidden />
-                  )}
-                  {comment.authorName}
-                  {/* 내 댓글 표식 — 긴 스레드에서 내가 쓴 것을 바로 찾게. 익명 댓글도 서버 isMine 으로 판별된다 */}
-                  {owner && (
-                    <span className="ml-1 rounded-[3px] bg-[#212121] px-1.5 py-[1px] text-[11px] font-medium leading-[16px] tracking-[-0.2px] text-white">
-                      내 댓글
-                    </span>
-                  )}
-                </span>
-
-                {editing ? (
-                  // 수정: 본문 자리에 기존 내용이 채워진 입력창
-                  <div className="pt-1 md:pr-4">
-                    <CommentComposer
-                      mode="edit"
-                      initial={comment}
-                      allowAnonymous={allowAnonymous}
-                      allowPrivateComment={allowPrivateComment}
-                      submitting={false}
-                      autoFocus
-                      onSubmit={(body) => submitEdit(comment.commentId, body)}
-                      onCancel={closeInline}
-                    />
+                {/* 이름 줄. 폰에서는 오른쪽에 액션이 같이 선다 */}
+                <div className="flex items-start justify-between gap-4 md:block">
+                  <span
+                    className={`flex min-w-0 items-center gap-[16px] text-[16px] leading-[19px] tracking-[-0.32px] md:gap-1 md:leading-[26px] ${
+                      owner ? 'font-semibold text-[#212121]' : 'text-[#454545]'
+                    }`}
+                  >
+                    {replyMark}
+                    <span className="truncate">{comment.authorName}</span>
+                    {/* 내 댓글 표식 — 긴 스레드에서 내가 쓴 것을 바로 찾게. 익명 댓글도 서버 isMine 으로 판별된다 */}
+                    {owner && (
+                      <span className="shrink-0 rounded-[3px] bg-[#212121] px-1.5 py-[1px] text-[11px] font-medium leading-[16px] tracking-[-0.2px] text-white">
+                        내 댓글
+                      </span>
+                    )}
+                  </span>
+                  <div className="flex shrink-0 items-center gap-[10px] px-[4px] py-[2px] md:hidden">
+                    {actionButtons}
                   </div>
-                ) : (
-                  <>
-                    <p className="select-text text-[16px] tracking-[-0.32px] text-[#454545] leading-[26px] whitespace-pre-line">
-                      {comment.content}
-                    </p>
-                    <span className="text-[14px] tracking-[-0.28px] text-[#919191] leading-[22px]">
-                      {formatSlashDateTime(comment.updated ?? comment.created)}
-                    </span>
-                  </>
-                )}
+                </div>
+
+                {/* 본문·날짜. 폰의 답글은 꺾쇠 폭만큼(30px) 들여 쓴다 — PC 는 줄 전체가 깊이만큼 들어가 있다 */}
+                <div className={`flex flex-col gap-[4px] ${isReply ? 'pl-[30px] md:pl-0' : ''}`}>
+                  {editing ? (
+                    // 수정: 본문 자리에 기존 내용이 채워진 입력창
+                    <div className="pt-1 md:pr-4">
+                      <CommentComposer
+                        mode="edit"
+                        initial={comment}
+                        allowAnonymous={allowAnonymous}
+                        allowPrivateComment={allowPrivateComment}
+                        submitting={false}
+                        autoFocus
+                        onSubmit={(body) => submitEdit(comment.commentId, body)}
+                        onCancel={closeInline}
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <p className="select-text whitespace-pre-line text-[16px] leading-[19px] tracking-[-0.32px] text-[#454545] md:leading-[26px]">
+                        {comment.content}
+                      </p>
+                      <span className="text-[12px] leading-[14px] tracking-[-0.28px] text-[#919191] md:text-[14px] md:leading-[22px]">
+                        {formatSlashDateTime(comment.updated ?? comment.created)}
+                      </span>
+                    </>
+                  )}
+                </div>
               </>
             )}
           </div>
 
-          {/* 액션: 삭제된 댓글에는 표시하지 않는다 */}
+          {/* PC 액션 열. 삭제된 댓글에는 표시하지 않는다 */}
           {!deleted && (
-            <div className="flex shrink-0 items-center gap-3 md:ml-5">
-              {/* 답글은 어느 댓글에나 단다. 부모 id 는 그 댓글 자신이라 알림이 그 사람에게 가고,
-                  화면에서는 어차피 같은 묶음(최상위 댓글 아래) 한 줄에 시간순으로 놓인다 */}
-              <button
-                type="button"
-                className={actionClassName(replying)}
-                onClick={() => toggleReply(comment)}
-              >
-                답글
-              </button>
-
-              {owner ? (
-                <>
-                  <button
-                    type="button"
-                    className={actionClassName(editing)}
-                    onClick={() => toggleEdit(comment)}
-                  >
-                    수정
-                  </button>
-                  <button
-                    type="button"
-                    className={actionClassName(false)}
-                    onClick={() => handleDelete(comment.commentId)}
-                  >
-                    삭제
-                  </button>
-                </>
-              ) : (
-                canReport(comment) && (
-                  <button
-                    type="button"
-                    className={actionClassName(false)}
-                    onClick={() => handleReport(comment)}
-                  >
-                    신고
-                  </button>
-                )
-              )}
-            </div>
+            <div className="hidden shrink-0 items-center gap-3 md:ml-5 md:flex">{actionButtons}</div>
           )}
         </div>
 
@@ -541,7 +563,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
             className="commentReplyComposer flex w-full items-start gap-2 md:pr-4"
             style={{ '--comment-depth': Math.min(depth + 1, MAX_INDENT_DEPTH) }}
           >
-            <CornerDownRight className="mt-4 h-4 w-4 shrink-0 text-[#b9b9b9]" aria-hidden />
+            <CornerDownRight className="mt-3 hidden h-4 w-4 shrink-0 text-[#b9b9b9] md:mt-4 md:block" aria-hidden />
             <CommentComposer
               mode="reply"
               allowAnonymous={allowAnonymous}

@@ -365,18 +365,17 @@
    상한은 JS 쪽(MAX_INDENT_DEPTH)이 잡아 준다 — 여기서는 받은 값을 그대로 쓴다.
    PC 는 본문 폭이 넉넉해 한 단계를 크게, 폰은 작게 잡는다. */
 .commentRow {
-  padding-left: calc(var(--comment-depth, 0) * 14px);
-  padding-right: 0;
+  /* 폰(#183 피그마): 좌우 20px 고정. 깊이 들여쓰기는 안 하고 답글은 꺾쇠 + 본문 30px 로 표시한다 */
+  padding: 10px 20px;
 }
 
 .commentReplyComposer {
-  padding-left: calc(var(--comment-depth, 0) * 14px);
+  padding-left: 30px;
 }
 
 @media (min-width: 768px) {
   .commentRow {
-    padding-left: calc(40px + var(--comment-depth, 0) * 28px);
-    padding-right: 40px;
+    padding: 20px 40px 20px calc(40px + var(--comment-depth, 0) * 28px);
   }
 
   .commentReplyComposer {
