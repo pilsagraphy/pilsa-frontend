@@ -187,7 +187,7 @@ export default function PenaltyDashboardSection() {
                   {selectedDetail.error}
                 </div>
               ) : selectedDetail.data ? (
-                <div className="mt-[24px] grid grid-cols-2 gap-[10px] sm:flex sm:justify-between">
+                <div className="mt-[20px] grid grid-cols-2 gap-[8px] sm:mt-[24px] sm:grid-cols-4 sm:gap-[12px]">
                   <PenaltyStatCard
                     value={`${selectedDetail.data.cautionRemainder}/10`}
                     label="누적 주의"
