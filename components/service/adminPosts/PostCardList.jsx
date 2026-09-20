@@ -33,6 +33,14 @@ export default function PostCardList({
             title={post.title}
             stateLabel={getPostStateLabel(post.state)}
             metaRows={[
+              { label: '게시판', value: post.boardName },
+              { label: '글쓴이', value: post.authorName },
+              {
+                label: '댓글 · 좋아요 · 조회',
+                value: `${post.commentCount ?? 0} · ${post.likeCount ?? 0} · ${post.viewCount ?? 0}`,
+              },
+              { label: '작성일', value: formatShortDotDate(post.created) },
+              // 원글 보기는 댓글 카드처럼 맨 아래
               {
                 label: '원글',
                 value: (
@@ -44,13 +52,6 @@ export default function PostCardList({
                   </Link>
                 ),
               },
-              { label: '게시판', value: post.boardName },
-              { label: '글쓴이', value: post.authorName },
-              {
-                label: '댓글 · 좋아요 · 조회',
-                value: `${post.commentCount ?? 0} · ${post.likeCount ?? 0} · ${post.viewCount ?? 0}`,
-              },
-              { label: '작성일', value: formatShortDotDate(post.created) },
             ]}
             actions={
               isBlinded ? (

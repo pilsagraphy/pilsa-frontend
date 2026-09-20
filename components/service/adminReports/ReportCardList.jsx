@@ -42,16 +42,6 @@ export default function ReportCardList({
             title={preview}
             stateLabel={getReportStatusLabel(report)}
             metaRows={[
-              {
-                label: '대상',
-                value: targetHref ? (
-                  <Link href={targetHref} className="underline underline-offset-2">
-                    원글 보기
-                  </Link>
-                ) : (
-                  '-'
-                ),
-              },
               { label: '게시판', value: report.boardName },
               { label: '작성자', value: report.authorName },
               {
@@ -62,6 +52,17 @@ export default function ReportCardList({
                     : report.reasonLabel,
               },
               { label: '최초 신고', value: formatReportedAt(report.firstReportedAt) },
+              // 원글 보기는 맨 아래 (게시글·댓글 카드와 같은 자리)
+              {
+                label: '대상',
+                value: targetHref ? (
+                  <Link href={targetHref} className="underline underline-offset-2">
+                    원글 보기
+                  </Link>
+                ) : (
+                  '-'
+                ),
+              },
             ]}
             actions={
               <>
