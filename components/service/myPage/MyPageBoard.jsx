@@ -15,7 +15,10 @@ import SortSelect from '@/components/shared/board/boardList/SortSelect';
 import BoardSelect, { BOARD_FILTER_ALL } from '@/components/shared/board/boardList/BoardSelect';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
 
+import { useRouter } from 'next/navigation';
 import { getBoards } from '@/apis/board';
+import { ROUTES } from '@/constants/routes';
+import { getCommentAnchorId } from '@/lib/utils';
 import { formatDotDate } from '@/lib/utils';
 import useMyPageBoardStore from '@/stores/useMyPageBoardStore';
 
@@ -43,6 +46,14 @@ export default function MyPageBoard() {
 
   // 목록 상태/실행 함수는 스토어에서 가져온다
   const { items, totalPages, isLoading, error, fetchList } = useMyPageBoardStore();
+  const router = useRouter();
+
+  // 행을 누르면 원글로. 댓글 탭은 그 댓글 위치(#comment-id)까지 — 응답에 boardId·postId 가 이 용도로 들어 있다
+  const goToRow = (row) => {
+    if (row.boardId == null || row.postId == null) return;
+    const url = ROUTES.BOARD_POST(row.boardId, row.postId);
+    router.push(isComments && row.commentId != null ? `${url}#${getCommentAnchorId(row.commentId)}` : url);
+  };
 
   // '내가 쓴 댓글' 탭은 좋아요·조회수 대신 '내용' 컬럼을 노출 (번호/제목/내용/작성일)
   const isComments = activeTab === 'comments';
@@ -198,7 +209,8 @@ export default function MyPageBoard() {
                 return (
                   <TableRow
                     key={isComments ? row.commentId : row.postId}
-                    className="h-[50px] border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] md:text-[16px]"
+                    onClick={() => goToRow(row)}
+                    className="h-[50px] cursor-pointer border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] transition-colors hover:bg-[#FAFAFA] md:text-[16px]"
                   >
                     <TableCell className="text-center">{no}</TableCell>
                     <TableCell className="truncate pl-[28px] text-left">{title}</TableCell>

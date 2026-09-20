@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { ChevronDown, Menu, X } from 'lucide-react';
+import { ChevronDown, X } from 'lucide-react';
 import { toast } from 'sonner';
 import useSidebarStore from '@/stores/sidebar';
 import useAuthStore from '@/stores/useAuthStore';
@@ -14,7 +14,11 @@ import { loginUrlWithReturnTo, stashReturnTo } from '@/lib/returnTo';
 const Sidebar = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  // 폰 사이드바 열림 — 여는 버튼이 헤더에 있어 스토어로 공유한다
+  const isMobileOpen = useSidebarStore((s) => s.isMobileOpen);
+  const openMobile = useSidebarStore((s) => s.openMobile);
+  const closeMobile = useSidebarStore((s) => s.closeMobile);
+  const setIsMobileOpen = (next) => (next ? openMobile() : closeMobile());
 
   const { openMenus, toggleMenu, toggleLogin } = useSidebarStore();
   const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
@@ -154,19 +158,6 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* --- 모바일 전용 햄버거 버튼 --- */}
-      {/* tablet(768px) 이상에서는 아예 사라짐 */}
-      {!isMobileOpen && (
-        <div className="fixed top-10 left-6 z-[40] tablet:hidden">
-          <button
-            onClick={() => setIsMobileOpen(true)}
-            className="p-3 bg-white border border-gray-200 rounded-xl shadow-lg active:scale-95 transition-all"
-          >
-            <Menu size={24} className="text-[#212121]" />
-          </button>
-        </div>
-      )}
-
       {/* --- 모바일 전용 배경 오버레이 --- */}
       {isMobileOpen && (
         <div
