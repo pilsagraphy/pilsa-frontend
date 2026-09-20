@@ -1,5 +1,9 @@
 export const DUMMY_HISTORY = [
   {
+    year: "2021",
+    activities: ["필사그래피 창립"],
+  },
+  {
     year: "2022",
     activities: ["삼성 갤럭시 캠퍼스 큐레이터 공모전 당선"],
   },

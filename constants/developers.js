@@ -54,6 +54,11 @@ export const DEVELOPER_GENERATIONS = [
         roles: ['프론트'],
         works: ['브랜드 CI · 연혁 페이지', '공지 · 자유 · 정보게시판 글쓰기 마크업'],
       },
+      {
+        name: '하종연',
+        roles: ['프론트'],
+        works: ['로그인 페이지 · 일정 달력 마크업', '공지 · 자유 · 정보게시판 글 보기 마크업'],
+      },
       { name: '안예지', roles: ['DB'], works: ['데이터베이스 설계 · 테이블 정의'] },
       { name: '김효림', roles: ['디자인 고문', '기획'], works: [] },
       { name: '한서은', roles: ['디자인'], works: [] },

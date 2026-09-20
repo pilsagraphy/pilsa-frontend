@@ -4,7 +4,7 @@ import MemberListSection from './MemberListSection';
 import PenaltyStatCard from './PenaltyStatCard';
 import ReportSection from './ReportSection';
 import useSanctionStore from '@/stores/useSanctionStore';
-import { getPostDetailHref, boardHasComments } from '@/constants/adminPosts';
+import { getAdminPostDetailHref } from '@/constants/adminPosts';
 import { getCommentAnchorId } from '@/lib/utils';
 
 // tag(permanent|temporary|caution) → 현재 상태 문구
@@ -60,7 +60,8 @@ function toPostRow(report) {
     reportId: rowKey(report, report.postId),
     board: report.boardName,
     reason: toReasonLines(report),
-    link: getPostDetailHref(report.boardId, report.postId),
+    // 관리자 상세로 보낸다 — 회원 화면은 삭제·블라인드된 글을 안 보여 줘서 '원문 보기'가 빈 화면으로 끝났다
+    link: getAdminPostDetailHref(report.postId),
     targetTitle: report.title,
     linkLabel: report.title ? `게시글 보기: ${report.title}` : undefined,
     status: STATE_LABEL[report.state] ?? report.state,
@@ -74,11 +75,9 @@ function toPostRow(report) {
 // 신고된 댓글 응답 → ReportSection row (댓글은 소속 게시글 + 댓글 앵커로 이동)
 // 댓글엔 제목이 없어 이동할 원글의 제목(postTitle)을 대신 알린다.
 function toCommentRow(report) {
-  const postHref = getPostDetailHref(report.boardId, report.postId);
-  const link =
-    postHref && boardHasComments(report.boardName)
-      ? `${postHref}#${getCommentAnchorId(report.commentId)}`
-      : postHref;
+  // 관리자 상세는 모든 게시판에 댓글 칸이 있어 앵커를 늘 걸 수 있다
+  const postHref = getAdminPostDetailHref(report.postId);
+  const link = postHref ? `${postHref}#${getCommentAnchorId(report.commentId)}` : null;
   return {
     reportId: rowKey(report, report.commentId),
     board: report.boardName,

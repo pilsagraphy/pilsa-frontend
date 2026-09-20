@@ -22,11 +22,12 @@ const roleRank = (role) => {
 
 const isLead = (role) => role === 'PM' || role.includes('팀장') || role.includes('고문');
 
-// PM 0 · 팀장 1 · 팀원 2
+// PM 0 · 팀장 1 · 고문 2 · 팀원 3 (고문은 팀장 바로 아래 — PM 요청)
 const tier = (member) => {
   if (member.roles.includes('PM')) return 0;
   if (member.roles.some((r) => r.includes('팀장'))) return 1;
-  return 2;
+  if (member.roles.some((r) => r.includes('고문'))) return 2;
+  return 3;
 };
 
 function sortMembers(members) {

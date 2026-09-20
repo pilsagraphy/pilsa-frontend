@@ -9,6 +9,7 @@ import DraftLoadButton from './DraftLoadButton';
 import useBoardWriteStore from '@/stores/useBoardWriteStore';
 import { getBoardCategories } from '@/apis/board';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
+import useAuthStore from '@/stores/useAuthStore';
 
 // 공통게시판 글쓰기/수정 공용 폼.
 // 노출 항목은 게시판 플래그(board)로 결정한다:
@@ -23,7 +24,10 @@ import { useMinWidthMd } from '@/lib/useMinWidthMd';
 // 이어쓰는 초안 번호가 어긋나므로 불러오기 버튼을 잠근다.
 export default function BoardWriteForm({ boardId, board, enableDraft = false, busy = false }) {
   const isMdUp = useMinWidthMd();
-  const categoryMode = Boolean(board?.categoryMode);
+  const isAdmin = useAuthStore((s) => s.adminLevel) >= 1;
+  // 카테고리를 안 쓰는 게시판(공지사항)이라도 관리자에게는 '중요'(상단 고정)가 있다.
+  // 서버가 관리자에게만 '중요'를 내려주므로, 일반 회원은 목록이 비어 칸 자체가 안 뜬다
+  const categoryMode = Boolean(board?.categoryMode) || isAdmin;
   const allowAttachment = Boolean(board?.allowAttachment);
   const allowAnonymous = Boolean(board?.allowAnonymous);
 
@@ -48,6 +52,8 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
   const contentRef = useRef(null);
 
   const [categories, setCategories] = useState([]);
+  // 게시판이 카테고리를 안 쓰면 관리자용 '중요'만 오고, 그것마저 없으면 칸을 그리지 않는다
+  const showCategory = Boolean(board?.categoryMode) || categories.length > 0;
 
   useEffect(() => {
     if (!boardId || !categoryMode) return;
@@ -131,7 +137,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
         </div>
 
         {/* 카테고리 + 저장 버튼 */}
-        {categoryMode && (
+        {showCategory && (
           <div className="flex flex-col gap-[8px]">
             <label className="text-[14px] tracking-[-0.28px] text-[#454545]">카테고리</label>
             <div className="flex items-center gap-[8px]">
@@ -237,7 +243,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
           />
         </BoardWriteBox>
 
-        {categoryMode && (
+        {showCategory && (
           <BoardWriteBox label="카테고리">
             {/* 카테고리는 선택 사항이다.
                 안내 문구를 고른 채로 두면 categoryId 없이(=null) 저장된다. */}

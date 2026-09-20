@@ -80,7 +80,7 @@ export default function BoardWrite({ boardId }) {
     return buildDraftBody({
       title: form.title,
       content: form.content,
-      categoryId: board?.categoryMode ? form.categoryId : '',
+      categoryId: form.categoryId || '',
       isAnonymous: board?.allowAnonymous ? form.isAnonymous : false,
       attachmentIds: form.draftAttachments.map((file) => file.attachmentId),
     });
@@ -109,7 +109,7 @@ export default function BoardWrite({ boardId }) {
       const formData = new FormData();
       formData.append('title', title.trim());
       formData.append('content', content.trim());
-      if (board?.categoryMode && categoryId) formData.append('categoryId', String(categoryId));
+      if (categoryId) formData.append('categoryId', String(categoryId));
       if (board?.allowAnonymous) formData.append('isAnonymous', String(Boolean(isAnonymous)));
       if (board?.allowAttachment) {
         // 임시저장을 거친 첨부는 이미 서버에 올라가 있다 → id 로 연결한다
