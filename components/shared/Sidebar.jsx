@@ -11,6 +11,7 @@ import useBoardStore from '@/stores/useBoardStore';
 import { ROUTES, ALLOWED_BOARD_MEMBER_TYPES, ADMIN_DRIVE_URL } from '@/constants/routes';
 import { loginUrlWithReturnTo, stashReturnTo } from '@/lib/returnTo';
 import { confirmDialog } from '@/stores/useDialogStore';
+import useLightboxStore from '@/stores/useLightboxStore';
 
 const Sidebar = () => {
   const router = useRouter();
@@ -62,7 +63,9 @@ const Sidebar = () => {
     let start = null;
     const onStart = (event) => {
       const t = event.touches[0];
-      start = t && window.innerWidth < 768 ? { x: t.clientX, y: t.clientY } : null;
+      // 사진 크게 보기가 떠 있으면 그 스와이프는 사진 넘기기다 — 사이드바가 끼어들지 않는다 (PM, 2026-09-21)
+      const lightboxOpen = Boolean(useLightboxStore.getState().lightbox);
+      start = t && !lightboxOpen && window.innerWidth < 768 ? { x: t.clientX, y: t.clientY } : null;
     };
     const onEnd = (event) => {
       if (!start) return;

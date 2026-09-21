@@ -123,7 +123,22 @@ const EditorImage = Image.extend({
 });
 
 // 글자색·배경색은 마크다운 문법이 없다 → HTML <span style> 로 저장한다 (마크다운 안의 HTML 은 표준이다).
-// 상세 화면(BoardMarkdown)은 이 span 의 색만 통과시켜 그린다. 수정 때는 같은 span 을 다시 마크로 읽는다
+// 상세 화면(BoardMarkdown)은 이 span 의 색만 통과시켜 그린다. 수정 때는 같은 span 을 다시 마크로 읽는다.
+//
+// 읽을 때는 span 안쪽을 **마크다운으로** 다시 해석한다(markdownTokenizer). 기본 처리는 span 을 HTML 로만 읽어서
+// 안에 적힌 `\*` 같은 이스케이프가 글자 그대로 남고, 저장할 때마다 백슬래시가 한 겹씩 늘었다
+// (글 160 의 수정 이력에서 3 → 16 → 42 → 122 개로 불어난 것을 확인, 2026-09-21). 굵게 등 안쪽 서식도 이제 살아난다
+const SPAN_STYLE_PATTERN = /^<span style="([^"]*)">([\s\S]*?)<\/span>/;
+
+const parseSpanStyle = (style) => {
+  const attrs = {};
+  const color = /(?:^|;)\s*color\s*:\s*([^;]+)/i.exec(style)?.[1]?.trim();
+  const backgroundColor = /background-color\s*:\s*([^;]+)/i.exec(style)?.[1]?.trim();
+  if (color) attrs.color = color;
+  if (backgroundColor) attrs.backgroundColor = backgroundColor;
+  return attrs;
+};
+
 const ColoredTextStyle = TextStyle.extend({
   renderMarkdown(node, h) {
     const { color, backgroundColor } = node.attrs ?? {};
@@ -133,6 +148,25 @@ const ColoredTextStyle = TextStyle.extend({
     const children = h.renderChildren(node);
     return style ? `<span style="${style}">${children}</span>` : children;
   },
+  // 토큰 이름 → parseMarkdown 연결 (없으면 확장 이름 'textStyle' 로만 찾아 우리 토큰을 못 받는다)
+  markdownTokenName: 'coloredSpan',
+  markdownTokenizer: {
+    name: 'coloredSpan',
+    level: 'inline',
+    start: (src) => src.indexOf('<span style="'),
+    tokenize(src, _tokens, h) {
+      const match = SPAN_STYLE_PATTERN.exec(src);
+      if (!match) return undefined;
+      return {
+        type: 'coloredSpan',
+        raw: match[0],
+        style: match[1],
+        text: match[2],
+        tokens: h.inlineTokens(match[2]),
+      };
+    },
+  },
+  parseMarkdown: (token, h) => h.applyMark('textStyle', h.parseInline(token.tokens || []), parseSpanStyle(token.style)),
 });
 
 // ESC: 커서 자리에 걸린 서식(굵게·기울임·색)과 블록 서식(제목·목록)을 전부 풀어 평문으로 돌아간다 (PM, 2026-09-21).
