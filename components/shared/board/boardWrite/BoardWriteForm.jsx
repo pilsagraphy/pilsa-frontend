@@ -190,7 +190,6 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
             <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
               {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
             </span>
-            <span className="text-[12px] tracking-[-0.24px] text-[#919191]">이 게시판을 볼 수 있는 회원 전원</span>
           </label>
         )}
 
@@ -288,21 +287,6 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
           </BoardWriteBox>
         )}
 
-        {pinnedSelected && (
-          <label className="flex cursor-pointer items-center gap-[8px]">
-            <input
-              type="checkbox"
-              checked={notifyPinned}
-              onChange={(e) => setNotifyPinned(e.target.checked)}
-              className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
-            />
-            <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
-              {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
-            </span>
-            <span className="text-[12px] tracking-[-0.24px] text-[#919191]">이 게시판을 볼 수 있는 회원 전원</span>
-          </label>
-        )}
-
         {/* 임시저장 불러오기.
             시안에서 툴바·카테고리는 남은 공간을 반씩 나눠 갖고(flex:1) 이 버튼만 135px 로 고정이다.
             라벨이 없으므로 옆 칸의 입력 박스 아래쪽에 맞춘다(self-end). */}
@@ -391,6 +375,21 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
             </div>
           ))}
         </div>
+      )}
+
+      {/* '중요' 글 알림 — 본문 바로 위 한 줄 (툴바·카테고리 줄 안에 넣으면 세로로 찌그러진다, PM 2026-09-21) */}
+      {pinnedSelected && (
+        <label className="flex w-fit cursor-pointer items-center gap-[8px]">
+          <input
+            type="checkbox"
+            checked={notifyPinned}
+            onChange={(e) => setNotifyPinned(e.target.checked)}
+            className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+          />
+          <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
+            {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
+          </span>
+        </label>
       )}
 
       <BoardWriteBox label="내용" heightClass="min-h-[560px] !items-stretch">

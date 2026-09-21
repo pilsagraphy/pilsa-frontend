@@ -411,7 +411,7 @@ export default function ScheduleForm({
               />
             </div>
             <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
-              jpg · png · gif · webp, 최대 {MAX_IMAGES}장. 일정 상세의 세부 사항 아래에 옆으로 넘겨 보여요
+              jpg · png · gif · webp, 최대 {MAX_IMAGES}장. 세부 사항 아래에 표시됩니다.
             </p>
           </div>
         </ScheduleFormRow>
@@ -427,9 +427,11 @@ export default function ScheduleForm({
         <span className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121]">
           {isCreate ? '회원 전원에게 알림 보내기' : '(수정) 알림 보내기'}
         </span>
-        <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
-          {isCreate ? '끄면 조용히 등록돼요' : '켜면 회원 전원에게 "(수정)" 알림이 가요'}
-        </span>
+        {!isCreate && (
+          <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
+            켜면 회원 전원에게 &quot;(수정)&quot; 알림이 가요
+          </span>
+        )}
       </label>
 
       {/* 폰: 취소 왼쪽 끝 · 확인 오른쪽 끝. PC: 둘 다 오른쪽에 나란히 (PM, 2026-09-20) */}
