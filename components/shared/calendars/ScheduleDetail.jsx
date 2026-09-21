@@ -6,6 +6,7 @@ import ScheduleDetailDateTime from '@/components/shared/calendars/ScheduleDetail
 import ScheduleDetailContent from '@/components/shared/calendars/ScheduleDetailContent';
 import { CALENDAR_DETAIL_MAX_W } from '@/components/shared/calendars/calendarLayout';
 import { apiUrl } from '@/lib/apiBase';
+import ImageCarousel from '@/components/shared/ImageCarousel';
 
 // 월별 일정에서 고른 일정 하나의 상세.
 // 고른 일정이 없으면(목록에서 다시 눌러 접었을 때) 아무것도 그리지 않는다.
@@ -35,19 +36,16 @@ export default function ScheduleDetail({ schedule, fullWidth = false }) {
         <ScheduleDetailContent content={schedule.content} />
       </div>
 
-      {/* 일정 이미지(포스터·안내 사진). 공개 주소라 img 에 바로 넣는다 (PM, 2026-09-21) */}
+      {/* 일정 이미지(포스터·안내 사진). 여러 장이면 옆으로 넘기고, 누르면 크게 본다. PC 는 가운데 (PM, 2026-09-21) */}
       {Array.isArray(schedule.images) && schedule.images.length > 0 && (
-        <div className="mt-6 flex flex-col gap-[12px] px-1 md:mt-[28px] md:px-[26px]">
-          {schedule.images.map((image) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={image.imageId}
-              src={apiUrl(image.url)}
-              alt={image.fileName ?? '일정 이미지'}
-              loading="lazy"
-              className="h-auto w-full max-w-[640px] rounded-[6px] border border-[#EDEDED]"
-            />
-          ))}
+        <div className="mt-6 px-1 md:mt-[28px] md:px-[26px]">
+          <ImageCarousel
+            className="mx-auto max-w-[640px]"
+            images={schedule.images.map((image) => ({
+              src: apiUrl(image.url),
+              alt: image.fileName ?? '일정 이미지',
+            }))}
+          />
         </div>
       )}
     </section>

@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
-const GalleryTile = ({ photo, activeSrc = null, onActivate }) => {
+import { openLightbox } from '@/stores/useLightboxStore';
+
+// gallery / index: 크게 보기에서 앞뒤 사진으로 넘길 수 있게 전체 목록과 이 사진의 자리
+const GalleryTile = ({ photo, activeSrc = null, onActivate, gallery = [], index = 0 }) => {
   // 마우스가 있는 기기(웹)인지 여부. SSR/초기값은 데스크톱으로 가정.
   const [canHover, setCanHover] = useState(true);
 
@@ -23,15 +26,19 @@ const GalleryTile = ({ photo, activeSrc = null, onActivate }) => {
   // 새 이미지를 탭하면 이전에 켜둔 캡션은 자동으로 풀리고 이 타일만 켜진다.
   const isActive = activeSrc === photo.imageSrc;
 
-  // 웹(마우스)에서는 클릭을 무시하고 hover만 사용, 터치 기기에서만 탭 토글.
+  // 누르면 크게 보기 — 폰·PC 모두. (예전엔 폰에서 탭이 캡션 토글이었는데 크게 보기가 더 쓸모 있다, PM 2026-09-21)
   const handleClick = () => {
-    if (!hasCaption || canHover) return;
-    onActivate?.(isActive ? null : photo.imageSrc);
+    const list = gallery.length ? gallery : [photo];
+    openLightbox(
+      list.map((item) => ({ src: item.imageSrc, alt: item.title || '활동 사진' })),
+      gallery.length ? index : 0
+    );
+    if (hasCaption && !canHover) onActivate?.(isActive ? null : photo.imageSrc);
   };
 
   return (
     <div
-      className="group relative size-full overflow-hidden rounded-[4px] bg-[#D9D9D9]"
+      className="group relative size-full cursor-zoom-in overflow-hidden rounded-[4px] bg-[#D9D9D9]"
       onClick={handleClick}
     >
       <Image

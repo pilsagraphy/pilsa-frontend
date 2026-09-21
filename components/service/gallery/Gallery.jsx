@@ -68,7 +68,13 @@ function GalleryRows({ rows, activeSrc, onActivate }) {
             // 제 비율만큼 폭을 나눠 갖는다 (basis 0 이라 폭은 전적으로 비율이 정한다)
             style={{ flex: `${photo.ratio} 1 0%` }}
           >
-            <GalleryTile photo={photo} activeSrc={activeSrc} onActivate={onActivate} />
+            <GalleryTile
+              photo={photo}
+              activeSrc={activeSrc}
+              onActivate={onActivate}
+              gallery={GALLERY_PHOTOS}
+              index={GALLERY_PHOTOS.indexOf(photo)}
+            />
           </div>
         ))}
       </div>

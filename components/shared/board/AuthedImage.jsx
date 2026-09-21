@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { getFile } from '@/apis/file';
 import { extractFileId } from '@/lib/markdown';
+import { openLightbox } from '@/stores/useLightboxStore';
 
 // 우리 서버 파일(/api/user/files/{id})은 Authorization 헤더가 필요해서
 // <img src> 에 주소를 그대로 넣으면 404 가 난다. fetch(+토큰) → blob URL 로 바꿔 표시한다.
@@ -85,7 +86,9 @@ export default function AuthedImage({ src, alt = '', width, height, ...rest }) {
       width={width}
       height={height}
       loading="lazy"
-      className="h-auto max-w-full rounded-[4px]"
+      // 누르면 크게 보기 (사이트 공용 라이트박스, PM 2026-09-21)
+      onClick={() => openLightbox([{ src: fileId ? blobUrl : src, alt }])}
+      className="h-auto max-w-full cursor-zoom-in rounded-[4px]"
     />
   );
 }
