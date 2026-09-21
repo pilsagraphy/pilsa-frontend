@@ -377,21 +377,6 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
         </div>
       )}
 
-      {/* '중요' 글 알림 — 본문 바로 위 한 줄 (툴바·카테고리 줄 안에 넣으면 세로로 찌그러진다, PM 2026-09-21) */}
-      {pinnedSelected && (
-        <label className="flex w-fit cursor-pointer items-center gap-[8px]">
-          <input
-            type="checkbox"
-            checked={notifyPinned}
-            onChange={(e) => setNotifyPinned(e.target.checked)}
-            className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
-          />
-          <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
-            {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
-          </span>
-        </label>
-      )}
-
       <BoardWriteBox label="내용" heightClass="min-h-[560px] !items-stretch">
         <BoardRichEditor
           boardId={boardId}
@@ -401,6 +386,23 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
           onEditorReady={setEditor}
         />
       </BoardWriteBox>
+
+      {/* '중요' 글 알림 — 본문 상자 바로 아래 오른쪽 끝 (PM, 2026-09-21) */}
+      {pinnedSelected && (
+        <div className="flex w-full justify-end">
+          <label className="flex w-fit cursor-pointer items-center gap-[8px]">
+            <input
+              type="checkbox"
+              checked={notifyPinned}
+              onChange={(e) => setNotifyPinned(e.target.checked)}
+              className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+            />
+            <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
+              {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
+            </span>
+          </label>
+        </div>
+      )}
 
       {allowAnonymous && (
         <div className="flex items-center pt-[8px] pb-[4px]">

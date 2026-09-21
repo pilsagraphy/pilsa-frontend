@@ -417,25 +417,21 @@ export default function ScheduleForm({
         </ScheduleFormRow>
       </div>
 
-      {/* 회원 알림 여부 — 버튼 줄 바로 위 */}
-      <label className="mt-[18px] flex w-fit cursor-pointer items-center gap-[8px]">
-        <Checkbox
-          checked={notify}
-          onCheckedChange={(next) => setNotify(next === true)}
-          className="size-5 rounded-[2px] border-[#dedede] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
-        />
-        <span className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121]">
-          {isCreate ? '회원 전원에게 알림 보내기' : '(수정) 알림 보내기'}
-        </span>
-        {!isCreate && (
-          <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
-            켜면 회원 전원에게 &quot;(수정)&quot; 알림이 가요
+      {/* 아래 줄: 왼쪽에 회원 알림 체크(입력 칸 시작선에 맞춤) · 오른쪽에 취소·확인. 폰은 체크가 위로 올라간다 (PM, 2026-09-21) */}
+      <div className="mt-[22px] flex flex-col gap-[14px] md:flex-row md:items-center md:justify-between">
+        <label className="flex w-fit cursor-pointer items-center gap-[8px] md:ms-[92px]">
+          <Checkbox
+            checked={notify}
+            onCheckedChange={(next) => setNotify(next === true)}
+            className="size-5 rounded-[2px] border-[#dedede] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
+          />
+          <span className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121]">
+            {isCreate ? '회원 전원에게 알림 보내기' : '(수정) 알림 보내기'}
           </span>
-        )}
-      </label>
+        </label>
 
       {/* 폰: 취소 왼쪽 끝 · 확인 오른쪽 끝. PC: 둘 다 오른쪽에 나란히 (PM, 2026-09-20) */}
-      <div className="mt-[12px] flex items-center justify-between gap-[12px] md:justify-end">
+      <div className="flex items-center justify-between gap-[12px] md:justify-end">
         <button
           type="button"
           onClick={onCancel}
@@ -451,6 +447,7 @@ export default function ScheduleForm({
         >
           확인
         </button>
+      </div>
       </div>
     </form>
   );
