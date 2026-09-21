@@ -67,8 +67,12 @@ export const getEventList = async (from, to) => {
 //    iOS 는 webcal:// 을 직접 열고, 데스크톱은 위 render?cid=, 안드로이드는 2번(일정별 담기)
 
 // 4. 일정 상세 (GET /api/event/{eventId}) [PUBLIC]
-//    2026-08-28 구현됐지만 함수를 만들지 않았다 — 목록(1번)이 description 까지 내려주므로
-//    상세를 따로 부를 화면이 없다. 필요해지면 여기에 추가할 것
+//    응답: { message, data: { eventId, ... } } → toSchedule 로 화면 필드로 바꿔 돌려준다
+//    새 일정 알림(?eventId=)으로 달력에 들어올 때, 그 일정이 몇 월인지 알아내 달을 옮기는 데 쓴다
+export const getEvent = async (eventId) => {
+  const response = await axiosInstance.get(`/api/event/${encodeURIComponent(eventId)}`);
+  return response.data?.data ? toSchedule(response.data.data) : null;
+};
 
 // 5. 일정 카테고리 목록 - 셀렉트바 (GET /api/event/categories) [PUBLIC]
 //    응답: [{ eventCategoryId, name }] — is_active=1 인 것만, display_order 순

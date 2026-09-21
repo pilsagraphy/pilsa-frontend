@@ -15,6 +15,9 @@ function resolveNotificationUrl(data) {
       encodeURIComponent(data.boardId) +
       '/posts/' +
       encodeURIComponent(data.targetId);
+  } else if (data && data.targetType === 'event' && data.targetId != null) {
+    // 새 일정 알림 — 달력이 ?eventId= 를 읽어 그 일정을 펼친다
+    url = '/calendar?eventId=' + encodeURIComponent(data.targetId);
   }
   if (data && data.toastId != null) {
     url += (url.includes('?') ? '&' : '?') + 'toastId=' + encodeURIComponent(data.toastId);

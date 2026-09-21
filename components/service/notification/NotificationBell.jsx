@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, X } from 'lucide-react';
+import { Bell, CalendarDays, Pin, X } from 'lucide-react';
 import { toast } from 'sonner';
 import useAuthStore from '@/stores/useAuthStore';
 import {
@@ -18,6 +18,22 @@ const TYPE_LABELS = {
   COMMENT: '댓글',
   REPLY: '답글',
   NOTICE: '공지',
+  PINNED_POST: '중요',
+  EVENT: '일정',
+};
+
+// 중요 글·일정 알림은 댓글과 다르게 보인다 (PM, 2026-09-21): 라벨 색 + 아이콘 + 줄 배경 + 왼쪽 띠
+const TYPE_STYLES = {
+  PINNED_POST: {
+    label: 'text-[#E53935]',
+    row: 'bg-[#FFF6F6] border-l-[3px] border-l-[#E53935]',
+    Icon: Pin,
+  },
+  EVENT: {
+    label: 'text-[#1E88E5]',
+    row: 'bg-[#F3F8FF] border-l-[3px] border-l-[#1E88E5]',
+    Icon: CalendarDays,
+  },
 };
 
 const formatCreatedAt = (value) => {
@@ -224,21 +240,25 @@ export default function NotificationBell() {
             ) : items.length === 0 ? (
               <p className="py-10 text-center text-[13px] text-[#919191]">새 알림이 없습니다.</p>
             ) : (
-              items.map((item) => (
+              items.map((item) => {
+                const style = TYPE_STYLES[item.type];
+                const TypeIcon = style?.Icon;
+                return (
                 <button
                   key={item.toastId}
                   type="button"
                   onClick={() => handleItemClick(item)}
                   className={`group flex w-full items-start gap-2 border-b border-[#F5F5F5] px-4 py-3 text-left transition hover:bg-[#FAFAFA] ${
-                    item.isRead ? 'opacity-60' : ''
-                  }`}
+                    style?.row ?? ''
+                  } ${item.isRead ? 'opacity-60' : ''}`}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       {!item.isRead && (
                         <span className="size-1.5 shrink-0 rounded-full bg-[#E53935]" />
                       )}
-                      <span className="text-[12px] font-semibold text-[#757575]">
+                      {TypeIcon && <TypeIcon size={13} strokeWidth={2} className={style.label} aria-hidden />}
+                      <span className={`text-[12px] font-semibold ${style?.label ?? 'text-[#757575]'}`}>
                         {TYPE_LABELS[item.type] ?? '알림'}
                       </span>
                       <span className="ml-auto shrink-0 text-[11px] text-[#B9B9B9]">
@@ -262,7 +282,8 @@ export default function NotificationBell() {
                     <X size={14} />
                   </span>
                 </button>
-              ))
+                );
+              })
             )}
           </div>
         </div>

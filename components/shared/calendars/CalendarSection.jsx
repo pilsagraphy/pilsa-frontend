@@ -16,7 +16,7 @@ import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
 import CalendarSubscribeButton from '@/components/shared/calendars/CalendarSubscribeButton';
 import AddSingleEventDialog from '@/components/shared/calendars/AddSingleEventDialog';
 import { Plus } from 'lucide-react';
-import { getEventList } from '@/apis/event';
+import { getEvent, getEventList } from '@/apis/event';
 import { CALENDAR_COLUMN_MAX_W } from '@/components/shared/calendars/calendarLayout';
 
 function isDateIncludedInSchedule(date, schedule) {
@@ -198,6 +198,28 @@ export default function CalendarSection({
       return layerOfDate(next) !== layer;
     },
   };
+
+  // 새 일정 알림으로 들어오면(?eventId=) 그 일정의 달로 옮기고 펼친다. 처음 한 번만.
+  // useSearchParams 는 정적 페이지에서 Suspense 를 요구하므로 window 로 읽는다
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const eventId = new URLSearchParams(window.location.search).get('eventId');
+    if (!eventId) return undefined;
+    let alive = true;
+    getEvent(eventId)
+      .then((schedule) => {
+        if (!alive || !schedule?.startDate) return;
+        const start = startOfDay(parseISO(schedule.startDate));
+        setCurrentMonth(start);
+        setSelectedDate(start);
+        setSelectedScheduleId(schedule.scheduleId);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSelectSchedule = (schedule) => {
     const start = parseISO(schedule.startDate);
