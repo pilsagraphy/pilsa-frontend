@@ -189,6 +189,24 @@ export function Calendar({
           border-radius: 9999px;
           pointer-events: none;
         }
+
+        /* 오늘: 숫자를 굵게 하고 아래에 작은 점 (PM, 2026-09-21). 일정 막대·선택 테두리와 겹쳐도 보이게 z-index 를 올린다 */
+        td[data-today] > button {
+          position: relative;
+          font-weight: 700;
+        }
+        td[data-today] > button::after {
+          content: '';
+          position: absolute;
+          left: 50%;
+          bottom: 5px;
+          width: 4px;
+          height: 4px;
+          border-radius: 50%;
+          background: currentColor;
+          transform: translateX(-50%);
+          z-index: 3;
+        }
       `}</style>
 
       {/* 960px 미만에서는 달력이 컨테이너 폭을 다 쓰므로 머리줄도 같은 폭 — 화살표가 격자 양 끝에 온다 */}
@@ -259,7 +277,9 @@ export function Calendar({
             'w-9 p-0 text-center text-[11px] font-normal text-neutral-400 sm:w-12 sm:text-[14px]',
           day: 'h-9 w-9 p-0 text-center align-middle bg-transparent sm:h-12 sm:w-12',
           day_button:
-            'flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-[13px] font-normal text-neutral-900 outline-none hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-12 sm:w-12 sm:text-[16px]',
+            // mx-auto: 칸이 고정 폭보다 넓어질 때(폭에 맞춰 늘어나는 표·날짜 피커) 버튼이 칸 왼쪽에 붙어
+            // 날짜가 왼쪽으로 치우쳐 보였다 — flex 블록은 text-center 로 가운데 오지 않는다 (PM, 2026-09-21)
+            'mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-[13px] font-normal text-neutral-900 outline-none hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-12 sm:w-12 sm:text-[16px]',
           // 선택한 날짜 표시는 아래 <style>의 td[data-selected]::after로 그린다.
           // 버튼에 테두리를 주면 버튼 크기(48px 정사각)를 따라가 막대보다 높아지기 때문.
           today: 'bg-transparent',

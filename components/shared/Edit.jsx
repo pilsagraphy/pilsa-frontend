@@ -121,8 +121,10 @@ export default function Edit({ boardId, postId }) {
 
       await alertDialog('수정이 완료되었습니다.');
       resetForm();
-      // replace: 수정 화면을 히스토리에서 걷어낸다 — 상세에서 뒤로가기를 누르면 수정 화면이 아니라 그 전으로 간다
-      router.replace(ROUTES.BOARD_POST(boardId, postId));
+      // 수정 화면은 상세의 '수정' 버튼으로만 들어오므로 뒤로가기가 곧 상세다. replace 로 상세를 새로 쌓으면
+      // [상세, 상세] 가 되어 목록까지 뒤로가기를 두 번 눌러야 했다 (PM, 2026-09-21). 직접 열었으면(히스토리 없음) 상세로 대체
+      if (window.history.length > 1) router.back();
+      else router.replace(ROUTES.BOARD_POST(boardId, postId));
     } catch (error) {
       alertDialog(getErrorMessage(error, '게시글 수정에 실패했습니다.'));
     } finally {

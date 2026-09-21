@@ -191,7 +191,10 @@ export default function BoardWriteToolbar({
 
   const applyFormat = (run) => {
     if (!editor) return;
-    run(editor.chain().focus()).run();
+    // chain().focus() 는 폰에서 dom.focus() 를 그냥 불러 긴 본문의 스크롤이 튀었다(글자를 골라 색을 바꿀 때, PM 2026-09-21).
+    // 선택은 mousedown preventDefault 로 이미 살아 있으니 명령만 걸고, 포커스는 ProseMirror 의 preventScroll 포커스로
+    run(editor.chain()).run();
+    editor.view.focus();
   };
 
   const handlePickFiles = (e) => {

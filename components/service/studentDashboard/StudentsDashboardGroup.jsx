@@ -24,9 +24,13 @@ function BoardList({ boardId, title, posts = [], loading = false, emptyText, cla
   return (
     <div className={`flex min-w-0 w-full flex-col gap-[10px] ${className}`}>
       <div className="flex justify-between items-center pr-[20px] h-[30px] w-full">
-        <h3 className="font-['Pretendard',sans-serif] text-[20px] font-semibold tracking-[-0.02em] leading-[1.5] text-[#212121]">
-          {title}
-        </h3>
+        {/* 제목도 게시판으로 가는 링크 — 오른쪽 화살표만으로는 누를 데가 작았다 (PM, 2026-09-21) */}
+        <Link
+          href={ROUTES.BOARD(boardId)}
+          className="font-['Pretendard',sans-serif] text-[20px] font-semibold tracking-[-0.02em] leading-[1.5] text-[#212121] hover:underline underline-offset-4"
+        >
+          <h3>{title}</h3>
+        </Link>
 
         {/* 목록 전체보기 */}
         <Link

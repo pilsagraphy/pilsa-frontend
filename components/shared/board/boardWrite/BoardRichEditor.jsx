@@ -224,6 +224,30 @@ export default function BoardRichEditor({
     editor.commands.setContent(next, { contentType: 'markdown', emitUpdate: false });
   }, [editor, value]);
 
+  // 폰: 글자를 끌어 골랐을 때(범위 선택) 키보드를 내린다 — 서식·색을 고르려는 것이지 타이핑이 아니다 (PM, 2026-09-21).
+  // inputmode=none 으로 바꾸고 포커스를 한 번 갱신하면 키보드만 내려가고 선택은 남는다. 커서(빈 선택)로 돌아오면 원상복구
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return undefined;
+    if (typeof window === 'undefined' || !window.matchMedia('(pointer: coarse)').matches) return undefined;
+
+    const dom = editor.view.dom;
+    const refocus = () => {
+      if (document.activeElement !== dom) return;
+      dom.blur();
+      dom.focus({ preventScroll: true });
+    };
+    const sync = () => {
+      const ranged = !editor.state.selection.empty && !(editor.state.selection instanceof NodeSelection);
+      const current = dom.getAttribute('inputmode') ?? 'text';
+      const next = ranged ? 'none' : 'text';
+      if (current === next) return;
+      dom.setAttribute('inputmode', next);
+      refocus();
+    };
+    editor.on('selectionUpdate', sync);
+    return () => editor.off('selectionUpdate', sync);
+  }, [editor]);
+
   // 툴바에 편집기를 넘긴다. onCreate 안에서 부모 state 를 바꾸면 React 가 렌더 중 flushSync 라고 경고한다 → effect 에서
   useEffect(() => {
     editorRef.current = editor ?? null;
