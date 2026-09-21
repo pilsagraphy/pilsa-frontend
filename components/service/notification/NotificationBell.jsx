@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { Bell, CalendarDays, Pin, X } from 'lucide-react';
+import { Bell, CalendarDays, Megaphone, X } from 'lucide-react';
 import { toast } from 'sonner';
 import useAuthStore from '@/stores/useAuthStore';
 import {
@@ -27,7 +27,7 @@ const TYPE_STYLES = {
   PINNED_POST: {
     label: 'text-[#E53935]',
     row: 'bg-[#FFF6F6] border-l-[3px] border-l-[#E53935]',
-    Icon: Pin,
+    Icon: Megaphone,
   },
   EVENT: {
     label: 'text-[#1E88E5]',
@@ -252,12 +252,16 @@ export default function NotificationBell() {
                     style?.row ?? ''
                   } ${item.isRead ? 'opacity-60' : ''}`}
                 >
+                  {TypeIcon && (
+                    <span className={`mt-[2px] grid size-[28px] shrink-0 place-items-center rounded-full bg-white ${style.label}`}>
+                      <TypeIcon size={16} strokeWidth={2} aria-hidden />
+                    </span>
+                  )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       {!item.isRead && (
                         <span className="size-1.5 shrink-0 rounded-full bg-[#E53935]" />
                       )}
-                      {TypeIcon && <TypeIcon size={13} strokeWidth={2} className={style.label} aria-hidden />}
                       <span className={`text-[12px] font-semibold ${style?.label ?? 'text-[#757575]'}`}>
                         {TYPE_LABELS[item.type] ?? '알림'}
                       </span>
@@ -269,7 +273,7 @@ export default function NotificationBell() {
                       {item.title}
                     </p>
                     {item.message && (
-                      <p className="mt-0.5 truncate text-[12px] text-[#757575]">{item.message}</p>
+                      <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.5] text-[#757575]">{item.message}</p>
                     )}
                   </div>
                   <span

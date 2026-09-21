@@ -8,6 +8,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { DEFAULT_SCHEDULE_CATEGORY } from '@/constants/calendar';
 
 import DateField from '@/components/shared/DateField';
+import BoardRichEditor from '@/components/shared/board/boardWrite/BoardRichEditor';
+import BoardWriteToolbar from '@/components/shared/board/boardWrite/BoardWriteToolbar';
 import { apiUrl } from '@/lib/apiBase';
 import ScheduleSelect from './ScheduleSelect';
 import { FIELD_CLASS, ScheduleFormRow } from './ScheduleFormField';
@@ -135,20 +137,8 @@ export default function ScheduleForm({
     );
   }, [categories, category]);
 
-  // 세부 사항은 칸 안에서 스크롤하지 않고 내용만큼 늘어난다. (페이지 전체가 길어진다)
-  const contentRef = React.useRef(null);
-
-  React.useLayoutEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
-
-    // box-sizing: border-box라 scrollHeight(테두리 제외)만 넣으면 테두리 두께만큼 마지막 줄이 잘린다.
-    const { borderTopWidth, borderBottomWidth } = getComputedStyle(el);
-    const border = parseFloat(borderTopWidth) + parseFloat(borderBottomWidth);
-
-    el.style.height = 'auto';
-    el.style.height = `${el.scrollHeight + border}px`;
-  }, [content]);
+  // 세부 사항은 게시글과 같은 편집기(툴바 서식 · 마크다운 저장). 이미지는 위 이미지 칸이 맡으므로 본문 삽입은 끈다 (PM, 2026-09-21)
+  const [contentEditor, setContentEditor] = React.useState(null);
 
   // normalize: 값이 바뀐 뒤 한 번 더 손보는 함수. 날짜는 일자 clamp에 쓴다.
   const patch = (setter, normalize) => (key) => (value) =>
@@ -405,16 +395,22 @@ export default function ScheduleForm({
           </div>
         </ScheduleFormRow>
 
-        <ScheduleFormRow label="세부 사항" htmlFor="schedule-content">
-          <textarea
-            ref={contentRef}
-            id="schedule-content"
-            value={content}
-            onChange={(event) => setContent(event.target.value)}
-            rows={1}
-            placeholder="내용을 입력하세요"
-            className="min-h-[118px] w-full resize-none overflow-hidden rounded-[6px] border border-[#dedede] bg-white px-[15px] py-[8px] text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] outline-none transition-colors placeholder:text-[#212121] focus:border-[#919191]"
-          />
+        <ScheduleFormRow label="세부 사항">
+          <div className="flex w-full flex-col gap-[8px]">
+            <div className="flex h-[42px] w-full items-center rounded-[6px] border border-[#dedede] bg-white focus-within:border-[#919191]">
+              <BoardWriteToolbar editor={contentEditor} allowAttachment={false} />
+            </div>
+            <div className="flex min-h-[160px] w-full items-stretch rounded-[6px] border border-[#dedede] bg-white focus-within:border-[#919191]">
+              <BoardRichEditor
+                boardId={null}
+                value={content}
+                onChange={setContent}
+                allowUpload={false}
+                onEditorReady={setContentEditor}
+                placeholder="내용을 입력하세요"
+              />
+            </div>
+          </div>
         </ScheduleFormRow>
       </div>
 
