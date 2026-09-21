@@ -52,3 +52,27 @@ export const deleteEvent = async (eventId) => {
   const response = await axiosInstance.delete(`/api/admin/event/${encodeURIComponent(eventId)}`);
   return response.data;
 };
+
+// 4. 일정 이미지 업로드 (POST /api/admin/event/{eventId}/images) [ADMIN]
+//    multipart files(여러 장). 이미지 파일만, 일정 하나에 10장까지
+//    응답: [{ imageId, url, fileName }]
+//    실패: 400 이미지 아님·장수 초과 / 404 없는 일정
+export const uploadEventImages = async (eventId, files) => {
+  const formData = new FormData();
+  files.forEach((file) => formData.append('files', file));
+  const response = await axiosInstance.post(
+    `/api/admin/event/${encodeURIComponent(eventId)}/images`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 5 * 60 * 1000 }
+  );
+  return response.data;
+};
+
+// 5. 일정 이미지 삭제 (DELETE /api/admin/event/{eventId}/images/{imageId}) [ADMIN]
+//    행은 소프트 삭제, 파일은 커밋 뒤 삭제. 실패: 404 없는 이미지
+export const deleteEventImage = async (eventId, imageId) => {
+  const response = await axiosInstance.delete(
+    `/api/admin/event/${encodeURIComponent(eventId)}/images/${encodeURIComponent(imageId)}`
+  );
+  return response.data;
+};

@@ -1,13 +1,14 @@
 'use client';
 
 import * as React from 'react';
-import { Pencil, Plus } from 'lucide-react';
+import { ImagePlus, Pencil, Plus, X } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { DEFAULT_SCHEDULE_CATEGORY } from '@/constants/calendar';
 
 import DateField from '@/components/shared/DateField';
+import { apiUrl } from '@/lib/apiBase';
 import ScheduleSelect from './ScheduleSelect';
 import { FIELD_CLASS, ScheduleFormRow } from './ScheduleFormField';
 
@@ -91,6 +92,38 @@ export default function ScheduleForm({
   const [startTime, setStartTime] = React.useState(() => toTimeParts(schedule?.startTime));
   const [endTime, setEndTime] = React.useState(() => toTimeParts(schedule?.endTime));
 
+  // 이미지(첨부). 기존 것은 X 로 삭제 표시(토글), 새 파일은 확인을 누를 때 부모가 올린다 (PM, 2026-09-21)
+  const existingImages = schedule?.images ?? [];
+  const [removedImageIds, setRemovedImageIds] = React.useState([]);
+  const [newFiles, setNewFiles] = React.useState([]); // [{ file, previewUrl }]
+  const imageInputRef = React.useRef(null);
+  const MAX_IMAGES = 10;
+
+  const toggleRemoveImage = (imageId) =>
+    setRemovedImageIds((prev) => (prev.includes(imageId) ? prev.filter((id) => id !== imageId) : [...prev, imageId]));
+
+  const addFiles = (fileList) => {
+    const picked = Array.from(fileList ?? []).filter((file) => file.type.startsWith('image/'));
+    if (!picked.length) return;
+    const remaining = MAX_IMAGES - (existingImages.length - removedImageIds.length) - newFiles.length;
+    if (picked.length > remaining) {
+      toast.error(`이미지는 일정 하나에 ${MAX_IMAGES}장까지 붙일 수 있어요.`);
+    }
+    const accepted = picked.slice(0, Math.max(0, remaining));
+    setNewFiles((prev) => [...prev, ...accepted.map((file) => ({ file, previewUrl: URL.createObjectURL(file) }))]);
+  };
+
+  const removeNewFile = (index) =>
+    setNewFiles((prev) => {
+      URL.revokeObjectURL(prev[index]?.previewUrl);
+      return prev.filter((_, i) => i !== index);
+    });
+
+  // 미리보기 blob URL 은 폼이 닫힐 때 회수한다
+  const newFilesRef = React.useRef(newFiles);
+  newFilesRef.current = newFiles;
+  React.useEffect(() => () => newFilesRef.current.forEach((item) => URL.revokeObjectURL(item.previewUrl)), []);
+
   // 선택지가 늦게 도착하면 그때 기본값을 채운다. 이미 값이 있으면(수정이거나 사용자가 골랐으면)
   // 건드리지 않는다. '기타'가 목록에 있으면 그걸 쓰고, 없으면 목록의 첫 번째를 쓴다 —
   // 목록 자체를 하드코딩하지는 않되 '구분 없음'에 가까운 기본값을 유지하기 위함이다.
@@ -171,6 +204,9 @@ export default function ScheduleForm({
       endDate,
       startTime: isAllDay ? null : from,
       endTime: isAllDay ? null : to,
+      // 이미지는 일정이 저장된 뒤 부모가 처리한다 (등록은 eventId 가 생긴 다음에야 올릴 수 있다)
+      newImages: newFiles.map((item) => item.file),
+      deleteImageIds: removedImageIds,
     });
   };
 
@@ -288,6 +324,80 @@ export default function ScheduleForm({
                 시각은 아직 저장되지 않습니다. 모든 일정이 종일로 등록됩니다.
               </p>
             )}
+          </div>
+        </ScheduleFormRow>
+
+        <ScheduleFormRow label="이미지">
+          <div className="flex flex-col gap-[8px]">
+            {(existingImages.length > 0 || newFiles.length > 0) && (
+              <div className="flex flex-wrap gap-[8px]">
+                {existingImages.map((image) => {
+                  const removed = removedImageIds.includes(image.imageId);
+                  return (
+                    <div key={`exist-${image.imageId}`} className="relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={apiUrl(image.url)}
+                        alt={image.fileName ?? ''}
+                        className={`size-[88px] rounded-[6px] border border-[#dedede] object-cover ${removed ? 'opacity-30' : ''}`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => toggleRemoveImage(image.imageId)}
+                        aria-label={removed ? '삭제 취소' : '이미지 삭제'}
+                        title={removed ? '삭제 취소' : '이미지 삭제'}
+                        className="absolute -right-[6px] -top-[6px] flex size-[22px] items-center justify-center rounded-full bg-[#212121] text-white shadow"
+                      >
+                        {removed ? <Plus size={12} strokeWidth={2.5} /> : <X size={12} strokeWidth={2.5} />}
+                      </button>
+                    </div>
+                  );
+                })}
+                {newFiles.map((item, index) => (
+                  <div key={`new-${index}-${item.file.name}`} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={item.previewUrl}
+                      alt={item.file.name}
+                      className="size-[88px] rounded-[6px] border border-dashed border-[#919191] object-cover"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeNewFile(index)}
+                      aria-label="이미지 빼기"
+                      title="이미지 빼기"
+                      className="absolute -right-[6px] -top-[6px] flex size-[22px] items-center justify-center rounded-full bg-[#212121] text-white shadow"
+                    >
+                      <X size={12} strokeWidth={2.5} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-[10px]">
+              <button
+                type="button"
+                onClick={() => imageInputRef.current?.click()}
+                className="flex h-[36px] items-center gap-[6px] rounded-[6px] border border-[#dedede] bg-white px-[12px] text-[13px] leading-[1.6] tracking-[-0.26px] text-[#454545] transition-colors hover:bg-[#f6f6f6]"
+              >
+                <ImagePlus size={16} strokeWidth={1.6} aria-hidden />
+                이미지 추가
+              </button>
+              <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
+                포스터·안내 사진 등 최대 {MAX_IMAGES}장 · 일정 상세에 그대로 보여요
+              </span>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                hidden
+                onChange={(event) => {
+                  addFiles(event.target.files);
+                  event.target.value = '';
+                }}
+              />
+            </div>
           </div>
         </ScheduleFormRow>
 

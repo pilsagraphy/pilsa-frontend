@@ -30,6 +30,8 @@ const toSchedule = (event) => ({
   // 종일 일정이면 서버가 null 을 준다 — 화면은 값이 있을 때만 시각을 덧붙인다
   startTime: event.startTime ?? null,
   endTime: event.endTime ?? null,
+  // 일정 이미지 [{ imageId, url, fileName }] — url 은 비로그인 공개, lib/apiBase 의 apiUrl 로 절대 주소를 만든다
+  images: Array.isArray(event.images) ? event.images : [],
 });
 
 // ─────────────────────────── 조회 ───────────────────────────

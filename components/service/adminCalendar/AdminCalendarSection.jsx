@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { createEvent, deleteEvent, updateEvent } from '@/apis/admin/event';
+import { createEvent, deleteEvent, deleteEventImage, updateEvent, uploadEventImages } from '@/apis/admin/event';
 import { getErrorMessage } from '@/apis/auth';
 import { getEventCategories } from '@/apis/event';
 import CalendarSection from '@/components/shared/calendars/CalendarSection';
@@ -98,6 +98,23 @@ export default function AdminCalendarSection() {
         const result = isEdit
           ? await updateEvent(values.scheduleId, values)
           : await createEvent(values);
+
+        // 이미지는 일정이 저장된 뒤에 — 등록은 여기서야 eventId 가 생긴다.
+        // 실패해도 일정 자체는 저장됐으니 알리기만 하고 화면은 정상 흐름대로 닫는다
+        const eventId = isEdit ? values.scheduleId : result?.data?.eventId;
+        const deleteIds = values.deleteImageIds ?? [];
+        const newImages = values.newImages ?? [];
+        if (eventId && (deleteIds.length || newImages.length)) {
+          try {
+            for (const imageId of deleteIds) {
+              // eslint-disable-next-line no-await-in-loop
+              await deleteEventImage(eventId, imageId);
+            }
+            if (newImages.length) await uploadEventImages(eventId, newImages);
+          } catch (imageError) {
+            toast.error(getErrorMessage(imageError, '일정은 저장됐지만 이미지 처리에 실패했습니다.'));
+          }
+        }
 
         toast.success(
           result?.message ?? (isEdit ? '일정이 수정되었습니다.' : '새로운 일정이 등록되었습니다.'),
