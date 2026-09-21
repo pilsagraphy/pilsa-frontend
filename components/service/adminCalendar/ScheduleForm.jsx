@@ -328,64 +328,65 @@ export default function ScheduleForm({
         </ScheduleFormRow>
 
         <ScheduleFormRow label="이미지">
-          <div className="flex flex-col gap-[8px]">
-            {(existingImages.length > 0 || newFiles.length > 0) && (
-              <div className="flex flex-wrap gap-[8px]">
-                {existingImages.map((image) => {
-                  const removed = removedImageIds.includes(image.imageId);
-                  return (
-                    <div key={`exist-${image.imageId}`} className="relative">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={apiUrl(image.url)}
-                        alt={image.fileName ?? ''}
-                        className={`size-[88px] rounded-[6px] border border-[#dedede] object-cover ${removed ? 'opacity-30' : ''}`}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => toggleRemoveImage(image.imageId)}
-                        aria-label={removed ? '삭제 취소' : '이미지 삭제'}
-                        title={removed ? '삭제 취소' : '이미지 삭제'}
-                        className="absolute -right-[6px] -top-[6px] flex size-[22px] items-center justify-center rounded-full bg-[#212121] text-white shadow"
-                      >
-                        {removed ? <Plus size={12} strokeWidth={2.5} /> : <X size={12} strokeWidth={2.5} />}
-                      </button>
-                    </div>
-                  );
-                })}
-                {newFiles.map((item, index) => (
-                  <div key={`new-${index}-${item.file.name}`} className="relative">
+          {/* 다른 칸과 같은 테두리 상자 안에 썸네일 격자 + 맨 끝의 점선 '추가' 칸 (PM: 더 예쁘게, 2026-09-21) */}
+          <div className="flex flex-col gap-[6px]">
+            <div className="flex flex-wrap gap-[10px] rounded-[6px] border border-[#dedede] bg-white p-[10px]">
+              {existingImages.map((image) => {
+                const removed = removedImageIds.includes(image.imageId);
+                return (
+                  <div key={`exist-${image.imageId}`} className="relative size-[88px]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={item.previewUrl}
-                      alt={item.file.name}
-                      className="size-[88px] rounded-[6px] border border-dashed border-[#919191] object-cover"
+                      src={apiUrl(image.url)}
+                      alt={image.fileName ?? ''}
+                      className={`size-full rounded-[6px] object-cover ${removed ? 'opacity-30 grayscale' : ''}`}
                     />
+                    {removed && (
+                      <span className="pointer-events-none absolute inset-x-0 bottom-[6px] text-center text-[11px] font-medium text-[#E53935]">
+                        삭제 예정
+                      </span>
+                    )}
                     <button
                       type="button"
-                      onClick={() => removeNewFile(index)}
-                      aria-label="이미지 빼기"
-                      title="이미지 빼기"
-                      className="absolute -right-[6px] -top-[6px] flex size-[22px] items-center justify-center rounded-full bg-[#212121] text-white shadow"
+                      onClick={() => toggleRemoveImage(image.imageId)}
+                      aria-label={removed ? '삭제 취소' : '이미지 삭제'}
+                      title={removed ? '삭제 취소' : '이미지 삭제'}
+                      className="absolute -right-[6px] -top-[6px] flex size-[22px] items-center justify-center rounded-full border border-white bg-[#212121] text-white shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
                     >
-                      <X size={12} strokeWidth={2.5} />
+                      {removed ? <Plus size={12} strokeWidth={2.5} /> : <X size={12} strokeWidth={2.5} />}
                     </button>
                   </div>
-                ))}
-              </div>
-            )}
-            <div className="flex items-center gap-[10px]">
+                );
+              })}
+              {newFiles.map((item, index) => (
+                <div key={`new-${index}-${item.file.name}`} className="relative size-[88px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={item.previewUrl} alt={item.file.name} className="size-full rounded-[6px] object-cover" />
+                  <span className="pointer-events-none absolute left-[6px] top-[6px] rounded-[4px] bg-[#212121]/80 px-[5px] py-[1px] text-[10px] font-medium text-white">
+                    새 사진
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeNewFile(index)}
+                    aria-label="이미지 빼기"
+                    title="이미지 빼기"
+                    className="absolute -right-[6px] -top-[6px] flex size-[22px] items-center justify-center rounded-full border border-white bg-[#212121] text-white shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
+                  >
+                    <X size={12} strokeWidth={2.5} />
+                  </button>
+                </div>
+              ))}
+
+              {/* 추가 칸 — 사진 칸과 같은 크기의 점선 상자 */}
               <button
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
-                className="flex h-[36px] items-center gap-[6px] rounded-[6px] border border-[#dedede] bg-white px-[12px] text-[13px] leading-[1.6] tracking-[-0.26px] text-[#454545] transition-colors hover:bg-[#f6f6f6]"
+                className="flex size-[88px] flex-col items-center justify-center gap-[4px] rounded-[6px] border border-dashed border-[#b9b9b9] text-[#919191] transition-colors hover:border-[#212121] hover:text-[#212121]"
               >
-                <ImagePlus size={16} strokeWidth={1.6} aria-hidden />
-                이미지 추가
+                <ImagePlus size={20} strokeWidth={1.6} aria-hidden />
+                <span className="text-[12px] leading-none tracking-[-0.24px]">추가</span>
               </button>
-              <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
-                포스터·안내 사진 등 최대 {MAX_IMAGES}장 · 일정 상세 본문 아래에 보여요 (구독 캘린더에는 첨부·링크로)
-              </span>
+
               <input
                 ref={imageInputRef}
                 type="file"
@@ -398,6 +399,9 @@ export default function ScheduleForm({
                 }}
               />
             </div>
+            <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
+              jpg · png · gif · webp, 최대 {MAX_IMAGES}장. 일정 상세 본문 아래에 보이고, 구독 캘린더에는 첨부·링크로 실려요
+            </p>
           </div>
         </ScheduleFormRow>
 
