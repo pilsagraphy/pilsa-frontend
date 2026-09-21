@@ -3,7 +3,7 @@
 import ScheduleDetailTitle from '@/components/shared/calendars/ScheduleDetailTitle';
 import ScheduleDetailCategory from '@/components/shared/calendars/ScheduleDetailCategory';
 import ScheduleDetailDateTime from '@/components/shared/calendars/ScheduleDetailDateTime';
-import ScheduleDetailContent from '@/components/shared/calendars/ScheduleDetailContent';
+import ScheduleDetailContent, { referencedImageIndexes } from '@/components/shared/calendars/ScheduleDetailContent';
 import { CALENDAR_DETAIL_MAX_W } from '@/components/shared/calendars/calendarLayout';
 import { apiUrl } from '@/lib/apiBase';
 
@@ -32,13 +32,16 @@ export default function ScheduleDetail({ schedule, fullWidth = false }) {
       </dl>
 
       <div className="mt-6 px-1 md:mt-[40px] md:px-[26px]">
-        <ScheduleDetailContent content={schedule.content} />
+        <ScheduleDetailContent content={schedule.content} images={schedule.images ?? []} />
       </div>
 
-      {/* 일정 이미지(포스터·안내 사진). 공개 주소라 img 에 바로 넣는다 (PM, 2026-09-21) */}
-      {Array.isArray(schedule.images) && schedule.images.length > 0 && (
+      {/* 본문에서 [사진 N] 으로 끼우지 않은 이미지만 아래에 나열. 공개 주소라 img 에 바로 넣는다 (PM, 2026-09-21) */}
+      {Array.isArray(schedule.images) && schedule.images.length > 0 && (() => {
+        const used = new Set(referencedImageIndexes(schedule.content));
+        const rest = schedule.images.filter((_, index) => !used.has(index));
+        return rest.length > 0 ? (
         <div className="mt-6 flex flex-col gap-[12px] px-1 md:mt-[28px] md:px-[26px]">
-          {schedule.images.map((image) => (
+          {rest.map((image) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               key={image.imageId}
@@ -49,7 +52,8 @@ export default function ScheduleDetail({ schedule, fullWidth = false }) {
             />
           ))}
         </div>
-      )}
+        ) : null;
+      })()}
     </section>
   );
 }

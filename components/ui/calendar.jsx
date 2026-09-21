@@ -46,6 +46,8 @@ export function Calendar({
   // 날짜 칸 더블클릭. (관리자 화면에서 '그 날짜로 일정 추가'에 쓴다)
   // 넘기지 않으면 아무 동작도 붙지 않는다.
   onDayDoubleClick,
+  // 헤더 '오늘' 버튼. 달은 여기서 오늘로 돌리고, 날짜 선택까지 하려면 부모가 이 콜백으로 받는다
+  onToday,
   ...props
 }) {
   const [internalMonth, setInternalMonth] = React.useState(() => new Date());
@@ -60,6 +62,12 @@ export function Calendar({
     const d = new Date(month);
     d.setMonth(d.getMonth() - 1);
     setMonth(d);
+  };
+
+  const goToday = () => {
+    const today = new Date();
+    setMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+    onToday?.(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
   };
 
   const goNext = () => {
@@ -190,22 +198,9 @@ export function Calendar({
           pointer-events: none;
         }
 
-        /* 오늘: 숫자를 굵게 하고 아래에 작은 점 (PM, 2026-09-21). 일정 막대·선택 테두리와 겹쳐도 보이게 z-index 를 올린다 */
+        /* 오늘: 숫자만 굵게 (점은 PM 이 빼 달라 함, 2026-09-21). 어느 달인지는 헤더의 '오늘' 버튼으로 돌아온다 */
         td[data-today] > button {
-          position: relative;
           font-weight: 700;
-        }
-        td[data-today] > button::after {
-          content: '';
-          position: absolute;
-          left: 50%;
-          bottom: 5px;
-          width: 4px;
-          height: 4px;
-          border-radius: 50%;
-          background: currentColor;
-          transform: translateX(-50%);
-          z-index: 3;
         }
       `}</style>
 
@@ -236,6 +231,15 @@ export function Calendar({
               </option>
             ))}
           </SelectWithChevron>
+
+          {/* 오늘로 — 다른 달을 보다가 한 번에 돌아온다 (PM, 2026-09-21) */}
+          <button
+            type="button"
+            onClick={goToday}
+            className="rounded-[4px] border border-[#dedede] px-[8px] py-[2px] text-[12px] leading-[1.6] text-[#454545] transition-colors hover:bg-[#f6f6f6] sm:text-[13px]"
+          >
+            오늘
+          </button>
         </div>
 
         <button

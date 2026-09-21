@@ -11,9 +11,14 @@ const MEMBER_TYPE_LABELS = { STUDENT: '재학생', ALUMNI: '졸업생' };
 function ActivityHeader({ title, onViewAll }) {
   return (
     <div className="flex h-[44px] items-center justify-between">
-      <h3 className="text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121]">
-        {title}
-      </h3>
+      {/* 제목도 화살표와 같은 곳으로 — 메인페이지 게시판 제목과 같은 규칙 (PM, 2026-09-21) */}
+      <button
+        type="button"
+        onClick={onViewAll}
+        className="text-left text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121] hover:underline underline-offset-4"
+      >
+        <h3>{title}</h3>
+      </button>
       {/* 메인 탑5 · 글 하단 '목록'과 같은 선 화살표 — 사이트 안의 '더 보기' 화살표를 하나로 */}
       <button
         type="button"

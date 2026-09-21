@@ -209,6 +209,14 @@ export default function CalendarSection({
     setCurrentMonth(start);
   };
 
+  // 헤더 '오늘' — 달을 돌리는 건 달력이 하고, 여기서는 오늘을 고른 상태로 만든다 (토글 아님)
+  const handleToday = (today) => {
+    onUserSelect?.();
+    setSelectedDate(today);
+    const found = schedules.find((schedule) => isDateIncludedInSchedule(today, schedule));
+    setSelectedScheduleId(found ? found.scheduleId : null);
+  };
+
   const handleSelectDate = (d) => {
     if (!d) return;
 
@@ -281,6 +289,7 @@ export default function CalendarSection({
             // 3. 일정이 있는 기간을 modifiers로 전달 (막대 스타일은 ui/calendar.jsx)
             modifiers={scheduleModifiers}
             onDayDoubleClick={onDateDoubleClick}
+            onToday={handleToday}
             className="w-full"
           />
         </div>
