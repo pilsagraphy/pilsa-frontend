@@ -384,7 +384,7 @@ export default function ScheduleForm({
                 이미지 추가
               </button>
               <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
-                최대 {MAX_IMAGES}장. 세부 사항에 <b>[사진 1]</b> 처럼 한 줄로 적으면 그 자리에 들어가고, 안 적은 사진은 본문 아래에 나와요
+                포스터·안내 사진 등 최대 {MAX_IMAGES}장 · 일정 상세 본문 아래에 보여요 (구독 캘린더에는 첨부·링크로)
               </span>
               <input
                 ref={imageInputRef}

@@ -185,6 +185,11 @@ export function Calendar({
         td[data-selected] {
           position: relative;
         }
+        /* 일정 막대 위에 선택 테두리(흰 알약)가 겹치면 지저분하다 — 막대가 있는 날은 테두리를 그리지 않는다 (PM, 2026-09-21) */
+        td[data-selected].pilsa-schedule-day::after,
+        td[data-selected].pilsa-schedule-active::after {
+          display: none;
+        }
         td[data-selected]::after {
           content: '';
           position: absolute;
