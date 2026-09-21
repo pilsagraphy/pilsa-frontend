@@ -32,6 +32,7 @@ export default function BoardWrite({ boardId }) {
     content,
     categoryId,
     isAnonymous,
+    notifyPinned,
     files,
     draftId,
     draftAttachments,
@@ -111,6 +112,8 @@ export default function BoardWrite({ boardId }) {
       formData.append('title', title.trim());
       formData.append('content', content.trim());
       if (categoryId) formData.append('categoryId', String(categoryId));
+      // '중요' 글 알림 여부 — 서버는 중요가 아니면 무시한다
+      if (categoryId) formData.append('notify', String(Boolean(notifyPinned)));
       if (board?.allowAnonymous) formData.append('isAnonymous', String(Boolean(isAnonymous)));
       if (board?.allowAttachment) {
         // 임시저장을 거친 첨부는 이미 서버에 올라가 있다 → id 로 연결한다

@@ -139,6 +139,8 @@ export default function ScheduleForm({
 
   // 세부 사항은 게시글과 같은 편집기(툴바 서식 · 마크다운 저장). 이미지는 위 이미지 칸이 맡으므로 본문 삽입은 끈다 (PM, 2026-09-21)
   const [contentEditor, setContentEditor] = React.useState(null);
+  // 회원 전원 알림 — 등록은 기본 켬, 수정은 기본 끔 (고칠 때마다 전원에게 가면 안 된다). 관리자가 정한다 (PM, 2026-09-21)
+  const [notify, setNotify] = React.useState(isCreate);
 
   // normalize: 값이 바뀐 뒤 한 번 더 손보는 함수. 날짜는 일자 clamp에 쓴다.
   const patch = (setter, normalize) => (key) => (value) =>
@@ -197,6 +199,7 @@ export default function ScheduleForm({
       // 이미지는 일정이 저장된 뒤 부모가 처리한다 (등록은 eventId 가 생긴 다음에야 올릴 수 있다)
       newImages: newFiles.map((item) => item.file),
       deleteImageIds: removedImageIds,
+      notify,
     });
   };
 
@@ -317,6 +320,24 @@ export default function ScheduleForm({
           </div>
         </ScheduleFormRow>
 
+        <ScheduleFormRow label="세부 사항">
+          <div className="flex w-full flex-col gap-[8px]">
+            <div className="flex h-[42px] w-full items-center rounded-[6px] border border-[#dedede] bg-white focus-within:border-[#919191]">
+              <BoardWriteToolbar editor={contentEditor} allowAttachment={false} />
+            </div>
+            <div className="flex min-h-[160px] w-full items-stretch rounded-[6px] border border-[#dedede] bg-white focus-within:border-[#919191]">
+              <BoardRichEditor
+                boardId={null}
+                value={content}
+                onChange={setContent}
+                allowUpload={false}
+                onEditorReady={setContentEditor}
+                placeholder="내용을 입력하세요"
+              />
+            </div>
+          </div>
+        </ScheduleFormRow>
+
         <ScheduleFormRow label="이미지">
           {/* 다른 칸과 같은 테두리 상자 안에 썸네일 격자 + 맨 끝의 점선 '추가' 칸 (PM: 더 예쁘게, 2026-09-21) */}
           <div className="flex flex-col gap-[6px]">
@@ -390,32 +411,29 @@ export default function ScheduleForm({
               />
             </div>
             <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
-              jpg · png · gif · webp, 최대 {MAX_IMAGES}장. 일정 상세 본문 아래에 보이고, 구독 캘린더에는 첨부·링크로 실려요
+              jpg · png · gif · webp, 최대 {MAX_IMAGES}장. 일정 상세의 세부 사항 아래에 옆으로 넘겨 보여요
             </p>
-          </div>
-        </ScheduleFormRow>
-
-        <ScheduleFormRow label="세부 사항">
-          <div className="flex w-full flex-col gap-[8px]">
-            <div className="flex h-[42px] w-full items-center rounded-[6px] border border-[#dedede] bg-white focus-within:border-[#919191]">
-              <BoardWriteToolbar editor={contentEditor} allowAttachment={false} />
-            </div>
-            <div className="flex min-h-[160px] w-full items-stretch rounded-[6px] border border-[#dedede] bg-white focus-within:border-[#919191]">
-              <BoardRichEditor
-                boardId={null}
-                value={content}
-                onChange={setContent}
-                allowUpload={false}
-                onEditorReady={setContentEditor}
-                placeholder="내용을 입력하세요"
-              />
-            </div>
           </div>
         </ScheduleFormRow>
       </div>
 
+      {/* 회원 알림 여부 — 버튼 줄 바로 위 */}
+      <label className="mt-[18px] flex w-fit cursor-pointer items-center gap-[8px]">
+        <Checkbox
+          checked={notify}
+          onCheckedChange={(next) => setNotify(next === true)}
+          className="size-5 rounded-[2px] border-[#dedede] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
+        />
+        <span className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121]">
+          {isCreate ? '회원 전원에게 알림 보내기' : '(수정) 알림 보내기'}
+        </span>
+        <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
+          {isCreate ? '끄면 조용히 등록돼요' : '켜면 회원 전원에게 "(수정)" 알림이 가요'}
+        </span>
+      </label>
+
       {/* 폰: 취소 왼쪽 끝 · 확인 오른쪽 끝. PC: 둘 다 오른쪽에 나란히 (PM, 2026-09-20) */}
-      <div className="mt-[22px] flex items-center justify-between gap-[12px] md:justify-end">
+      <div className="mt-[12px] flex items-center justify-between gap-[12px] md:justify-end">
         <button
           type="button"
           onClick={onCancel}

@@ -19,7 +19,7 @@ export default function Edit({ boardId, postId }) {
   const router = useRouter();
   const { board, boards, error: boardError } = useBoard(boardId);
 
-  const { title, content, categoryId, isAnonymous, files, deleteAttachmentIds, setForm, resetForm } =
+  const { title, content, categoryId, isAnonymous, notifyPinned, files, deleteAttachmentIds, setForm, resetForm } =
     useBoardWriteStore();
 
   const [loading, setLoading] = useState(true);
@@ -61,6 +61,8 @@ export default function Edit({ boardId, postId }) {
           content: detail?.content ?? '',
           categoryId: matched?.categoryId ? String(matched.categoryId) : '',
           isAnonymous: Boolean(detail?.isAnonymous),
+          // 이미 중요인 글은 기본으로 알림을 끈다 (고칠 때마다 전원에게 가면 안 된다). 새로 중요를 붙이면 켜진 채로 시작
+          notifyPinned: !detail?.isPinned,
           files: [],
           // 이미 붙어 있는 첨부를 폼에 실어 화면에 보여주고, 지울 것만 골라내게 한다
           existingAttachments: Array.isArray(detail?.attachments) ? detail.attachments : [],
@@ -102,6 +104,8 @@ export default function Edit({ boardId, postId }) {
       formData.append('title', title.trim());
       formData.append('content', content.trim());
       if (categoryId) formData.append('categoryId', String(categoryId));
+      // '중요' 글 알림 여부 — 켜져 있으면 "(수정)" 알림이 전원에게 간다
+      if (categoryId) formData.append('notify', String(Boolean(notifyPinned)));
       if (board?.allowAnonymous) formData.append('isAnonymous', String(Boolean(isAnonymous)));
       // 첨부는 증분 방식이다 — 유지할 기존 첨부는 아무것도 보내지 않고,
       // 지울 기존 첨부만 deleteAttachmentIds 로, 새로 올릴 파일만 files 로 보낸다.
@@ -160,7 +164,7 @@ export default function Edit({ boardId, postId }) {
           {board?.boardName ?? ''} 글 수정
         </h1>
 
-        <BoardWriteForm boardId={boardId} board={board} />
+        <BoardWriteForm boardId={boardId} board={board} isEdit />
       </div>
 
       <div className="mt-4 flex w-full flex-col gap-[12px]">

@@ -7,8 +7,10 @@ import axiosInstance from '@/apis/axiosInstance';
 //
 // description 은 DB NOT NULL 이라 빈 문자열이라도 채워 보낸다.
 // 시각(startTime/endTime)은 'HH:mm' 또는 null 이다. null 이면 서버가 00:00:00 으로 넣어 종일 일정이 된다.
-const toEventPayload = ({ title, category, content, startDate, endDate, startTime, endTime }) => ({
+const toEventPayload = ({ title, category, content, startDate, endDate, startTime, endTime, notify }) => ({
   title,
+  // 회원 알림 여부 — 관리자가 폼에서 정한다 (없으면 서버 기본: 등록은 보냄 · 수정은 안 보냄)
+  notify: typeof notify === 'boolean' ? notify : undefined,
   // 카테고리 목록 조회가 실패하면 폼의 구분 셀렉트가 빈 값('')으로 잠긴 채 제출될 수 있다.
   // '' 를 그대로 넣으면 '구분 없음'을 IS NULL 로 세는 쪽에서 새므로 NULL 로 보낸다.
   category: category || null,

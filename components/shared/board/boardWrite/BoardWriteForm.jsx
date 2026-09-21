@@ -22,7 +22,8 @@ import useAuthStore from '@/stores/useAuthStore';
 //
 // busy 는 저장·발행이 진행 중인지다. 그동안 다른 초안을 불러오면 화면 내용과
 // 이어쓰는 초안 번호가 어긋나므로 불러오기 버튼을 잠근다.
-export default function BoardWriteForm({ boardId, board, enableDraft = false, busy = false }) {
+// isEdit: 수정 화면. '중요' 알림 체크의 문구가 달라진다
+export default function BoardWriteForm({ boardId, board, enableDraft = false, busy = false, isEdit = false }) {
   const isMdUp = useMinWidthMd();
   const isAdmin = useAuthStore((s) => s.adminLevel) >= 1;
   // 카테고리를 안 쓰는 게시판(공지사항)이라도 관리자에게는 '중요'(상단 고정)가 있다.
@@ -45,6 +46,8 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
   const setCategoryId = useBoardWriteStore((s) => s.setCategoryId);
   const setFiles = useBoardWriteStore((s) => s.setFiles);
   const setIsAnonymous = useBoardWriteStore((s) => s.setIsAnonymous);
+  const notifyPinned = useBoardWriteStore((s) => s.notifyPinned);
+  const setNotifyPinned = useBoardWriteStore((s) => s.setNotifyPinned);
   const removeFileAt = useBoardWriteStore((s) => s.removeFileAt);
   const toggleDeleteAttachment = useBoardWriteStore((s) => s.toggleDeleteAttachment);
 
@@ -54,6 +57,9 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
   const [categories, setCategories] = useState([]);
   // 게시판이 카테고리를 안 쓰면 관리자용 '중요'만 오고, 그것마저 없으면 칸을 그리지 않는다
   const showCategory = Boolean(board?.categoryMode) || categories.length > 0;
+  // '중요'(PINNED)를 골랐을 때만 알림 체크가 보인다 — 중요 글은 열람 회원 전원에게 알림이 가므로 관리자가 끌 수 있어야 한다
+  const pinnedSelected =
+    isAdmin && categories.some((c) => String(c.categoryId) === String(categoryId) && c.code === 'PINNED');
 
   useEffect(() => {
     if (!boardId || !categoryMode) return;
@@ -173,6 +179,21 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
           </div>
         )}
 
+        {pinnedSelected && (
+          <label className="flex cursor-pointer items-center gap-[8px]">
+            <input
+              type="checkbox"
+              checked={notifyPinned}
+              onChange={(e) => setNotifyPinned(e.target.checked)}
+              className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+            />
+            <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
+              {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
+            </span>
+            <span className="text-[12px] tracking-[-0.24px] text-[#919191]">이 게시판을 볼 수 있는 회원 전원</span>
+          </label>
+        )}
+
         {/* 툴바 (라벨 없는 42px 박스). 본문이 자라도 서식 버튼이 보이게 화면 위에 붙어 따라온다 */}
         <div className="sticky top-0 z-30 flex h-[42px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
           <BoardWriteToolbar
@@ -265,6 +286,21 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
               color="#212121"
             />
           </BoardWriteBox>
+        )}
+
+        {pinnedSelected && (
+          <label className="flex cursor-pointer items-center gap-[8px]">
+            <input
+              type="checkbox"
+              checked={notifyPinned}
+              onChange={(e) => setNotifyPinned(e.target.checked)}
+              className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+            />
+            <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
+              {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
+            </span>
+            <span className="text-[12px] tracking-[-0.24px] text-[#919191]">이 게시판을 볼 수 있는 회원 전원</span>
+          </label>
         )}
 
         {/* 임시저장 불러오기.

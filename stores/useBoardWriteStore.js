@@ -8,6 +8,8 @@ const INITIAL = {
   content: '',
   categoryId: '',
   isAnonymous: false,
+  // '중요' 글일 때 회원에게 알림을 보낼지 — 관리자가 정한다 (PM, 2026-09-21). 수정 화면은 이미 중요였으면 기본 끔
+  notifyPinned: true,
 
   // 이 요청에 새로 올릴 파일 (File 객체)
   files: [],
@@ -44,6 +46,7 @@ const useBoardWriteStore = create((set) => ({
     })),
   setCategoryId: (categoryId) => set({ categoryId }),
   setIsAnonymous: (isAnonymous) => set({ isAnonymous }),
+  setNotifyPinned: (notifyPinned) => set({ notifyPinned }),
   setFiles: (files) => set({ files }),
 
   // 새로 고른 파일 중 하나만 빼기 (file input 은 전체 교체만 되므로 개별 제거는 여기서 처리한다)
