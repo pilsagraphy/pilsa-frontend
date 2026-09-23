@@ -92,7 +92,14 @@ export default function LoginSection() {
   const [password, setPassword] = useState('');
   // 아이디 저장(입력값 프리필)과 자동 로그인(세션 복원)은 서로 독립된 옵션이다
   const [rememberId, setRememberId] = useState(false);
-  const [autoLogin, setAutoLogin] = useState(false);
+  // 자동 로그인 기본값: 설치형 앱(홈 화면 앱·TWA)이거나 구글에서 '연결하려고' 돌아온 경우는 켜 둔다.
+  // 체크를 안 하면 세션 쿠키라 앱을 껐다 켜면 로그인이 풀린 것처럼 보인다 — 구글 연결 흐름에서 그렇게 당했다 (PM, 2026-09-23)
+  const [autoLogin, setAutoLogin] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const standalone = window.matchMedia?.('(display-mode: standalone)').matches;
+    const fromGoogle = new URLSearchParams(window.location.search).has('googleLink');
+    return Boolean(standalone || fromGoogle);
+  });
   // 제재 계정 안내: { banType: 'temporary'|'permanent', bannedUntil }
   const [banInfo, setBanInfo] = useState(null);
   // 로그아웃 처리(알림 기기 해제 → 로그아웃 API)가 끝날 때까지 재로그인을 막는다.
