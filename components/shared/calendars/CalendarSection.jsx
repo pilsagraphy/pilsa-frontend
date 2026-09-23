@@ -1,6 +1,7 @@
 'use client';
 
 import * as React from 'react';
+import Link from 'next/link';
 import {
   addDays,
   format,
@@ -57,6 +58,8 @@ export default function CalendarSection({
   focusDate = null,
   // 관리자 화면에서는 끈다 — 운영진이 관리 화면에서 자기 캘린더를 구독할 일이 없다
   showSubscribe = true,
+  // 제목을 누르면 갈 곳 (관리자 홈 → 일정 달력 관리). 없으면 그냥 글자
+  titleHref = null,
 }) {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
   const [apiResponse, setApiResponse] = React.useState(response ?? null);
@@ -288,9 +291,18 @@ export default function CalendarSection({
       className={`mx-auto flex w-full flex-col gap-6 sm:gap-8 lg:gap-[40px] ${CALENDAR_COLUMN_MAX_W}`}
     >
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
-          일정 달력
-        </h2>
+        {titleHref ? (
+          <Link
+            href={titleHref}
+            className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] hover:underline underline-offset-4 sm:text-[24px]"
+          >
+            <h2>일정 달력</h2>
+          </Link>
+        ) : (
+          <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
+            일정 달력
+          </h2>
+        )}
         {showSubscribe && <CalendarSubscribeButton />}
       </div>
 
