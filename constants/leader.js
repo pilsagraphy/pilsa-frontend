@@ -122,26 +122,33 @@ export const DUMMY_LEADER = [
     period: '(2025~2025)',
     imageSrc: '/images/leader/leader_4.jpeg',
     officers: [
+      // 25-1 · 25-2 는 OT 자료 조직도 기준 (PM 제공, 2026-09-24). 회장단은 가성연 · 정도이 · 이나영 — 신승현은 정기모임 소속
       {
         term: '2025-1학기',
         roles: [
           { role: '회장', names: ['가성연'] },
           { role: '부회장', names: ['정도이'] },
-          { role: '총무', names: ['신승현'] },
+          { role: '임원', names: ['이나영'] },
         ],
-        teams: [{ title: '정기모임', members: ['박지환', '안예지'] }],
-        advisors: [],
+        teams: [
+          { title: '정기모임', leader: '박지환', members: ['신승현', '안예지'] },
+          { title: '제작스터디', leader: '김예령', members: ['신채빈', '김수현', '박수민'] },
+        ],
+        advisors: ['박경빈'],
       },
       {
         term: '2025-2학기',
         roles: [
           { role: '회장', names: ['가성연'] },
           { role: '부회장', names: ['정도이'] },
-          { role: '총무', names: ['신승현'] },
+          { role: '임원', names: ['이나영'] },
         ],
-        // 25-2 부터 안예지가 정기모임장
-        teams: [{ title: '정기모임', leader: '안예지', members: [] }],
-        advisors: [],
+        teams: [
+          { title: '정기모임', leader: '안예지', members: ['김수현', '한서은', '신승현'] },
+          { title: '제작스터디', leader: '김예령', members: ['박수민', '최예윤'] },
+          { title: '큐레이션팀', members: ['가성연', '김수현', '정도이', '한서은'] },
+        ],
+        advisors: ['박경빈', '신채빈'],
       },
     ],
   },
