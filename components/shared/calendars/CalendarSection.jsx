@@ -27,6 +27,19 @@ function isDateIncludedInSchedule(date, schedule) {
   });
 }
 
+// 처음 보여 줄 일정 — 그 달의 첫 일정이 아니라 **오늘 기준 가장 가까운 다음 일정**(오늘 진행 중인 것 포함).
+// 24일에 22일 일정과 29~30일 일정이 있으면 29~30일 것을 편다 (PM, 2026-09-24). 오늘 이후 일정이 없는 달(지난 달 등)은 첫 일정.
+// 달력 · 메인 · 관리자 홈이 전부 이 컴포넌트를 쓰므로 여기 한 곳이면 된다.
+function pickDefaultScheduleId(schedules) {
+  const today = startOfDay(new Date());
+  const startOf = (schedule) => startOfDay(parseISO(schedule.startDate)).getTime();
+  const endOf = (schedule) => startOfDay(parseISO(schedule.endDate)).getTime();
+  const upcoming = schedules
+    .filter((schedule) => endOf(schedule) >= today.getTime())
+    .sort((a, b) => startOf(a) - startOf(b) || endOf(a) - endOf(b));
+  return (upcoming[0] ?? schedules[0]).scheduleId;
+}
+
 // 한 칸에 그려지는 막대는 '고른 일정'(ACTIVE) 아니면 '그 외 일정들'(OTHER) 중 하나다.
 //
 // 일정이 같은 날에 겹칠 때는 고른 일정만 보인다(= 겹치는 날의 나머지 일정은 가려진다).
@@ -147,11 +160,10 @@ export default function CalendarSection({
       return;
     }
 
-    // 1. 일정이 있는 날짜들을 추출 (달력에 막대를 그리기 위함)
-    // - 목록에 없는 일정이 선택돼 있을 때만(달을 옮겼을 때) 첫 번째 일정으로 맞춘다.
+    // 목록에 없는 일정이 선택돼 있을 때만(처음 · 달을 옮겼을 때) 오늘 기준 다음 일정으로 맞춘다.
     setSelectedScheduleId((prev) => {
       const exists = schedules.some((schedule) => schedule.scheduleId === prev);
-      return exists ? prev : schedules[0].scheduleId;
+      return exists ? prev : pickDefaultScheduleId(schedules);
     });
   }, [schedules, isLoading]);
 
