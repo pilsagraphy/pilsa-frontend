@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // 배포는 GitHub 에서 빌드한 standalone 묶음(server.js + 최소 node_modules)을 서버로 옮겨 `node server.js` 로 띄운다 (2026-09-24).
+  // 서버에서 npm install · next build 를 돌리지 않으려는 것. .next/static 과 public 은 워크플로가 묶음 안에 따로 넣는다.
+  output: 'standalone',
   images: {
     unoptimized: true,
   },

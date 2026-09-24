@@ -1,6 +1,15 @@
 name: Deploy Production
 
-# release-app 브랜치 push 시 운영 프론트(포트 3000, pm2 pilsa-frontend)에 자동 배포
+# release-app 브랜치 push → GitHub 호스티드 러너가 Next 를 빌드해 standalone 묶음을 산출물로 올리고,
+# 서버의 셀프호스티드 러너는 그 묶음만 받아 풀고 pm2 를 다시 띄운다 (2026-09-24).
+# 서버(t3.medium)에서 next build 를 돌리면 운영 프로세스 옆에서 메모리를 크게 먹어 인스턴스를 줄일 수 없었다.
+#
+# 서버 쪽 약속:
+#   /home/ec2-user/frontend-app/releases/<run_number>/   ← 풀어 둔 standalone (server.js · .next · public · node_modules). 최근 3개 보관
+#   /home/ec2-user/frontend-app/current                  ← 심볼릭 링크. ecosystem.config.js 의 cwd 가 이것
+#   /home/ec2-user/frontend-app/shared/public/videos     ← 서버에만 있는 큰 자산(76MB 영상). 릴리스마다 public/videos 로 링크한다
+#   /home/ec2-user/frontend-app/ecosystem.config.js      ← pm2 앱 정의 (node-18, PORT 3000, 127.0.0.1)
+#   /home/ec2-user/frontend                              ← 참고용 체크아웃 (서빙에는 쓰지 않는다)
 on:
   push:
     branches: [release-app]
@@ -14,36 +23,101 @@ env:
   DEPLOY_BRANCH: release-app
 
 jobs:
-  deploy:
-    runs-on: self-hosted
-    timeout-minutes: 25
+  build:
+    name: Build (GitHub-hosted)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
-      - name: Deploy frontend to Production
+      - uses: actions/checkout@v4
+
+      # 서버 런타임이 node 18 이라 같은 메이저로 빌드한다
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: npm
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: Next.js 빌드 (standalone)
+        run: npm run build
+
+      - name: standalone 묶기 — static 과 public 은 Next 가 따로 두므로 직접 넣는다
         run: |
           set -euo pipefail
+          test -f .next/standalone/server.js
+          cp -r .next/static .next/standalone/.next/static
+          cp -r public .next/standalone/public
+          tar czf frontend.tgz -C .next/standalone .
+          ls -lh frontend.tgz
 
-          echo "===== [1/4] 소스 최신화 (origin/${DEPLOY_BRANCH}) ====="
-          cd ~/frontend
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-standalone
+          path: frontend.tgz
+          retention-days: 7
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy (self-hosted)
+    needs: build
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-standalone
+          path: ${{ runner.temp }}/frontend-standalone
+
+      - name: 배치 · pm2 재시작 · 헬스체크
+        run: |
+          set -euo pipefail
+          APP=/home/ec2-user/frontend-app
+          REL="$APP/releases/${GITHUB_RUN_NUMBER}"
+          PREV=$(readlink -f "$APP/current" || true)
+
+          echo "===== [1/4] 참고용 체크아웃 최신화 (origin/${DEPLOY_BRANCH}) ====="
+          cd /home/ec2-user/frontend
           git fetch origin "${DEPLOY_BRANCH}"
           git reset --hard "origin/${DEPLOY_BRANCH}"
           git log --oneline -1
 
-          echo "===== [2/4] 의존성 설치 & Next.js 빌드 ====="
-          npm install
-          npm run build
+          echo "===== [2/4] 산출물 풀기 → ${REL} ====="
+          mkdir -p "$REL"
+          tar xzf "${RUNNER_TEMP}/frontend-standalone/frontend.tgz" -C "$REL"
+          test -f "$REL/server.js"
+          # 서버에만 있는 자산을 릴리스 안으로 링크
+          mkdir -p "$REL/public"
+          ln -sfn "$APP/shared/public/videos" "$REL/public/videos"
+          ln -sfn "$REL" "$APP/current"
+          ls -l "$APP/current"
 
-          echo "===== [3/4] pm2 재시작 (pilsa-frontend) ====="
-          pm2 restart pilsa-frontend
+          echo "===== [3/4] pm2 (pilsa-frontend) ====="
+          if pm2 describe pilsa-frontend 2>/dev/null | grep -E "script path" | grep -q "server.js"; then
+            pm2 restart pilsa-frontend --update-env
+          else
+            # 예전 정의(npm start · ~/frontend)에서 처음 넘어올 때 한 번
+            pm2 delete pilsa-frontend >/dev/null 2>&1 || true
+            pm2 start "$APP/ecosystem.config.js"
+          fi
+          pm2 save >/dev/null
 
           echo "===== [4/4] 헬스체크 (포트 3000) ====="
           for i in $(seq 1 15); do
             sleep 2
-            code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/ || true)
-            if [ "$code" != "000" ]; then
+            code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3000/ || true)
+            if [ "$code" = "200" ]; then
               echo "운영 프론트 응답 확인 (HTTP $code, 약 $((i*2))초 소요)"
+              ls -dt "$APP"/releases/* | tail -n +4 | xargs -r rm -rf
               exit 0
             fi
           done
+
           echo "운영 프론트가 응답하지 않습니다. 최근 로그:"
-          pm2 logs pilsa-frontend --lines 50 --nostream
+          pm2 logs pilsa-frontend --lines 50 --nostream || true
+          if [ -n "$PREV" ] && [ -f "$PREV/server.js" ] && [ "$PREV" != "$REL" ]; then
+            echo "===== 롤백 → $PREV ====="
+            ln -sfn "$PREV" "$APP/current"
+            pm2 restart pilsa-frontend --update-env
+          fi
           exit 1
