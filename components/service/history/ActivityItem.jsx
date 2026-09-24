@@ -49,14 +49,16 @@ const ActivityItem = ({ activity }) => {
           // 폰에서도 가로 배치 유지 — 세로로 긴 포스터라 둘을 나란히 두는 편이 낫다.
           // 칸은 포스터 비율(745:1059)로 고정하고 안을 채운다(object-cover). 클릭하면 사이트 공용 라이트박스에서 좌우로 넘겨 본다.
           // zoom: 여백이 많은 그림(잉크 포스터 — 흰 바탕에 위아래 회색 선)을 조금 키워 옆의 꽉 찬 포스터와 크기가 맞아 보이게 (PM, 2026-09-24)
-          <div className="flex w-full max-w-[640px] gap-3">
+          // 줄 전체는 영상과 같은 상자(640px · 16:9)라 세로 길이가 영상과 같다. 포스터는 그 높이에 맞춰 자기 비율(745:1059)로 선다.
+          // 높이는 aspect-ratio 로 잡는다 — padding-top 퍼센트는 부모 폭 기준이라 칸이 세로로 늘어나 이미지가 잘려 보였다 (2026-09-24 실수)
+          <div className="flex aspect-video w-full max-w-[640px] gap-3">
             {images.map((image, index) => (
               <button
                 key={image.src}
                 type="button"
                 onClick={() => openLightbox(images.map((item) => ({ src: item.src, alt: item.alt ?? text })), index)}
                 aria-label={`${image.alt ?? text} 크게 보기`}
-                className="relative min-w-0 flex-1 cursor-zoom-in overflow-hidden rounded-[8px] bg-[#f5f5f5] pt-[142%]"
+                className="relative h-full shrink-0 cursor-zoom-in overflow-hidden rounded-[8px] bg-[#f5f5f5] aspect-[745/1059]"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- 서버에만 있는 파일이라 next/image 최적화 대상이 아니다 */}
                 <img
