@@ -23,7 +23,7 @@ TWA 는 `https://pilsa.co.kr` 을 그대로 여는 껍데기라 **웹 코드가 
 | `maskableIconUrl` · `monochromeIconUrl` | `/icons/icon-maskable-512.png` · `/icons/icon-monochrome-512.png` — 홈 화면 아이콘(검정 네모) |
 | `signingKey` | `../../app-key/pilsa-upload.jks`, alias `pilsa-upload` (2026-09-09 재생성) |
 | `themeColor` · `navigationColor` (다크 포함) | `#FFFFFF` — 상태바·내비게이션바 색. `#212121` 이던 v5 까지는 흰 화면 위아래로 검은 띠가 보였다. 아이콘 명암은 크롬이 색 밝기를 보고 알아서 뒤집는다 |
-| `appVersionName` / `appVersionCode` | `1.0.6` / `7` — v1(`1.0.0`/`1`) 2026-09-09 비공개 테스트, v3(`1.0.2`/`3`) 알림 수정, v4(`1.0.3`/`4`) provider 를 Chrome 으로 고정(아래 '웹 푸시에 대해'), v5(`1.0.4`/`5`) 시작 URL `/?launch=app`, v6(`1.0.5`/`6`) 상태바·내비게이션바 흰색, v7(`1.0.6`/`7`) 은 v6 과 앱 동작이 사실상 같다(빌드해 뒀을 뿐 필수 아님) |
+| `appVersionName` / `appVersionCode` | `1.0.7` / `8` — v8(`1.0.7`/`8`) 2026-09-24 템플릿 재생성으로 "Chrome에서 실행 중 알림 끄기" 죽은 액티비티 제거(앱 동작은 v7 과 같음). 이전: v1(`1.0.0`/`1`) 2026-09-09 비공개 테스트, v3(`1.0.2`/`3`) 알림 수정, v4(`1.0.3`/`4`) provider 를 Chrome 으로 고정(아래 '웹 푸시에 대해'), v5(`1.0.4`/`5`) 시작 URL `/?launch=app`, v6(`1.0.5`/`6`) 상태바·내비게이션바 흰색, v7(`1.0.6`/`7`) 은 v6 과 앱 동작이 사실상 같다(빌드해 뒀을 뿐 필수 아님) |
 | `assetlinks.json` 지문 | 업로드 키 `20:7E:A7:E9:…:9B:8A` + Play 앱 서명 키 `95:08:85:FC:…:46:38` 두 개 |
 
 > 업로드 키는 `pilsa-upload.jks` 다. 예전 `v_1_release_key.jks` 는 비밀번호를 아는 사람이 없어
