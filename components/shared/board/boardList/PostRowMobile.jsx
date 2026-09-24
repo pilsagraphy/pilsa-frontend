@@ -30,14 +30,17 @@ export default function PostRowMobile({ post, boardId, listQuery = '', allowComm
       {/* 윗줄: 칩 + 제목 */}
       <div className="flex items-center gap-[10px] px-5">
         {badgeLabel && <CategoryBadge variant="mobile">{badgeLabel}</CategoryBadge>}
-        {/* 제목은 flex-1 을 주지 않는다 — 클립이 제목(말줄임이면 … ) 바로 옆에 붙어야 한다. 글쓴이는 ml-auto 로 끝에 */}
-        <span className="min-w-0 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-[#454545]">
-          {post.title}
+        {/* 제목 + 클립을 한 묶음으로: 묶음이 남은 폭을 다 쓰되 그 안에서 제목만 줄어들어, 클립 자리를 먼저 확보한 뒤
+            제목이 말줄임된다. 글쓴이는 왼쪽 여백(16px)을 고정으로 두어 말줄임표와 붙지 않는다 (PM, 2026-09-24) */}
+        <span className="flex min-w-0 flex-1 items-center gap-[6px]">
+          <span className="min-w-0 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-[#454545]">
+            {post.title}
+          </span>
+          {post.hasAttachment && <Paperclip size={16} className="shrink-0 text-[#919191]" />}
         </span>
-        {post.hasAttachment && <Paperclip size={16} className="shrink-0 text-[#919191]" />}
         {/* 글쓴이는 줄의 오른쪽 끝에 (제목이 짧아도 끝에 붙는다) */}
         {post.authorName && (
-          <span className="ml-auto max-w-[96px] shrink-0 truncate text-[13px] leading-[1.6] text-[#919191]">
+          <span className="max-w-[112px] shrink-0 truncate pl-[16px] text-[13px] leading-[1.6] text-[#919191]">
             {post.authorName}
           </span>
         )}
