@@ -12,15 +12,28 @@ const ActivityItem = ({ activity }) => {
   const video = typeof activity === 'string' ? null : activity?.video;
   const link = typeof activity === 'string' ? null : activity?.link;
   const images = typeof activity === 'string' ? null : activity?.images;
+  const href = typeof activity === 'string' ? null : activity?.href;
 
   return (
     <div className="flex items-start gap-5">
       {/* 회색 점: div로 간단히 처리 */}
       <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-[#DEDEDE]" />
       <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <p className="whitespace-pre-wrap text-[16px] leading-[1.6] tracking-tight text-[#212121]">
-          {text}
-        </p>
+        {href ? (
+          // 글 자체가 바로가기인 항목 (예: 서포터즈 활동 인스타그램 릴스). 새 창
+          <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-fit whitespace-pre-wrap text-[16px] leading-[1.6] tracking-tight text-[#212121] underline decoration-[#b9b9b9] underline-offset-4 transition-colors hover:decoration-[#212121]"
+          >
+            {text} ↗
+          </a>
+        ) : (
+          <p className="whitespace-pre-wrap text-[16px] leading-[1.6] tracking-tight text-[#212121]">
+            {text}
+          </p>
+        )}
         {video && (
           // muted 여야 브라우저가 자동 재생을 허락한다. loop 로 영원히 돈다. playsInline 은 아이폰에서 전체화면으로 튀지 않게
           <video
@@ -51,7 +64,7 @@ const ActivityItem = ({ activity }) => {
           // zoom: 여백이 많은 그림(잉크 포스터 — 흰 바탕에 위아래 회색 선)을 조금 키워 옆의 꽉 찬 포스터와 크기가 맞아 보이게 (PM, 2026-09-24)
           // 줄 전체는 영상과 같은 상자(640px · 16:9)라 세로 길이가 영상과 같다. 포스터는 그 높이에 맞춰 자기 비율(745:1059)로 선다.
           // 높이는 aspect-ratio 로 잡는다 — padding-top 퍼센트는 부모 폭 기준이라 칸이 세로로 늘어나 이미지가 잘려 보였다 (2026-09-24 실수)
-          <div className="flex aspect-video w-full max-w-[640px] gap-3">
+          <div className="flex aspect-video w-full max-w-[640px] justify-center gap-3">
             {images.map((image, index) => (
               <button
                 key={image.src}
