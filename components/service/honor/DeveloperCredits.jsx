@@ -105,7 +105,9 @@ export default function DeveloperCredits() {
       <div className="flex flex-wrap items-end justify-between gap-[10px]">
         <div className="flex flex-col gap-[4px]">
           <h3 className="font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121] md:text-[22px]">
-            홈페이지 개발자
+            홈페이지 개발자{' '}
+            {/* 명단이 아직 다 안 채워졌다 — 완성되면 이 표시를 뗀다 (PM, 2026-09-24) */}
+            <span className="text-[15px] font-normal text-[#919191] md:text-[16px]">(작성 중)</span>
           </h3>
           <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
             이 홈페이지를 만든 필사그래피 제작단 · {current.label} {current.period}
