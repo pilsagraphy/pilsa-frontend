@@ -47,8 +47,7 @@ export const DUMMY_LEADER = [
   {
     order: '2대 회장',
     name: '김선하',
-    // 초대(2021~2022)와 2022 가 겹친다 — 2022 는 사실상 회장이 두 명이었다 (PM, 2026-09-24)
-    period: '(2022~2023)',
+    period: '(2023~2023)',
     imageSrc: '/images/leader/leader_2.jpeg',
     officers: [
       {
