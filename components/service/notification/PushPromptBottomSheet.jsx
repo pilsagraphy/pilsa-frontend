@@ -12,6 +12,7 @@ import {
   enablePushOnThisDevice,
   getPushToggleState,
   getRestoreAfterLoginPromise,
+  wasPushOnThisDevice,
 } from '@/lib/push';
 
 // 로그인 직후 1회 노출 신호
@@ -76,16 +77,22 @@ export default function PushPromptBottomSheet() {
             return;
           }
 
-          // 첫 로그인 1회 or 7일 뒤 재노출 판정
-          const justLoggedIn = sessionStorage.getItem(JUST_LOGGED_IN_KEY) === '1';
-          const stateRaw = localStorage.getItem(PROMPT_STATE_KEY);
-          const state = stateRaw ? JSON.parse(stateRaw) : null;
+          // 켜 뒀던 알림이 브라우저 쪽 사정(권한 회수·구독 만료·앱 데이터 정리)으로 꺼져 있으면 첫 로그인·7일 규칙과
+          // 무관하게 바로 다시 켜기를 권한다 — "앱 깔고 켜 놨는데 다시 들어와 보니 꺼져 있다" 제보 (2026-09-24)
+          const turnedOffBehindBack = wasPushOnThisDevice() && Notification.permission !== 'denied';
 
-          if (state?.laterCount >= 2) return; // 두 번 미뤘으면 이후 침묵
-          if (state?.laterCount === 1) {
-            if (Date.now() - state.laterAt < RESHOW_AFTER_MS) return; // 7일 경과 전
-          } else if (!justLoggedIn) {
-            return; // 첫 로그인 진입이 아닐 때는 노출하지 않음
+          if (!turnedOffBehindBack) {
+            // 첫 로그인 1회 or 7일 뒤 재노출 판정
+            const justLoggedIn = sessionStorage.getItem(JUST_LOGGED_IN_KEY) === '1';
+            const stateRaw = localStorage.getItem(PROMPT_STATE_KEY);
+            const state = stateRaw ? JSON.parse(stateRaw) : null;
+
+            if (state?.laterCount >= 2) return; // 두 번 미뤘으면 이후 침묵
+            if (state?.laterCount === 1) {
+              if (Date.now() - state.laterAt < RESHOW_AFTER_MS) return; // 7일 경과 전
+            } else if (!justLoggedIn) {
+              return; // 첫 로그인 진입이 아닐 때는 노출하지 않음
+            }
           }
 
           // 로그인 직후 자동 복구(restorePushAfterLogin)가 진행 중이면 대기, 끝난 뒤의 서버 상태로 판정
@@ -97,7 +104,7 @@ export default function PushPromptBottomSheet() {
         }
 
         sessionStorage.removeItem(JUST_LOGGED_IN_KEY);
-        setMode('enable');
+        setMode(wasPushOnThisDevice() ? 'reenable' : 'enable');
         setVisible(true);
       } catch {
         // 판정 실패 시 노출하지 않음
@@ -208,11 +215,20 @@ export default function PushPromptBottomSheet() {
             <BellRing size={28} className="text-[#212121]" />
           </span>
           <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-black">
-            새 댓글·답글 알림을 받아보세요
+            {mode === 'reenable' ? '알림이 꺼져 있어요' : '새 댓글·답글 알림을 받아보세요'}
           </h3>
           <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#757575] [word-break:keep-all]">
-            내 글에 댓글이 달리거나 내 댓글에 답글이 달리면
-            <br />이 기기로 바로 알려드릴게요.
+            {mode === 'reenable' ? (
+              <>
+                켜 뒀던 이 기기의 알림이 꺼져 있어요. 폰이나 브라우저가 알림을 정리했을 때 생기는 일이에요.
+                <br />다시 켜면 댓글·중요 글·일정 알림을 계속 받을 수 있어요.
+              </>
+            ) : (
+              <>
+                내 글에 댓글이 달리거나 내 댓글에 답글이 달리면
+                <br />이 기기로 바로 알려드릴게요.
+              </>
+            )}
           </p>
         </div>
 
