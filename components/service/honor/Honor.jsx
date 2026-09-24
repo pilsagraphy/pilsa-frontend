@@ -38,8 +38,11 @@ export default function Honor() {
 
   // 후원자가 이 수 이하면 1등만 크게 세우지 않고 모두 같은 크기로 보여 준다.
   // 두세 명뿐인데 한 명만 크고 나머지가 작으면 줄 세우기처럼 보이고, 화면도 휑하다.
+  // 당분간은 인원과 무관하게 전부 동급이다 (PM, 2026-09-24) — 다섯 명 남짓이라 한 명만 위로 올릴 규모가 아니다.
+  // 등수별 크기(1등 · 2~4등 · 5등부터)로 돌아가려면 EQUAL_LAYOUT_ALWAYS 를 false 로.
+  const EQUAL_LAYOUT_ALWAYS = true;
   const EQUAL_LAYOUT_MAX = 4;
-  const showEqually = totalCount > 0 && totalCount <= EQUAL_LAYOUT_MAX;
+  const showEqually = totalCount > 0 && (EQUAL_LAYOUT_ALWAYS || totalCount <= EQUAL_LAYOUT_MAX);
 
   const firstRanker = sortedDonors.slice(0, 1);
   const topRankers = sortedDonors.slice(1, 4);
