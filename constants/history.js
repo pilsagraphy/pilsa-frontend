@@ -38,7 +38,7 @@ export const DUMMY_HISTORY = [
         text: "정기모임 아스키아트 작품 중앙도서관 전시",
         images: [
           // 흰 바탕에 여백이 많아 옆 포스터보다 작아 보인다 — 살짝 키워 시각적 크기를 맞춘다
-          { src: "/history/ascii-art-ink.jpg", alt: "아스키아트 전시 포스터 — 잉크", zoom: 1.22 },
+          { src: "/history/ascii-art-ink.jpg", alt: "아스키아트 전시 포스터 — 잉크", zoom: 1.3 },
           { src: "/history/ascii-art-year-end.jpg", alt: "아스키아트 전시 포스터 — 2024 필사그래피 연말정산" },
         ],
       },
