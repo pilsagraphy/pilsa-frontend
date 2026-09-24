@@ -21,7 +21,11 @@ export const DUMMY_HISTORY = [
     activities: [
       "캘리그라피 전문 강사 초청",
       "조직도 개편 및 인수인계서 작성",
-      "동아연필 Q노크 신제품 서포터즈 활동",
+      // 글 자체가 인스타그램 릴스 바로가기 (PM, 2026-09-24). 공유 토큰(stkn) 은 뺀 정식 주소
+      {
+        text: "동아연필 뉴엔 M-10 시리즈 신제품 서포터즈 활동",
+        href: "https://www.instagram.com/reel/DdoC4lBpq8H/",
+      },
       "2학기 우수동아리 선정",
     ],
   },
@@ -50,7 +54,8 @@ export const DUMMY_HISTORY = [
         // 첫 줄에 사업명을 되풀이하지 않는다 — 둘째 줄 영상 제목에 이미 '동아리야, 멘토링하자!' 가 있다 (PM)
         text: '대학생 멘토링 동아리 지원 사업 선정\n[2025 동아리야, 멘토링하자!] 느루담, 우리의 이야기',
         video: "/videos/neurudam-mentoring.mp4",
-        link: { href: "https://www.youtube.com/watch?v=dSCNaoNvwJQ", label: "유튜브에서 보기" },
+        // 영상 한 편이 아니라 필사그래피 유튜브 채널로 보낸다 (PM, 2026-09-24)
+        link: { href: "https://www.youtube.com/@pilsagraphy", label: "필사그래피 유튜브에서 보기" },
       },
     ],
   },
