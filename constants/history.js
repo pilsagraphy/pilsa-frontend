@@ -1,4 +1,4 @@
-// 연혁. 항목은 문자열이거나 { text, video } / { text, youtube } (ActivityItem 참고).
+// 연혁. 항목은 문자열이거나 { text, video?, link?, images? } (ActivityItem 참고).
 // 영상이 있는 항목은 그 해의 맨 마지막에 둔다 — 글 목록 아래에 영상이 오는 편이 보기 좋다 (PM, 2026-09-24)
 export const DUMMY_HISTORY = [
   {
@@ -7,7 +7,14 @@ export const DUMMY_HISTORY = [
   },
   {
     year: "2022",
-    activities: ["특별지원금 대상 선정", "삼성 갤럭시 캠퍼스 큐레이터 공모전 당선"],
+    activities: [
+      "특별지원금 대상 선정",
+      // 평화의 전당 그림 — 정사각형 원본을 16:9 로 자르되 아래쪽을 살리고(위쪽 하늘을 버림) 밝기를 올렸다. 서버 public/history
+      {
+        text: "삼성 갤럭시 캠퍼스 큐레이터 공모전 당선",
+        images: [{ src: "/history/peace-hall.jpg", alt: "삼성 갤럭시 캠퍼스 큐레이터 공모전 — 평화의 전당", wide: true }],
+      },
+    ],
   },
   {
     year: "2023",
@@ -33,11 +40,12 @@ export const DUMMY_HISTORY = [
     activities: [
       "필사그래피 동문회 발족",
       "1학기 우수동아리 선정",
-      // 유튜브 '[2025 동아리야, 멘토링하자!] 느루담, 우리의 이야기 | 경희대학교 필사그래피' — 소리 없이 무한 반복
+      // 영상 원본은 서버 public/videos 에 있다 — 유튜브 임베드는 로딩이 느려 서버에서 직접 튼다. 아래에 유튜브 바로가기만 남긴다
       {
         // 첫 줄에 사업명을 되풀이하지 않는다 — 둘째 줄 영상 제목에 이미 '동아리야, 멘토링하자!' 가 있다 (PM)
         text: '대학생 멘토링 동아리 지원 사업 선정\n[2025 동아리야, 멘토링하자!] 느루담, 우리의 이야기',
-        youtube: "dSCNaoNvwJQ",
+        video: "/videos/neurudam-mentoring.mp4",
+        link: { href: "https://www.youtube.com/watch?v=dSCNaoNvwJQ", label: "유튜브에서 보기" },
       },
     ],
   },

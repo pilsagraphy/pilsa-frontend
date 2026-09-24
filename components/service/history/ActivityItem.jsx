@@ -2,14 +2,15 @@
 
 import { openLightbox } from '@/stores/useLightboxStore';
 
-// activity: 문자열, 또는 { text, video } / { text, youtube } — 영상이 있으면 글 아래에 소리 없이 계속 도는 영상을 붙인다.
-//   video   서버 public/videos 의 mp4 경로
-//   youtube 유튜브 영상 ID. 유튜브는 loop 만으로는 안 돌고 playlist 에 자기 ID 를 넣어야 무한 반복된다. mute 여야 자동 재생이 허락된다
-//   images  [{ src, alt }] — 영상과 같은 폭(640px) 안에 가로로 나란히. 서버 public/history 의 파일 (레포에는 넣지 않는다)
+// activity: 문자열, 또는 { text, video?, link?, images? } — 영상이 있으면 글 아래에 소리 없이 계속 도는 영상을 붙인다.
+//   video   서버 public/videos 의 mp4 경로. 유튜브 임베드는 로딩이 느려 원본 파일을 서버에서 직접 튼다 (PM, 2026-09-24)
+//   link    { href, label } — 영상 아래 바로가기 한 줄 (유튜브 원본 등)
+//   images  [{ src, alt, zoom?, wide? }] — 영상과 같은 상자(640px · 16:9) 안에 가로로 나란히. 서버 public/history 의 파일 (레포에는 넣지 않는다)
+//           wide 는 16:9 한 장으로 상자를 꽉 채운다 (평화의 전당 사진)
 const ActivityItem = ({ activity }) => {
   const text = typeof activity === 'string' ? activity : activity?.text;
   const video = typeof activity === 'string' ? null : activity?.video;
-  const youtube = typeof activity === 'string' ? null : activity?.youtube;
+  const link = typeof activity === 'string' ? null : activity?.link;
   const images = typeof activity === 'string' ? null : activity?.images;
 
   return (
@@ -33,17 +34,16 @@ const ActivityItem = ({ activity }) => {
             className="w-full max-w-[640px] rounded-[8px] bg-black"
           />
         )}
-        {youtube && (
-          // 16:9 상자. nocookie 도메인은 재생 전까지 추적 쿠키를 심지 않는다. rel=0 은 끝나도 남의 영상을 안 보여준다
-          <div className="relative w-full max-w-[640px] overflow-hidden rounded-[8px] bg-black pt-[56.25%]">
-            <iframe
-              src={`https://www.youtube-nocookie.com/embed/${youtube}?autoplay=1&mute=1&loop=1&playlist=${youtube}&playsinline=1&rel=0`}
-              title={text}
-              allow="autoplay; encrypted-media; picture-in-picture"
-              allowFullScreen
-              className="absolute inset-0 h-full w-full border-0"
-            />
-          </div>
+        {link && (
+          // 영상 아래 바로가기 한 줄 (예: 유튜브 원본). 새 창
+          <a
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="w-fit text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191] underline underline-offset-4 transition-colors hover:text-[#212121]"
+          >
+            {link.label} ↗
+          </a>
         )}
         {images?.length > 0 && (
           // 폰에서도 가로 배치 유지 — 세로로 긴 포스터라 둘을 나란히 두는 편이 낫다.
@@ -58,7 +58,9 @@ const ActivityItem = ({ activity }) => {
                 type="button"
                 onClick={() => openLightbox(images.map((item) => ({ src: item.src, alt: item.alt ?? text })), index)}
                 aria-label={`${image.alt ?? text} 크게 보기`}
-                className="relative h-full shrink-0 cursor-zoom-in overflow-hidden rounded-[8px] bg-[#f5f5f5] aspect-[745/1059]"
+                className={`relative h-full shrink-0 cursor-zoom-in overflow-hidden rounded-[8px] bg-[#f5f5f5] ${
+                  image.wide ? 'w-full' : 'aspect-[745/1059]'
+                }`}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- 서버에만 있는 파일이라 next/image 최적화 대상이 아니다 */}
                 <img
