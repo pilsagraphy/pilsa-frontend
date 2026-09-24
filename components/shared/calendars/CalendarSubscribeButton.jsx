@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CalendarPlus } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import useAuthStore from '@/stores/useAuthStore';
 import { isIOS } from '@/lib/platform';
 import { calendarWebcalUrl } from '@/lib/calendarFeed';

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import useMyPageStore from '@/stores/useMyPageStore';
 
 import MyPageIntro from './MyPageIntro';

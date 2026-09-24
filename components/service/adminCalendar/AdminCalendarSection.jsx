@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 import { createEvent, deleteEvent, deleteEventImage, updateEvent, uploadEventImages } from '@/apis/admin/event';
 import { getErrorMessage } from '@/apis/auth';

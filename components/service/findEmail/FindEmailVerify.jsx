@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import { ROUTES } from '@/constants/routes';
 import { findEmailByStudentNo, getErrorMessage } from '@/apis/auth';
 

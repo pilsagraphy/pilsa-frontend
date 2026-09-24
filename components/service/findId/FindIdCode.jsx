@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import { verifyFindIdCode, findLoginIdByEmail, getErrorMessage } from '@/apis/auth';
 
 // 인증번호는 숫자 6자리

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import { emailCodeSchema } from '@/schemas/auth';
 import { verifyEmailCode } from '@/apis/mail';
 import { getErrorMessage } from '@/apis/auth';

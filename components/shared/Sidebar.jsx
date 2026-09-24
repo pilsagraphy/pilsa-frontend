@@ -4,7 +4,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { ChevronDown, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import useSidebarStore from '@/stores/sidebar';
 import useAuthStore from '@/stores/useAuthStore';
 import useBoardStore from '@/stores/useBoardStore';

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 import { UserX, FileText, BellOff, CalendarClock, ShieldAlert, CircleCheck } from 'lucide-react';
 import {
   Dialog,

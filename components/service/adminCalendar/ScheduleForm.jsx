@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { ImagePlus, Pencil, Plus, X } from 'lucide-react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { DEFAULT_SCHEDULE_CATEGORY } from '@/constants/calendar';

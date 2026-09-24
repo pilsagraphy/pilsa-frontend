@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 import { getErrorMessage } from '@/apis/auth';
 import { createQuote, deleteQuote, getAdminQuotes, updateQuote } from '@/apis/admin/quotes';
