@@ -188,7 +188,7 @@ export default function PushPromptBottomSheet() {
           </ol>
           {/* 갤럭시에서 가장 흔한 원인 — "Chrome에서 실행 중" 알림이 거슬려 Chrome 알림을 통째로 끄면 우리 알림도 같이 막힌다 (2026-09-24) */}
           <p className="mt-3 rounded-[6px] bg-[#F5F5F5] px-3 py-2 text-left text-[13px] leading-[1.6] tracking-[-0.26px] text-[#454545] [word-break:keep-all]">
-            휴대폰 설정에서 <b>Chrome 알림</b>을 끄면 이 앱의 알림도 함께 막혀요. "Chrome에서 실행 중" 알림이 거슬리면 끄지 말고 옆으로 밀어 지워 주세요.
+            휴대폰 설정에서 <b>Chrome 알림</b>을 끄면 이 앱의 알림도 함께 막혀요. &ldquo;Chrome에서 실행 중&rdquo; 알림이 거슬리면 끄지 말고 옆으로 밀어 지워 주세요.
           </p>
 
           <div className="mt-6 flex flex-col gap-2">
