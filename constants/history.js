@@ -21,10 +21,10 @@ export const DUMMY_HISTORY = [
     activities: [
       "캘리그라피 전문 강사 초청",
       "조직도 개편 및 인수인계서 작성",
-      // 글 자체가 인스타그램 릴스 바로가기 (PM, 2026-09-24). 공유 토큰(stkn) 은 뺀 정식 주소
+      // 글 자체가 인스타그램 게시물 바로가기 (PM, 2026-09-24). 공유 토큰(stkn) 은 뺀 정식 주소
       {
         text: "동아연필 뉴엔 M-10 시리즈 신제품 서포터즈 활동",
-        href: "https://www.instagram.com/reel/DdoC4lBpq8H/",
+        href: "https://www.instagram.com/p/C40NPEIPUha/",
       },
       "2학기 우수동아리 선정",
     ],
