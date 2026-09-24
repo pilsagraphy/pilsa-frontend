@@ -3,9 +3,12 @@ import axios from 'axios';
 import useAuthStore from '@/stores/useAuthStore';
 import { PUBLIC_ROUTES } from '@/constants/routes';
 import { refreshAccessToken } from '@/apis/auth';
+import { loginUrlWithReturnTo, currentPathForReturn } from '@/lib/returnTo';
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+  // 로컬 개발에서는 상대경로로 보내 next.config의 rewrite 프록시를 타게 한다.
+  // (same-origin → refresh 쿠키 정상 전송) 배포에서는 기존 baseURL 사용.
+  baseURL: process.env.NODE_ENV === 'development' ? '' : process.env.NEXT_PUBLIC_BASE_URL,
   timeout: 5000,
   withCredentials: true,
   headers: {
@@ -47,10 +50,12 @@ axiosInstance.interceptors.response.use(
     const { status, headers } = response;
 
     // 백엔드 설정: 401 에러 + X-Token-Expired 헤더가 '1'인 경우
+    // _skipAuthRefresh: 로그아웃 직전 뒷정리(알림 기기 해제 등) 요청용 —
     if (
       status === 401 &&
       headers['x-token-expired'] === '1' &&
       !originalRequest._retry &&
+      !originalRequest._skipAuthRefresh &&
       !originalRequest.url?.startsWith('/api/auth/token/access/refresh')
     ) {
       originalRequest._retry = true;
@@ -70,7 +75,8 @@ axiosInstance.interceptors.response.use(
       } catch (refreshError) {
         // 재발급 실패 시 (리프레시 토큰도 만료된 경우) 로그아웃 처리
         useAuthStore.getState().logout();
-        window.location.href = '/login';
+        // 보고 있던 경로를 들고 로그인으로 — 로그인 뒤 그 자리로 돌아간다 (알림 딥링크 보존)
+        window.location.href = loginUrlWithReturnTo(currentPathForReturn());
         return Promise.reject(refreshError);
       }
     }

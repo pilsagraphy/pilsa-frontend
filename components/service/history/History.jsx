@@ -1,0 +1,54 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+
+import HistoryRow from './HistoryRow';
+import { DUMMY_HISTORY } from '@/constants/history';
+
+export default function History() {
+  const [focusYear, setFocusYear] = useState(null);
+
+  // 역대 회장 카드에서 #year-2021 처럼 들어온다. 그 해가 없으면 그다음 있는 해로 내려간다
+  useEffect(() => {
+    const apply = () => {
+      const matched = /^#year-(\d{4})$/.exec(window.location.hash);
+      if (!matched) return;
+      const wanted = Number(matched[1]);
+      const years = DUMMY_HISTORY.map((d) => Number(d.year)).sort((a, b) => a - b);
+      const target = years.find((y) => y >= wanted) ?? years[years.length - 1];
+      if (!target) return;
+      setFocusYear(String(target));
+      document.getElementById(`year-${target}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+    apply();
+    window.addEventListener('hashchange', apply);
+    return () => window.removeEventListener('hashchange', apply);
+  }, []);
+
+  return (
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
+      {/* 타이틀 및 서브타이틀 영역 */}
+      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-[#DEDEDE] pb-6 md:gap-[12px] md:pb-[40px]">
+        <h2 className="font-['Pretendard'] text-[24px] font-semibold leading-[1.5] tracking-[-0.48px] text-[#212121]">
+          연혁
+        </h2>
+        <p className="font-['Pretendard'] text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-[#919191]">
+          필사그래피 연도별 주요 활동
+        </p>
+      </header>
+
+      {/* 리스트 렌더링 영역 */}
+      <div className="flex w-full flex-col">
+        {DUMMY_HISTORY.map((data, index) => (
+          <HistoryRow
+            key={data.year}
+            year={data.year}
+            activities={data.activities}
+            isFirst={index === 0}
+            focused={focusYear === data.year}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}

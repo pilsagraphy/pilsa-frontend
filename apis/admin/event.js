@@ -1,0 +1,80 @@
+// 관리자 - 일정(캘린더) 관리 API 처리
+// ※ 조회(목록/ICS)는 apis/event.js — 관리자 화면도 목록은 그쪽을 재사용한다
+import axiosInstance from '@/apis/axiosInstance';
+
+// 화면 필드(scheduleId/content) → 서버 필드(description)로 되돌린다.
+// 반대 방향(서버 → 화면)은 apis/event.js 의 toSchedule 이 맡는다.
+//
+// description 은 DB NOT NULL 이라 빈 문자열이라도 채워 보낸다.
+// 시각(startTime/endTime)은 'HH:mm' 또는 null 이다. null 이면 서버가 00:00:00 으로 넣어 종일 일정이 된다.
+const toEventPayload = ({ title, category, content, startDate, endDate, startTime, endTime, notify }) => ({
+  title,
+  // 회원 알림 여부 — 관리자가 폼에서 정한다 (없으면 서버 기본: 등록은 보냄 · 수정은 안 보냄)
+  notify: typeof notify === 'boolean' ? notify : undefined,
+  // 카테고리 목록 조회가 실패하면 폼의 구분 셀렉트가 빈 값('')으로 잠긴 채 제출될 수 있다.
+  // '' 를 그대로 넣으면 '구분 없음'을 IS NULL 로 세는 쪽에서 새므로 NULL 로 보낸다.
+  category: category || null,
+  description: content ?? '',
+  startDate,
+  endDate,
+  startTime: startTime || null,
+  endTime: endTime || null,
+});
+
+// 1. 일정 등록 (POST /api/admin/event) [ADMIN]
+//    요청: { title, category, description, startDate, endDate }  // YYYY-MM-DD
+//      description 은 DB NOT NULL — 빈 문자열이라도 채워 보낸다
+//      category 는 varchar(50) — GET /api/event/categories 의 name 문자열을 보낸다 (NULL 허용)
+//    응답: 201 { message, data: { eventId, title } }  ← 200 아님
+//    실패: 400 시작일/종료일 필수 / 400 시작일 > 종료일 / 403 관리자 권한 필요
+// 응답에 목록이 없으므로(신규 eventId·title 뿐) 호출한 화면이 목록을 다시 불러야 한다
+export const createEvent = async (schedule) => {
+  const response = await axiosInstance.post('/api/admin/event', toEventPayload(schedule));
+  return response.data;
+};
+
+// 2. 일정 수정 (PUT /api/admin/event/{eventId}) [ADMIN]
+//    요청: 전달한 필드만 반영 — title, category, description, startDate, endDate
+//    응답: { message, data: { eventId, updatedAt } }
+//    실패: 404 없거나 이미 삭제된 일정 / 403 관리자 권한 필요
+// ★등록과 달리 서버에 시작일<=종료일 검증이 없다 — ScheduleForm 의 프론트 검증이
+//   수정 경로의 유일한 방어선이므로 그 검증을 지우면 안 된다
+export const updateEvent = async (eventId, schedule) => {
+  const response = await axiosInstance.put(
+    `/api/admin/event/${encodeURIComponent(eventId)}`,
+    toEventPayload(schedule)
+  );
+  return response.data;
+};
+
+// 3. 일정 삭제 (DELETE /api/admin/event/{eventId}) [ADMIN]
+//    응답: { message } — 메서드는 DELETE 지만 실제 동작은 소프트 삭제
+//    실패: 404 이미 삭제된 일정 / 403 관리자 권한 필요
+export const deleteEvent = async (eventId) => {
+  const response = await axiosInstance.delete(`/api/admin/event/${encodeURIComponent(eventId)}`);
+  return response.data;
+};
+
+// 4. 일정 이미지 업로드 (POST /api/admin/event/{eventId}/images) [ADMIN]
+//    multipart files(여러 장). 이미지 파일만, 일정 하나에 10장까지
+//    응답: [{ imageId, url, fileName }]
+//    실패: 400 이미지 아님·장수 초과 / 404 없는 일정
+export const uploadEventImages = async (eventId, files) => {
+  const formData = new FormData();
+  files.forEach((file) => formData.append('files', file));
+  const response = await axiosInstance.post(
+    `/api/admin/event/${encodeURIComponent(eventId)}/images`,
+    formData,
+    { headers: { 'Content-Type': 'multipart/form-data' }, timeout: 5 * 60 * 1000 }
+  );
+  return response.data;
+};
+
+// 5. 일정 이미지 삭제 (DELETE /api/admin/event/{eventId}/images/{imageId}) [ADMIN]
+//    행은 소프트 삭제, 파일은 커밋 뒤 삭제. 실패: 404 없는 이미지
+export const deleteEventImage = async (eventId, imageId) => {
+  const response = await axiosInstance.delete(
+    `/api/admin/event/${encodeURIComponent(eventId)}/images/${encodeURIComponent(imageId)}`
+  );
+  return response.data;
+};

@@ -1,0 +1,409 @@
+'use client';
+
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { ChevronDown, ChevronUp, ImagePlus, Trash2 } from 'lucide-react';
+import { EditorContent, NodeViewWrapper, ReactNodeViewRenderer, useEditor } from '@tiptap/react';
+import { NodeSelection } from '@tiptap/pm/state';
+import { Extension } from '@tiptap/core';
+import StarterKit from '@tiptap/starter-kit';
+import { Markdown } from '@tiptap/markdown';
+import Image from '@tiptap/extension-image';
+import Placeholder from '@tiptap/extension-placeholder';
+import { BackgroundColor, Color, TextStyle } from '@tiptap/extension-text-style';
+
+import AuthedImage from '@/components/shared/board/AuthedImage';
+import { uploadFile } from '@/apis/file';
+import { getErrorMessage } from '@/apis/auth';
+import { alertDialog } from '@/stores/useDialogStore';
+
+// 본문 편집기 — 노션처럼 "보이는 그대로" 쓴다.
+//
+// 화면에서는 제목·굵게·목록·이미지가 실제 글처럼 보이지만, 값(value/onChange)은 지금까지와 같은
+// **마크다운 문자열**이다. 서버·상세 화면(BoardMarkdown)·임시저장은 아무것도 바뀌지 않았다.
+// 예전엔 마크다운 원문을 치고 미리보기 탭으로 확인해야 했는데, 글 쓰는 회원에게 '## 제목' 은 낯설다 (PM, 2026-09-21).
+//
+// 툴바(BoardWriteToolbar)는 따로 그려지므로, 만들어진 editor 를 onEditorReady 로 올려 보낸다.
+
+// 올리는 중인 이미지의 임시 주소 — 업로드가 끝나면 서버 주소로 바뀌고, 실패하면 노드째 지운다
+const UPLOADING_PREFIX = 'uploading:';
+
+// 우리 서버 이미지(/api/user/files/{id})는 Authorization 이 필요해 <img src> 로는 안 뜬다.
+// 상세 화면과 같은 AuthedImage 로 그리되, 노드의 src 는 서버 주소 그대로 둬야 마크다운으로 저장된다.
+//
+// PC 는 끌어서 옮기지만 폰은 HTML 드래그가 안 되고 꾹 누르면 브라우저 메뉴(이미지 저장…)가 뜬다.
+// 그래서 이미지를 누르면(선택) 위로·아래로·삭제 버튼이 떠서 그걸로 옮긴다 (PM, 2026-09-21)
+function EditorImageView({ node, selected, editor, getPos, deleteNode }) {
+  const { src, alt } = node.attrs;
+  const uploading = typeof src === 'string' && src.startsWith(UPLOADING_PREFIX);
+
+  // 이웃 블록과 자리를 바꾼다. 이미지는 최상위 블록이라 부모는 doc 이다
+  const moveBy = (direction) => {
+    const pos = typeof getPos === 'function' ? getPos() : null;
+    if (pos == null || !editor) return;
+    const { state } = editor;
+    const $pos = state.doc.resolve(pos);
+    const parent = $pos.parent;
+    const index = $pos.index();
+    const targetIndex = index + direction;
+    if (targetIndex < 0 || targetIndex >= parent.childCount) return;
+
+    const current = parent.child(index);
+    const neighbor = parent.child(targetIndex);
+    // 지운 뒤 좌표: 위로 가면 이웃이 시작하던 자리, 아래로 가면 이웃(이제 pos 에서 시작) 바로 뒤
+    const insertAt = direction < 0 ? pos - neighbor.nodeSize : pos + neighbor.nodeSize;
+    const tr = state.tr.delete(pos, pos + current.nodeSize).insert(insertAt, current);
+    tr.setSelection(NodeSelection.create(tr.doc, insertAt)).scrollIntoView();
+    editor.view.dispatch(tr);
+  };
+
+  const controlClass =
+    'flex size-[30px] items-center justify-center rounded-full bg-white/95 text-[#212121] shadow-[0_2px_8px_rgba(0,0,0,0.18)] disabled:opacity-30';
+
+  return (
+    <NodeViewWrapper className="my-3" data-drag-handle>
+      {uploading ? (
+        <span className="inline-block h-[120px] w-full max-w-[320px] animate-pulse rounded-[4px] bg-[#f5f5f5]" />
+      ) : (
+        <span
+          className={`relative inline-block rounded-[4px] ${selected ? 'ring-2 ring-[#212121]/40' : ''}`}
+          // 폰에서 꾹 눌러도 브라우저의 이미지 메뉴가 뜨지 않게 (편집 중에는 옮기는 게 목적이다)
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <span
+            className="[&_img]:pointer-events-none [&_img]:select-none [-webkit-touch-callout:none]"
+            // 폰에서 이미지를 눌렀을 때 키보드가 올라오지 않게: 브라우저의 기본 포커스를 막고
+            // 이미지 노드만 직접 선택한다(위·아래·삭제 버튼은 selected 로 뜬다). 편집기에 포커스가 있었으면 내린다
+            onTouchEnd={(e) => {
+              if (typeof getPos !== 'function' || !editor) return;
+              e.preventDefault();
+              const pos = getPos();
+              editor.view.dispatch(editor.state.tr.setSelection(NodeSelection.create(editor.state.doc, pos)));
+              editor.view.dom.blur();
+            }}
+          >
+            <AuthedImage src={src} alt={alt ?? ''} />
+          </span>
+
+          {selected && (
+            <span
+              className="absolute right-2 top-2 flex gap-1"
+              contentEditable={false}
+              // 버튼을 눌러도 편집기 선택이 풀리지 않게
+              onMouseDown={(e) => e.preventDefault()}
+            >
+              <button type="button" onClick={() => moveBy(-1)} aria-label="위로" title="위로" className={controlClass}>
+                <ChevronUp size={18} strokeWidth={2} />
+              </button>
+              <button type="button" onClick={() => moveBy(1)} aria-label="아래로" title="아래로" className={controlClass}>
+                <ChevronDown size={18} strokeWidth={2} />
+              </button>
+              <button type="button" onClick={() => deleteNode?.()} aria-label="삭제" title="삭제" className={controlClass}>
+                <Trash2 size={16} strokeWidth={2} />
+              </button>
+            </span>
+          )}
+        </span>
+      )}
+    </NodeViewWrapper>
+  );
+}
+
+const EditorImage = Image.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(EditorImageView);
+  },
+  // 크기가 지정된 이미지(<img width=…>)는 마크다운 문법으로는 크기를 못 적는다 → 원래대로 HTML 로 남긴다.
+  // 안 그러면 옛 글을 한 번 수정하기만 해도 이미지가 전부 원본 크기로 커진다
+  renderMarkdown(node) {
+    const { src = '', alt = '', width, height } = node.attrs ?? {};
+    if (!width && !height) return `![${alt ?? ''}](${src})`;
+    const size = [width ? `width="${width}"` : '', height ? `height="${height}"` : ''].filter(Boolean).join(' ');
+    return `<img ${size} src="${src}" alt="${alt ?? ''}" />`;
+  },
+});
+
+// 글자색·배경색은 마크다운 문법이 없다 → HTML <span style> 로 저장한다 (마크다운 안의 HTML 은 표준이다).
+// 상세 화면(BoardMarkdown)은 이 span 의 색만 통과시켜 그린다. 수정 때는 같은 span 을 다시 마크로 읽는다.
+//
+// 읽을 때는 span 안쪽을 **마크다운으로** 다시 해석한다(markdownTokenizer). 기본 처리는 span 을 HTML 로만 읽어서
+// 안에 적힌 `\*` 같은 이스케이프가 글자 그대로 남고, 저장할 때마다 백슬래시가 한 겹씩 늘었다
+// (글 160 의 수정 이력에서 3 → 16 → 42 → 122 개로 불어난 것을 확인, 2026-09-21). 굵게 등 안쪽 서식도 이제 살아난다
+const SPAN_STYLE_PATTERN = /^<span style="([^"]*)">([\s\S]*?)<\/span>/;
+
+const parseSpanStyle = (style) => {
+  const attrs = {};
+  const color = /(?:^|;)\s*color\s*:\s*([^;]+)/i.exec(style)?.[1]?.trim();
+  const backgroundColor = /background-color\s*:\s*([^;]+)/i.exec(style)?.[1]?.trim();
+  if (color) attrs.color = color;
+  if (backgroundColor) attrs.backgroundColor = backgroundColor;
+  return attrs;
+};
+
+const ColoredTextStyle = TextStyle.extend({
+  renderMarkdown(node, h) {
+    const { color, backgroundColor } = node.attrs ?? {};
+    const style = [color ? `color: ${color}` : '', backgroundColor ? `background-color: ${backgroundColor}` : '']
+      .filter(Boolean)
+      .join('; ');
+    const children = h.renderChildren(node);
+    return style ? `<span style="${style}">${children}</span>` : children;
+  },
+  // 토큰 이름 → parseMarkdown 연결 (없으면 확장 이름 'textStyle' 로만 찾아 우리 토큰을 못 받는다)
+  markdownTokenName: 'coloredSpan',
+  markdownTokenizer: {
+    name: 'coloredSpan',
+    level: 'inline',
+    start: (src) => src.indexOf('<span style="'),
+    tokenize(src, _tokens, h) {
+      const match = SPAN_STYLE_PATTERN.exec(src);
+      if (!match) return undefined;
+      return {
+        type: 'coloredSpan',
+        raw: match[0],
+        style: match[1],
+        text: match[2],
+        tokens: h.inlineTokens(match[2]),
+      };
+    },
+  },
+  parseMarkdown: (token, h) => h.applyMark('textStyle', h.parseInline(token.tokens || []), parseSpanStyle(token.style)),
+});
+
+// ESC: 커서 자리에 걸린 서식(굵게·기울임·색)과 블록 서식(제목·목록)을 전부 풀어 평문으로 돌아간다 (PM, 2026-09-21).
+// 글자를 고르지 않고 눌러도 이어서 칠 글자에 서식이 붙지 않는다
+const EscapeClearsFormatting = Extension.create({
+  name: 'escapeClearsFormatting',
+  addKeyboardShortcuts() {
+    return {
+      Escape: () => this.editor.chain().focus().unsetAllMarks().clearNodes().run(),
+    };
+  },
+});
+
+const pickImageFiles = (fileList) =>
+  Array.from(fileList ?? []).filter((file) => file?.type?.startsWith('image/'));
+
+export default function BoardRichEditor({
+  boardId,
+  value,
+  onChange,
+  allowUpload = false,
+  onEditorReady,
+  placeholder = '내용을 입력하세요.',
+}) {
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // 마지막으로 편집기 ↔ 바깥이 주고받은 마크다운. 바깥 value 가 이것과 다를 때만(초안 불러오기·수정 화면 로드)
+  // 편집기 내용을 갈아끼운다 — 타이핑할 때마다 다시 파싱해 커서가 튀는 일을 막는다
+  const lastMarkdownRef = useRef(null);
+  // 편집기 안에서 쓰는 콜백들이 항상 최신 onChange 를 보게 한다 (useEditor 는 처음 한 번만 만든다)
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  // editorProps 는 편집기를 만들기 전에 정의돼서, 만들어진 편집기를 ref 로 넘겨 받는다
+  const editorRef = useRef(null);
+
+  const editor = useEditor({
+    // Next 는 서버에서 먼저 그린다 — 편집기는 브라우저에서만 만든다
+    immediatelyRender: false,
+    // 처음 값은 옵션으로 넘긴다 (onCreate 에서 setContent 를 하면 React 가 렌더 중 flushSync 라고 경고한다)
+    content: value ?? '',
+    contentType: 'markdown',
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [1, 2, 3, 4, 5, 6] },
+        link: { openOnClick: false, autolink: true },
+        // 코드블록·인용은 마크다운으로는 남지만 툴바에 없다 — 붙여넣기 글에 있으면 그대로 보존된다
+      }),
+      Markdown,
+      ColoredTextStyle,
+      Color,
+      BackgroundColor,
+      EditorImage.configure({ inline: false, allowBase64: false }),
+      Placeholder.configure({ placeholder }),
+      EscapeClearsFormatting,
+    ],
+    editorProps: {
+      attributes: {
+        class: 'board-editor w-full p-[16px] outline-none',
+      },
+      handleDOMEvents: {
+        // 폰(특히 안드로이드 한글 자판)의 엔터는 keydown 이 아니라 beforeinput(insertParagraph) 로 온다.
+        // 그대로 두면 브라우저가 DOM 을 직접 쪼개 <h2> 뒤에 <h2> 가 생겨 제목이 다음 줄까지 이어졌다 (PM, 2026-09-21).
+        // 여기서 가로채 편집기의 Enter 규칙(제목 끝이면 새 문단)으로 처리한다. 조합 중이면 건드리지 않는다
+        beforeinput: (view, event) => {
+          if (event.inputType !== 'insertParagraph' || view.composing) return false;
+          event.preventDefault();
+          editorRef.current?.commands.keyboardShortcut('Enter');
+          return true;
+        },
+      },
+    },
+    onCreate: () => {
+      lastMarkdownRef.current = value ?? '';
+    },
+    onUpdate: ({ editor: updated }) => {
+      const markdown = updated.getMarkdown();
+      lastMarkdownRef.current = markdown;
+      onChangeRef.current?.(markdown);
+    },
+  });
+
+  // 바깥에서 값이 바뀐 경우(초안 불러오기, 수정 화면 로드, 이미지 업로드 치환)
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+    const next = value ?? '';
+    if (next === lastMarkdownRef.current) return;
+    lastMarkdownRef.current = next;
+    editor.commands.setContent(next, { contentType: 'markdown', emitUpdate: false });
+  }, [editor, value]);
+
+  // 폰: 글자를 끌어 골랐을 때(범위 선택) 키보드를 내린다 — 서식·색을 고르려는 것이지 타이핑이 아니다 (PM, 2026-09-21).
+  // inputmode=none 으로 바꾸고 포커스를 한 번 갱신하면 키보드만 내려가고 선택은 남는다. 커서(빈 선택)로 돌아오면 원상복구
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return undefined;
+    if (typeof window === 'undefined' || !window.matchMedia('(pointer: coarse)').matches) return undefined;
+
+    const dom = editor.view.dom;
+    const refocus = () => {
+      if (document.activeElement !== dom) return;
+      dom.blur();
+      dom.focus({ preventScroll: true });
+    };
+    const sync = () => {
+      const ranged = !editor.state.selection.empty && !(editor.state.selection instanceof NodeSelection);
+      const current = dom.getAttribute('inputmode') ?? 'text';
+      const next = ranged ? 'none' : 'text';
+      if (current === next) return;
+      dom.setAttribute('inputmode', next);
+      refocus();
+    };
+    editor.on('selectionUpdate', sync);
+    return () => editor.off('selectionUpdate', sync);
+  }, [editor]);
+
+  // 툴바에 편집기를 넘긴다. onCreate 안에서 부모 state 를 바꾸면 React 가 렌더 중 flushSync 라고 경고한다 → effect 에서
+  useEffect(() => {
+    editorRef.current = editor ?? null;
+    onEditorReady?.(editor ?? null);
+    return () => onEditorReady?.(null);
+  }, [editor, onEditorReady]);
+
+  // 이미지 노드의 src 를 바꾸거나(업로드 완료) 노드를 지운다(실패)
+  const replaceImage = useCallback(
+    (tempSrc, attrs) => {
+      if (!editor || editor.isDestroyed) return;
+      const { state, view } = editor;
+      let found = null;
+      state.doc.descendants((node, pos) => {
+        if (found != null) return false;
+        if (node.type.name === 'image' && node.attrs.src === tempSrc) found = { node, pos };
+        return true;
+      });
+      if (!found) return;
+
+      const tr = attrs
+        ? state.tr.setNodeMarkup(found.pos, undefined, { ...found.node.attrs, ...attrs })
+        : state.tr.delete(found.pos, found.pos + found.node.nodeSize);
+      view.dispatch(tr);
+    },
+    [editor]
+  );
+
+  // 고른 이미지들을 커서 자리에 넣고(자리표시자), 업로드가 끝나는 대로 서버 주소로 바꾼다.
+  // 업로드를 기다리는 동안 이어서 타이핑해도 그 내용은 그대로다 — 노드만 골라 바꾸기 때문
+  const insertImages = useCallback(
+    async (files) => {
+      if (!editor || !boardId || files.length === 0) return;
+
+      const entries = files.map((file, index) => ({
+        file,
+        tempSrc: `${UPLOADING_PREFIX}${Date.now()}-${index}-${file.name}`,
+      }));
+
+      let chain = editor.chain().focus();
+      entries.forEach(({ file, tempSrc }) => {
+        chain = chain.setImage({ src: tempSrc, alt: file.name });
+      });
+      chain.run();
+
+      try {
+        setUploading(true);
+
+        for (const { file, tempSrc } of entries) {
+          try {
+            // usage=inline: 본문 삽입용 → 상세의 첨부파일 목록에는 나오지 않는다
+            // eslint-disable-next-line no-await-in-loop
+            const uploaded = await uploadFile(boardId, file, 'inline');
+            replaceImage(tempSrc, { src: uploaded?.url ?? '', alt: file.name });
+          } catch (error) {
+            replaceImage(tempSrc, null);
+            alertDialog(getErrorMessage(error, '이미지를 업로드하지 못했습니다.'));
+          }
+        }
+      } finally {
+        setUploading(false);
+      }
+    },
+    [editor, boardId, replaceImage]
+  );
+
+  const handlePaste = (e) => {
+    if (!allowUpload) return;
+    const images = pickImageFiles(e.clipboardData?.files);
+    if (images.length === 0) return;
+    e.preventDefault();
+    insertImages(images);
+  };
+
+  const handleDrop = (e) => {
+    if (!allowUpload) return;
+    const images = pickImageFiles(e.dataTransfer?.files);
+    if (images.length === 0) return;
+    e.preventDefault();
+    insertImages(images);
+  };
+
+  return (
+    <div className="flex w-full flex-col">
+      {allowUpload && (
+        <div className="flex items-center justify-end border-b border-[#DEDEDE] px-2 py-1">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading || !editor}
+            className="flex items-center gap-1 px-2 py-1 text-[14px] text-[#919191] transition-colors hover:text-[#212121] disabled:opacity-60"
+          >
+            <ImagePlus size={16} strokeWidth={1.5} aria-hidden />
+            {uploading ? '올리는 중...' : '본문 이미지'}
+          </button>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            hidden
+            onChange={(e) => {
+              insertImages(pickImageFiles(e.target.files));
+              // 같은 파일을 다시 골라도 change 가 나도록 비운다
+              e.target.value = '';
+            }}
+          />
+        </div>
+      )}
+
+      {/* 편집 영역 — 편집 가능한 요소(.board-editor) 자체가 상자 바닥까지 늘어난다.
+          예전엔 상자만 넓고 편집 요소는 글만큼이라, 글 아래 빈 곳에서 위로 끌어 전체 선택하는 게 안 됐다 (PM, 2026-09-21).
+          안쪽 스크롤은 두지 않는다: 본문이 길어지면 상자가 자라고 페이지가 스크롤된다 */}
+      <div
+        className="flex w-full flex-1 cursor-text flex-col"
+        onPaste={handlePaste}
+        onDrop={handleDrop}
+        onDragOver={(e) => allowUpload && e.preventDefault()}
+      >
+        <EditorContent editor={editor} className="flex flex-1 flex-col [&>.board-editor]:flex-1" />
+      </div>
+    </div>
+  );
+}

@@ -26,13 +26,28 @@ function SelectWithChevron({ value, onChange, children, ariaLabel }) {
   );
 }
 
+// 일정 막대에 쓰는 modifier 이름 → 클래스. 막대 CSS가 이 파일에 있으므로 매핑도 여기서 들고 있는다.
+// CalendarSection이 modifiers로 scheduleDay · scheduleActive · scheduleStart · scheduleEnd를 넘기면 된다.
+const SCHEDULE_MODIFIER_CLASS_NAMES = {
+  scheduleDay: 'pilsa-schedule-day',
+  scheduleActive: 'pilsa-schedule-active',
+  scheduleStart: 'pilsa-schedule-start',
+  scheduleEnd: 'pilsa-schedule-end',
+};
+
 export function Calendar({
   className = '',
   classNames,
+  modifiersClassNames,
   showOutsideDays = true,
   modifiers,
   month: controlledMonth,
   onMonthChange,
+  // 날짜 칸 더블클릭. (관리자 화면에서 '그 날짜로 일정 추가'에 쓴다)
+  // 넘기지 않으면 아무 동작도 붙지 않는다.
+  onDayDoubleClick,
+  // 헤더 '오늘' 버튼. 달은 여기서 오늘로 돌리고, 날짜 선택까지 하려면 부모가 이 콜백으로 받는다
+  onToday,
   ...props
 }) {
   const [internalMonth, setInternalMonth] = React.useState(() => new Date());
@@ -47,6 +62,12 @@ export function Calendar({
     const d = new Date(month);
     d.setMonth(d.getMonth() - 1);
     setMonth(d);
+  };
+
+  const goToday = () => {
+    const today = new Date();
+    setMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+    onToday?.(new Date(today.getFullYear(), today.getMonth(), today.getDate()));
   };
 
   const goNext = () => {
@@ -83,7 +104,7 @@ export function Calendar({
 
       if (isOutside) {
         return (
-          <td className="h-10 w-10 p-0 text-center align-middle sm:h-12 sm:w-12">
+          <td className="h-9 w-9 p-0 text-center align-middle sm:h-12 sm:w-12">
             <span
               style={{
                 display: 'inline-block',
@@ -97,54 +118,104 @@ export function Calendar({
         );
       }
 
-      return <td {...dayProps} />;
+      // 더블클릭은 단일 클릭 두 번도 함께 발생한다. 날짜 선택 토글이 두 번 돌아
+      // 선택이 원래대로 돌아가지만, 이 화면에서는 아래가 폼으로 바뀌므로 그대로 둔다.
+      return (
+        <td
+          {...dayProps}
+          onDoubleClick={onDayDoubleClick ? () => onDayDoubleClick(date) : undefined}
+        />
+      );
     },
-    [currentMonth, currentYear]
+    [currentMonth, currentYear, onDayDoubleClick]
   );
 
   return (
     <div className={`w-full ${className}`}>
       <style>{`
-        .rdp-day_today.rdp-day_selected button,
-        .rdp-day_today.rdp-day_selected .rdp-day_button,
-        [data-today][data-selected] button,
-        [data-today][data-selected] .rdp-day_button {
-          background-color: #f5f5f5 !important;
-          border-radius: 9999px !important;
+        /* 일정 막대(pill)
+           칸(td) 자체에 배경을 주면 border-collapse 때문에 모서리가 둥글어지지 않아서,
+           칸 안쪽에 ::before를 깔아 막대를 그린다. 이웃한 칸끼리 좌우로 붙어 한 줄로 이어진다. */
+        .pilsa-schedule-day,
+        .pilsa-schedule-active {
+          position: relative;
         }
-
-        /* 점(Dot) 스타일 추가 */
-        .rdp-day_hasEvent .rdp-day_button::after {
+        .pilsa-schedule-day::before,
+        .pilsa-schedule-active::before {
           content: '';
           position: absolute;
-          bottom: 2px;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 3px;
-          height: 3px;
-          border-radius: 50%;
-          background-color: #212121;
+          top: 4px;
+          right: -1px;
+          bottom: 4px;
+          left: -1px;
+          background-color: #f6f6f6;
         }
-        @media (min-width: 640px) {
-          .rdp-day_hasEvent .rdp-day_button::after {
-            bottom: 4px;
-            width: 4px;
-            height: 4px;
-          }
+        .pilsa-schedule-active::before {
+          background-color: #454545;
         }
-        .rdp-day_selected.rdp-day_hasEvent .rdp-day_button::after {
-          background-color: #212121;
+        /* 칸마다 따로 그리다 보니 딱 붙여만 두면 두 경계가 각각 안티에일리어싱되어
+           날짜 사이에 옅은 세로선이 보인다. 이어지는 쪽만 1px씩 겹치게 해서 이음매를 없앤다.
+           막대의 시작 · 끝 칸은 겹칠 이웃이 없으므로 칸 경계에 맞추고 둥글게 잘라 알약 모양을 만든다. */
+        .pilsa-schedule-start::before {
+          left: 0;
+          border-top-left-radius: 9999px;
+          border-bottom-left-radius: 9999px;
+        }
+        .pilsa-schedule-end::before {
+          right: 0;
+          border-top-right-radius: 9999px;
+          border-bottom-right-radius: 9999px;
+        }
+        /* 날짜 숫자와 선택 테두리를 막대 위로 올린다. 배경은 막대가 보이도록 비운다.
+           hover 등 다른 유틸도 !important라서 선언 순서 싸움이 되므로,
+           td를 붙여 선택자 명시도를 한 단계 높여 순서와 무관하게 이기도록 한다. */
+        td.pilsa-schedule-day > button,
+        td.pilsa-schedule-active > button {
+          position: relative;
+          z-index: 1;
+          background-color: transparent !important;
+        }
+        td.pilsa-schedule-active > button {
+          color: #ffffff !important;
         }
 
-        .rdp-day_button { position: relative; }
+        /* 선택한 날짜 표시.
+           하루짜리 일정 막대와 같은 크기 · 모양으로 그린다 — 칸 전체 폭, 위아래 4px 안쪽, 완전 둥근 모서리.
+           버튼(48px 정사각)에 테두리를 주면 막대(높이 40px)보다 높아져 위아래가 튄다. */
+        td[data-selected] {
+          position: relative;
+        }
+        /* 일정 막대 위에 선택 테두리(흰 알약)가 겹치면 지저분하다 — 막대가 있는 날은 테두리를 그리지 않는다 (PM, 2026-09-21) */
+        td[data-selected].pilsa-schedule-day::after,
+        td[data-selected].pilsa-schedule-active::after {
+          display: none;
+        }
+        td[data-selected]::after {
+          content: '';
+          position: absolute;
+          top: 4px;
+          right: 0;
+          bottom: 4px;
+          left: 0;
+          z-index: 2;
+          border: 1px solid #dedede;
+          border-radius: 9999px;
+          pointer-events: none;
+        }
+
+        /* 오늘: 숫자만 굵게 (점은 PM 이 빼 달라 함, 2026-09-21). 어느 달인지는 헤더의 '오늘' 버튼으로 돌아온다 */
+        td[data-today] > button {
+          font-weight: 700;
+        }
       `}</style>
 
-      <div className="relative mx-auto w-full max-w-[272px] pb-2 pt-1 sm:max-w-[336px]">
+      {/* 960px 미만에서는 달력이 컨테이너 폭을 다 쓰므로 머리줄도 같은 폭 — 화살표가 격자 양 끝에 온다 */}
+      <div className="relative mx-auto w-full pb-2 pt-1 min-[960px]:max-w-[336px]">
         <button
           type="button"
           onClick={goPrev}
           aria-label="이전 달"
-          className="absolute left-0 top-1/2 -translate-y-1/2 p-0.5 text-neutral-900 hover:opacity-70 sm:left-[-10px] sm:p-1"
+          className="absolute left-0 top-1/2 -translate-y-1/2 p-0.5 text-neutral-900 hover:opacity-70 sm:p-1 min-[960px]:left-[-10px]"
         >
           <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.25} />
         </button>
@@ -165,13 +236,22 @@ export function Calendar({
               </option>
             ))}
           </SelectWithChevron>
+
+          {/* 오늘로 — 다른 달을 보다가 한 번에 돌아온다 (PM, 2026-09-21) */}
+          <button
+            type="button"
+            onClick={goToday}
+            className="rounded-[4px] border border-[#dedede] px-[8px] py-[2px] text-[12px] leading-[1.6] text-[#454545] transition-colors hover:bg-[#f6f6f6] sm:text-[13px]"
+          >
+            오늘
+          </button>
         </div>
 
         <button
           type="button"
           onClick={goNext}
           aria-label="다음 달"
-          className="absolute right-0 top-1/2 -translate-y-1/2 p-0.5 text-neutral-900 hover:opacity-70 sm:right-[-10px] sm:p-1"
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-0.5 text-neutral-900 hover:opacity-70 sm:p-1 min-[960px]:right-[-10px]"
         >
           <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.25} />
         </button>
@@ -184,31 +264,36 @@ export function Calendar({
         onMonthChange={setMonth}
         showOutsideDays={showOutsideDays}
         modifiers={modifiers}
+        modifiersClassNames={{ ...SCHEDULE_MODIFIER_CLASS_NAMES, ...modifiersClassNames }}
         className="p-0"
         formatters={{
           formatWeekdayName: (date) => EN_WEEKDAYS[date.getDay()],
         }}
         components={{ Day: CustomDay }}
+        // v9 키만 사용한다. v8 키(caption · table · head_row · head_cell · cell)는
+        // 조용히 무시되므로 남겨두면 죽은 코드가 된다.
+        // 월 · 년은 위쪽 커스텀 select로 직접 그리므로 기본 캡션과 nav는 숨긴다.
         classNames={{
-          caption: 'hidden',
           caption_label: 'hidden',
           nav: 'hidden',
-          months: 'flex flex-col items-center',
-          month: 'space-y-2',
-          table: 'mx-auto border-collapse',
-          head_row: 'flex',
-          weekday: 'text-neutral-400 font-normal text-[11px] sm:text-[14px]',
-          head_cell:
-            'w-10 text-center text-[11px] text-neutral-400 font-normal sm:w-12 sm:text-[14px]',
-          cell: 'h-10 w-10 p-0 text-center align-middle bg-transparent sm:h-12 sm:w-12',
+          // 960px 미만: 달력이 컨테이너 폭을 다 쓴다(칸이 균등하게 늘어남). 이상: 예전처럼 고정 칸 폭으로 가운데 정렬
+          months: 'flex flex-col items-stretch min-[960px]:items-center',
+          month: 'w-full space-y-2 min-[960px]:w-auto',
+          month_grid: 'w-full table-fixed border-collapse min-[960px]:mx-auto min-[960px]:w-auto min-[960px]:table-auto',
+          // weekdays(구 head_row)에는 flex를 주지 않는다. <tr>이 flex가 되면
+          // <th>가 table-cell을 잃어 본문 칸과 열이 어긋난다.
+          weekday:
+            'w-9 p-0 text-center text-[11px] font-normal text-neutral-400 sm:w-12 sm:text-[14px]',
+          day: 'h-9 w-9 p-0 text-center align-middle bg-transparent sm:h-12 sm:w-12',
           day_button:
-            'flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-[13px] font-normal text-neutral-900 outline-none hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-12 sm:w-12 sm:text-[16px]',
-          selected:
-            '[&>button]:!bg-neutral-100 [&>button]:!rounded-full [&_.rdp-day_button]:!bg-neutral-100 [&_.rdp-day_button]:!rounded-full',
+            // mx-auto: 칸이 고정 폭보다 넓어질 때(폭에 맞춰 늘어나는 표·날짜 피커) 버튼이 칸 왼쪽에 붙어
+            // 날짜가 왼쪽으로 치우쳐 보였다 — flex 블록은 text-center 로 가운데 오지 않는다 (PM, 2026-09-21)
+            'mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-[13px] font-normal text-neutral-900 outline-none hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-12 sm:w-12 sm:text-[16px]',
+          // 선택한 날짜 표시는 아래 <style>의 td[data-selected]::after로 그린다.
+          // 버튼에 테두리를 주면 버튼 크기(48px 정사각)를 따라가 막대보다 높아지기 때문.
           today: 'bg-transparent',
           outside: 'pointer-events-none',
           disabled: 'text-neutral-300 opacity-50',
-          day_hasEvent: 'rdp-day_hasEvent',
           ...classNames,
         }}
       />

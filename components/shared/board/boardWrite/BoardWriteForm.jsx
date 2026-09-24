@@ -1,0 +1,422 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { ChevronDown, X } from 'lucide-react';
+import BoardWriteBox from './BoardWriteBox';
+import BoardWriteToolbar from './BoardWriteToolbar';
+import BoardRichEditor from './BoardRichEditor';
+import DraftLoadButton from './DraftLoadButton';
+import useBoardWriteStore from '@/stores/useBoardWriteStore';
+import { getBoardCategories } from '@/apis/board';
+import { useMinWidthMd } from '@/lib/useMinWidthMd';
+import useAuthStore from '@/stores/useAuthStore';
+
+// 공통게시판 글쓰기/수정 공용 폼.
+// 노출 항목은 게시판 플래그(board)로 결정한다:
+//  - categoryMode: 카테고리 셀렉트
+//  - allowAttachment: 첨부파일 입력
+//  - allowAnonymous: 익명 게시 체크박스
+//
+// enableDraft 는 글쓰기 화면만 켠다. 초안은 '게시판별 작성 중인 글'이라
+// 특정 글의 수정본을 담는 그릇이 아니므로 수정(Edit) 화면에는 두지 않는다.
+//
+// busy 는 저장·발행이 진행 중인지다. 그동안 다른 초안을 불러오면 화면 내용과
+// 이어쓰는 초안 번호가 어긋나므로 불러오기 버튼을 잠근다.
+// isEdit: 수정 화면. '중요' 알림 체크의 문구가 달라진다
+export default function BoardWriteForm({ boardId, board, enableDraft = false, busy = false, isEdit = false }) {
+  const isMdUp = useMinWidthMd();
+  const isAdmin = useAuthStore((s) => s.adminLevel) >= 1;
+  // 카테고리를 안 쓰는 게시판(공지사항)이라도 관리자에게는 '중요'(상단 고정)가 있다.
+  // 서버가 관리자에게만 '중요'를 내려주므로, 일반 회원은 목록이 비어 칸 자체가 안 뜬다
+  const categoryMode = Boolean(board?.categoryMode) || isAdmin;
+  const allowAttachment = Boolean(board?.allowAttachment);
+  const allowAnonymous = Boolean(board?.allowAnonymous);
+
+  const title = useBoardWriteStore((s) => s.title);
+  const content = useBoardWriteStore((s) => s.content);
+  const categoryId = useBoardWriteStore((s) => s.categoryId);
+  const files = useBoardWriteStore((s) => s.files);
+  const isAnonymous = useBoardWriteStore((s) => s.isAnonymous);
+  const existingAttachments = useBoardWriteStore((s) => s.existingAttachments);
+  const deleteAttachmentIds = useBoardWriteStore((s) => s.deleteAttachmentIds);
+  const draftAttachments = useBoardWriteStore((s) => s.draftAttachments);
+  const removeDraftAttachment = useBoardWriteStore((s) => s.removeDraftAttachment);
+  const setTitle = useBoardWriteStore((s) => s.setTitle);
+  const setContent = useBoardWriteStore((s) => s.setContent);
+  const setCategoryId = useBoardWriteStore((s) => s.setCategoryId);
+  const setFiles = useBoardWriteStore((s) => s.setFiles);
+  const setIsAnonymous = useBoardWriteStore((s) => s.setIsAnonymous);
+  const notifyPinned = useBoardWriteStore((s) => s.notifyPinned);
+  const setNotifyPinned = useBoardWriteStore((s) => s.setNotifyPinned);
+  const removeFileAt = useBoardWriteStore((s) => s.removeFileAt);
+  const toggleDeleteAttachment = useBoardWriteStore((s) => s.toggleDeleteAttachment);
+
+  // 툴바가 아래 '내용' 편집기에 서식을 걸어야 해서, 편집기가 만들어지면 여기로 올려 툴바에 넘긴다
+  const [editor, setEditor] = useState(null);
+
+  const [categories, setCategories] = useState([]);
+  // 게시판이 카테고리를 안 쓰면 관리자용 '중요'만 오고, 그것마저 없으면 칸을 그리지 않는다
+  const showCategory = Boolean(board?.categoryMode) || categories.length > 0;
+  // '중요'(PINNED)를 골랐을 때만 알림 체크가 보인다 — 중요 글은 열람 회원 전원에게 알림이 가므로 관리자가 끌 수 있어야 한다
+  const pinnedSelected =
+    isAdmin && categories.some((c) => String(c.categoryId) === String(categoryId) && c.code === 'PINNED');
+
+  useEffect(() => {
+    if (!boardId || !categoryMode) return;
+
+    let isIgnore = false;
+    const fetchCategories = async () => {
+      try {
+        const data = await getBoardCategories(boardId);
+        if (isIgnore) return;
+        setCategories(Array.isArray(data) ? data : []);
+      } catch (error) {
+        if (isIgnore) return;
+        setCategories([]);
+        console.error('카테고리 조회 실패', error);
+      }
+    };
+
+    fetchCategories();
+    return () => {
+      isIgnore = true;
+    };
+  }, [boardId, categoryMode]);
+
+  // 모바일 전용 첨부 칩(피그마): 파일/이미지 첨부 시 회색 알약 + X 로 표시.
+  // 기존 첨부(수정 화면)는 X 로 삭제 표시(토글), 표시된 건 흐리게 + 취소선.
+  const hasAttachments =
+    allowAttachment &&
+    (existingAttachments.length > 0 || (Array.isArray(files) && files.length > 0));
+
+  const attachmentChips = hasAttachments ? (
+    <div className="flex w-full flex-row flex-wrap items-center gap-[6px]">
+      {existingAttachments.map((file) => {
+        const marked = deleteAttachmentIds.includes(file.attachmentId);
+        return (
+          <button
+            key={`exist-${file.attachmentId}`}
+            type="button"
+            onClick={() => toggleDeleteAttachment(file.attachmentId)}
+            className={`flex h-[27px] items-center gap-[8px] rounded-full bg-[#DEDEDE] px-[12px] text-[13px] text-[#212121] ${
+              marked ? 'line-through opacity-50' : ''
+            }`}
+          >
+            <span className="max-w-[180px] truncate">{file.originName}</span>
+            <X size={10} strokeWidth={2} className="shrink-0" />
+          </button>
+        );
+      })}
+
+      {Array.isArray(files) &&
+        files.map((file, index) => (
+          <button
+            key={`new-${file?.name}-${index}`}
+            type="button"
+            onClick={() => removeFileAt(index)}
+            className="flex h-[27px] items-center gap-[8px] rounded-full bg-[#DEDEDE] px-[12px] text-[13px] text-[#212121]"
+          >
+            <span className="max-w-[180px] truncate">{file?.name}</span>
+            <X size={10} strokeWidth={2} className="shrink-0" />
+          </button>
+        ))}
+    </div>
+  ) : null;
+
+  // ── 모바일 폼 (#183 피그마 리디자인) ─────────────────────────────
+  // 라벨 14px/#454545, 입력 40px, 카테고리 옆 120px 저장 버튼(역할 미정 → 표시만).
+  // 데스크톱 렌더는 아래 return 그대로 유지하고, 모바일만 이 분기로 대체한다.
+  if (!isMdUp) {
+    return (
+      <div className="flex w-full flex-col gap-[16px]">
+        {/* 제목 */}
+        <div className="flex flex-col gap-[8px]">
+          <label className="text-[14px] tracking-[-0.28px] text-[#454545]">제목</label>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="제목을 입력하세요."
+            required
+            className="h-[40px] w-full rounded-[4px] border border-[#b9b9b9] bg-white px-[14px] text-[14px] tracking-[-0.28px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-black"
+          />
+        </div>
+
+        {/* 카테고리 + 저장 버튼 */}
+        {showCategory && (
+          <div className="flex flex-col gap-[8px]">
+            <label className="text-[14px] tracking-[-0.28px] text-[#454545]">카테고리</label>
+            <div className="flex items-center gap-[8px]">
+              <div className="relative flex h-[40px] flex-1 items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="h-full w-full cursor-pointer appearance-none bg-transparent px-[14px] text-[14px] tracking-[-0.28px] text-[#212121] outline-none"
+                >
+                  <option value="">카테고리</option>
+                  {categories.map((category) => (
+                    <option key={category.categoryId} value={String(category.categoryId)}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown
+                  className="pointer-events-none absolute right-[12px]"
+                  size={15}
+                  strokeWidth={2}
+                  color="#212121"
+                />
+              </div>
+              {/* 임시저장 불러오기 — PC 와 같은 버튼을 쓴다.
+                  예전에는 이 자리에 자체 모달이 따로 있었는데, 불러와도 draftId 를 이어 주지 않아
+                  다음 저장이 새 슬롯을 만들고 첨부가 사라졌다 (2026-09-20). */}
+              {enableDraft && (
+                <div className="h-[40px] w-[120px] shrink-0 [&_button]:h-[40px] [&_button]:text-[14px]">
+                  <DraftLoadButton boardId={boardId} disabled={busy} />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {pinnedSelected && (
+          <label className="flex cursor-pointer items-center gap-[8px]">
+            <input
+              type="checkbox"
+              checked={notifyPinned}
+              onChange={(e) => setNotifyPinned(e.target.checked)}
+              className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+            />
+            <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
+              {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
+            </span>
+          </label>
+        )}
+
+        {/* 툴바 (라벨 없는 42px 박스). 본문이 자라도 서식 버튼이 보이게 화면 위에 붙어 따라온다 */}
+        <div className="sticky top-0 z-30 flex h-[42px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+          <BoardWriteToolbar
+            editor={editor}
+            files={files}
+            onFilesChange={setFiles}
+            allowAttachment={allowAttachment}
+          />
+        </div>
+
+        {attachmentChips}
+
+        {/* 본문 (라벨 없는 박스) — 최소 높이만 두고 내용만큼 자란다 */}
+        <div className="relative flex min-h-[360px] w-full items-stretch rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+          <BoardRichEditor
+            boardId={boardId}
+            value={content}
+            onChange={setContent}
+            allowUpload={allowAttachment}
+            onEditorReady={setEditor}
+          />
+        </div>
+
+        {/* 익명 게시 */}
+        {allowAnonymous && (
+          <div className="flex items-center pt-[4px]">
+            <label className="flex cursor-pointer items-center gap-[8px]">
+              <input
+                type="checkbox"
+                checked={isAnonymous}
+                onChange={(e) => setIsAnonymous(e.target.checked)}
+                className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+              />
+              <span className="text-[14px] tracking-[-0.28px] text-[#212121]">익명으로 게시</span>
+            </label>
+          </div>
+        )}
+
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-[12px] w-full">
+      <BoardWriteBox label="제목">
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="제목을 입력하세요."
+          required
+          className="w-full h-full px-[16px] bg-transparent text-[16px] tracking-[-0.32px] outline-none"
+        />
+      </BoardWriteBox>
+
+      {/* 툴바·카테고리는 모바일에서도 한 줄 — 세로로 쌓으면 폼이 화면 두 장 길이가 된다.
+          본문이 자라도 서식 버튼이 보이게 이 줄은 화면 위에 붙어 따라온다 */}
+      <div className="sticky top-0 z-30 flex w-full flex-row gap-[12px] bg-white pb-[4px]">
+        <BoardWriteBox label="툴바">
+          <BoardWriteToolbar
+            editor={editor}
+            files={files}
+            onFilesChange={setFiles}
+            allowAttachment={allowAttachment}
+          />
+        </BoardWriteBox>
+
+        {showCategory && (
+          <BoardWriteBox label="카테고리">
+            {/* 카테고리는 선택 사항이다.
+                안내 문구를 고른 채로 두면 categoryId 없이(=null) 저장된다. */}
+            <select
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="w-full h-full px-[16px] bg-transparent text-[16px] text-[#212121] tracking-[-0.32px] outline-none appearance-none cursor-pointer relative z-10"
+            >
+              <option value="">카테고리를 선택하세요</option>
+
+              {categories.map((category) => (
+                <option key={category.categoryId} value={String(category.categoryId)}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+
+            <ChevronDown
+              className="absolute right-[16px] pointer-events-none"
+              size={15}
+              strokeWidth={2}
+              color="#212121"
+            />
+          </BoardWriteBox>
+        )}
+
+        {/* 임시저장 불러오기.
+            시안에서 툴바·카테고리는 남은 공간을 반씩 나눠 갖고(flex:1) 이 버튼만 135px 로 고정이다.
+            라벨이 없으므로 옆 칸의 입력 박스 아래쪽에 맞춘다(self-end). */}
+        {enableDraft && (
+          <div className="flex w-full shrink-0 lg:w-[135px] lg:self-end">
+            <DraftLoadButton boardId={boardId} disabled={busy} />
+          </div>
+        )}
+      </div>
+
+      {/* 이미 글에 붙어 있는 첨부 (수정 화면).
+          서버는 증분 방식이라 유지할 첨부는 보내지 않고 지울 것만 보낸다 →
+          여기서 '삭제' 표시한 것만 deleteAttachmentIds 로 전송된다. */}
+      {allowAttachment && existingAttachments.length > 0 && (
+        <div className="flex flex-col gap-[6px] px-[4px]">
+          <span className="text-[14px] tracking-[-0.28px] text-[#919191]">기존 첨부파일</span>
+          {existingAttachments.map((file) => {
+            const marked = deleteAttachmentIds.includes(file.attachmentId);
+            return (
+              <div key={file.attachmentId} className="flex items-center gap-[8px]">
+                <span
+                  className={`min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] ${
+                    marked ? 'text-[#b9b9b9] line-through' : 'text-[#454545]'
+                  }`}
+                >
+                  {file.originName}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => toggleDeleteAttachment(file.attachmentId)}
+                  className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121]"
+                >
+                  {marked ? '복원' : '삭제'}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 임시저장에서 이어받은 첨부 — 이미 서버에 올라가 있어 id 로만 다룬다.
+          여기서 '제거'하면 다음 저장·발행의 attachmentIds 에서 빠지고,
+          그때 서버가 DB 행과 파일까지 정리한다 (별도 삭제 호출 없음).
+
+          저장·발행이 도는 중에는 잠근다 — 이미 만들어져 나간 요청의 '유지할 첨부 전체'와
+          어긋나면 방금 뺀 것이 남거나 남겨둔 것이 지워진다. */}
+      {allowAttachment && draftAttachments.length > 0 && (
+        <div className="flex flex-col gap-[6px] px-[4px]">
+          <span className="text-[14px] tracking-[-0.28px] text-[#919191]">임시저장 첨부파일</span>
+          {draftAttachments.map((file) => (
+            <div key={file.attachmentId} className="flex items-center gap-[8px]">
+              <span className="min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] text-[#454545]">
+                {file.originName}
+              </span>
+              <button
+                type="button"
+                onClick={() => removeDraftAttachment(file.attachmentId)}
+                disabled={busy}
+                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[#919191]"
+              >
+                제거
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* 이번에 새로 고른 파일 (개별 제거 가능).
+          임시저장이 이 파일들을 순서대로 올리는 중에는 잠근다 — 올라가는 중인 항목을
+          빼면 화면과 서버에 붙은 첨부가 어긋난다. */}
+      {allowAttachment && Array.isArray(files) && files.length > 0 && (
+        <div className="flex flex-col gap-[6px] px-[4px]">
+          {files.map((file, index) => (
+            <div key={`${file?.name}-${index}`} className="flex items-center gap-[8px]">
+              <span className="min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] text-[#666666]">
+                {file?.name}
+              </span>
+              <button
+                type="button"
+                onClick={() => removeFileAt(index)}
+                disabled={busy}
+                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[#919191]"
+              >
+                제거
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <BoardWriteBox label="내용" heightClass="min-h-[560px] !items-stretch">
+        <BoardRichEditor
+          boardId={boardId}
+          value={content}
+          onChange={setContent}
+          allowUpload={allowAttachment}
+          onEditorReady={setEditor}
+        />
+      </BoardWriteBox>
+
+      {/* '중요' 글 알림 — 본문 상자 바로 아래 오른쪽 끝 (PM, 2026-09-21) */}
+      {pinnedSelected && (
+        <div className="flex w-full justify-end">
+          <label className="flex w-fit cursor-pointer items-center gap-[8px]">
+            <input
+              type="checkbox"
+              checked={notifyPinned}
+              onChange={(e) => setNotifyPinned(e.target.checked)}
+              className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+            />
+            <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
+              {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
+            </span>
+          </label>
+        </div>
+      )}
+
+      {allowAnonymous && (
+        <div className="flex items-center pt-[8px] pb-[4px]">
+          <label className="flex items-center gap-[8px] cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isAnonymous}
+              onChange={(e) => setIsAnonymous(e.target.checked)}
+              className="w-[16px] h-[16px] cursor-pointer accent-[#212121]"
+            />
+            <span className="text-[14px] text-[#212121] tracking-[-0.28px]">익명으로 게시</span>
+          </label>
+        </div>
+      )}
+    </div>
+  );
+}

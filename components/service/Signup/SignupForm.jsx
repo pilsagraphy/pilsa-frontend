@@ -4,10 +4,11 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast';
 
 import { registerFormSchema, loginIdSchema } from '@/schemas/auth';
 import { EMAIL_DOMAINS } from '@/constants/email';
+import { ROUTES } from '@/constants/routes';
 import {
   registerUser,
   checkLoginIdDuplicate,
@@ -15,6 +16,7 @@ import {
   getErrorMessage,
 } from '@/apis/auth';
 import { sendVerifyCode, verifyEmailCode } from '@/apis/mail';
+import { getGooglePendingLink } from '@/apis/google';
 import {
   Form,
   FormControl,
@@ -34,8 +36,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
-const ALLOWED_ROLES = ['STUDENTS', 'ALUMNI', 'ADMIN'];
+const ALLOWED_ROLES = ['STUDENTS', 'ALUMNI'];
+const MEMBER_TYPE_BY_ROLE = { STUDENTS: 'STUDENT', ALUMNI: 'ALUMNI' };
 const DEFAULT_VALUES = {
   name: '',
   department: '',
@@ -50,13 +60,23 @@ const DEFAULT_VALUES = {
   passwordConfirm: '',
 };
 
+// 구글 연결 대기 중에 중복으로 걸린 항목 → "이미 가입된 회원" 안내에 쓸 이름.
+// 학번·전화·이메일은 본인만 쓰는 값이라 겹치면 그 사람이 이미 회원이라는 뜻이다.
+// 아이디 중복은 남이 같은 아이디를 먼저 쓴 것일 수 있어 근거로 삼지 않는다.
+const identityFieldOf = (message) => {
+  if (!message || !message.includes('이미')) return null;
+  if (message.includes('학번')) return '학번';
+  if (message.includes('전화')) return '전화번호';
+  if (message.includes('이메일')) return '이메일';
+  return null;
+};
+
 function SignupFormInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const rawRole = searchParams.get('role') || 'STUDENTS';
   const roleParam = ALLOWED_ROLES.includes(rawRole) ? rawRole : 'STUDENTS';
-  const roleForApi =
-    roleParam === 'STUDENTS' ? 'STUDENTS' : roleParam === 'ALUMNI' ? 'ALUMNI' : 'ADMIN';
+  const memberTypeForApi = MEMBER_TYPE_BY_ROLE[roleParam];
 
   const [isEmailSent, setIsEmailSent] = useState(false);
   const [isEmailVerified, setIsEmailVerified] = useState(false);
@@ -69,6 +89,12 @@ function SignupFormInner() {
 
   const [emailExpireTime, setEmailExpireTime] = useState(0);
 
+  // [구글로 로그인] → 가입된 회원 없음 → 회원가입으로 넘어온 경우, 서버가 보관 중인 구글 계정
+  // ({ googleEmail, maskedEmail, ... }). 이메일 칸을 채워 두고, 가입 도중 학번·전화·이메일이
+  // 이미 있는 회원과 겹치면 새로 만들지 말고 그 계정으로 로그인해서 연결하라고 안내한다.
+  const [googlePending, setGooglePending] = useState(null);
+  const [existingMemberField, setExistingMemberField] = useState(null);
+
   const form = useForm({
     resolver: zodResolver(registerFormSchema),
     defaultValues: DEFAULT_VALUES,
@@ -76,7 +102,36 @@ function SignupFormInner() {
   });
 
   const emailDomain = form.watch('emailDomain');
+
+  // 'id@domain' 한 덩어리를 앞칸(emailLocal)·도메인 선택으로 나눠 넣는다. 도메인이 목록에 없으면 직접 입력으로.
+  // 구글 계정 프리필과 브라우저 자동완성이 둘 다 이 길을 탄다 — 자동완성은 저장된 이메일 전체를 앞칸에 통째로
+  // 밀어 넣기 때문에(브라우저는 이 칸이 아이디만 받는 칸인지 모른다), 그대로 두면 'wm5256@naver.com@선택' 이 된다.
+  const applyFullEmail = (email) => {
+    const at = email.indexOf('@');
+    if (at <= 0) return false;
+    const domain = email.slice(at + 1).trim();
+    const known = EMAIL_DOMAINS.some((d) => d.value === domain && d.value !== 'custom');
+    form.setValue('emailLocal', email.slice(0, at).trim());
+    form.setValue('emailDomain', known ? domain : 'custom');
+    if (!known) form.setValue('emailCustom', domain);
+    return true;
+  };
   const passwordValue = form.watch('password');
+
+  useEffect(() => {
+    getGooglePendingLink()
+      .then((info) => {
+        if (!info?.pending) return;
+        setGooglePending(info);
+
+        // 구글 계정 이메일로 이메일 칸을 채운다 — 인증번호는 그대로 받아야 한다 (가입 API 가 인증 통과를 확인한다)
+        if (form.getValues('emailLocal')) return;
+        applyFullEmail(info.googleEmail ?? '');
+      })
+      .catch(() => {
+        // 확인에 실패하면 일반 가입 화면으로 둔다
+      });
+  }, [form]);
 
   const buildFinalEmail = (values) => {
     const emailLocal = values.emailLocal?.trim();
@@ -88,7 +143,8 @@ function SignupFormInner() {
   };
 
   useEffect(() => {
-    if (!isEmailSent || emailExpireTime <= 0) return;
+    // 인증이 끝난 뒤에는 세지 않는다 — 남은 시간은 '번호를 입력할 수 있는 시간' 이라 인증 뒤엔 뜻이 없다
+    if (!isEmailSent || isEmailVerified || emailExpireTime <= 0) return;
 
     const timer = setInterval(() => {
       setEmailExpireTime((prev) => {
@@ -101,7 +157,7 @@ function SignupFormInner() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isEmailSent, emailExpireTime]);
+  }, [isEmailSent, isEmailVerified, emailExpireTime]);
 
   const formatTime = (seconds) => {
     const min = String(Math.floor(seconds / 60)).padStart(2, '0');
@@ -114,6 +170,17 @@ function SignupFormInner() {
     setIsEmailVerified(false);
     setEmailExpireTime(0);
     form.setValue('emailCode', '');
+  };
+
+  // 구글 연결 대기 중 + 본인 식별 항목 중복 → "이미 가입된 회원" 모달. 그 외에는 평소처럼 토스트
+  const reportSignupError = (error, fallback) => {
+    const message = getErrorMessage(error, fallback);
+    const field = googlePending ? identityFieldOf(message) : null;
+    if (field) {
+      setExistingMemberField(field);
+      return;
+    }
+    toast.error(message);
   };
 
   const handleDuplicateCheck = async () => {
@@ -153,12 +220,15 @@ function SignupFormInner() {
       // 1. 이메일 중복 확인
       await checkEmailDuplicate(finalEmail);
 
-      // 2. 인증번호 발송
-      const expireTime = await sendVerifyCode(finalEmail);
+      // 2. 인증번호 발송 — 응답은 { message, expireTime } 객체다. 예전 API 는 초 값을 그대로 돌려줬는데
+      //    객체로 바뀐 뒤에도 그대로 Number() 에 넣어 NaN → 0 이 되어 타이머가 00:00 으로 시작했다.
+      //    값이 비어 오면 서버 기본 유효시간(3분)으로 센다 — 0 으로 두면 방금 받은 번호를 못 쓰는 것처럼 보인다.
+      const sent = await sendVerifyCode(finalEmail);
+      const expireTime = Number(sent?.expireTime ?? sent) || 180;
 
       setIsEmailSent(true);
       setIsEmailVerified(false);
-      setEmailExpireTime(Number(expireTime) || 0);
+      setEmailExpireTime(expireTime);
       form.setValue('emailCode', '');
 
       toast.success('인증번호가 발송되었습니다.');
@@ -166,7 +236,7 @@ function SignupFormInner() {
       setIsEmailSent(false);
       setIsEmailVerified(false);
       setEmailExpireTime(0);
-      toast.error(getErrorMessage(error, '인증번호 발송에 실패했습니다.'));
+      reportSignupError(error, '인증번호 발송에 실패했습니다.');
     } finally {
       setIsSendingEmailCode(false);
     }
@@ -235,14 +305,18 @@ function SignupFormInner() {
       email: safe(finalEmail),
       loginId: safe(data.username),
       password: data.password ?? '',
-      role: roleForApi,
+      memberType: memberTypeForApi,
     };
 
     try {
       setIsRegistering(true);
       await registerUser(payload);
 
-      toast.success('회원가입이 완료되었습니다.');
+      toast.success(
+        googlePending
+          ? '회원가입이 완료되었습니다. 로그인하면 구글 계정이 연결돼요.'
+          : '회원가입이 완료되었습니다.'
+      );
 
       form.reset(DEFAULT_VALUES);
       setIsEmailSent(false);
@@ -250,9 +324,10 @@ function SignupFormInner() {
       setIsDuplicateChecked(false);
       setEmailExpireTime(0);
 
-      router.push('/login');
+      // 구글 연결 대기 중이면 로그인 화면이 "로그인하면 연결돼요" 배너를 이어서 보여 준다
+      router.push(googlePending ? `${ROUTES.LOGIN}?googleLink=login` : ROUTES.LOGIN);
     } catch (error) {
-      toast.error(getErrorMessage(error, '회원가입에 실패했습니다.'));
+      reportSignupError(error, '회원가입에 실패했습니다.');
     } finally {
       setIsRegistering(false);
     }
@@ -266,9 +341,24 @@ function SignupFormInner() {
 
       <div className="mb-8">
         <span className="inline-block rounded-[4px] bg-[#f0f0f0] px-4 py-2 text-[14px] text-[#212121]">
-          {roleParam === 'STUDENTS' ? '재학생' : roleParam === 'ALUMNI' ? '졸업생' : '관리자'}
+          {roleParam === 'STUDENTS' ? '재학생' : '졸업생'}
         </span>
       </div>
+
+      {googlePending && (
+        <div
+          role="status"
+          className="mb-6 rounded-[6px] border border-[#dedede] bg-[#f8f8f8] px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] [word-break:keep-all]"
+        >
+          <span className="font-bold">구글 계정 연결 대기 중</span>
+          <br />
+          <span className="text-[#454545]">
+            가입을 마치고 로그인하면{' '}
+            <span className="font-medium text-[#212121]">{googlePending.maskedEmail}</span> 계정이 자동으로
+            연결돼요.
+          </span>
+        </div>
+      )}
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-[20px]">
@@ -339,7 +429,13 @@ function SignupFormInner() {
                         {...field}
                         placeholder="이메일 주소"
                         className="h-[52px]"
+                        inputMode="email"
                         onChange={(e) => {
+                          // 자동완성·붙여넣기로 '@' 까지 들어오면 도메인 쪽으로 나눠 넣는다
+                          if (e.target.value.includes('@') && applyFullEmail(e.target.value)) {
+                            resetEmailAuth();
+                            return;
+                          }
                           field.onChange(e);
                           resetEmailAuth();
                         }}
@@ -412,9 +508,10 @@ function SignupFormInner() {
               </Button>
             </div>
 
-            {isEmailSent && (
+            {isEmailSent && !isEmailVerified && (
               <p className="text-[13px] text-[#666]">남은 시간: {formatTime(emailExpireTime)}</p>
             )}
+            {isEmailVerified && <p className="text-[13px] text-[#666]">이메일 인증이 완료됐어요</p>}
 
             <div className="flex gap-[12px]">
               <FormField
@@ -583,6 +680,45 @@ function SignupFormInner() {
           </Button>
         </form>
       </Form>
+
+      {/* 구글 연결 대기 중에 학번·전화·이메일이 이미 있는 회원과 겹친 경우 —
+          새 계정을 만들 게 아니라 그 계정으로 로그인해서 구글 계정을 붙이는 게 맞다 */}
+      <Dialog
+        open={!!existingMemberField}
+        onOpenChange={(next) => !next && setExistingMemberField(null)}
+      >
+        <DialogContent
+          hideCloseButton
+          className="max-w-[380px] gap-[20px] rounded-[4px] border-[#dedede] p-[24px]"
+        >
+          <DialogTitle className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121]">
+            이미 가입된 회원이에요
+          </DialogTitle>
+          <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-[#454545] [word-break:keep-all]">
+            입력한 {existingMemberField}로 가입된 회원이 있어요.
+            <br />
+            새로 가입하는 대신 그 계정으로 로그인하면 구글 계정{' '}
+            <span className="font-medium text-[#212121]">{googlePending?.maskedEmail}</span>이 연결돼요.
+          </DialogDescription>
+          <DialogFooter className="flex flex-col gap-[8px] sm:flex-col sm:space-x-0">
+            <Button
+              type="button"
+              onClick={() => router.push(`${ROUTES.LOGIN}?googleLink=login`)}
+              className="h-[48px] w-full rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242]"
+            >
+              로그인해서 연결하기
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setExistingMemberField(null)}
+              className="h-[48px] w-full rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]"
+            >
+              닫기
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

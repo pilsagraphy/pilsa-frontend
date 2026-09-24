@@ -1,18 +1,15 @@
-import AdvisorSection from "./AdvisorSection";
 import ChairmanSection from "./ChairmanSection";
 import TeamSection from "./TeamSection";
-import { advisors, chairman, teams } from "@/constants/organization";
+import OrgChartFit from "./OrgChartFit";
+import { chairman, teams } from "@/constants/organization";
 
 export default function OrganizationChart() {
   const horizontalBarGap = Number(100 / (teams.length * 2)).toFixed(1);
+  // 폰에서는 OrgChartFit 이 T 자 모양 그대로 폭에 맞게 축소한다 (모양 유지 · 가로 스크롤 없음)
   return (
     <div className="w-full overflow-x-auto">
+      <OrgChartFit>
       <section className="relative min-w-[600px] max-w-[1200px] mx-auto py-8 px-10">
-        {/* 고문 영역 (좌측 상단 고정) */}
-        <div className="absolute left-10 top-5">
-          <AdvisorSection advisors={advisors} />
-        </div>
-
         {/* 메인 조직도 (중앙 정렬 축) */}
         <div className="flex flex-col items-center">
           {/* 회장단 */}
@@ -53,6 +50,7 @@ export default function OrganizationChart() {
           </div>
         </div>
       </section>
+      </OrgChartFit>
     </div>
   );
 }

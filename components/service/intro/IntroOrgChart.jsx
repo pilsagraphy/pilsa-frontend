@@ -4,7 +4,7 @@ export default function IntroOrgChart() {
   return (
     <div className="flex flex-col gap-5 w-full">
       <h3 className="text-[18px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#212121]">
-        조직도
+        조직도 <span className="ml-[6px] text-[14px] font-medium text-[#919191]">2026-2학기</span>
       </h3>
       <div className="flex justify-start">
         {/* 조직도 차트 */}

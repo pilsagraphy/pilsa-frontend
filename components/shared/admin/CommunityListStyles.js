@@ -1,0 +1,27 @@
+// 관리자 목록 페이지(회원 · 게시판 · 게시글 · 댓글)가 공유하는 클래스
+// 같은 시안에서 나온 화면들이라 래퍼 · 제목 · 액션 버튼 크기가 모두 같다.
+
+// 페이지 전체를 감싸는 섹션 래퍼. 폭 제한이 없다 — 신고 관리처럼 본문을 꽉 채운다 (PM, 2026-09-20)
+export const listSectionClass =
+  'mx-auto flex w-full max-w-none flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10';
+
+// 페이지 제목 (예: 게시글 관리)
+export const listTitleClass =
+  "my-[15px] font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]";
+
+// 제목 아래 '목록' 라벨
+export const listSubtitleClass = 'text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]';
+
+// 오른쪽 위 액션 버튼 두 개 (예: 선택 블라인드 · 선택 삭제)
+//
+// 180px 은 넉넉할 때의 너비다. 폭이 모자라면 여기서부터 줄어들어 글자가 들어갈
+// 만큼(약 132px)까지 좁아진다 — 왼쪽 검색창에는 최소 너비가 걸려 있어서
+// 줄어드는 몫을 이 버튼들이 먼저 받는다.
+// px-3 은 좁아졌을 때의 하한을 조금 낮춘다. 180px 일 때는 글자가 가운데 정렬이라 표시에 차이가 없다.
+// 좁은 화면에서는 줄어들 수 있어야 한다 — 고정 폭이면 옆의 검색창을 밀어 찌그러뜨린다
+export const actionButtonClass =
+  'h-[48px] min-w-0 flex-1 shrink px-3 rounded-[4px] text-[15px] font-normal sm:h-[52px] sm:w-[150px] sm:min-w-[110px] sm:flex-none sm:text-[16px] lg:w-[180px]';
+
+// 목록 표의 체크박스 (헤더 · 행 공용)
+export const checkboxClass =
+  'size-5 md:size-6 rounded-[4px] border-[#919191] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]';

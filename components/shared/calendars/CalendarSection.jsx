@@ -1,11 +1,24 @@
 'use client';
 
 import * as React from 'react';
-import { format, isWithinInterval, parseISO, startOfDay } from 'date-fns';
+import Link from 'next/link';
+import {
+  addDays,
+  format,
+  isSameMonth,
+  isWithinInterval,
+  parseISO,
+  startOfDay,
+  subDays,
+} from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import MonthlyScheduleList from '@/components/shared/calendars/MonthlyScheduleList';
-import { calendarMockResponse } from '@/mocks/calendarData';
-import { getScheduleList } from '@/apis/schedule';
+import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
+import CalendarSubscribeButton from '@/components/shared/calendars/CalendarSubscribeButton';
+import AddSingleEventDialog from '@/components/shared/calendars/AddSingleEventDialog';
+import { Plus } from 'lucide-react';
+import { getEvent, getEventList } from '@/apis/event';
+import { CALENDAR_COLUMN_MAX_W } from '@/components/shared/calendars/calendarLayout';
 
 function isDateIncludedInSchedule(date, schedule) {
   return isWithinInterval(startOfDay(date), {
@@ -14,10 +27,40 @@ function isDateIncludedInSchedule(date, schedule) {
   });
 }
 
-export default function CalendarSection({ response }) {
-  // 기존 response prop이 들어오면 그걸 우선 fallback으로 사용
-  const fallbackResponse = React.useMemo(() => response ?? calendarMockResponse, [response]);
+// 한 칸에 그려지는 막대는 '고른 일정'(ACTIVE) 아니면 '그 외 일정들'(OTHER) 중 하나다.
+//
+// 일정이 같은 날에 겹칠 때는 고른 일정만 보인다(= 겹치는 날의 나머지 일정은 가려진다).
+// 디자인 확정 사항이다. 한 칸에 막대를 여러 줄로 겹쳐 그리는 방식은 다음 기수에서 검토한다.
+// CSS 선언 순서에 기대지 않도록 두 층을 여기서 상호 배타로 갈라 둔다.
+const LAYER_ACTIVE = 'active';
+const LAYER_OTHER = 'other';
 
+// onDateDoubleClick: 달력 날짜를 더블클릭했을 때. (관리자 화면의 '그 날짜로 일정 추가')
+// onUserSelect: 사용자가 볼 일정을 바꿨을 때 — 달력 날짜 클릭 · 목록 카드 클릭.
+//               관리자 화면에서 열려 있던 추가 · 수정 폼을 닫고 상세로 되돌리는 데 쓴다.
+// scheduleListAction: '월별 일정' 라벨 오른쪽에 놓을 버튼 (관리자 화면의 '일정 추가')
+// renderScheduleAction: 월별 일정 카드 오른쪽에 놓을 조작 버튼 (관리자 화면의 ⋮ 메뉴)
+// renderDetail: 목록 아래에 그릴 내용. 기본은 읽기용 일정 상세다.
+//               관리자 화면은 '일정 수정' 폼으로 갈아끼우려고 열어 뒀다.
+// refreshKey: 값이 바뀌면 지금 보고 있는 달을 다시 조회한다. (관리자 화면의 등록 · 수정 · 삭제)
+// focusDate: refreshKey와 함께 'yyyy-MM-dd'를 주면 그 날짜의 달로 옮겨서 조회한다.
+//            ※ response를 함께 넘기면 조회 자체를 안 하므로 둘 다 무시된다 (아래 early return)
+export default function CalendarSection({
+  response,
+  renderScheduleAction,
+  renderDetail,
+  scrollableScheduleList = true,
+  scheduleListVisibleCount = null,
+  scheduleListAction = null,
+  onDateDoubleClick,
+  onUserSelect,
+  refreshKey = 0,
+  focusDate = null,
+  // 관리자 화면에서는 끈다 — 운영진이 관리 화면에서 자기 캘린더를 구독할 일이 없다
+  showSubscribe = true,
+  // 제목을 누르면 갈 곳 (관리자 홈 → 일정 달력 관리). 없으면 그냥 글자
+  titleHref = null,
+}) {
   const [currentMonth, setCurrentMonth] = React.useState(new Date());
   const [apiResponse, setApiResponse] = React.useState(response ?? null);
   const [isLoading, setIsLoading] = React.useState(!response);
@@ -25,18 +68,44 @@ export default function CalendarSection({ response }) {
 
   const [selectedDate, setSelectedDate] = React.useState(undefined);
   const [selectedScheduleId, setSelectedScheduleId] = React.useState(null);
+  // '이 일정만 담기' 대상 (null 이면 닫힘)
+  const [addTarget, setAddTarget] = React.useState(null);
+
+  // 조회 단위는 'yyyy-MM'이므로 이걸 기준으로 삼는다.
+  // currentMonth(Date)를 그대로 쓰면 같은 달 안에서 날짜만 바뀌어도 재조회가 돌아,
+  // 목록이 잠깐 비는 사이 아래 자동 선택 로직이 고른 일정을 첫 번째로 되돌려 놓는다.
+  const currentYearMonth = format(currentMonth, 'yyyy-MM');
+
+  // 저장한 일정이 다른 달이면 달력을 그 달로 옮긴다. 재조회는 늘 화면에 떠 있는 달 기준이라,
+  // 9월을 보면서 12월 일정을 등록하면 성공했는데도 목록이 그대로여서 실패로 읽힌다.
+  // 달이 실제로 바뀌면 아래 조회 effect가 한 번 더 도는데, 먼저 돈 쪽은 cleanup으로 버려진다.
+  // (삭제는 옮길 이유가 없어 부모가 focusDate 없이 refreshKey만 올린다)
+  React.useEffect(() => {
+    if (!focusDate) return;
+
+    const focused = parseISO(focusDate);
+    if (Number.isNaN(focused.getTime())) return;
+
+    setCurrentMonth((prev) => (isSameMonth(prev, focused) ? prev : focused));
+  }, [focusDate, refreshKey]);
 
   React.useEffect(() => {
+    // response prop이 들어오면 그 값을 그대로 쓰고 조회하지 않는다.
+    // (목 데이터로 화면을 확인할 때 사용 — 조회가 돌면 prop이 덮어써져 무의미해진다)
+    if (response) {
+      setApiResponse(response);
+      setIsLoading(false);
+      return;
+    }
+
     let isMounted = true;
 
     const fetchSchedules = async () => {
-      const yearMonth = format(currentMonth, 'yyyy-MM');
-
       setIsLoading(true);
       setHasFetchError(false);
 
       try {
-        const result = await getScheduleList(yearMonth, yearMonth);
+        const result = await getEventList(currentYearMonth, currentYearMonth);
 
         if (!isMounted) return;
         setApiResponse(result);
@@ -44,6 +113,9 @@ export default function CalendarSection({ response }) {
         console.error('일정 목록 조회 실패:', error);
 
         if (!isMounted) return;
+        // 지난 조회 결과를 남겨 두면 달력에는 이전 달 막대가, 목록에는 실패 문구가
+        // 같이 뜬다. 실패한 달은 통째로 비우고 실패 문구만 보여준다.
+        setApiResponse(null);
         setHasFetchError(true);
       } finally {
         if (isMounted) {
@@ -57,89 +129,245 @@ export default function CalendarSection({ response }) {
     return () => {
       isMounted = false;
     };
-  }, [currentMonth]);
+  }, [currentYearMonth, response, refreshKey]);
 
-  // API 성공 데이터 우선, 실패 시 fallback 사용
-  const data = apiResponse ?? (hasFetchError ? fallbackResponse : null);
-  const schedules = data?.data ?? [];
+  // 조회에 실패하면 목 데이터로 메꾸지 않는다. 성공한 화면과 구분이 안 되기 때문에
+  // 목록이 실패 문구를 그린다. (hasFetchError → MonthlyScheduleList)
+  const data = apiResponse;
+
+  // ?? [] 를 그대로 두면 렌더마다 새 배열이 되어 아래 useEffect가 매번 다시 돈다.
+  const schedules = React.useMemo(() => data?.data ?? [], [data]);
 
   React.useEffect(() => {
+    // 불러오는 중에는 목록이 잠깐 비므로 선택을 건드리지 않는다.
+    if (isLoading) return;
+
     if (!schedules.length) {
       setSelectedScheduleId(null);
       return;
     }
 
-    // 1. 일정이 있는 날짜들을 추출 (달력에 점을 찍기 위함)
-    // - 첫 번째 일정의 시작일로 달력 날짜도 맞춰줌 (역방향 상호작용)
+    // 1. 일정이 있는 날짜들을 추출 (달력에 막대를 그리기 위함)
+    // - 목록에 없는 일정이 선택돼 있을 때만(달을 옮겼을 때) 첫 번째 일정으로 맞춘다.
     setSelectedScheduleId((prev) => {
       const exists = schedules.some((schedule) => schedule.scheduleId === prev);
       return exists ? prev : schedules[0].scheduleId;
     });
-  }, [schedules]);
+  }, [schedules, isLoading]);
+
+  // 고른 일정은 달력에서 진한 막대로, 나머지는 연한 막대로 표시하고 아래에 상세를 펼친다.
+  const selectedSchedule =
+    schedules.find((schedule) => schedule.scheduleId === selectedScheduleId) ?? null;
+
+  // 그 날 칸에 어떤 막대가 그려지는지 판정한다. 일정이 없으면 null.
+  const layerOfDate = (date) => {
+    if (selectedSchedule && isDateIncludedInSchedule(date, selectedSchedule)) return LAYER_ACTIVE;
+
+    const inOther = schedules.some(
+      (schedule) =>
+        schedule.scheduleId !== selectedScheduleId && isDateIncludedInSchedule(date, schedule)
+    );
+
+    return inOther ? LAYER_OTHER : null;
+  };
+
+  // 막대의 양 끝만 둥글게 하려고 시작 · 끝 칸을 구한다.
+  // 일정별로 따로 보면 'A의 중간이면서 B의 시작'인 칸에서 라운딩이 어긋나므로,
+  // 실제로 칠해지는 막대(층)를 기준으로 "어제/내일이 같은 층인가"만 본다.
+  const scheduleModifiers = {
+    scheduleDay: (date) => layerOfDate(date) === LAYER_OTHER,
+    scheduleActive: (date) => layerOfDate(date) === LAYER_ACTIVE,
+    scheduleStart: (date) => {
+      const layer = layerOfDate(date);
+      if (!layer) return false;
+
+      // 주가 바뀌면 줄이 끊기고, 지난 달 칸은 점으로만 표시되므로 둘 다 시작으로 본다.
+      if (date.getDay() === 0) return true;
+
+      const prev = subDays(date, 1);
+      if (!isSameMonth(prev, currentMonth)) return true;
+
+      return layerOfDate(prev) !== layer;
+    },
+    scheduleEnd: (date) => {
+      const layer = layerOfDate(date);
+      if (!layer) return false;
+
+      if (date.getDay() === 6) return true;
+
+      const next = addDays(date, 1);
+      if (!isSameMonth(next, currentMonth)) return true;
+
+      return layerOfDate(next) !== layer;
+    },
+  };
+
+  // 새 일정 알림으로 들어오면(?eventId=) 그 일정의 달로 옮기고 펼친다. 처음 한 번만.
+  // useSearchParams 는 정적 페이지에서 Suspense 를 요구하므로 window 로 읽는다
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const eventId = new URLSearchParams(window.location.search).get('eventId');
+    if (!eventId) return undefined;
+    let alive = true;
+    getEvent(eventId)
+      .then((schedule) => {
+        if (!alive || !schedule?.startDate) return;
+        const start = startOfDay(parseISO(schedule.startDate));
+        setCurrentMonth(start);
+        setSelectedDate(start);
+        setSelectedScheduleId(schedule.scheduleId);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSelectSchedule = (schedule) => {
     const start = parseISO(schedule.startDate);
+
+    onUserSelect?.();
 
     setSelectedScheduleId(schedule.scheduleId);
     setSelectedDate(start);
     setCurrentMonth(start);
   };
 
+  // 헤더 '오늘' — 달을 돌리는 건 달력이 하고, 여기서는 오늘을 고른 상태로 만든다 (토글 아님)
+  const handleToday = (today) => {
+    onUserSelect?.();
+    setSelectedDate(today);
+    const found = schedules.find((schedule) => isDateIncludedInSchedule(today, schedule));
+    setSelectedScheduleId(found ? found.scheduleId : null);
+  };
+
   const handleSelectDate = (d) => {
     if (!d) return;
 
+    // 더블클릭은 단일 클릭 두 번이 먼저 오고 dblclick이 마지막에 온다.
+    // 그래서 여기서 폼을 닫아도 뒤이은 dblclick이 다시 열어 준다.
+    onUserSelect?.();
+
     // 날짜 토글 로직
-    setSelectedDate((prev) => {
-      const isSame = prev?.getTime() === d.getTime();
-      const nextDate = isSame ? undefined : d;
+    // updater 안에서 다른 setState를 호출하면 Strict Mode가 updater를 두 번 부를 때 같이 두 번 돌므로,
+    // prev 대신 selectedDate를 직접 읽어 토글을 계산하고 setState는 밖에서 따로 호출한다.
+    const isSame = selectedDate?.getTime() === d.getTime();
+    const nextDate = isSame ? undefined : d;
 
-      // 2. 선택한 날짜에 포함된 일정이 있다면 해당 리스트 아이템 강조
-      if (nextDate) {
-        const found = schedules.find((schedule) => isDateIncludedInSchedule(nextDate, schedule));
+    setSelectedDate(nextDate);
 
-        if (found) {
-          setSelectedScheduleId(found.scheduleId);
-        }
-      }
+    // 같은 날을 다시 눌러 날짜 선택만 푼 경우는 일정 강조를 그대로 둔다.
+    if (!nextDate) return;
 
-      return nextDate;
-    });
+    // 2. 선택한 날짜에 포함된 일정이 있으면 해당 리스트 아이템 강조, 없으면 강조 해제
+    //    (해제하면 아래 일정 상세도 함께 닫힌다)
+    const found = schedules.find((schedule) => isDateIncludedInSchedule(nextDate, schedule));
+
+    setSelectedScheduleId(found ? found.scheduleId : null);
   };
 
-  return (
-    <section className="mx-auto flex w-full max-w-[915px] flex-col gap-6 sm:gap-8 lg:gap-[40px]">
-      <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
-        일정 달력
-      </h2>
+  // 카드 오른쪽 + 로 '이 일정만' 담기. 관리자 화면은 그 자리에 ⋮ 메뉴를 넣으므로 그때는 그대로 둔다
+  // 선택된 카드는 배경이 어두워서(#454545) 마우스를 올렸을 때 검정으로 바뀌면 사라졌다 → 흰색 유지 (PM, 2026-09-21)
+  const renderAddAction = (schedule, isSelected = false) => (
+    <button
+      type="button"
+      aria-label={`${schedule.title} 일정을 내 캘린더에 담기`}
+      onClick={(event) => {
+        event.stopPropagation();
+        setAddTarget(schedule);
+      }}
+      className={`grid size-6 place-items-center rounded-full transition ${
+        isSelected ? 'text-white hover:bg-white/20' : 'text-[#919191] hover:bg-black/5 hover:text-[#212121]'
+      }`}
+    >
+      {/* 팀이 만든 원래 모양(+)을 그대로 쓴다 (PM, 2026-09-21) */}
+      <Plus size={20} strokeWidth={1.8} aria-hidden />
+    </button>
+  );
 
-      <div className="flex w-full flex-col gap-4 sm:gap-5 lg:flex-row lg:gap-[45px]">
-        <div className="w-full bg-white p-4 sm:p-5 lg:w-[443px] lg:p-[24px]">
+  return (
+    <section
+      className={`mx-auto flex w-full flex-col gap-6 sm:gap-8 lg:gap-[40px] ${CALENDAR_COLUMN_MAX_W}`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        {titleHref ? (
+          <Link
+            href={titleHref}
+            className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] hover:underline underline-offset-4 sm:text-[24px]"
+          >
+            <h2>일정 달력</h2>
+          </Link>
+        ) : (
+          <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
+            일정 달력
+          </h2>
+        )}
+        {showSubscribe && <CalendarSubscribeButton />}
+      </div>
+
+      {/* 달력 왼쪽 · 월별 일정 오른쪽.
+          사이드바가 tablet(768px)부터 240px를 가져가므로 본문 폭은 늘 뷰포트보다 240px 좁다.
+          lg(1024px)로 나누면 본문이 784px뿐이라 두 칸이 안 들어가서, 본문 기준으로 min-[960px]에 나눈다.
+          달력은 443px로 고정하고 월별 일정이 남는 폭을 가져간다. (디자인 최대 폭 404px) */}
+      {/* 960px 미만에서는 달력 위 · 월별 일정 아래로 쌓는다. 옆에 세우면 폰 실폭에서 목록이 100px 남짓이라 못 쓴다.
+          달력 상자 폭은 칸 폭 × 7 에 맞춘다 (36×7=252, sm 48×7=336) — 어긋나면 날짜 원이 칸 밖으로 삐져나온다. */}
+      <div className="flex w-full flex-col items-center gap-4 sm:gap-5 min-[960px]:flex-row min-[960px]:items-start min-[960px]:justify-between min-[960px]:gap-[29px]">
+        <div className="w-[252px] shrink-0 bg-white p-0 sm:w-[336px] min-[960px]:w-[443px] min-[960px]:p-[24px]">
           <Calendar
             mode="single"
             month={currentMonth}
             onMonthChange={setCurrentMonth}
             selected={selectedDate}
             onSelect={handleSelectDate}
-            // 3. 일정이 있는 날짜를 modifiers로 전달
-            modifiers={{
-              hasEvent: (date) =>
-                schedules.some((schedule) => isDateIncludedInSchedule(date, schedule)),
-            }}
+            // 3. 일정이 있는 기간을 modifiers로 전달 (막대 스타일은 ui/calendar.jsx)
+            modifiers={scheduleModifiers}
+            onDayDoubleClick={onDateDoubleClick}
+            onToday={handleToday}
             className="w-full"
           />
         </div>
 
-        <div className="flex w-full flex-col gap-2 sm:gap-[12px] lg:w-[427px]">
-          <p className="text-[16px] tracking-[-0.36px] text-[#212121] sm:text-[18px]">월별 일정</p>
+        <div className="flex w-full min-w-0 flex-col gap-3 sm:gap-[12px] min-[960px]:max-w-[404px] min-[960px]:flex-1">
+          {/* 목록은 오른쪽에 여백 6px + 스크롤바 자리 4px을 비워 둔다(MonthlyScheduleList).
+              라벨 줄에도 같은 10px을 줘야 버튼이 일정 카드의 오른쪽 끝과 맞는다. */}
+          <div
+            className={`flex items-center justify-between gap-3 ${
+              scheduleListAction && scrollableScheduleList ? 'pe-[10px]' : ''
+            }`}
+          >
+            <p className="text-[14px] tracking-[-0.32px] text-[#212121] md:text-[16px]">
+              월별 일정
+            </p>
+            {scheduleListAction}
+          </div>
 
           <MonthlyScheduleList
             schedules={schedules}
             selectedId={selectedScheduleId}
             onSelect={handleSelectSchedule}
             isLoading={isLoading}
+            hasError={hasFetchError}
+            renderAction={renderScheduleAction ?? renderAddAction}
+            scrollable={scrollableScheduleList}
+            visibleCount={scheduleListVisibleCount}
           />
         </div>
       </div>
+
+      {/* 4. 고른 일정의 상세
+          목록(GET /api/event)이 category · description 까지 주므로 상세를 따로 부르지 않는다.
+          startTime · endTime 은 서버에 없어 '시간 없는 일정'으로 그려진다. (apis/event.js 4번) */}
+      {renderDetail ? (
+        renderDetail(selectedSchedule)
+      ) : (
+        <ScheduleDetail schedule={selectedSchedule} />
+      )}
+      <AddSingleEventDialog
+        schedule={addTarget}
+        open={Boolean(addTarget)}
+        onClose={() => setAddTarget(null)}
+      />
     </section>
   );
 }

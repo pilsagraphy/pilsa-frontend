@@ -9,6 +9,28 @@
 }
 
 @layer base {
+  /* 스크롤바 자리를 늘 비워 둔다. 페이지마다 스크롤 유무가 달라 화면 폭이 15px 쯤 바뀌었고,
+     가운데 정렬한 헤더 로고가 그때마다 좌우로 밀려 보였다 (2026-09-20 제보). */
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  /* 모달이 열려 스크롤을 잠글 때(react-remove-scroll) 스크롤바 폭만큼 margin-right 를 !important 로 넣는데,
+     위에서 스크롤바 자리를 이미 비워 두므로 그 여백은 이중이라 화면이 좌우로 움찔했다 (2026-09-21 제보).
+     선택자 특이도를 높여 그 여백을 없앤다 */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* 모달이 열려 스크롤을 잠글 때(react-remove-scroll) 스크롤바 폭만큼 margin-right 를 !important 로 넣는데,
+     위에서 스크롤바 자리를 이미 비워 두므로 그 여백은 이중이라 화면이 좌우로 움찔했다 (2026-09-21 제보).
+     선택자 특이도를 높여 그 여백을 없앤다 */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
+  }
+
   :root {
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
@@ -73,6 +95,80 @@
   }
 }
 
+/* ─────────────── 글쓰기 편집기(Tiptap) 본문 ───────────────
+   상세 화면(BoardMarkdown)과 같은 모양이어야 "보이는 그대로" 가 된다. 요소별 값은 그쪽 클래스와 맞춘다 */
+.board-editor {
+  font-size: 15px;
+  line-height: 1.65;
+  letter-spacing: -0.32px;
+  color: #212121;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
+}
+@media (min-width: 1024px) {
+  .board-editor {
+    font-size: 16px;
+    line-height: 1.6;
+  }
+}
+.board-editor > *:first-child { margin-top: 0; }
+.board-editor > *:last-child { margin-bottom: 0; }
+.board-editor p { margin: 12px 0; }
+.board-editor h1 { margin: 24px 0 12px; font-size: 22px; font-weight: 600; }
+.board-editor h2 { margin: 24px 0 12px; font-size: 20px; font-weight: 600; }
+.board-editor h3 { margin: 20px 0 8px; font-size: 18px; font-weight: 600; }
+.board-editor h4 { margin: 16px 0 8px; font-size: 17px; font-weight: 600; }
+.board-editor h5 { margin: 16px 0 8px; font-size: 16px; font-weight: 600; }
+.board-editor h6 { margin: 16px 0 8px; font-size: 15px; font-weight: 600; }
+@media (min-width: 1024px) {
+  .board-editor h1 { font-size: 24px; }
+  .board-editor h2 { font-size: 22px; }
+  .board-editor h3 { font-size: 20px; }
+  .board-editor h4 { font-size: 18px; }
+  .board-editor h5 { font-size: 17px; }
+  .board-editor h6 { font-size: 16px; }
+}
+.board-editor ul { margin: 12px 0; padding-left: 24px; list-style: disc; }
+.board-editor ol { margin: 12px 0; padding-left: 24px; list-style: decimal; }
+.board-editor li > p { margin: 2px 0; }
+.board-editor blockquote { margin: 16px 0; padding-left: 16px; border-left: 3px solid #dedede; color: #919191; }
+.board-editor hr { margin: 24px 0; border: 0; border-top: 1px solid #dedede; }
+.board-editor :not(pre) > code { padding: 2px 5px; border-radius: 3px; background: #f5f5f5; font-size: 14px; }
+.board-editor pre { margin: 16px 0; padding: 16px; border-radius: 4px; background: #f5f5f5; font-size: 14px; line-height: 1.6; overflow-x: auto; }
+.board-editor a { text-decoration: underline; text-underline-offset: 2px; }
+.board-editor img { max-width: 100%; height: auto; border-radius: 4px; }
+/* 빈 편집기의 안내 문구 */
+.board-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: #919191;
+  pointer-events: none;
+}
+/* 선택된 수평선 */
+.board-editor hr.ProseMirror-selectednode { border-top-color: #212121; }
+
+/* 제재 회원 관리: 세로 스크롤바 — 양끝 화살표 없이 스크롤바만 노출 */
+.mp-scroll-y {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: #dedede transparent;
+}
+.mp-scroll-y::-webkit-scrollbar {
+  width: 10px;
+}
+.mp-scroll-y::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.mp-scroll-y::-webkit-scrollbar-track {
+  background: transparent;
+}
+.mp-scroll-y::-webkit-scrollbar-thumb {
+  background: #dedede;
+  border-radius: 9999px;
+}
+
 .floatY {
   animation: floating 3s ease-in-out infinite;
   backface-visibility: hidden;
@@ -88,5 +184,284 @@
   }
   100% {
     transform: translate(-50%, -50%) translateY(0px);
+  }
+}
+
+/* ─────────────── 게이트 화면 시계 (Lottie 대체) ─────────────── */
+/* 원본(Lottie) 캔버스 1280×900 에서 다이얼 지름은 796.7px, 격자 한 칸은 50.09px 였다.
+   다이얼을 화면 짧은 변 기준(88vmin)으로 잡고 격자 한 칸(--cell)을 거기서 파생시키면
+   화면비가 달라도 다이얼·격자·장식의 비율이 원본과 같게 유지된다. 도형 수치는 clockShapes.js 참고. */
+
+.clockScene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #fff;
+  --dial: min(88vmin, 900px);
+  --cell: calc(var(--dial) / 15.9);
+}
+
+/* 격자선. 원본에서 다이얼 중심은 격자 교차점이 아니라 (0.03, -0.30)칸 비껴 있어 그대로 맞춘다 */
+.clockGrid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.16) 0 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+  background-position: calc(50% + var(--cell) * 0.03) calc(50% - var(--cell) * 0.3);
+}
+
+/* 회색으로 칠해진 격자 칸들 (clockShapes.js BAND_CELLS). 다이얼 중심에 맞춰 칸 단위로 그린다 */
+.clockBands {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--cell) * 32);
+  height: calc(var(--cell) * 22);
+  transform: translate(-50%, -50%);
+}
+
+.clockDial {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--dial);
+  height: var(--dial);
+  overflow: visible; /* 초침이 다이얼 밖까지 뻗는다 (원본 그대로) */
+}
+
+/* 바늘. --hand-dur 는 각 바늘의 한 바퀴 시간, --clock-speed 는 게이트 통과 시 배속 */
+/* 바늘은 (50,50) 에 그려져 있고 여기서는 그 자리에서 돌리기만 한다.
+   transform-box: view-box 로 원점 기준을 viewBox(0 0 100 100) 에 두어야 50% 가 다이얼 중심이 된다 */
+.clockHand {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  animation: clockSpin var(--hand-dur, 20s) linear infinite;
+  animation-duration: calc(var(--hand-dur, 20s) / var(--clock-speed, 1));
+  /* 음수 딜레이 — 원본 첫 프레임의 각도에서 출발시킨다 */
+  animation-delay: var(--hand-delay, 0s);
+  will-change: transform;
+}
+
+@keyframes clockSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* JS(rAF)가 바늘을 굴리기 시작하면 키프레임을 끈다 — 켜 둔 채로는 CSS 애니메이션이 인라인 transform 을 덮어쓴다 */
+.clockScene--js .clockHand {
+  animation: none;
+}
+
+/* 모서리 장식. 위치·크기는 원본 캔버스 가장자리 기준을 칸 단위로 옮긴 것.
+   좌우 물결은 다이얼과 겹치지 않게 중심에서 최소 원본 간격(8.35칸)만큼 떨어지도록 막아 둔다 —
+   좁은 화면에서는 그만큼 가장자리 밖으로 밀려난다. */
+.clockDeco {
+  position: absolute;
+  overflow: visible;
+}
+.clockDeco--cross    { left: calc(var(--cell) * 0.8);    top: calc(var(--cell) * -0.9);   width: calc(var(--cell) * 5);     height: calc(var(--cell) * 6); }
+.clockDeco--trDark   { right: calc(var(--cell) * 1.093); top: calc(var(--cell) * -1.081); width: calc(var(--cell) * 1.487); height: calc(var(--cell) * 5.861); }
+.clockDeco--trLight  { right: calc(var(--cell) * 1.335); top: calc(var(--cell) * -1.257); width: calc(var(--cell) * 0.884); height: calc(var(--cell) * 5.25); }
+.clockDeco--lDark    { left: min(calc(var(--cell) * -0.824), calc(50% - var(--cell) * 9.837)); top: calc(50% - var(--cell) * 1.742); width: calc(var(--cell) * 1.487); height: calc(var(--cell) * 5.861); }
+.clockDeco--lLight   { left: min(calc(var(--cell) * -0.521), calc(50% - var(--cell) * 9.234)); top: calc(50% - var(--cell) * 1.421); width: calc(var(--cell) * 0.884); height: calc(var(--cell) * 5.25); }
+.clockDeco--rWave    { left: max(calc(100% - var(--cell) * 3.973), calc(50% + var(--cell) * 8.35)); top: calc(50% + var(--cell) * 2.052); width: calc(var(--cell) * 7.518); height: calc(var(--cell) * 1.266); }
+.clockDeco--blWave   { left: calc(var(--cell) * 3.04);   bottom: calc(var(--cell) * 0.417); width: calc(var(--cell) * 5.25); height: calc(var(--cell) * 0.884); }
+.clockDeco--brSquare {
+  right: calc(var(--cell) * 1.219);
+  bottom: calc(var(--cell) * -0.74);
+  width: calc(var(--cell) * 2.786);
+  height: calc(var(--cell) * 2.786);
+  box-sizing: border-box;
+  background: #cdcdcd;
+  border: 1px solid rgba(0, 0, 0, 0.55);
+}
+
+/* 움직임을 줄여 달라는 설정이면 바늘을 세워 둔다 */
+@media (prefers-reduced-motion: reduce) {
+  .clockHand {
+    animation: none;
+  }
+}
+
+/* 모바일 텍스트 선택 차단 — 크롬 안드로이드는 글자를 탭만 해도 "탭하여 검색"(구글 검색 패널)이 올라온다.
+   메뉴·제목·버튼 같은 UI 글자는 선택 대상이 아니므로 767px 이하에서 통째로 막고,
+   실제로 복사할 일이 있는 본문(게시글·댓글·일정 내용)과 입력칸만 .select-text 로 다시 연다. */
+@media (max-width: 767px) {
+  body {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+  }
+  input,
+  textarea,
+  [contenteditable="true"],
+  .select-text,
+  .select-text * {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+}
+
+/* ─────────────── 게이트 화면 안내 문구 (TAP TO START) ─────────────── */
+/* 시계만 돌면 로딩 중으로 오해한다 — 다이얼 아래에서 숨 쉬듯 깜빡이며 탭을 유도한다 */
+.gateHint {
+  position: absolute;
+  left: 50%;
+  /* 시계와 화면 바닥 사이. 다이얼에 붙이면 꼬리표처럼 보이고, 바닥에 붙이면 시계와 동떨어져 보여서
+     그 중간쯤(바닥에서 화면 높이의 20%)에 띄운다 */
+  bottom: max(20vh, 96px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: clamp(12px, 2.6vmin, 16px);
+  letter-spacing: 0.32em;
+  color: #212121;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 6;
+  animation: gateHintPulse 2.2s ease-in-out infinite;
+  transition: opacity 300ms ease-out;
+}
+.gateHint--hidden {
+  opacity: 0;
+  animation: none;
+}
+
+/* 손끝이 닿는 자리처럼 퍼지는 원 */
+.gateHint__ring {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: #212121;
+  flex: none;
+}
+.gateHint__ring::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 9999px;
+  border: 1.5px solid #212121;
+  animation: gateHintRipple 2.2s ease-out infinite;
+}
+
+/* PC(가로가 세로보다 넓은 화면): 시계가 세로에 꽉 차게 그려져 20vh 는 다이얼 안에 걸린다.
+   바닥 쪽으로 더 내린다. 폰은 위 값이 맞아서 손대지 않는다 */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .gateHint {
+    bottom: max(7vh, 40px);
+  }
+}
+
+@keyframes gateHintPulse {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.4; }
+}
+@keyframes gateHintRipple {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  70% { transform: scale(2.4); opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gateHint { animation: none; }
+  .gateHint__ring::after { animation: none; opacity: 0; }
+}
+
+/* ─────────────── 로딩 화면 (app/loading.js) ─────────────── */
+/* 로고 글자만. 글자가 왼쪽부터 차례로 떠올랐다 가라앉는 물결 + 아래에 얇게 흐르는 선.
+   기본은 페이지 안 한 영역이 비는 경우(게시판 목록·상세, 권한 확인 등), --full 은 화면 전체가 비는 경우 */
+.appLoading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  padding: 56px 16px;
+}
+.appLoading--full {
+  min-height: 100dvh;
+  gap: 22px;
+  padding: 0;
+  background: #fff;
+}
+.appLoading__word {
+  display: inline-flex;
+  font-size: clamp(18px, 4.6vw, 28px);
+  letter-spacing: 0.14em;
+  color: #212121;
+  white-space: nowrap;
+  margin: 0;
+}
+.appLoading--full .appLoading__word {
+  font-size: clamp(22px, 6vw, 40px);
+}
+.appLoading__letter {
+  display: inline-block;
+  animation: appLoadingWave 1.6s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 70ms);
+  will-change: transform, opacity;
+}
+.appLoading__bar {
+  position: relative;
+  width: clamp(120px, 28vw, 220px);
+  height: 1.5px;
+  background: rgba(33, 33, 33, 0.12);
+  overflow: hidden;
+  border-radius: 9999px;
+}
+.appLoading__bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -40%;
+  width: 40%;
+  height: 100%;
+  background: #212121;
+  border-radius: 9999px;
+  animation: appLoadingSweep 1.4s ease-in-out infinite;
+}
+
+@keyframes appLoadingWave {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.28; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+@keyframes appLoadingSweep {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .appLoading__letter { animation: none; opacity: 1; }
+  .appLoading__bar::after { animation: none; left: 0; width: 100%; opacity: 0.5; }
+}
+
+/* 댓글 들여쓰기 — 깊이(--comment-depth)에 비례해 왼쪽을 민다.
+   클래스를 깊이마다 미리 만들어 두면 만들어 둔 만큼만 들어가므로, 계산으로 둔다.
+   상한은 JS 쪽(MAX_INDENT_DEPTH)이 잡아 준다 — 여기서는 받은 값을 그대로 쓴다.
+   PC 는 본문 폭이 넉넉해 한 단계를 크게, 폰은 작게 잡는다. */
+.commentRow {
+  /* 폰(#183 피그마): 좌우 20px 고정. 깊이 들여쓰기는 안 하고 답글은 꺾쇠 + 본문 30px 로 표시한다 */
+  padding: 10px 20px;
+}
+
+.commentReplyComposer {
+  padding-left: 30px;
+}
+
+@media (min-width: 768px) {
+  .commentRow {
+    padding: 20px 40px 20px calc(40px + var(--comment-depth, 0) * 28px);
+  }
+
+  .commentReplyComposer {
+    padding-left: calc(40px + var(--comment-depth, 0) * 28px);
   }
 }

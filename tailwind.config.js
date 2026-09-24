@@ -49,6 +49,28 @@ module.exports = {
           4: 'hsl(var(--chart-4))',
           5: 'hsl(var(--chart-5))',
         },
+        grayscale: {
+          '01': '#F6F6F6',
+          '02': '#DEDEDE',
+          '03': '#B9B9B9',
+          '04': '#919191',
+          '05': '#454545',
+          '06': '#212121',
+        },
+      },
+      // 사이트 기본 글꼴. body 에 font-sans 를 걸어 두므로 font-['Pretendard'] 를 일일이 붙이지 않아도 된다
+      fontFamily: {
+        sans: [
+          'Pretendard',
+          '-apple-system',
+          'BlinkMacSystemFont',
+          'system-ui',
+          'Roboto',
+          '"Apple SD Gothic Neo"',
+          '"Noto Sans KR"',
+          '"Malgun Gothic"',
+          'sans-serif',
+        ],
       },
       borderRadius: {
         lg: 'var(--radius)',

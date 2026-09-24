@@ -20,19 +20,43 @@ export const ROUTES = {
   SIGNUP: `${BASE_PATH}signup`,
   LOGOUT: `${BASE_PATH}logout`,
   FIND_ID: `${BASE_PATH}findId`,
+  FIND_EMAIL: `${BASE_PATH}findEmail`,
   FIND_PW: `${BASE_PATH}findPassword`,
 
   // students 영역
   STUDENTS_DASHBOARD: `${BASE_PATH}students`,
-  NOTICES: `${BASE_PATH}students/notices`,
-  NOTICE_DETAIL: (id) => `${BASE_PATH}students/notices/${encodeURIComponent(id)}`,
-  NOTICE_WRITE: `${BASE_PATH}students/notices/write`,
-  FREE_BOARD: `${BASE_PATH}students/free`,
-  FREE_BOARD_DETAIL: (id) => `${BASE_PATH}students/free/${encodeURIComponent(id)}`,
-  FREE_BOARD_WRITE: `${BASE_PATH}students/free/write`,
-  INFO_BOARD: `${BASE_PATH}students/info`,
-  INFO_BOARD_DETAIL: (id) => `${BASE_PATH}students/info/${encodeURIComponent(id)}`,
-  INFO_BOARD_WRITE: `${BASE_PATH}students/info/write`,
+  // 공통게시판 — 게시판은 DB 로 정의되므로 boardId 로 경로를 만든다 (슬러그 하드코딩 금지).
+  // 메뉴는 GET /api/user/boards 결과로 그린다.
+  BOARD: (boardId) => `${BASE_PATH}students/boards/${boardId}`,
+  BOARD_WRITE: (boardId) => `${BASE_PATH}students/boards/${boardId}/write`,
+  BOARD_POST: (boardId, postId) =>
+    `${BASE_PATH}students/boards/${boardId}/posts/${encodeURIComponent(postId)}`,
+  BOARD_POST_EDIT: (boardId, postId) =>
+    `${BASE_PATH}students/boards/${boardId}/posts/${encodeURIComponent(postId)}/edit`,
+
+  // user 영역 (재학생·졸업생 공용)
+  MY_PAGE: `${BASE_PATH}mypage`,
+
+  // admin 영역
+  ADMIN_HOME: `${BASE_PATH}admin`,
+  ADMIN_MEMBERS: `${BASE_PATH}admin/members`, // 회원관리 그룹 prefix (활성 판정용)
+  ADMIN_MEMBER_LIST: `${BASE_PATH}admin/members/memberslist`,
+  ADMIN_MEMBER_PENALTY: `${BASE_PATH}admin/members/penalty`,
+  ADMIN_BOARDS: `${BASE_PATH}admin/community/boards`,
+  ADMIN_POSTS: `${BASE_PATH}admin/community/posts`,
+  // 관리자 전용 게시글 상세.
+  // 사용자 상세(BOARD_POST)는 블라인드·삭제 글을 보여주지 않고 익명글의 실작성자도 가리므로,
+  // 관리자는 조치 판단에 필요한 정보를 이 화면에서 본다.
+  ADMIN_POST_DETAIL: (postId) =>
+    `${BASE_PATH}admin/community/posts/${encodeURIComponent(postId)}`,
+  ADMIN_COMMENTS: `${BASE_PATH}admin/community/comments`,
+  ADMIN_REPORTS: `${BASE_PATH}admin/community/reports`,
+  // 신고 관리를 특정 탭으로 열기. 게시글 관리 · 댓글 관리의 '신고 관리로 이동'이 쓴다.
+  // targetType: 'post' | 'comment' (신고 관리의 탭 값과 같다)
+  ADMIN_REPORTS_TAB: (targetType) =>
+    `${BASE_PATH}admin/community/reports?tab=${encodeURIComponent(targetType)}`,
+  ADMIN_CALENDAR: `${BASE_PATH}admin/calendar`,
+  ADMIN_QUOTES: `${BASE_PATH}admin/quotes`,
 };
 
 // 비로그인 접근 가능
@@ -49,27 +73,35 @@ export const PUBLIC_ROUTES = [
   ROUTES.LOGIN,
   ROUTES.SIGNUP,
   ROUTES.FIND_ID,
+  ROUTES.FIND_EMAIL,
   ROUTES.FIND_PW,
 ];
 
-// 게시판 접근 가능 역할 (ADMIN, ALUMNI, STUDENTS)
-export const ALLOWED_BOARD_ROLES = ['ADMIN', 'ALUMNI', 'STUDENTS'];
+// 게시판 접근 가능 신분 (백엔드 users.member_type — STUDENT: 재학생 / ALUMNI: 졸업생)
+// 관리자는 신분과 별개 축(adminLevel >= 1)이므로 접근 판정 시 함께 허용한다.
+export const ALLOWED_BOARD_MEMBER_TYPES = ['STUDENT', 'ALUMNI'];
+
+// 동아리 공용 구글 드라이브 (관리자 사이드바 바로가기).
+// 편집 권한은 드라이브 공유 설정에서 주는 것이라 앱은 주소만 연다 — '링크가 있는 사람: 편집자' 로 두거나
+// 운영진 계정을 편집자로 추가해 두면 눌렀을 때 바로 편집할 수 있다.
+export const ADMIN_DRIVE_URL =
+  'https://drive.google.com/drive/folders/1bIePMLr96hAS9VidRy01WdeTj7-4vkXU?usp=drive_link';
+
+// 외부 도움말 사이트 (Google Play 정책·법적 고지 문서)
+export const HELP_SITE_URL = 'https://help.pilsa.co.kr';
+
+// 이용 제한 정책 — 이의 신청 절차가 적혀 있어 제재 안내 화면의 문의 경로로도 사용
+// 이용 제한 정책과 계정 삭제 안내는 한 문서(account-policy.html)다 — 1부 제재, 2부 삭제. 옛 두 주소는 이 문서로 넘어간다
+export const SANCTION_POLICY_URL = `${HELP_SITE_URL}/account-policy.html#sanction`;
+export const HELP_LINKS = [
+  { label: '이용약관', href: `${HELP_SITE_URL}/terms-of-service.html` },
+  { label: '개인정보처리방침', href: `${HELP_SITE_URL}/privacy-policy.html` },
+  { label: '이용 제한·계정 삭제 안내', href: `${HELP_SITE_URL}/account-policy.html` },
+  { label: '아동 안전 표준', href: `${HELP_SITE_URL}/child-safety.html` },
+];
 
 // ROLE : STUDENTS, ADMIN 접근 가능
-export const PROTECTED_STUDENTS_ROUTES = [
-  ROUTES.STUDENTS_DASHBOARD,
-  ROUTES.NOTICES,
-  ROUTES.NOTICE_WRITE,
-  ROUTES.FREE_BOARD,
-  ROUTES.INFO_BOARD,
-  ROUTES.FREE_BOARD_WRITE,
-  ROUTES.INFO_BOARD_WRITE,
-];
+export const PROTECTED_STUDENTS_ROUTES = [ROUTES.STUDENTS_DASHBOARD];
 
-// 상세/하위 경로까지 커버하려면 prefix도 같이!
-export const PROTECTED_STUDENTS_PREFIX = [
-  '/students',
-  '/students/notices',
-  '/students/free',
-  '/students/info',
-];
+// 상세/하위 경로까지 커버하려면 prefix도 같이! (게시판은 /students/boards 하위로 통합)
+export const PROTECTED_STUDENTS_PREFIX = ['/students', '/students/boards'];

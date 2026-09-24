@@ -1,6 +1,7 @@
-import Footer from '@/components/shared/Footer';
+import AppLoading from '@/components/common/AppLoading';
 
-//NOTE: 로딩은 스타일 수정될수도 있음
+// 라우트 전환·첫 진입 중 보이는 로딩 화면. 화면 전체가 비는 자리라 full.
+// (예전엔 "로딩.. 임시 UI.." 문구였다)
 export default function Loading() {
-  return <main className="flex h-screen w-full items-center justify-center">로딩.. 임시 UI..</main>;
+  return <AppLoading full />;
 }

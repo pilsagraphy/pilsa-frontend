@@ -2,8 +2,8 @@ import Image from 'next/image';
 
 export default function BrandCILogo() {
   return (
-    <div className="flex flex-col gap-[5px] w-[293px]">
-      <div className="relative w-[293px] h-[329px]">
+    <div className="flex w-full max-w-[293px] flex-col gap-[5px]">
+      <div className="relative aspect-[293/329] w-full">
         <Image
           src="/images/brandCI/logo.png"
           alt="필사그래피 로고"
