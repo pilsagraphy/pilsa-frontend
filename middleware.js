@@ -51,6 +51,13 @@ export function middleware(req) {
     return res;
   }
 
+  // ✅ 동아리 소개(/about/intro)는 게이트 없이 연다 — 구글 OAuth 앱 검사기가 홈페이지 주소를 확인하러 오는데,
+  //    쿠키가 없어 시계 게이트로 튕겨 "소개 페이지에 못 들어간다" 고 반려됐다 (2026-09-24). 통과 쿠키는 심지 않는다:
+  //    여기서 다른 화면으로 옮기면 지금처럼 게이트를 한 번 거친다.
+  if (pathname === '/about/intro') {
+    return NextResponse.next();
+  }
+
   // ✅ 첫 방문: / 만 허용, 나머지는 / 로 보냄
   if (pathname !== '/') {
     const url = req.nextUrl.clone();
