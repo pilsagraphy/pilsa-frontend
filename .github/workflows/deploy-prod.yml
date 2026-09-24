@@ -86,9 +86,16 @@ jobs:
           mkdir -p "$REL"
           tar xzf "${RUNNER_TEMP}/frontend-standalone/frontend.tgz" -C "$REL"
           test -f "$REL/server.js"
-          # 서버에만 있는 자산을 릴리스 안으로 링크
+          # 서버에만 있는 자산(shared/public/<폴더>)을 전부 릴리스 안으로 링크 — videos(영상) · history(연혁 포스터) 등.
+          # 새 폴더를 shared 에 넣기만 하면 다음 배포부터 실린다. 레포의 public 과 이름이 겹치면 서버 것이 이긴다
           mkdir -p "$REL/public"
-          ln -sfn "$APP/shared/public/videos" "$REL/public/videos"
+          for d in "$APP"/shared/public/*/; do
+            [ -d "$d" ] || continue
+            name=$(basename "$d")
+            rm -rf "$REL/public/$name"
+            ln -sfn "${d%/}" "$REL/public/$name"
+          done
+          ls -l "$REL/public" | grep -- "->"
           ln -sfn "$REL" "$APP/current"
           ls -l "$APP/current"
 
