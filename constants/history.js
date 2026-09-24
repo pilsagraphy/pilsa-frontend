@@ -21,11 +21,6 @@ export const DUMMY_HISTORY = [
     activities: [
       "캘리그라피 전문 강사 초청",
       "조직도 개편 및 인수인계서 작성",
-      // 글 자체가 인스타그램 게시물 바로가기 (PM, 2026-09-24). 공유 토큰(stkn) 은 뺀 정식 주소
-      {
-        text: "동아연필 뉴엔 M-10 시리즈 신제품 서포터즈 활동",
-        href: "https://www.instagram.com/p/C40NPEIPUha/",
-      },
       "2학기 우수동아리 선정",
     ],
   },
@@ -33,6 +28,11 @@ export const DUMMY_HISTORY = [
     year: "2024",
     activities: [
       "회칙 전면 개편",
+      // 글 자체가 인스타그램 게시물 바로가기 (PM, 2026-09-24). 공유 토큰(stkn) 은 뺀 정식 주소. 2023 이 아니라 2024 활동
+      {
+        text: "동아연필 뉴엔 M-10 시리즈 신제품 서포터즈 활동",
+        href: "https://www.instagram.com/p/C40NPEIPUha/",
+      },
       // 전시 포스터 두 장 — 서버 public/history 에 있다 (PDF 인쇄본을 JPG 로 변환, 레포에는 넣지 않는다)
       {
         text: "정기모임 아스키아트 작품 중앙도서관 전시",
