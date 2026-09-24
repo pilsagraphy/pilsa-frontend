@@ -167,11 +167,12 @@ export default function Edit({ boardId, postId }) {
         <BoardWriteForm boardId={boardId} board={board} isEdit />
       </div>
 
-      <div className="mt-4 flex w-full flex-col gap-[12px]">
+      {/* 수정 완료 · 취소를 한 줄에 — 글 작성 화면(BoardWrite)과 같은 배치. 폰에서 세로로 쌓이던 것을 가로로 (PM, 2026-09-24) */}
+      <div className="mt-4 flex w-full flex-row gap-2 lg:gap-[12px]">
         <button
           type="submit"
           disabled={submitting}
-          className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white transition-colors hover:bg-black disabled:opacity-60"
+          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] px-2 text-[14px] tracking-[-0.28px] text-white transition-colors hover:bg-black disabled:opacity-60 lg:h-[52px] lg:text-[16px] lg:tracking-[-0.32px]"
         >
           {submitting ? '수정 중...' : '수정 완료'}
         </button>
@@ -179,7 +180,8 @@ export default function Edit({ boardId, postId }) {
         <button
           type="button"
           onClick={handleCancel}
-          className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white text-[16px] tracking-[-0.32px] text-[#212121] transition-colors hover:bg-gray-50"
+          disabled={submitting}
+          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white px-2 text-[14px] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-gray-50 disabled:opacity-60 lg:h-[52px] lg:text-[16px] lg:tracking-[-0.32px]"
         >
           취소
         </button>

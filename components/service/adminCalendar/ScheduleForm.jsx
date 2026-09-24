@@ -280,7 +280,9 @@ export default function ScheduleForm({
           </div>
         </ScheduleFormRow>
 
-        <ScheduleFormRow label="날짜 / 시간" labelExtra={allDayCheckbox}>
+        {/* 폰: 라벨 줄을 아래 '시작' 줄의 폭(라벨 32 + 날짜 160 + 시 66 + 분 64 + 간격 24 = 346px)에 맞춰
+            '종일' 체크의 오른쪽 끝이 시각 칸 오른쪽 끝과 같은 선에 오게 한다 (PM, 2026-09-24) */}
+        <ScheduleFormRow label="날짜 / 시간" labelExtra={allDayCheckbox} labelRowClassName="max-w-[346px]">
           <div className="flex flex-col gap-[12px]">
             {/* 시작 · 종료를 한 줄에 — 각각 날짜 칸(달력) 옆에 그날의 시각. 폰에서는 종료가 아래로 내려온다.
                 예전엔 년·월·일 셀렉트 여섯 개 + 달력 버튼 + 시각 셀렉트 네 개가 따로 놀았다 (PM, 2026-09-20) */}
