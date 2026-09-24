@@ -1,10 +1,12 @@
 // activity: 문자열, 또는 { text, video } / { text, youtube } — 영상이 있으면 글 아래에 소리 없이 계속 도는 영상을 붙인다.
 //   video   서버 public/videos 의 mp4 경로
 //   youtube 유튜브 영상 ID. 유튜브는 loop 만으로는 안 돌고 playlist 에 자기 ID 를 넣어야 무한 반복된다. mute 여야 자동 재생이 허락된다
+//   images  [{ src, alt }] — 영상과 같은 폭(640px) 안에 가로로 나란히. 서버 public/history 의 파일 (레포에는 넣지 않는다)
 const ActivityItem = ({ activity }) => {
   const text = typeof activity === 'string' ? activity : activity?.text;
   const video = typeof activity === 'string' ? null : activity?.video;
   const youtube = typeof activity === 'string' ? null : activity?.youtube;
+  const images = typeof activity === 'string' ? null : activity?.images;
 
   return (
     <div className="flex items-start gap-5">
@@ -37,6 +39,21 @@ const ActivityItem = ({ activity }) => {
               allowFullScreen
               className="absolute inset-0 h-full w-full border-0"
             />
+          </div>
+        )}
+        {images?.length > 0 && (
+          // 폰에서도 가로 배치 유지 — 세로로 긴 포스터라 둘을 나란히 두는 편이 낫다
+          <div className="flex w-full max-w-[640px] gap-3">
+            {images.map((image) => (
+              // eslint-disable-next-line @next/next/no-img-element -- 서버에만 있는 파일이라 next/image 최적화 대상이 아니다
+              <img
+                key={image.src}
+                src={image.src}
+                alt={image.alt ?? text}
+                loading="lazy"
+                className="min-w-0 flex-1 rounded-[8px] bg-[#f5f5f5] object-contain"
+              />
+            ))}
           </div>
         )}
       </div>
