@@ -166,14 +166,16 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
     <div className={listSectionClass}>
       <h2 className={listTitleClass}>{title}</h2>
 
-      <p className="mb-4 text-[14px] leading-[1.6] text-[#757575]">
-        메인·마이페이지 인사말 옆에 뜨는 문장입니다.
-        <br />
-        <strong className="font-semibold text-[#212121]">
-          지금 노출 중인 문장: {showingCount}개
-        </strong>
-        {showingCount === 0 && ' — 오늘 보여 줄 문장이 없어 인사말 옆이 비어 있습니다.'}
-      </p>
+      {/* 설명은 왼쪽, '지금 노출 중' 은 오른쪽. 폭이 모자라면 설명이 왼쪽 위, 노출 수가 오른쪽 아래로 내려간다 (PM, 2026-09-26) */}
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-1 text-[14px] leading-[1.6] text-[#757575]">
+        <p className="min-w-0">
+          메인·마이페이지 인사말 옆에 뜨는 문장입니다.
+          {showingCount === 0 && (
+            <span className="block text-[#d93025]">오늘 보여 줄 문장이 없어 인사말 옆이 비어 있습니다.</span>
+          )}
+        </p>
+        <strong className="ml-auto shrink-0 font-semibold text-[#212121]">지금 노출 중인 문장: {showingCount}개</strong>
+      </div>
 
       {/* 등록 · 수정 폼 */}
       <form

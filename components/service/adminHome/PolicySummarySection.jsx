@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 
 import { getErrorMessage } from '@/apis/auth';
 import { getDashboardPolicies } from '@/apis/admin/dashboard';
+import { ROUTES } from '@/constants/routes';
 
 // 관리자 홈의 '운영 정책' 칸.
 //
@@ -90,9 +92,15 @@ export default function PolicySummarySection() {
   return (
     <div className="flex w-full flex-col">
       <div className="flex h-[44px] items-center justify-between">
-        <h3 className="text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121]">
-          운영 정책
-        </h3>
+        {/* 제목을 누르면 운영 관리 > 정책 설정으로 — 여기서 본 값을 바로 고치러 갈 수 있게 (PM, 2026-09-26) */}
+        <Link
+          href={ROUTES.ADMIN_POLICIES}
+          className="group inline-flex items-center gap-[6px] text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121]"
+          aria-label="운영 정책 — 정책 설정으로 이동"
+        >
+          <h3>운영 정책</h3>
+          <span className="text-[14px] font-normal text-[#919191] transition-colors group-hover:text-[#212121]">수정 ↗</span>
+        </Link>
         <span className="text-[13px] leading-[1.6] tracking-[-0.26px] text-[#B9B9B9]">
           서버 설정값 기준
         </span>

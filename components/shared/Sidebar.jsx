@@ -176,12 +176,22 @@ const Sidebar = () => {
         { name: '신고 관리', path: ROUTES.ADMIN_REPORTS },
       ],
     },
+    // 운영 관리 — 상위 이름을 '정책 관리'로 하면 하위 '정책 설정'과 겹쳐서 '운영 관리'로 (PM, 2026-09-26)
+    operations: {
+      label: '운영 관리',
+      subMenus: [
+        { name: '모니터링', path: ROUTES.ADMIN_MONITORING },
+        { name: '정책 설정', path: ROUTES.ADMIN_POLICIES },
+        { name: '알림 설정', path: ROUTES.ADMIN_NOTIFICATION_SETTINGS },
+      ],
+    },
   };
 
   const isAboutActive = pathname.startsWith(ROUTES.ABOUT);
   const isBoardActive = pathname.startsWith(ROUTES.STUDENTS_DASHBOARD);
   const isMembersActive = pathname.startsWith(ROUTES.ADMIN_MEMBERS);
   const isCommunityActive = pathname.startsWith(`${ROUTES.ADMIN_HOME}/community`);
+  const isOperationsActive = pathname.startsWith(ROUTES.ADMIN_OPERATIONS);
 
   // 단일 링크 색상 (선택: grayscale-06 / 미선택: grayscale-03)
   const singleLinkClass = (active) =>
@@ -232,6 +242,7 @@ const Sidebar = () => {
             {[
               { key: 'members', active: isMembersActive },
               { key: 'community', active: isCommunityActive },
+              { key: 'operations', active: isOperationsActive },
             ].map(({ key, active }) => {
               const cfg = adminMenuConfig[key];
               return (
