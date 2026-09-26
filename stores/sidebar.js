@@ -11,6 +11,7 @@ const useSidebarStore = create((set) => ({
     board: true, // 게시판도 기본 확장
     members: true, // 관리자: 회원관리 기본 확장
     community: true, // 관리자: 커뮤니티 관리 기본 확장
+    operations: true, // 관리자: 운영 관리(모니터링 · 정책 설정 · 알림 설정) 기본 확장
   },
   toggleLogin: () => set((state) => ({ isLoggedIn: !state.isLoggedIn })),
   toggleMenu: (menu) =>

@@ -190,9 +190,11 @@ export default function MemberListSection({ title = '회원 목록' }) {
     <div className={listSectionClass}>
       <h2 className={listTitleClass}>{title}</h2>
 
-      {/* 정렬 · 검색 (왼쪽) / 회원 정지 · 영구 차단 (오른쪽) */}
-      <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:items-center md:justify-between md:gap-4">
-        <div className="flex min-w-0 flex-1 flex-row items-center gap-2">
+      {/* 정렬 · 검색 (왼쪽) / 회원 정지 · 영구 차단 (오른쪽)
+          폭이 모자라면 ① 검색창이 120px 까지 줄고 ② 그래도 안 되면 버튼 묶음이 아랫줄 오른쪽으로 내려간다 — 겹치지 않는다.
+          예전엔 검색창이 296px 고정이라 중간 폭에서 버튼 위에 겹쳐 그려졌다 (PM, 2026-09-26) */}
+      <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-4">
+        <div className="flex min-w-0 flex-1 basis-[260px] flex-row items-center gap-2">
           <div className="w-[110px] shrink-0 sm:w-auto">
             <SortSelect
               value={sortOrder}
@@ -200,7 +202,7 @@ export default function MemberListSection({ title = '회원 목록' }) {
               options={MEMBER_SORT_OPTIONS}
             />
           </div>
-          <div className="min-w-0 flex-1 sm:w-[296px] sm:flex-none">
+          <div className="min-w-[120px] flex-1 md:max-w-[296px]">
             <SearchInput
               value={searchQuery}
               onChange={handleSearchChange}
@@ -209,7 +211,7 @@ export default function MemberListSection({ title = '회원 목록' }) {
           </div>
         </div>
 
-        <div className="flex shrink-0 flex-row items-center gap-2">
+        <div className="flex shrink-0 flex-row items-center gap-2 md:ml-auto">
           {/* 회원 정지는 단건 처리 → 한 명 선택했을 때만 활성화 */}
           <Button
             type="button"

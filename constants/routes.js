@@ -57,6 +57,11 @@ export const ROUTES = {
     `${BASE_PATH}admin/community/reports?tab=${encodeURIComponent(targetType)}`,
   ADMIN_CALENDAR: `${BASE_PATH}admin/calendar`,
   ADMIN_QUOTES: `${BASE_PATH}admin/quotes`,
+  // 운영 관리 그룹 (2026-09-26) — 모니터링(앱 접속 점검 · 통계 그래프) / 정책 설정(policy_settings · ban_policy) / 알림 설정
+  ADMIN_OPERATIONS: `${BASE_PATH}admin/operations`, // 그룹 prefix (활성 판정용)
+  ADMIN_MONITORING: `${BASE_PATH}admin/operations/monitoring`,
+  ADMIN_POLICIES: `${BASE_PATH}admin/operations/policies`,
+  ADMIN_NOTIFICATION_SETTINGS: `${BASE_PATH}admin/operations/notifications`,
 };
 
 // 비로그인 접근 가능

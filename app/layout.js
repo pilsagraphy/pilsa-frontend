@@ -4,6 +4,7 @@ import DesktopSiteNotice from '@/components/shared/DesktopSiteNotice';
 import IosInstallGuide from '@/components/shared/IosInstallGuide';
 import DialogHost from '@/components/common/DialogHost';
 import LightboxHost from '@/components/common/LightboxHost';
+import AppLaunchBeacon from '@/components/common/AppLaunchBeacon';
 
 export const metadata = {
   // 브라우저 탭·북마크·공유 카드에 그대로 나가는 이름이라 앱·스토어 표기와 같은 값을 쓴다
@@ -60,6 +61,8 @@ export default function RootLayout({ children }) {
         <DialogHost />
         {/* openLightbox 가 띄우는 공용 '이미지 크게 보기' */}
         <LightboxHost />
+        {/* 설치형 앱(/?launch=app)으로 연 세션이면 로그인 뒤 하루 한 번 서버에 '앱 열었음'을 알린다 — 운영 관리 > 모니터링 */}
+        <AppLaunchBeacon />
       </body>
     </html>
   );
