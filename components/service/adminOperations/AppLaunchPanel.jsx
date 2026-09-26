@@ -20,11 +20,13 @@ const md = (date) => (date ? `${Number(date.slice(5, 7))}/${Number(date.slice(8,
 
 export default function AppLaunchPanel({ date, onDateChange, report, isLoading, error }) {
   const [filter, setFilter] = useState('ALL');
+  const [query, setQuery] = useState(''); // 이름 검색 (PM, 2026-09-26)
 
   const members = useMemo(() => {
     const list = report?.members ?? [];
-    return filter === 'ALL' ? list : list.filter((m) => m.memberType === filter);
-  }, [report, filter]);
+    const q = query.trim();
+    return list.filter((m) => (filter === 'ALL' || m.memberType === filter) && (!q || (m.name ?? '').includes(q)));
+  }, [report, filter, query]);
   const notLaunched = members.filter((m) => !m.launched);
   const launched = members.filter((m) => m.launched);
 
@@ -83,21 +85,31 @@ export default function AppLaunchPanel({ date, onDateChange, report, isLoading, 
             ))}
           </div>
 
-          {/* 필터 · 복사 */}
+          {/* 필터 · 이름 검색 · 복사 */}
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex gap-1">
-              {FILTERS.map((f) => (
-                <button
-                  key={f.key}
-                  type="button"
-                  onClick={() => setFilter(f.key)}
-                  className={`h-[32px] rounded-full px-3 text-[13px] transition-colors ${
-                    filter === f.key ? 'bg-[#212121] text-white' : 'bg-[#F3F3F3] text-[#5f5f5f] hover:bg-[#e8e8e8]'
-                  }`}
-                >
-                  {f.label}
-                </button>
-              ))}
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
+              <div className="flex gap-1">
+                {FILTERS.map((f) => (
+                  <button
+                    key={f.key}
+                    type="button"
+                    onClick={() => setFilter(f.key)}
+                    className={`h-[32px] rounded-full px-3 text-[13px] transition-colors ${
+                      filter === f.key ? 'bg-[#212121] text-white' : 'bg-[#F3F3F3] text-[#5f5f5f] hover:bg-[#e8e8e8]'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="search"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="이름 검색"
+                aria-label="이름 검색"
+                className="h-[32px] w-[140px] rounded-[6px] border border-[#dedede] px-3 text-[13px] outline-none focus:border-[#919191]"
+              />
             </div>
             <button
               type="button"
