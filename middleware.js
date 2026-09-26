@@ -1,5 +1,17 @@
 import { NextResponse } from 'next/server';
 
+// 리다이렉트 주소는 req.nextUrl 이 아니라 요청 헤더(Host · X-Forwarded-Proto)로 만든다.
+// standalone(node server.js)으로 띄운 뒤 req.nextUrl 의 호스트가 서버 내부 주소(localhost:3000)로 잡혀
+// 게이트 리다이렉트가 https://localhost:3000/?from=... 으로 나갔다 (2026-09-26). nginx 가 Host 를 그대로 넘겨주므로 그것이 정본이다.
+function publicUrl(req, pathname, search = '') {
+  const proto = req.headers.get('x-forwarded-proto') || req.nextUrl.protocol.replace(':', '') || 'https';
+  const host = req.headers.get('x-forwarded-host') || req.headers.get('host') || req.nextUrl.host;
+  const url = new URL(`${proto}://${host}`);
+  url.pathname = pathname;
+  url.search = search;
+  return url;
+}
+
 export function middleware(req) {
   const { pathname, search } = req.nextUrl;
 
@@ -34,10 +46,7 @@ export function middleware(req) {
     // (앱 실행 진입과 새 탭 직접 진입은 예외 — 그때는 시계부터).
     // 헤더 로고와 같은 사이트 안 이동에서 / 로 오면, 이게 없으면 누를 때마다 시계가 다시 나온다.
     if (pathname === '/' && !isAppLaunch && !isDirectEntry) {
-      const url = req.nextUrl.clone();
-      url.pathname = '/about/intro';
-      url.search = '';
-      return NextResponse.redirect(url);
+      return NextResponse.redirect(publicUrl(req, '/about/intro'));
     }
     return NextResponse.next();
   }
@@ -60,10 +69,7 @@ export function middleware(req) {
 
   // ✅ 첫 방문: / 만 허용, 나머지는 / 로 보냄
   if (pathname !== '/') {
-    const url = req.nextUrl.clone();
-    url.pathname = '/';
-    url.search = `from=${encodeURIComponent(pathname + search)}`;
-    return NextResponse.redirect(url);
+    return NextResponse.redirect(publicUrl(req, '/', `from=${encodeURIComponent(pathname + search)}`));
   }
 
   return NextResponse.next();
