@@ -1,12 +1,17 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.get_login_creds"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "kr.co.pilsa.pilsagraphy",
       "sha256_cert_fingerprints": [
         "20:7E:A7:E9:DE:CD:BD:F9:08:41:FC:85:6E:0C:4C:28:3E:FA:AC:46:F7:BF:14:1E:BD:CB:05:47:F5:78:9B:8A",
-        "95:08:85:FC:4E:2A:97:B9:93:BF:46:7B:44:76:64:47:53:1B:E4:A7:8F:8F:FD:5B:8E:98:D4:43:5A:F6:46:38"
+        "95:08:85:FC:4E:2A:97:B9:93:BF:46:7B:44:76:64:47:53:1B:E4:A7:8F:8F:FD:5B:8E:98:D4:43:5A:F6:46:38",
+        "CE:F5:BB:93:FE:90:C0:E8:5E:2C:A7:08:82:66:68:F8:6D:DD:CD:E1:2A:8D:66:81:DA:05:D7:DF:57:0F:D0:04",
+        "0B:B7:53:29:2F:B9:42:CD:42:BC:2F:A6:5C:1C:A3:BF:1B:29:87:59:74:1E:EE:77:CF:98:E2:20:11:DA:D3:25"
       ]
     }
   }
