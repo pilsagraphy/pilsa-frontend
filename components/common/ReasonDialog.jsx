@@ -58,6 +58,12 @@ export default function ReasonDialog({
   // 사유 목록의 열림 상태. ESC를 눌렀을 때 목록만 닫기 위해 직접 들고 있는다.
   const [reasonOpen, setReasonOpen] = useState(false);
   const reasonRootRef = useRef(null);
+  const listRef = useRef(null);
+
+  // 목록이 열리면 모달 스크롤을 목록 끝까지 내려 항목이 모달 아래로 숨지 않게 한다
+  useEffect(() => {
+    if (reasonOpen) listRef.current?.scrollIntoView({ block: 'nearest' });
+  }, [reasonOpen]);
   const selectedLabel = REPORT_REASONS.find((item) => item.code === reason)?.label ?? '';
 
   // 목록 바깥을 누르면 닫는다 (모달은 그대로)
@@ -141,10 +147,13 @@ export default function ReasonDialog({
               </button>
 
               {reasonOpen && (
+                // 목록은 absolute 로 띄우지 않고 흐름 안에 둔다. 모달이 overflow-y-auto 라 띄우면 아래쪽이 잘려
+                // 두 항목밖에 안 보였다 (테스터 제보, 2026-09-27). 흐름에 두면 모달이 늘어나거나 스크롤돼 전부 보인다
                 <ul
+                  ref={listRef}
                   role="listbox"
                   aria-label="사유"
-                  className="absolute left-0 right-0 top-[56px] z-20 max-h-[240px] overflow-y-auto rounded-[4px] border border-[#dedede] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.1)]"
+                  className="mt-[4px] max-h-[240px] w-full overflow-y-auto rounded-[4px] border border-[#dedede] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.1)]"
                 >
                   {REPORT_REASONS.map(({ code, label }) => (
                     <li key={code} role="option" aria-selected={reason === code}>

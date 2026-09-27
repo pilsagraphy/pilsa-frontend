@@ -22,6 +22,8 @@ export default function AlertModal({
   // #183 모바일에서 모달 높이를 피그마에 맞추기 위한 본문 영역 최소 높이(px 숫자).
   // 데스크톱은 아래 래퍼가 md:contents 라 box 가 없어 이 minHeight 는 무시된다.
   mobileBodyMinHeight = 0,
+  // 본문 아래에 넣을 추가 내용 (예: 관련 화면으로 가는 링크). 없으면 아무것도 안 그린다
+  children = null,
 }) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose?.()}>
@@ -46,6 +48,7 @@ export default function AlertModal({
               {description}
             </DialogDescription>
           )}
+          {children}
         </div>
 
         <DialogFooter className="flex flex-row justify-center sm:justify-center sm:space-x-0">

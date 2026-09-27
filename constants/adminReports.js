@@ -60,6 +60,22 @@ export const REPORT_STATUSES = {
   DELETED: '삭제',
 };
 
+// 행의 유형(kind). 서버가 내려준다 (2026-09-27).
+//   admin_blind  : 관리자가 신고 없이 직접 블라인드 → 여기서 복원·삭제를 판단한다 (신고자는 '관리자'로 표시)
+//   admin_delete : 관리자가 신고 없이 직접 삭제 → 처리 완료로 남아 복원할 수 있다
+//   auto_blind   : 신고가 기준 건수에 닿아 자동 블라인드된 것
+//   report       : 회원 신고 (칩 없음)
+export const REPORT_KIND_LABELS = {
+  admin_blind: '관리자 조치 블라인드',
+  admin_delete: '관리자 조치 삭제',
+  auto_blind: '신고 누적 블라인드',
+};
+
+export const getReportKindLabel = (report) => REPORT_KIND_LABELS[report?.kind] ?? '';
+
+// 댓글 복원이 원 게시글 때문에 막혔을 때 서버가 failures 항목에 붙이는 코드 (BulkResultResponse.FailureItem.code)
+export const RESTORE_BLOCKED_POST_NOT_VISIBLE = 'POST_NOT_VISIBLE';
+
 // 목록 '상태' 열에 보여줄 이름. state(글이 보이는지)와 reportStatus(신고를 처리했는지)를 함께 본다.
 //   삭제됨                          → '삭제'
 //   글은 공개인데 신고는 종료됨      → '복원'   (관리자가 되돌린 것)

@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Link from 'next/link';
 
 import AlertModal from '@/components/common/AlertModal';
+import { ROUTES } from '@/constants/routes';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
 import SortSelect from '@/components/shared/board/boardList/SortSelect';
@@ -23,6 +25,7 @@ import {
   REPORT_TARGET_COMMENT,
   REPORT_TARGET_LABELS,
   REPORT_TARGET_POST,
+  RESTORE_BLOCKED_POST_NOT_VISIBLE,
   STATUS_FILTER_ALL,
   STATUS_FILTER_OPTIONS,
   buildBoardFilterOptions,
@@ -285,10 +288,12 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
     const successCount = data?.successCount ?? 0;
     const failures = data?.failures ?? [];
     const failCount = data?.failCount ?? failures.length;
+    // 게시글을 복원했는지 댓글을 복원했는지 문구에 밝힌다 (PM, 2026-09-27)
+    const targetLabel = targetType === REPORT_TARGET_COMMENT ? '댓글' : '게시글';
 
     if (failCount === 0) {
       return {
-        title: `${successCount}건을 ${actionLabel} 처리했습니다.`,
+        title: `${targetLabel} ${successCount}건을 ${actionLabel} 처리했습니다.`,
         description: '',
       };
     }
@@ -296,12 +301,24 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
     // 같은 사유로 여러 건이 실패하면 같은 문장이 반복되므로 사유별로 묶어 보여준다
     const reasons = [...new Set(failures.map(({ message }) => message))];
 
+    // 댓글 복원이 원 게시글 때문에 막힌 경우 — 게시글 신고 관리와 원글 작성자의 제재 회원 화면으로 바로 갈 수 있게 링크를 붙인다
+    const blocked = failures.find((f) => f.code === RESTORE_BLOCKED_POST_NOT_VISIBLE);
+    const links = blocked
+      ? [
+          { href: ROUTES.ADMIN_REPORTS_TAB('post'), label: '게시글 신고 관리에서 원글 복원하기' },
+          ...(blocked.authorId
+            ? [{ href: `${ROUTES.ADMIN_MEMBER_PENALTY}?userId=${blocked.authorId}`, label: `제재 회원 관리 — ${blocked.authorName ?? '작성자'}` }]
+            : []),
+        ]
+      : [];
+
     return {
       title:
         successCount > 0
-          ? `${successCount}건만 ${actionLabel} 처리했습니다.`
-          : `${actionLabel} 처리하지 못했습니다.`,
+          ? `${targetLabel} ${successCount}건만 ${actionLabel} 처리했습니다.`
+          : `${targetLabel} ${actionLabel} 처리하지 못했습니다.`,
       description: [`실패 ${failCount}건`, ...reasons.map((message) => `· ${message}`)].join('\n'),
+      links,
     };
   };
 
@@ -479,7 +496,23 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
         description={alertState?.description ?? ''}
         closeText={alertState?.closeText ?? '닫기'}
         onClose={handleAlertClose}
-      />
+      >
+        {/* 댓글 복원이 원글 때문에 막혔을 때 — 원글 복원 화면 · 원글 작성자의 제재 회원 화면으로 바로 이동 */}
+        {alertState?.links?.length > 0 && (
+          <div className="flex flex-col items-center gap-[6px]">
+            {alertState.links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={handleAlertClose}
+                className="text-[14px] text-[#1a73e8] underline underline-offset-4 hover:text-[#0b57d0]"
+              >
+                {link.label} ↗
+              </Link>
+            ))}
+          </div>
+        )}
+      </AlertModal>
     </div>
   );
 }

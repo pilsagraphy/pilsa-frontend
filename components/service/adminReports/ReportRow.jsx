@@ -7,6 +7,7 @@ import RowCheckbox from '@/components/shared/admin/RowCheckbox';
 import { TableCell, TableRow } from '@/components/ui/table';
 import {
   formatReportedAt,
+  getReportKindLabel,
   getReportStatusLabel,
   getReportTargetHref,
   isDeletable,
@@ -74,6 +75,12 @@ export default function ReportRow({
              서버가 라벨까지 완성해 주므로 코드→이름 변환이 필요 없다.
              같은 대상에 신고가 여럿이면 건수를 덧붙여 대표 사유 하나만 보이는 것을 알린다. */}
       <TableCell className="px-[4px] text-center" title={report.reasonLabel}>
+        {/* 유형 — 관리자 직접 블라인드 · 관리자 직접 삭제 · 신고 누적 자동 블라인드는 회원 신고와 구분해 보여 준다 (PM, 2026-09-27) */}
+        {getReportKindLabel(report) && (
+          <span className="mb-[2px] inline-block rounded-full bg-[#F3F3F3] px-[8px] py-[1px] text-[11px] text-[#5f5f5f]">
+            {getReportKindLabel(report)}
+          </span>
+        )}
         <span className="block truncate">
           {report.reasonLabel}
           {report.reportCount > 1 && (
