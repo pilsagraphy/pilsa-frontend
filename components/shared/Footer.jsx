@@ -4,7 +4,8 @@ import { HELP_LINKS } from '@/constants/routes';
 const CLUB_LINKS = [
   { label: '동아리 인스타', href: 'https://instagram.com/pilsa_graphy' },
   { label: '중앙동아리 페이지', href: 'https://jajudy.khu.ac.kr/club/25720' },
-  { label: '홈페이지 건의사항', href: 'https://forms.gle/ZyGebkpQrLoDk7e68' },
+  // 홈페이지 건의 → 동아리 건의로 (PM, 2026-09-27). 구글 폼 주소도 새것
+  { label: '동아리 건의사항', href: 'https://forms.gle/WHoMQFBjygmveegN9' },
 ];
 
 // 링크 한 줄 — 동아리 링크와 정책 링크가 같은 디자인을 공유한다
