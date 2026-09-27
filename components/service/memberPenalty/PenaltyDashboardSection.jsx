@@ -116,7 +116,13 @@ export default function PenaltyDashboardSection() {
     (s) => s.fetchSanctionedUserReportedComments,
   );
 
+  // ?userId= 로 들어오면 그 회원을 먼저 고른다 — 신고 관리의 "원글 작성자 제재 회원 보기" 링크가 쓴다 (2026-09-27).
+  // useSearchParams 는 정적 페이지에서 Suspense 경계를 요구해 빌드가 깨질 수 있어 마운트 뒤 window 에서 읽는다
   const [selectedId, setSelectedId] = useState(null);
+  useEffect(() => {
+    const requested = Number(new URLSearchParams(window.location.search).get('userId')) || null;
+    if (requested) setSelectedId(requested);
+  }, []);
   // PC 에서 본문 폭이 모자라면 오른쪽 상세가 잘린다(사이드바가 240px 을 가져간다).
   // 목록을 접어 자리를 내주고, 그래도 모자라면 옆으로 밀어 볼 수 있게 한다
   const [listCollapsed, setListCollapsed] = useState(false);

@@ -83,6 +83,24 @@ export default function CalendarSubscribeButton() {
     }
   };
 
+  // 구글 계정 선택 화면에서 뒤로 가기로 돌아오면 브라우저가 이 화면을 그대로 복원해 busy 가 켜진 채 남는다 —
+  // '구글로 이동 중…' 이 안 풀리고 닫기도 못 눌렀다 (테스터 제보, 2026-09-27). 복원(pageshow persisted)·복귀 때 busy 를 푼다
+  useEffect(() => {
+    const release = () => setBusy(false);
+    const onPageShow = (e) => {
+      if (e.persisted) release();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') release();
+    };
+    window.addEventListener('pageshow', onPageShow);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
+
   // 동의 화면으로. 돌아올 곳을 함께 보내 콜백이 마이페이지가 아니라 이 캘린더 페이지로 돌려보내게 한다
   const startConsent = async () => {
     if (busy) return;
@@ -189,12 +207,15 @@ export default function CalendarSubscribeButton() {
                 </Button>
               </>
             )}
+            {/* 닫기는 이동 중에도 항상 눌린다 — 구글로 갔다가 뒤로 온 사람이 갇히지 않게 (busy 도 함께 푼다) */}
             {!linked && (
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setOpen(false)}
-                disabled={busy}
+                onClick={() => {
+                  setBusy(false);
+                  setOpen(false);
+                }}
                 className={outlineBtn}
               >
                 닫기

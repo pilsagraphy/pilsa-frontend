@@ -102,23 +102,24 @@ function BanPolicyRow({ item, canEdit, onSaved }) {
     }
   };
 
+  // 폰에서는 세로로 쌓이므로 입력칸을 전체 폭 · 40px 높이로 (좁게 보인다는 테스터 제보, 2026-09-27). PC 는 예전 폭 그대로
   const field =
-    'h-[36px] rounded-[6px] border border-[#dedede] px-3 text-[13px] outline-none focus:border-[#919191] disabled:bg-[#F7F8F9] disabled:text-[#919191]';
+    'h-[40px] rounded-[6px] border border-[#dedede] px-3 text-[14px] outline-none focus:border-[#919191] disabled:bg-[#F7F8F9] disabled:text-[#919191] md:h-[36px] md:text-[13px]';
   return (
     <li className="flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-3">
       <span className="w-[80px] shrink-0 text-[14px] font-medium text-[#212121]">경고 {item.warningNo}회</span>
-      <select value={banType} disabled={!canEdit} onChange={(e) => setBanType(e.target.value)} className={`${field} w-[120px]`}>
+      <select value={banType} disabled={!canEdit} onChange={(e) => setBanType(e.target.value)} className={`${field} w-full md:w-[120px]`}>
         <option value="temporary">기간 정지</option>
         <option value="permanent">영구 차단</option>
       </select>
-      <label className="flex items-center gap-1 text-[13px] text-[#5f5f5f]">
+      <label className="flex items-center gap-2 text-[13px] text-[#5f5f5f]">
         <input
           type="number"
           min="1"
           value={banType === 'temporary' ? banDays : ''}
           disabled={!canEdit || banType !== 'temporary'}
           onChange={(e) => setBanDays(e.target.value)}
-          className={`${field} w-[80px]`}
+          className={`${field} min-w-0 flex-1 md:w-[80px] md:flex-none`}
         />
         일
       </label>
@@ -128,13 +129,13 @@ function BanPolicyRow({ item, canEdit, onSaved }) {
         disabled={!canEdit}
         onChange={(e) => setDescription(e.target.value)}
         placeholder="설명"
-        className={`${field} min-w-0 flex-1`}
+        className={`${field} w-full min-w-0 md:flex-1`}
       />
       <button
         type="button"
         onClick={save}
         disabled={!canEdit || !dirty || saving}
-        className="h-[36px] shrink-0 rounded-[6px] bg-[#212121] px-3 text-[13px] text-white transition-opacity disabled:opacity-30"
+        className="h-[40px] w-full shrink-0 rounded-[6px] bg-[#212121] px-3 text-[14px] text-white transition-opacity disabled:opacity-30 md:h-[36px] md:w-auto md:text-[13px]"
       >
         {saving ? '저장 중' : '저장'}
       </button>

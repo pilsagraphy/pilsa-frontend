@@ -65,7 +65,9 @@ const Sidebar = () => {
       const t = event.touches[0];
       // 사진 크게 보기가 떠 있으면 그 스와이프는 사진 넘기기다 — 사이드바가 끼어들지 않는다 (PM, 2026-09-21)
       const lightboxOpen = Boolean(useLightboxStore.getState().lightbox);
-      start = t && !lightboxOpen && window.innerWidth < 768 ? { x: t.clientX, y: t.clientY } : null;
+      // 토스트를 옆으로 밀어 치우는 손짓도 사이드바를 여닫으면 안 된다 (테스터 제보, 2026-09-27)
+      const onToast = Boolean(event.target?.closest?.('[data-sonner-toaster]'));
+      start = t && !lightboxOpen && !onToast && window.innerWidth < 768 ? { x: t.clientX, y: t.clientY } : null;
     };
     const onEnd = (event) => {
       if (!start) return;
