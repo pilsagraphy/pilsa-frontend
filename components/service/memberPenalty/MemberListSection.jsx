@@ -7,13 +7,14 @@ import useSanctionStore from '@/stores/useSanctionStore';
 
 // 제재 회원 목록 API 응답(userId, loginId, name, tag ...)을
 // 목록 컴포넌트(MemberList)가 쓰는 모양으로 슬롯에 꽂아 넣는다.
-// tag: permanent | temporary | caution → 뱃지는 정지/주의 두 종류
+// tag: permanent | temporary | caution | history → 뱃지는 정지/주의/이력 세 종류
+// (history = 지금 제재는 없지만 신고·조치 로그가 있는 회원. 복원된 사람도 여기 남는다, PM 2026-09-27)
 function toMember(user) {
   return {
     memberId: user.userId,
     name: user.name,
     loginId: user.loginId,
-    currentStatus: user.tag === 'caution' ? '주의' : '정지',
+    currentStatus: user.tag === 'caution' ? '주의' : user.tag === 'history' ? '이력' : '정지',
   };
 }
 

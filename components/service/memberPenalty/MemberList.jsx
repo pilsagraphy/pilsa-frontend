@@ -1,10 +1,18 @@
 'use client';
 import React, { useEffect, useRef } from 'react';
 
-// 현재 상태에 따른 정지/주의 뱃지 (항상 불투명)
+// 현재 상태에 따른 정지/주의/이력 뱃지 (항상 불투명)
 // - 정지: 빨간 테두리 + 흰 배경 + 빨간 글자
 // - 주의: 테두리 없이 회색 배경 + 흰 글자
+// - 이력: 회색 테두리 + 흰 배경 + 회색 글자 (제재는 없고 신고·조치 로그만 있음)
 function StatusBadge({ status }) {
+  if (status === '이력') {
+    return (
+      <span className="shrink-0 rounded-[11px] border border-[#b9b9b9] bg-white px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-[#757575]">
+        이력
+      </span>
+    );
+  }
   if (status === '주의') {
     return (
       <span className="shrink-0 rounded-[11px] bg-[#919191] px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-white">
