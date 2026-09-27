@@ -44,15 +44,24 @@ export const buildBoardFilterOptions = (boards) => [
 // 관리자 전용 게시글 상세. 상태와 상관없이 제목 링크는 모두 이곳으로 보낸다.
 // 사용자 상세는 블라인드·삭제 글을 보여주지 않고 익명글의 실작성자도 가리므로,
 // 조치를 판단해야 하는 관리자에게는 쓸 수 없다.
-export const getAdminPostDetailHref = (postId) =>
-  postId != null ? ROUTES.ADMIN_POST_DETAIL(postId) : null;
+// from 을 주면 ?from= 을 달아 상세의 '돌아가기'가 그 화면으로 되돌린다 (아래 DETAIL_FROM_*).
+export const getAdminPostDetailHref = (postId, from) => {
+  if (postId == null) return null;
+  const href = ROUTES.ADMIN_POST_DETAIL(postId);
+  return from ? `${href}?${DETAIL_FROM_PARAM}=${from}` : href;
+};
 
 // 상세에서 '돌아가기'가 어디를 가리킬지.
-// 게시글 관리에서 제목을 눌러 들어왔는지, 댓글 관리에서 원글을 눌러 들어왔는지에 따라
-// 돌아갈 곳이 다르다. 주소에 실어 보내므로 새로고침·새 탭에서도 유지된다.
+// 게시글 관리 · 댓글 관리 · 신고 관리(게시글/댓글) · 제재 회원 관리 · 모니터링 중 어디서 들어왔는지에 따라
+// 돌아갈 곳이 다르다 (PM 요청, 2026-09-27). 주소에 실어 보내므로 새로고침·새 탭에서도 유지된다.
+// 값은 PostDetailSection 의 BACK_TARGETS 가 라벨·경로로 푼다. 쿼리는 댓글 앵커(#comment-…)보다 앞에 와야 한다.
 export const DETAIL_FROM_PARAM = 'from';
 export const DETAIL_FROM_POSTS = 'posts';
 export const DETAIL_FROM_COMMENTS = 'comments';
+export const DETAIL_FROM_REPORTS_POSTS = 'reports-posts';
+export const DETAIL_FROM_REPORTS_COMMENTS = 'reports-comments';
+export const DETAIL_FROM_PENALTY = 'penalty';
+export const DETAIL_FROM_MONITORING = 'monitoring';
 
 // ─────────────────────────────────────────────────────────────────────
 // 아래는 신고 관리(constants/adminReports.js) 마크업이 아직 쓰는 값이다.

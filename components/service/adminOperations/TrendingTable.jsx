@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ROUTES } from '@/constants/routes';
+import { DETAIL_FROM_MONITORING, getAdminPostDetailHref } from '@/constants/adminPosts';
 
 // 급상승 집계 표 — stats_post_hourly 최근 행. 선정(is_trending)된 행은 진하게.
 const fmtHour = (iso) => (iso ? `${String(iso).slice(5, 10).replace('-', '/')} ${String(iso).slice(11, 13)}시` : '');
@@ -47,7 +47,7 @@ export default function TrendingTable({ rows = [], isLoading, error }) {
               </td>
               <td className="whitespace-nowrap px-3 py-2 text-[#5f5f5f]">{r.boardName}</td>
               <td className="max-w-[260px] truncate px-3 py-2">
-                <Link href={ROUTES.ADMIN_POST_DETAIL(r.postId)} className="text-[#212121] hover:underline">
+                <Link href={getAdminPostDetailHref(r.postId, DETAIL_FROM_MONITORING)} className="text-[#212121] hover:underline">
                   {r.title ?? `(삭제된 글 #${r.postId})`}
                 </Link>
               </td>

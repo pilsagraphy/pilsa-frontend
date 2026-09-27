@@ -2,7 +2,11 @@
 // 목록 · 조치는 apis/admin/reports.js 를 통해 서버에서 받아온다.
 
 import { getCommentAnchorId } from '@/lib/utils';
-import { ROUTES } from '@/constants/routes';
+import {
+  DETAIL_FROM_REPORTS_COMMENTS,
+  DETAIL_FROM_REPORTS_POSTS,
+  getAdminPostDetailHref,
+} from '@/constants/adminPosts';
 
 // ── 탭 ────────────────────────────────────────────────────────────────
 // 두 탭의 표 구조(열 구성)가 완전히 같고 대상 종류만 다르다.
@@ -184,13 +188,16 @@ export const getReporterAlias = (index) =>
 //
 // allowComment 는 게시판 목록 API 의 플래그다. 댓글 영역이 없는 게시판(공지사항 등)으로
 // 보내면 '이동은 했는데 문제의 댓글이 없는' 화면이 되므로 아예 링크를 걸지 않는다.
+// from 을 달아 보내 상세의 '돌아가기'가 신고 관리(게시글/댓글) 탭으로 되돌리게 한다. 쿼리는 해시보다 앞.
 export const getReportTargetHref = (report, allowComment = true) => {
   if (report.postId == null) return null;
 
-  const postHref = ROUTES.ADMIN_POST_DETAIL(report.postId);
-  if (report.targetType !== REPORT_TARGET_COMMENT) return postHref;
+  if (report.targetType !== REPORT_TARGET_COMMENT) {
+    return getAdminPostDetailHref(report.postId, DETAIL_FROM_REPORTS_POSTS);
+  }
   if (!allowComment) return null;
 
+  const postHref = getAdminPostDetailHref(report.postId, DETAIL_FROM_REPORTS_COMMENTS);
   return `${postHref}#${getCommentAnchorId(report.targetId)}`;
 };
 

@@ -11,7 +11,11 @@ import useCommentAnchor from '@/hooks/useCommentAnchor';
 import useAdminPostStore from '@/stores/useAdminPostStore';
 import {
   DETAIL_FROM_COMMENTS,
+  DETAIL_FROM_MONITORING,
+  DETAIL_FROM_PENALTY,
   DETAIL_FROM_POSTS,
+  DETAIL_FROM_REPORTS_COMMENTS,
+  DETAIL_FROM_REPORTS_POSTS,
   getPostStateLabel,
 } from '@/constants/adminPosts';
 import { ROUTES } from '@/constants/routes';
@@ -22,10 +26,15 @@ import ContentRevisions from '@/components/shared/admin/ContentRevisions';
 
 const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base';
 
-// '돌아가기'가 가리킬 곳. 들어온 화면으로 되돌린다.
+// '돌아가기'가 가리킬 곳. 들어온 화면(?from=)으로 되돌린다 — 게시글 관리 / 댓글 관리 / 신고 관리(게시글·댓글) / 제재 회원 관리 / 모니터링.
+// 값이 없거나 모르는 값이면 게시글 관리로.
 const BACK_TARGETS = {
   [DETAIL_FROM_POSTS]: { label: '게시글 관리', href: ROUTES.ADMIN_POSTS },
   [DETAIL_FROM_COMMENTS]: { label: '댓글 관리', href: ROUTES.ADMIN_COMMENTS },
+  [DETAIL_FROM_REPORTS_POSTS]: { label: '신고 관리(게시글)', href: ROUTES.ADMIN_REPORTS_TAB('post') },
+  [DETAIL_FROM_REPORTS_COMMENTS]: { label: '신고 관리(댓글)', href: ROUTES.ADMIN_REPORTS_TAB('comment') },
+  [DETAIL_FROM_PENALTY]: { label: '제재 회원 관리', href: ROUTES.ADMIN_MEMBER_PENALTY },
+  [DETAIL_FROM_MONITORING]: { label: '모니터링', href: ROUTES.ADMIN_MONITORING },
 };
 
 /**
