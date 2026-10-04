@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 
 import AlertModal from '@/components/common/AlertModal';
+import ModerationLegend from '@/components/shared/admin/ModerationLegend';
 import { ROUTES } from '@/constants/routes';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
@@ -378,7 +379,11 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
     // 시안은 표가 콘텐츠 영역을 꽉 채우는 구조(영역 915px = 표 915px)라 잉여가 없다.
     // 그래서 폭 제한을 풀어 main을 그대로 채운다. 표의 하한은 시안 폭(915px)으로 둔다.
     <div className={cn(listSectionClass, 'max-w-none')}>
-      <h2 className={listTitleClass}>{title}</h2>
+      {/* 제목 옆 (i): 조치 종류 설명 (PM, 2026-09-27) */}
+      <h2 className={`${listTitleClass} flex items-center gap-[8px]`}>
+        {title}
+        <ModerationLegend />
+      </h2>
 
       <ReportTabs value={targetType} onChange={handleTabChange} />
 

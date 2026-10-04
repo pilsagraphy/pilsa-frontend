@@ -2,6 +2,7 @@
 // 목록 · 조치는 apis/admin/reports.js 를 통해 서버에서 받아온다.
 
 import { getCommentAnchorId } from '@/lib/utils';
+import { MODERATION_KINDS } from '@/constants/moderation';
 import {
   DETAIL_FROM_REPORTS_COMMENTS,
   DETAIL_FROM_REPORTS_POSTS,
@@ -70,9 +71,9 @@ export const REPORT_STATUSES = {
 //   auto_blind   : 신고가 기준 건수에 닿아 자동 블라인드된 것
 //   report       : 회원 신고 (칩 없음)
 export const REPORT_KIND_LABELS = {
-  admin_blind: '관리자 조치 블라인드',
-  admin_delete: '관리자 조치 삭제',
-  auto_blind: '신고 누적 블라인드',
+  admin_blind: MODERATION_KINDS.ADMIN_BLIND.label,
+  admin_delete: MODERATION_KINDS.ADMIN_DELETE.label,
+  auto_blind: MODERATION_KINDS.AUTO_BLIND.label,
 };
 
 export const getReportKindLabel = (report) => REPORT_KIND_LABELS[report?.kind] ?? '';
