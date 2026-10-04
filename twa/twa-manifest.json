@@ -21,8 +21,8 @@
     "path": "../../app-key/pilsa-upload.jks",
     "alias": "pilsa-upload"
   },
-  "appVersionName": "1.0.7",
-  "appVersionCode": 8,
+  "appVersionName": "1.0.8",
+  "appVersionCode": 9,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://pilsa.co.kr/manifest.json",
@@ -36,10 +36,10 @@
   "isMetaQuest": false,
   "fullScopeUrl": "https://pilsa.co.kr/",
   "minSdkVersion": 21,
-  "orientation": "portrait",
+  "orientation": "any",
   "fingerprints": [],
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "displayOverride": [],
-  "appVersion": "1.0.7"
+  "appVersion": "1.0.8"
 }
