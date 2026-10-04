@@ -4,15 +4,13 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import MemberListSection from './MemberListSection';
 import PenaltyStatCard from './PenaltyStatCard';
 import ReportSection from './ReportSection';
-import ConfirmModal from '@/components/common/ConfirmModal';
-import AlertModal from '@/components/common/AlertModal';
+import ModerationLegend from '@/components/shared/admin/ModerationLegend';
 import useSanctionStore from '@/stores/useSanctionStore';
-import { restoreReportTargets } from '@/apis/admin/reports';
-import { getErrorMessage } from '@/apis/auth';
 import { DETAIL_FROM_PENALTY, getAdminPostDetailHref } from '@/constants/adminPosts';
 import { REPORT_TARGET_COMMENT, REPORT_TARGET_POST } from '@/constants/adminReports';
+import { MODERATION_KINDS } from '@/constants/moderation';
+import { ROUTES } from '@/constants/routes';
 import { getCommentAnchorId } from '@/lib/utils';
-import { toast } from '@/lib/toast';
 
 // tag(permanent|temporary|caution|history|none) → 현재 상태 문구
 // 응답에 banStatus 도 함께 오지만 보지 않는다 — tag 를 백엔드가 항상 현재 제재 상태에 맞춰
@@ -32,11 +30,8 @@ function formatDate(iso) {
   return `${year.slice(2)}.${month}.${day}`;
 }
 
-// ISO 일시 → 'YY.MM.DD HH:mm' — 같은 날 여러 사건(블라인드 → 삭제)이 있어 시각까지 보여 준다
-function formatDateTime(iso) {
-  if (!iso) return '';
-  return `${formatDate(iso)} ${iso.slice(11, 16)}`;
-}
+// ISO 일시 → 'HH:mm' — 같은 날 여러 사건(블라인드 → 삭제)이 있어 시각을 따로 칸에 둔다
+const formatTime = (iso) => (iso ? iso.slice(11, 16) : '');
 
 // 회원 상태 줄: 주의 | 영구 정지 | 정지 (기간) | 제재 없음(로그만)
 function toBanText(detail) {
@@ -53,45 +48,51 @@ const STATE_LABEL = { normal: '정상', blind: '블라인드', deleted: '삭제'
 // 신고 상태 → 한글 (사건 행의 '상태' 칸)
 const REPORT_STATUS_LABEL = { pending: '접수', resolved: '처리 완료', rejected: '반려' };
 
-// 사건 한 건(서버 MemberHistoryEntryResponse) → 사건 행 { label, value, detail, status }
-// 무슨 일이 있었는지를 라벨로 밝힌다 (PM 요청, 2026-09-27):
-//   신고 / 자동 블라인드 / 관리자 블라인드 조치 / 관리자 삭제 조치 / 관리자 즉시 삭제 조치(블라인드 없이 바로) / 관리자 복원
-function toEvent(entry) {
-  const who = entry.isAuto ? '자동' : (entry.actorName ?? '(탈퇴)');
-  const reason = entry.reasonLabel ?? '-';
-  switch (entry.eventType) {
-    case 'report':
-      return {
-        label: '신고',
-        value: `${entry.reporterName ?? '(탈퇴)'} · ${reason}`,
-        detail: entry.detail,
-        status: REPORT_STATUS_LABEL[entry.reportStatus] ?? entry.reportStatus,
-      };
-    case 'blind':
-      return {
-        label: entry.isAuto ? '자동 블라인드' : '관리자 블라인드 조치',
-        value: `${who} · ${reason}`,
-        detail: entry.detail,
-        status: '블라인드',
-      };
-    case 'delete':
-      return {
-        label: entry.isDirect ? '관리자 즉시 삭제 조치' : '관리자 삭제 조치',
-        value: `${who} · ${reason}`,
-        detail: entry.detail,
-        status: '삭제',
-      };
-    case 'restore':
-      return { label: '관리자 복원', value: who, detail: entry.detail, status: '복원' };
-    default:
-      return { label: entry.eventType, value: '', status: '' };
+// 조치 종류 이름 — 신고 관리 칩 · (i) 범례와 같은 말 (constants/moderation)
+//   블라인드: 자동이면 '신고 누적', 신고가 있었으면 '신고에 따른 관리자 조치', 없었으면 '관리자 직접 조치'
+//   삭제    : 신고가 있었으면 '신고 누적으로 인한 관리자 조치', 없었으면 '관리자 직접 조치'
+function actionKind(entry) {
+  if (entry.eventType === 'blind') {
+    if (entry.isAuto) return MODERATION_KINDS.AUTO_BLIND;
+    return entry.reported ? MODERATION_KINDS.REPORTED_BLIND : MODERATION_KINDS.ADMIN_BLIND;
   }
+  if (entry.eventType === 'delete') {
+    return entry.reported ? MODERATION_KINDS.REPORTED_DELETE : MODERATION_KINDS.ADMIN_DELETE;
+  }
+  return MODERATION_KINDS.RESTORE;
+}
+
+// 사건 한 건(서버 MemberHistoryEntryResponse) → 내역 줄들 + 상태 (PM 형식, 2026-09-27):
+//   조치자 : 박건희 / 조치내용 : 관리자 직접 조치 (블라인드) / 조치사유 : 허위사실 · 사기 (기타면 적은 내용을 괄호에)
+//   신고는 신고자 / 신고내용 / 신고사유 로 같은 꼴
+function toEvent(entry) {
+  if (entry.eventType === 'report') {
+    return {
+      lines: [
+        { label: '신고자', value: entry.reporterName ?? '(탈퇴)' },
+        { label: '신고내용', value: '회원 신고' },
+        { label: '신고사유', value: entry.reasonLabel ?? '-', detail: entry.detail },
+      ],
+      status: REPORT_STATUS_LABEL[entry.reportStatus] ?? entry.reportStatus,
+    };
+  }
+  const kind = actionKind(entry);
+  const lines = [
+    { label: '조치자', value: entry.isAuto ? '자동 (신고 누적)' : (entry.actorName ?? '(탈퇴)') },
+    { label: '조치내용', value: kind.label },
+  ];
+  // 복원은 사유를 받지 않는다
+  if (entry.eventType !== 'restore') {
+    lines.push({ label: '조치사유', value: entry.reasonLabel ?? '-', detail: entry.detail });
+  }
+  return { lines, status: { blind: '블라인드', delete: '삭제', restore: '복원' }[entry.eventType] ?? '' };
 }
 
 // 서버 로그(최신순, 사건 단위) → 글/댓글 묶음 목록.
-// 번호는 묶음(글/댓글 하나) 단위로 오래된 것부터 1, 2, … 를 붙이고, 묶음 안의 사건은 시간순으로 1-1, 1-2, … 가 된다.
+// 번호는 묶음(글/댓글 하나) 단위로 오래된 것부터 1, 2, … 를 붙이고, 묶음 안의 사건은 시간순으로 진행순번 1, 2, … 가 된다.
 // 원문 링크는 관리자 상세로 보낸다 — 회원 화면은 삭제·블라인드된 글을 안 보여 줘서 '원문 보기'가 빈 화면으로 끝났다.
 // 링크 글자는 열 너비 때문에 '원문' 하나뿐이라, 어느 글로 가는지는 title(마우스오버) / linkLabel(보조기기) 로 알린다.
+// 복원·삭제는 여기서 하지 않고 '신고 관리' 링크로 건너가서 한다 (PM, 2026-09-27).
 function toGroups(entries, targetType) {
   const isComment = targetType === REPORT_TARGET_COMMENT;
   const byTarget = new Map();
@@ -110,10 +111,9 @@ function toGroups(entries, targetType) {
         link,
         targetTitle: entry.title,
         linkLabel: entry.title ? `${isComment ? '원글' : '게시글'} 보기: ${entry.title}` : undefined,
+        reportsLink: ROUTES.ADMIN_REPORTS_TAB(targetType),
         state: entry.state,
         stateLabel: STATE_LABEL[entry.state] ?? entry.state,
-        // 지금 블라인드·삭제 상태면 되돌릴 수 있다 (이미 처리가 끝난 삭제도)
-        canRestore: entry.state === 'blind' || entry.state === 'deleted',
         events: [],
       });
     }
@@ -121,7 +121,8 @@ function toGroups(entries, targetType) {
     group.events.push({
       key: entry.actionId != null ? `a-${entry.actionId}` : `r-${entry.reportId}`,
       sub: group.events.length + 1,
-      date: formatDateTime(entry.eventAt),
+      date: formatDate(entry.eventAt),
+      time: formatTime(entry.eventAt),
       ...toEvent(entry),
     });
   });
@@ -135,7 +136,6 @@ export default function PenaltyDashboardSection() {
   const detail = useSanctionStore((s) => s.detail);
   const reportedPosts = useSanctionStore((s) => s.reportedPosts);
   const reportedComments = useSanctionStore((s) => s.reportedComments);
-  const fetchSanctionedUsers = useSanctionStore((s) => s.fetchSanctionedUsers);
   const fetchSanctionedUserDetail = useSanctionStore((s) => s.fetchSanctionedUserDetail);
   const fetchSanctionedUserReportedPosts = useSanctionStore(
     (s) => s.fetchSanctionedUserReportedPosts,
@@ -194,60 +194,13 @@ export default function PenaltyDashboardSection() {
     [selectedComments.data],
   );
 
-  // ── 복원 ──────────────────────────────────────────────────────────────
-  // 신고 관리와 같은 API(select-restore)로 되돌린다. 응답만 보고 화면을 고치지 않고 상세·로그·목록을 다시 받아온다 —
-  // 주의 점수 회수로 tag 가 바뀌어 회원이 '이력'으로 내려갈 수 있고, 그건 서버가 정한다.
-  const [restoreTarget, setRestoreTarget] = useState(null); // 확인 모달에 띄울 묶음
-  const [restoring, setRestoring] = useState(false);
-  const [alertState, setAlertState] = useState(null); // { title, description }
-
-  const reloadSelected = () => {
-    fetchSanctionedUsers();
-    if (selectedId == null) return;
-    fetchSanctionedUserDetail(selectedId);
-    fetchSanctionedUserReportedPosts(selectedId);
-    fetchSanctionedUserReportedComments(selectedId);
-  };
-
-  const handleRestoreConfirm = async () => {
-    if (!restoreTarget || restoring) return;
-    const { targetType, targetId } = restoreTarget;
-    const label = targetType === REPORT_TARGET_COMMENT ? '댓글' : '게시글';
-    setRestoring(true);
-    try {
-      const data = await restoreReportTargets({ targetType, targetIds: [targetId] });
-      const failures = data?.failures ?? [];
-      if (failures.length === 0) {
-        toast.success(`${label}을 복원했습니다.`);
-      } else {
-        // 댓글은 원 게시글이 공개 상태여야 복원된다 — 서버 문구를 그대로 보여 준다
-        setAlertState({
-          title: `${label}을 복원하지 못했습니다.`,
-          description: [...new Set(failures.map((f) => f.message))].join('\n'),
-        });
-      }
-      reloadSelected();
-    } catch (err) {
-      setAlertState({
-        title: `${label}을 복원하지 못했습니다.`,
-        description: getErrorMessage(err, '잠시 후 다시 시도해 주세요.'),
-      });
-    } finally {
-      setRestoring(false);
-      setRestoreTarget(null);
-    }
-  };
-
-  const restoreTitle = restoreTarget
-    ? `${restoreTarget.targetType === REPORT_TARGET_COMMENT ? '댓글' : '게시글'}을 복원할까요?\n${
-        restoreTarget.state === 'deleted' ? '삭제가 취소되고 부과된 주의 점수도 회수됩니다.' : '블라인드가 해제됩니다.'
-      }`
-    : '';
-
   return (
     <section className="mx-auto flex w-full max-w-none flex-col gap-[24px] bg-white px-4 py-4 font-['Pretendard',sans-serif] sm:px-6 sm:py-7 md:p-10">
-      {/* 화면 정체성 */}
-      <h2 className="text-[24px] font-medium tracking-[-0.48px] text-[#212121]">제재 회원 관리</h2>
+      {/* 화면 정체성. 제목 옆 (i) 는 조치 종류 설명 — 로그의 '조치내용' 이 이 이름들을 쓴다 */}
+      <h2 className="flex items-center gap-[8px] text-[24px] font-medium tracking-[-0.48px] text-[#212121]">
+        제재 회원 관리
+        <ModerationLegend />
+      </h2>
 
       {/* 좁은 화면에서는 목록 위 · 상세 아래로 쌓는다 (나란히 두면 오른쪽이 화면 밖으로 나간다).
           PC 는 나란히 두되, 폭이 모자라면 옆으로 스크롤한다 (overflow-x-auto) */}
@@ -341,14 +294,12 @@ export default function PenaltyDashboardSection() {
                   groups={postGroups}
                   isLoading={selectedPosts.isLoading}
                   error={selectedPosts.error}
-                  onRestore={setRestoreTarget}
                 />
                 <ReportSection
                   title="신고·처리 댓글"
                   groups={commentGroups}
                   isLoading={selectedComments.isLoading}
                   error={selectedComments.error}
-                  onRestore={setRestoreTarget}
                 />
               </div>
             </div>
@@ -359,21 +310,6 @@ export default function PenaltyDashboardSection() {
           )}
         </div>
       </div>
-
-      <ConfirmModal
-        open={restoreTarget != null}
-        title={restoreTitle}
-        confirmText={restoring ? '복원 중…' : '복원'}
-        cancelText="취소"
-        onConfirm={handleRestoreConfirm}
-        onCancel={() => !restoring && setRestoreTarget(null)}
-      />
-      <AlertModal
-        open={alertState != null}
-        title={alertState?.title ?? ''}
-        description={alertState?.description ?? ''}
-        onClose={() => setAlertState(null)}
-      />
     </section>
   );
 }

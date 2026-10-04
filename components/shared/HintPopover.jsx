@@ -23,7 +23,8 @@ const WIDTH = 240; // 풍선 최대 너비
 const MARGIN = 12; // 창 가장자리에서 띄울 거리
 const GAP = 8; // 버튼과 풍선 사이
 
-export default function HintPopover({ label = '설명', children, className = '' }) {
+// width: 풍선 너비. 항목이 많은 설명(관리자 조치 범례)은 넓게 쓴다
+export default function HintPopover({ label = '설명', children, className = '', width = WIDTH }) {
   const anchorRef = useRef(null);
   const [pos, setPos] = useState(null); // null 이면 닫힘
 
@@ -36,11 +37,11 @@ export default function HintPopover({ label = '설명', children, className = ''
     const vh = window.innerHeight;
 
     // 창이 풍선보다 좁을 수도 있다 (작은 폰)
-    const width = Math.min(WIDTH, vw - MARGIN * 2);
+    const bubbleWidth = Math.min(width, vw - MARGIN * 2);
 
     // 버튼 가운데에 맞추되, 양쪽 끝을 넘지 않게 민다
-    const centered = rect.left + rect.width / 2 - width / 2;
-    const left = Math.max(MARGIN, Math.min(centered, vw - width - MARGIN));
+    const centered = rect.left + rect.width / 2 - bubbleWidth / 2;
+    const left = Math.max(MARGIN, Math.min(centered, vw - bubbleWidth - MARGIN));
 
     // 아래에 자리가 없으면 버튼 위로 올린다
     const below = vh - rect.bottom;
@@ -48,14 +49,14 @@ export default function HintPopover({ label = '설명', children, className = ''
 
     setPos({
       left,
-      width,
+      width: bubbleWidth,
       top: placeAbove ? undefined : rect.bottom + GAP,
       bottom: placeAbove ? vh - rect.top + GAP : undefined,
       placeAbove,
       // 꼬리는 버튼 가운데를 가리킨다 (풍선이 밀려도 어긋나지 않게 풍선 기준으로 다시 계산)
-      arrowLeft: Math.max(10, Math.min(rect.left + rect.width / 2 - left, width - 10)),
+      arrowLeft: Math.max(10, Math.min(rect.left + rect.width / 2 - left, bubbleWidth - 10)),
     });
-  }, []);
+  }, [width]);
 
   const open = () => place();
   const close = () => setPos(null);

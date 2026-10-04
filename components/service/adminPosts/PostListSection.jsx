@@ -4,6 +4,7 @@ import SortSelect from '@/components/shared/board/boardList/SortSelect';
 import SearchInput from '@/components/shared/board/boardList/SearchInput';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import AlertModal from '@/components/common/AlertModal';
+import ModerationLegend from '@/components/shared/admin/ModerationLegend';
 import ModerationModal from '@/components/shared/admin/ModerationModal';
 import { Button } from '@/components/ui/button';
 import {
@@ -32,7 +33,11 @@ export default function PostListSection({ title = '게시글 관리' }) {
 
   return (
     <div className={listSectionClass}>
-      <h2 className={listTitleClass}>{title}</h2>
+      {/* 제목 옆 (i): 조치 종류 설명 (PM, 2026-09-27) */}
+      <h2 className={`${listTitleClass} flex items-center gap-[8px]`}>
+        {title}
+        <ModerationLegend />
+      </h2>
 
       <span className={listSubtitleClass}>목록</span>
 

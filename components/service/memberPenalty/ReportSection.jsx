@@ -2,17 +2,17 @@
 import React from 'react';
 import ReportRow, { REPORT_GRID } from './ReportRow';
 
-const HEADERS = ['번호', '작성 위치', '내역', '원문', '상태', '일시'];
+const HEADERS = ['번호', '진행순번', '작성 위치', '내역', '링크', '상태', '날짜', '시간'];
 
 // 글/댓글 묶음(ReportRow)들을 합쳐 하나의 신고·조치 로그 섹션을 만든다.
 // title: '신고·처리 게시글' | '신고·처리 댓글'. groups 는 PenaltyDashboardSection 이 번호까지 매겨 준다.
-export default function ReportSection({ title, groups = [], isLoading = false, error = null, onRestore }) {
+export default function ReportSection({ title, groups = [], isLoading = false, error = null }) {
   return (
     <div className="w-full font-['Pretendard',sans-serif]">
       <p className="mb-[10px] text-[16px] tracking-[-0.32px] text-black">{title}</p>
 
       {/* 맨 위 헤더 행 (회색 글씨) */}
-      {/* 머리글은 6열 그리드일 때만 뜻이 있다 — 폰에서는 카드가 이름표를 직접 달고 있다 */}
+      {/* 머리글은 8열 그리드일 때만 뜻이 있다 — 폰에서는 카드가 이름표를 직접 달고 있다 */}
       <div
         className={`${REPORT_GRID} hidden h-[46px] items-center text-[13px] tracking-[-0.26px] text-[#919191] md:grid`}
       >
@@ -45,9 +45,7 @@ export default function ReportSection({ title, groups = [], isLoading = false, e
           </div>
         ) : (
           // 4) 데이터 있음
-          groups.map((group) => (
-            <ReportRow key={group.key} group={group} number={group.number} onRestore={onRestore} />
-          ))
+          groups.map((group) => <ReportRow key={group.key} group={group} number={group.number} />)
         )}
       </div>
     </div>
