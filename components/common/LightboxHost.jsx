@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
 import useLightboxStore from '@/stores/useLightboxStore';
@@ -8,6 +8,7 @@ import useLightboxStore from '@/stores/useLightboxStore';
 // openLightbox 가 띄우는 '크게 보기' 창. 레이아웃에 한 번만 둔다.
 // 검은 배경 위에 사진 한 장을 화면에 맞춰 보여 주고, 여러 장이면 화살표·스와이프·방향키로 넘긴다.
 // 바깥(검은 곳)을 누르거나 ESC 로 닫는다.
+// 설명(caption)·태그가 딸린 사진은 아래에 설명 띠를 그린다 — 띠를 누르면 접고, 다시 누르면 편다.
 export default function LightboxHost() {
   const lightbox = useLightboxStore((s) => s.lightbox);
   const setIndex = useLightboxStore((s) => s.setIndex);
@@ -17,6 +18,12 @@ export default function LightboxHost() {
   const count = lightbox?.images.length ?? 0;
   const index = lightbox?.index ?? 0;
   const current = lightbox?.images[index];
+
+  // 설명 띠는 열 때·사진을 넘길 때마다 다시 펼친다 (접어 둔 상태가 다음 사진까지 따라가지 않게)
+  const [showCaption, setShowCaption] = useState(true);
+  useEffect(() => {
+    setShowCaption(true);
+  }, [lightbox, index]);
 
   // 키보드: ESC 닫기, ←/→ 넘기기. 떠 있는 동안 뒤 페이지 스크롤은 잠근다
   useEffect(() => {
@@ -37,7 +44,14 @@ export default function LightboxHost() {
 
   if (!lightbox || !current) return null;
 
+  const hasCaption = Boolean(current.caption || current.hashtags?.length);
+
   const onTouchStart = (event) => {
+    // 두 손가락(핀치 확대)은 넘기기가 아니다
+    if (event.touches.length > 1) {
+      touchStartRef.current = null;
+      return;
+    }
     const t = event.touches[0];
     touchStartRef.current = { x: t.clientX, y: t.clientY };
   };
@@ -99,7 +113,12 @@ export default function LightboxHost() {
           >
             <ChevronRight size={26} strokeWidth={2} />
           </button>
-          <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-white/15 px-3 py-1 text-[13px] text-white">
+          {/* 장수 표시. 설명 띠가 있으면 그 위로 올린다 (같은 자리라 겹친다) */}
+          <span
+            className={`absolute left-1/2 z-20 -translate-x-1/2 rounded-full bg-white/15 px-3 py-1 text-[13px] text-white ${
+              hasCaption && showCaption ? 'bottom-[96px]' : 'bottom-4'
+            }`}
+          >
             {index + 1} / {count}
           </span>
         </>
@@ -115,6 +134,32 @@ export default function LightboxHost() {
         className="max-h-[calc(100dvh-32px)] max-w-[calc(100vw-32px)] select-none object-contain"
         draggable={false}
       />
+
+      {/* 설명 띠 — 누르면 접힌다(사진을 가린다고 느낄 때). 접힌 상태에서도 같은 자리를 누르면 다시 펴진다 */}
+      {hasCaption && (
+        <div
+          className="absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1 bg-gradient-to-t from-black/80 to-transparent px-4 pt-10 text-center transition-opacity duration-200"
+          style={{
+            paddingBottom: 'calc(16px + env(safe-area-inset-bottom, 0px))',
+            opacity: showCaption ? 1 : 0,
+          }}
+          onClick={(event) => {
+            event.stopPropagation(); // 설명을 눌렀다고 창이 닫히면 안 된다
+            setShowCaption((v) => !v);
+          }}
+        >
+          {current.caption && (
+            <p className="text-[14px] font-semibold leading-[1.5] tracking-[-0.28px] text-white [word-break:keep-all] md:text-[16px]">
+              {current.caption}
+            </p>
+          )}
+          {current.hashtags?.length > 0 && (
+            <p className="text-[11px] leading-[1.5] tracking-[-0.22px] text-white/80 md:text-[13px]">
+              {current.hashtags.join(' ')}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }

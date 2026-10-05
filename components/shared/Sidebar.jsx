@@ -50,6 +50,41 @@ const Sidebar = () => {
     setIsMobileOpen(false);
   }, [pathname]);
 
+  // 폰에서 메뉴가 열려 있으면 안드로이드 뒤로가기는 '메뉴 닫기' 여야 한다. 설치형 앱에는 다른 뒤로가기 수단이 없어,
+  // 열어 둔 채 뒤로가기를 누르면 메뉴만 닫히는 대신 직전에 보던 페이지(소개 메뉴면 대개 명예의 전당)로 튀었다
+  // (테스터 제보, 2026-10-04). 열 때 같은 주소로 표시용 엔트리(pilsaSidebar)를 하나 쌓고 popstate 로 그것만 소비한다.
+  //  - 뒤로가기로 닫힘: popstate → 메뉴 닫기. 주소는 그대로.
+  //  - 쓸기·바깥 탭으로 닫힘: 표시용 엔트리가 아직 현재라면 back() 으로 치운다 (이동이 없어 안전).
+  //  - 링크를 눌러 닫힘: 곧 새 화면이 push 되므로 back() 을 부르면 경주가 생긴다 → 엔트리를 그대로 두고,
+  //    나중에 뒤로가기로 그 죽은 엔트리에 닿으면 popstate 가 한 번 더 back() 해 건너뛴다.
+  const isMobileOpenRef = useRef(isMobileOpen);
+  isMobileOpenRef.current = isMobileOpen;
+  const closedByLinkRef = useRef(false);
+  useEffect(() => {
+    const onPop = (event) => {
+      if (isMobileOpenRef.current) {
+        closedByLinkRef.current = true; // 아래 cleanup 이 back() 을 또 부르지 않게
+        closeMobile();
+        return;
+      }
+      if (event.state?.pilsaSidebar) window.history.back();
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [closeMobile]);
+
+  useEffect(() => {
+    if (!isMobileOpen) return undefined;
+    closedByLinkRef.current = false;
+    if (!window.history.state?.pilsaSidebar) {
+      window.history.pushState({ ...window.history.state, pilsaSidebar: true }, '', window.location.href);
+    }
+    return () => {
+      if (closedByLinkRef.current) return;
+      if (window.history.state?.pilsaSidebar) window.history.back();
+    };
+  }, [isMobileOpen]);
+
   // 메뉴 링크를 누르면 경로가 바뀌든 말든 즉시 닫는다.
   // 위 effect 는 pathname 이 바뀔 때만 돌아서, 지금 보고 있는 페이지의 메뉴를 다시 누르거나
   // (예: /students 에서 '메인페이지') 이동이 막힌 경우(권한 없음 토스트)에는 사이드바가 그대로 남았다.
@@ -57,8 +92,6 @@ const Sidebar = () => {
   // 폰: 화면 어디서든 오른쪽으로 쓸면 사이드바가 열리고, 왼쪽으로 쓸면 닫힌다.
   // 처음엔 왼쪽 가장자리 24px 에서 시작한 손가락만 봤는데 가장자리를 정확히 잡기 어려웠다 (PM, 2026-09-21).
   // 세로 스크롤·가로 스크롤 표와 헷갈리지 않게 가로로 70px 넘게, 세로보다 1.5배 이상 움직였을 때만.
-  const isMobileOpenRef = useRef(isMobileOpen);
-  isMobileOpenRef.current = isMobileOpen;
   useEffect(() => {
     let start = null;
     const onStart = (event) => {
@@ -88,7 +121,10 @@ const Sidebar = () => {
   }, [openMobile, closeMobile]);
 
   const closeOnLinkClick = useCallback((event) => {
-    if (event.target.closest('a')) setIsMobileOpen(false);
+    if (event.target.closest('a')) {
+      closedByLinkRef.current = true;
+      setIsMobileOpen(false);
+    }
   }, []);
 
   const checkBoardAccess = useCallback(async (targetPath) => {

@@ -96,6 +96,13 @@ jobs:
             ln -sfn "${d%/}" "$REL/public/$name"
           done
           ls -l "$REL/public" | grep -- "->"
+          # 오래 켜 둔 화면이 옛 청크(/_next/static/<옛 빌드>)를 요구해도 404 가 나지 않게 직전 릴리스 둘의 static 을 합친다.
+          # 파일명이 해시라 충돌하지 않고, -n(no-clobber) 이라 새 빌드 파일이 이긴다 (테스터 "가끔 오류 화면", 2026-10-02).
+          for old in $(ls -dt "$APP"/releases/* 2>/dev/null | grep -v "^$REL$" | head -n 2); do
+            [ -d "$old/.next/static" ] || continue
+            cp -rn "$old/.next/static/." "$REL/.next/static/" 2>/dev/null || true
+          done
+          ln -sfn "$REL" "$APP/current"| grep -- "->"
           ln -sfn "$REL" "$APP/current"
           ls -l "$APP/current"
 

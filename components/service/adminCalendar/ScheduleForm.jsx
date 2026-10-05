@@ -297,7 +297,9 @@ export default function ScheduleForm({
                 <span className="w-[32px] shrink-0 text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">
                   {row.label}
                 </span>
-                <div className="w-[160px] shrink-0 [&_button]:h-[40px] [&_button]:text-[14px]">
+                {/* 높이 지정은 DateField 의 트리거 버튼(자식 div 바로 아래)에만 — [&_button] 처럼 자손 전체로 걸면
+                    그 안에 뜨는 날짜 선택 달력의 날짜 버튼까지 40px 로 늘어나 달력이 커진다 (2026-10-05) */}
+                <div className="w-[160px] shrink-0 [&>div>button]:h-[40px] [&>div>button]:text-[14px]">
                   <DateField
                     value={partsToInput(row.parts)}
                     min={row.min}

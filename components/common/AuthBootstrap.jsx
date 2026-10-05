@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import useAuthStore, { AUTO_LOGIN_KEY } from '@/stores/useAuthStore';
 import { PUBLIC_ROUTES, ROUTES } from '@/constants/routes';
+import { clearChunkReloadMark, reloadOnceForChunkError } from '@/lib/chunkReload';
 import { validateRefreshToken } from '@/apis/auth';
 import { restorePushAfterLogin, watchPushPermissionRecovery } from '@/lib/push';
 
@@ -13,6 +14,17 @@ export default function AuthBootstrap({ children }) {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const autoLoginTried = useRef(false);
   const pushRestored = useRef(false);
+
+  // 배포로 옛 청크가 사라져 죽는 경우의 자동 새로고침(lib/chunkReload) — 정상적으로 떴으니 "한 번 했다" 표시를 지우고,
+  // 렌더 밖(지연 로드 import 등)에서 터지는 청크 실패도 여기서 잡아 한 번 새로고침한다
+  useEffect(() => {
+    clearChunkReloadMark();
+    const onRejection = (event) => {
+      reloadOnceForChunkError(event.reason);
+    };
+    window.addEventListener('unhandledrejection', onRejection);
+    return () => window.removeEventListener('unhandledrejection', onRejection);
+  }, []);
 
   // 자동 로그인 설정된 경우 공개 경로에서도 앱 최초 진입 1회에 한해 refresh 쿠키로 세션을 복원
   useEffect(() => {
