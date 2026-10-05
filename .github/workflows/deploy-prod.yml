@@ -102,7 +102,6 @@ jobs:
             [ -d "$old/.next/static" ] || continue
             cp -rn "$old/.next/static/." "$REL/.next/static/" 2>/dev/null || true
           done
-          ln -sfn "$REL" "$APP/current"| grep -- "->"
           ln -sfn "$REL" "$APP/current"
           ls -l "$APP/current"
 
