@@ -24,7 +24,7 @@ const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] lg:py-20 lg
 export default function BoardDetailView({ boardId, postId, sort = 'created', listQuery = '' }) {
   const router = useRouter();
   const { board, boards, error: boardError } = useBoard(boardId);
-  const { isLoading, data: post, error, run } = useApiRequest();
+  const { isLoading, data: post, error, errorStatus, run } = useApiRequest();
 
   // 목록으로 돌아갈 주소. 넘어올 때 실어 온 상태(페이지·검색어 등)를 그대로 붙여
   // 보고 있던 목록 화면이 복원되게 한다.
@@ -59,23 +59,38 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
   }
 
   if (!post) {
-    // 알림·링크를 타고 왔는데 글이 없으면 서버가 이유를 문장으로 준다 (삭제 / 블라인드 / 없음).
-    // 문장만 덜렁 두면 다음에 뭘 해야 할지 몰라 목록으로 가는 길을 같이 둔다
+    // 글이 정말 없는 경우(404 · 403 · 410)에만 "지워진 글" 안내를 한다. 타임아웃·망 끊김·서버 오류는 글이 멀쩡한데
+    // 잠깐 못 받은 것이라 '다시 시도' 를 준다 — 예전엔 전부 "작성자가 지웠거나…" 로 뭉뚱그려서 테스터가
+    // "글을 눌렀는데 안 넘어가고 오류 화면" 이라고 제보했다 (2026-10-02).
+    const isGone = errorStatus === 404 || errorStatus === 403 || errorStatus === 410;
     return (
       <div className="mx-auto flex w-full max-w-[920px] flex-col items-center gap-4 px-4 py-16 text-center md:py-24">
         <p className="text-[16px] leading-[1.6] tracking-[-0.32px] text-[#454545]">
-          {error || '존재하지 않는 게시글입니다.'}
+          {isGone ? error || '존재하지 않는 게시글입니다.' : '게시글을 불러오지 못했어요.'}
         </p>
         <p className="text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">
-          작성자가 지웠거나 운영진이 조치한 글은 더 볼 수 없어요.
+          {isGone
+            ? '작성자가 지웠거나 운영진이 조치한 글은 더 볼 수 없어요.'
+            : '네트워크가 잠시 불안정했을 수 있어요. 다시 시도해 주세요.'}
         </p>
-        <button
-          type="button"
-          onClick={() => router.push(listPath)}
-          className="mt-2 h-[44px] rounded-[4px] border border-[#b9b9b9] px-6 text-[15px] text-[#212121] hover:bg-[#f6f6f6]"
-        >
-          목록으로
-        </button>
+        <div className="mt-2 flex gap-2">
+          {!isGone && (
+            <button
+              type="button"
+              onClick={fetchDetail}
+              className="h-[44px] rounded-[4px] bg-[#212121] px-6 text-[15px] text-white hover:bg-black"
+            >
+              다시 시도
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => router.push(listPath)}
+            className="h-[44px] rounded-[4px] border border-[#b9b9b9] px-6 text-[15px] text-[#212121] hover:bg-[#f6f6f6]"
+          >
+            목록으로
+          </button>
+        </div>
       </div>
     );
   }

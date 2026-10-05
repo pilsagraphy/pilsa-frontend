@@ -26,7 +26,8 @@ const components = {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-[#212121] underline underline-offset-2 hover:text-black"
+      // 본문에 붙여 넣은 긴 주소는 끊을 자리가 없어 break-all 로 (전역 keep-all 예외)
+      className="break-all text-[#212121] underline underline-offset-2 hover:text-black"
       {...props}
     >
       {children}
@@ -74,7 +75,7 @@ const components = {
   // react-markdown v9 부터 code 에 inline prop 이 오지 않아, 아래 래퍼의 CSS 선택자로 처리한다.
   pre: ({ node, ...props }) => (
     <pre
-      className="my-4 overflow-x-auto rounded-[4px] bg-[#f5f5f5] p-4 text-[14px] leading-[1.6] text-[#212121]"
+      className="my-4 overflow-x-auto rounded-[4px] bg-[#f5f5f5] p-4 text-[14px] leading-[1.6] text-[#212121] [word-break:normal]"
       {...props}
     />
   ),

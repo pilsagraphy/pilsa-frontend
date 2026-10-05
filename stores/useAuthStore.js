@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { login, getRole, refreshAccessToken, getErrorMessage } from '@/apis/auth';
+import useBoardListStore from '@/stores/useBoardListStore';
 
 // 자동 로그인 사용 여부 (브라우저 재방문 시 세션 복원 시도 여부) — 값은 '1' 하나만 사용
 export const AUTO_LOGIN_KEY = 'pilsa:autoLogin';
@@ -95,6 +96,8 @@ const useAuthStore = create((set, get) => ({
 
   logout: () => {
     rememberAutoLogin(false);
+    // 목록 캐시는 그 사람이 볼 수 있던 글이라 계정이 바뀌면 버린다
+    useBoardListStore.getState().reset();
     set({
       user: null,
       accessToken: null,

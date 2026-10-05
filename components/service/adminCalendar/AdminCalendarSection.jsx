@@ -72,6 +72,14 @@ export default function AdminCalendarSection() {
 
   const closeForm = React.useCallback(() => setFormTarget(null), []);
 
+  // 달력에서 단일 클릭으로 고른 날짜('yyyy-MM-dd'). '일정 추가' 버튼의 초깃값으로 쓴다 — 날짜를 누르고 버튼을
+  // 눌렀는데 오늘만 들어간다는 테스터 제보(2026-10-05). 선택을 풀면 null → ScheduleForm 이 오늘로 채운다.
+  const [selectedDate, setSelectedDate] = React.useState(null);
+  const handleUserSelect = React.useCallback((date) => {
+    setFormTarget(null);
+    setSelectedDate(date ? format(date, 'yyyy-MM-dd') : null);
+  }, []);
+
   // focusDate('yyyy-MM-dd')를 주면 달력을 그 달로 옮겨서 조회한다. 다른 달에 저장한 일정은
   // 지금 보고 있는 달을 다시 불러 봐야 나오지 않아, 성공했는데도 실패로 읽히기 때문이다.
   // 삭제는 옮길 곳이 없으므로 인자 없이 부른다.
@@ -187,7 +195,7 @@ export default function AdminCalendarSection() {
   const scheduleListAction = (
     <button
       type="button"
-      onClick={() => setFormTarget({ mode: 'create' })}
+      onClick={() => setFormTarget({ mode: 'create', date: selectedDate })}
       className="flex h-[28px] shrink-0 items-center gap-[4px] rounded-[4px] border border-[#454545] bg-white pe-[10px] ps-[8px] text-[12px] leading-[1.6] tracking-[-0.24px] text-[#454545] transition-colors hover:bg-[#f6f6f6]"
     >
       <Plus aria-hidden="true" strokeWidth={1.8} className="size-[12px]" />
@@ -230,8 +238,8 @@ export default function AdminCalendarSection() {
         focusDate={refreshSignal.date}
         scheduleListAction={scheduleListAction}
         onDateDoubleClick={handleDateDoubleClick}
-        // 달력 날짜나 목록 카드를 누르면 열려 있던 폼을 닫고 그 일정 상세로 돌아간다.
-        onUserSelect={closeForm}
+        // 달력 날짜나 목록 카드를 누르면 열려 있던 폼을 닫고 그 일정 상세로 돌아간다. 고른 날짜는 '일정 추가'가 쓴다
+        onUserSelect={handleUserSelect}
         renderScheduleAction={renderScheduleAction}
         renderDetail={renderDetail}
         // 월별 일정은 5개까지만 보이고 그 이상은 목록 안에서 스크롤한다.

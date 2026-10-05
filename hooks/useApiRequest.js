@@ -28,12 +28,15 @@ export default function useApiRequest(initialData = null) {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState(initialData);
   const [error, setError] = useState(null);
+  // 실패의 HTTP 상태. 없으면(타임아웃·망 끊김) null — 화면이 "글이 없다"와 "잠깐 안 됐다"를 가르는 데 쓴다
+  const [errorStatus, setErrorStatus] = useState(null);
 
   // task: 실제 통신을 수행하는 함수 (예: () => getBoardPost(boardId, postId))
   // 성공하면 응답을 data 에 담고 그 값을 반환한다. 실패하면 error 를 채우고 undefined 를 반환한다.
   const run = useCallback(async (task, { fallbackMessage } = {}) => {
     setIsLoading(true);
     setError(null);
+    setErrorStatus(null);
 
     try {
       const result = await task();
@@ -41,6 +44,7 @@ export default function useApiRequest(initialData = null) {
       return result;
     } catch (err) {
       setError(getErrorMessage(err, fallbackMessage ?? '요청을 처리하지 못했습니다.'));
+      setErrorStatus(err?.response?.status ?? null);
       return undefined;
     } finally {
       setIsLoading(false);
@@ -51,7 +55,8 @@ export default function useApiRequest(initialData = null) {
     setIsLoading(false);
     setData(initialData);
     setError(null);
+    setErrorStatus(null);
   }, [initialData]);
 
-  return { isLoading, data, error, run, setData, reset };
+  return { isLoading, data, error, errorStatus, run, setData, reset };
 }

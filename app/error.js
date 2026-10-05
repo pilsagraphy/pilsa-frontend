@@ -1,16 +1,19 @@
 'use client';
 
 import { useEffect } from 'react';
+import { reloadOnceForChunkError } from '@/lib/chunkReload';
 
 // 화면이 그리다 죽었을 때 Next 기본 문구("Application error…") 대신 뜨는 화면.
 //
 // 기본 문구는 콘솔을 열어 보라고만 해서, 폰으로 보는 회원은 무슨 일인지 알 길이 없고
 // 운영진도 "게시판이 죽었다" 이상은 전달받지 못한다. 오류 메시지를 화면에 같이 적어 두면
 // 캡처 한 장으로 원인 파악이 시작된다. 스택은 콘솔로만 보낸다 — 회원에게 보여 줄 정보가 아니다.
+// 배포 뒤 옛 청크가 사라져 죽은 거라면(ChunkLoadError) 새 번들을 받으면 낫는 문제라 한 번 자동 새로고침한다.
 export default function RouteError({ error, reset }) {
   useEffect(() => {
     // eslint-disable-next-line no-console
     console.error(error);
+    reloadOnceForChunkError(error);
   }, [error]);
 
   const message = String(error?.message ?? error ?? '알 수 없는 오류');

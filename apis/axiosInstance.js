@@ -9,7 +9,8 @@ const axiosInstance = axios.create({
   // 로컬 개발에서는 상대경로로 보내 next.config의 rewrite 프록시를 타게 한다.
   // (same-origin → refresh 쿠키 정상 전송) 배포에서는 기존 baseURL 사용.
   baseURL: process.env.NODE_ENV === 'development' ? '' : process.env.NEXT_PUBLIC_BASE_URL,
-  timeout: 5000,
+  // 폰 라디오가 잠들었다 깨어나거나 망을 갈아탈 때 5초는 짧았다 — 글을 눌렀는데 "불러오지 못했습니다" 로 끝났다 (테스터 제보, 2026-10-02)
+  timeout: 15000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',

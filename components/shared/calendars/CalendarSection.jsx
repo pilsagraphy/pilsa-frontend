@@ -49,8 +49,9 @@ const LAYER_ACTIVE = 'active';
 const LAYER_OTHER = 'other';
 
 // onDateDoubleClick: 달력 날짜를 더블클릭했을 때. (관리자 화면의 '그 날짜로 일정 추가')
-// onUserSelect: 사용자가 볼 일정을 바꿨을 때 — 달력 날짜 클릭 · 목록 카드 클릭.
-//               관리자 화면에서 열려 있던 추가 · 수정 폼을 닫고 상세로 되돌리는 데 쓴다.
+// onUserSelect: 사용자가 볼 일정을 바꿨을 때 — 달력 날짜 클릭 · 목록 카드 클릭 · 오늘.
+//               고른 날짜(Date, 선택을 풀면 undefined)를 넘긴다. 관리자 화면이 열려 있던 추가 · 수정 폼을 닫고
+//               그 날짜를 '일정 추가'의 초깃값으로 쓴다 (테스터 요청: 누른 날짜가 자동 입력, 2026-10-05).
 // scheduleListAction: '월별 일정' 라벨 오른쪽에 놓을 버튼 (관리자 화면의 '일정 추가')
 // renderScheduleAction: 월별 일정 카드 오른쪽에 놓을 조작 버튼 (관리자 화면의 ⋮ 메뉴)
 // renderDetail: 목록 아래에 그릴 내용. 기본은 읽기용 일정 상세다.
@@ -239,7 +240,7 @@ export default function CalendarSection({
   const handleSelectSchedule = (schedule) => {
     const start = parseISO(schedule.startDate);
 
-    onUserSelect?.();
+    onUserSelect?.(start);
 
     setSelectedScheduleId(schedule.scheduleId);
     setSelectedDate(start);
@@ -248,7 +249,7 @@ export default function CalendarSection({
 
   // 헤더 '오늘' — 달을 돌리는 건 달력이 하고, 여기서는 오늘을 고른 상태로 만든다 (토글 아님)
   const handleToday = (today) => {
-    onUserSelect?.();
+    onUserSelect?.(today);
     setSelectedDate(today);
     const found = schedules.find((schedule) => isDateIncludedInSchedule(today, schedule));
     setSelectedScheduleId(found ? found.scheduleId : null);
@@ -257,15 +258,15 @@ export default function CalendarSection({
   const handleSelectDate = (d) => {
     if (!d) return;
 
-    // 더블클릭은 단일 클릭 두 번이 먼저 오고 dblclick이 마지막에 온다.
-    // 그래서 여기서 폼을 닫아도 뒤이은 dblclick이 다시 열어 준다.
-    onUserSelect?.();
-
     // 날짜 토글 로직
     // updater 안에서 다른 setState를 호출하면 Strict Mode가 updater를 두 번 부를 때 같이 두 번 돌므로,
     // prev 대신 selectedDate를 직접 읽어 토글을 계산하고 setState는 밖에서 따로 호출한다.
     const isSame = selectedDate?.getTime() === d.getTime();
     const nextDate = isSame ? undefined : d;
+
+    // 더블클릭은 단일 클릭 두 번이 먼저 오고 dblclick이 마지막에 온다.
+    // 그래서 여기서 폼을 닫아도 뒤이은 dblclick이 다시 열어 준다.
+    onUserSelect?.(nextDate);
 
     setSelectedDate(nextDate);
 

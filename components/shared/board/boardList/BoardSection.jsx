@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { buildBoardListQuery } from '@/lib/boardDetail';
 import useBoard from '@/hooks/useBoard';
+import useBoardListStore, { listKey } from '@/stores/useBoardListStore';
 
 import SortSelect from './SortSelect';
 import CategorySelect from './CategorySelect';
@@ -37,9 +38,6 @@ export default function BoardSection({ boardId }) {
   const categoryMode = Boolean(board?.categoryMode);
   const canWrite = Boolean(board?.canWrite);
 
-  const [posts, setPosts] = useState([]);
-  const [totalPages, setTotalPages] = useState(1);
-
   // 목록 상태는 주소(쿼리)에서 읽어와 시작한다 —
   // 글을 보고 돌아왔을 때 페이지·검색어가 그대로 복원되고, 목록 주소를 공유할 수도 있다.
   const router = useRouter();
@@ -56,13 +54,43 @@ export default function BoardSection({ boardId }) {
   const [searchKeyword, setSearchKeyword] = useState(() => searchParams.get('keyword') || '');
   const [category, setCategory] = useState(() => searchParams.get('categoryId') || 'all'); // 'all' | String(categoryId)
 
+  // 글을 보고 뒤로 돌아왔을 때 쓸 캐시 — 같은 조건(게시판·페이지·정렬·검색·카테고리)의 직전 결과와 스크롤 위치.
+  // 첫 페인트부터 행을 그려야 브라우저 스크롤 복원이 먹는다 (빈 목록이면 문서가 짧아 0 으로 잘린다).
+  const cacheKey = listKey(boardId, {
+    page: currentPage,
+    sort: sortOrder,
+    keyword: searchKeyword.trim(),
+    categoryId: category,
+  });
+  const cached = useBoardListStore((s) => s.entries[cacheKey]);
+  const rememberList = useBoardListStore((s) => s.remember);
+  const rememberScroll = useBoardListStore((s) => s.rememberScroll);
+
+  const [posts, setPosts] = useState(() => cached?.posts ?? []);
+  const [totalPages, setTotalPages] = useState(() => cached?.totalPages ?? 1);
+
   // 폰에서는 정렬 셀렉트를 짧은 라벨로 (dev 머지 때 이 훅이 빠져 게시판 목록이 통째로 죽었다 — 2026-09-20)
   const isMdUp = useMinWidthMd();
   const [categories, setCategories] = useState([]);
 
-  // 첫 조회가 끝나기 전에 '등록된 게시글이 없습니다.' 가 스치지 않도록 true 로 시작한다
-  const [loading, setLoading] = useState(true);
+  // 첫 조회가 끝나기 전에 '등록된 게시글이 없습니다.' 가 스치지 않도록 true 로 시작한다 (캐시가 있으면 그걸 보여 준다)
+  const [loading, setLoading] = useState(() => !cached);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // 떠날 때(상세로 이동 = 언마운트) 스크롤 위치를 적어 둔다
+  useEffect(() => {
+    return () => rememberScroll(cacheKey, window.scrollY);
+  }, [cacheKey, rememberScroll]);
+
+  // 돌아왔을 때 적어 둔 위치로 — 행이 그려진 뒤 페인트 전에 한 번만 (useEffect 면 맨 위가 한 프레임 비친다)
+  const restoredRef = useRef(false);
+  useLayoutEffect(() => {
+    if (restoredRef.current || !posts.length) return;
+    restoredRef.current = true;
+    const y = cached?.scrollY ?? 0;
+    if (y > 0) window.scrollTo(0, y);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [posts.length]);
 
   const handleSortChange = (value) => {
     setSortOrder(value);
@@ -144,7 +172,14 @@ export default function BoardSection({ boardId }) {
 
     const fetchPosts = async () => {
       try {
-        setLoading(true);
+        // 캐시로 이미 그려져 있으면 로딩 줄로 바꾸지 않고 뒤에서 조용히 갱신한다 (뒤로가기 복귀)
+        const key = listKey(boardId, {
+          page: currentPage,
+          sort: sortOrder,
+          keyword: searchKeyword.trim(),
+          categoryId: category,
+        });
+        if (!useBoardListStore.getState().entries[key]) setLoading(true);
         setErrorMessage('');
 
         const params = {
@@ -158,8 +193,11 @@ export default function BoardSection({ boardId }) {
         const data = await getBoardPosts(boardId, params);
         if (isIgnore) return;
 
-        setPosts(Array.isArray(data?.posts) ? data.posts : []);
-        setTotalPages(Math.max(1, Number(data?.totalPages) || 1));
+        const nextPosts = Array.isArray(data?.posts) ? data.posts : [];
+        const nextTotal = Math.max(1, Number(data?.totalPages) || 1);
+        setPosts(nextPosts);
+        setTotalPages(nextTotal);
+        rememberList(key, { posts: nextPosts, totalPages: nextTotal });
       } catch (error) {
         if (isIgnore) return;
         setPosts([]);
@@ -175,7 +213,7 @@ export default function BoardSection({ boardId }) {
     return () => {
       isIgnore = true;
     };
-  }, [boardId, currentPage, sortOrder, searchKeyword, category]);
+  }, [boardId, currentPage, sortOrder, searchKeyword, category, rememberList]);
 
   // 게시판 정책(플래그)이 확정되기 전에 화면을 그리면
   // 제목이 비고 글쓰기 버튼·카테고리·댓글 열이 '없는 게시판'처럼 보인다.

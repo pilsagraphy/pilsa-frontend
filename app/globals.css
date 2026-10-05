@@ -90,8 +90,13 @@
   * {
     @apply border-border;
   }
+  /* 한글은 기본값(word-break: normal)에서 음절 단위로 끊겨 단어 중간에서 줄이 바뀐다 (테스터 제보, 2026-10-01).
+     keep-all 로 어절 단위로 묶고, 띄어쓰기 없이 길게 이어 쓴 글·URL 은 overflow-wrap 이 받아 준다 — 둘은 반드시 같이.
+     anywhere 가 아니라 break-word 인 이유: anywhere 는 min-content 폭까지 바꿔 table-fixed·flex 열 폭이 흔들린다 */
   body {
     @apply bg-background text-foreground;
+    word-break: keep-all;
+    overflow-wrap: break-word;
   }
 }
 

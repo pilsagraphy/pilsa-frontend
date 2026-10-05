@@ -248,7 +248,8 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
           <div className="min-w-0 flex-1 sm:w-[260px] sm:flex-none">
             <SearchInput value={keyword} onChange={setKeyword} placeholder="문장 검색" />
           </div>
-          <div className="w-[160px] shrink-0 [&_button]:h-12 md:[&_button]:h-[52px]">
+          {/* 트리거 버튼만 키운다 — 자손 전체([&_button])로 걸면 날짜 선택 달력의 날짜 버튼까지 커진다 */}
+          <div className="w-[160px] shrink-0 [&>div>button]:h-12 md:[&>div>button]:h-[52px]">
             <DateField
               value={searchDate}
               placeholder="날짜로 찾기"

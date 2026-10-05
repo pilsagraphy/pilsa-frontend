@@ -6,6 +6,7 @@ import { Zen_Dots } from 'next/font/google';
 import ClockScene from './ClockScene';
 import useAuthStore, { AUTO_LOGIN_KEY } from '@/stores/useAuthStore';
 import { ROUTES } from '@/constants/routes';
+import { sanitizeReturnTo } from '@/lib/returnTo';
 
 // 헤더 로고와 같은 서체 — 안내 문구가 로고의 일부처럼 보이게
 const zenDots = Zen_Dots({ weight: '400', subsets: ['latin'] });
@@ -24,7 +25,21 @@ export default function Page() {
   const [isAccelerating, setIsAccelerating] = useState(false);
   const [flashOn, setFlashOn] = useState(false);
 
+  // middleware 가 게이트로 돌려보내며 붙인 원래 목적지(?from=/students/...). 알림을 눌러 들어온
+  // 사람이 게시글 대신 소개 페이지로 떨어지지 않게 그쪽으로 보낸다. 같은 사이트 안 경로만 허용한다.
+  const fromPathRef = useRef(null);
+
   useEffect(() => {
+    // ?launch=app / ?from= 은 "이번 한 번 시계를 보여라" 는 1회용 신호다. 주소에 그대로 두면 이 히스토리 엔트리가
+    // 영구히 게이트가 돼(middleware 는 launch 가 붙은 / 를 쿠키와 상관없이 게이트로 둔다) 뒤로가기로 돌아올 때마다
+    // 시계가 다시 나오고, 옛 from 으로 엉뚱한 화면에 떨어졌다 (테스터 제보, 2026-10-04). 읽은 뒤 주소에서 지운다.
+    const url = new URL(window.location.href);
+    fromPathRef.current = sanitizeReturnTo(url.searchParams.get('from'));
+    if (url.searchParams.has('launch') || url.searchParams.has('from')) {
+      url.searchParams.delete('launch');
+      url.searchParams.delete('from');
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`);
+    }
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
@@ -39,10 +54,7 @@ export default function Page() {
     // 껐다 켜도 세션 쿠키를 복원하기 때문(middleware.js 참고). 지울 때는 max-age=0
     document.cookie = 'pilsa_gate_passed=1; path=/';
 
-    // middleware 가 게이트로 돌려보내며 붙인 원래 목적지(?from=/students/...). 알림을 눌러 들어온
-    // 사람이 게시글 대신 소개 페이지로 떨어지지 않게 그쪽으로 보낸다. 같은 사이트 안 경로만 허용한다.
-    const from = new URLSearchParams(window.location.search).get('from');
-    const fromPath = from && from.startsWith('/') && !from.startsWith('//') ? from : null;
+    const fromPath = fromPathRef.current;
 
     // 바늘을 10배로 돌리고 화면을 한 번 번쩍인 뒤 넘어간다
     setFlashOn(true);
@@ -66,7 +78,9 @@ export default function Page() {
         timeoutRef.current = setTimeout(() => go(waitedMs + 100), 100);
         return;
       }
-      router.push(destination());
+      // 게이트는 지나가는 화면이다 — push 로 쌓으면 뒤로가기가 시계로 돌아오고, 시계가 다시 push 해서
+      // 영원히 못 빠져나왔다(테스터 제보 "시계가 계속 반복", 2026-10-04). 엔트리를 바꿔치기해서 뒤로가기가 시계를 건너뛰게 한다.
+      router.replace(destination());
     };
 
     timeoutRef.current = setTimeout(() => go(0), 1000);

@@ -60,10 +60,19 @@ export function middleware(req) {
     return res;
   }
 
-  // ✅ 동아리 소개(/about/intro)는 게이트 없이 연다 — 구글 OAuth 앱 검사기가 홈페이지 주소를 확인하러 오는데,
+  // ✅ 동아리 소개(/about/*)는 게이트 없이 연다 — 구글 OAuth 앱 검사기가 홈페이지 주소를 확인하러 오는데,
   //    쿠키가 없어 시계 게이트로 튕겨 "소개 페이지에 못 들어간다" 고 반려됐다 (2026-09-24). 통과 쿠키는 심지 않는다:
-  //    여기서 다른 화면으로 옮기면 지금처럼 게이트를 한 번 거친다.
-  if (pathname === '/about/intro') {
+  //    여기서 회원 화면으로 옮기면 게이트를 한 번 거친다.
+  //    처음엔 intro 만 열어 뒀는데, 그러면 소개 메뉴의 나머지(연혁·명예의 전당·역대 회장·CI)를 누를 때마다 게이트로
+  //    튕기고 그때 생긴 /?from=/about/honor 엔트리가 뒤로가기마다 명예의 전당으로 보냈다 (테스터 제보, 2026-10-04).
+  if (pathname.startsWith('/about/')) {
+    return NextResponse.next();
+  }
+
+  // ✅ 화면 안 이동(RSC 요청·프리페치)은 게이트로 돌려보내지 않는다 — HTML 이 돌아가면 Next 가 전체 이동으로
+  //    시계 게이트에 떨어뜨려 "글을 눌렀는데 안 넘어간다" 가 됐다 (테스터 제보, 2026-10-02). 통과 쿠키가 세션 쿠키라
+  //    오래 켜 둔 앱에서 사라질 수 있는데, 그때도 이미 열린 화면 안에서의 이동은 막지 않는다.
+  if (req.headers.get('rsc') === '1' || req.headers.has('next-router-prefetch')) {
     return NextResponse.next();
   }
 
