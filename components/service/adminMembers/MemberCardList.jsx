@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { ROUTES } from '@/constants/routes';
 
 import RowCheckbox from '@/components/shared/admin/RowCheckbox';
 import {
@@ -218,7 +220,13 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
           </DetailRow>
           <DetailRow label="Email">{member.email}</DetailRow>
           <DetailRow label="게시글 · 댓글">
-            {(member.postCount ?? 0).toLocaleString()} · {(member.commentCount ?? 0).toLocaleString()}
+            <Link href={`${ROUTES.ADMIN_POSTS}?keyword=${encodeURIComponent(member.name ?? '')}`} className="underline underline-offset-2">
+              {(member.postCount ?? 0).toLocaleString()}
+            </Link>
+            {' · '}
+            <Link href={`${ROUTES.ADMIN_COMMENTS}?keyword=${encodeURIComponent(member.name ?? '')}`} className="underline underline-offset-2">
+              {(member.commentCount ?? 0).toLocaleString()}
+            </Link>
           </DetailRow>
 
           <button

@@ -25,6 +25,35 @@ export default function LightboxHost() {
     setShowCaption(true);
   }, [lightbox, index]);
 
+  // 폰의 뒤로가기 = 크게 보기 닫기. 설치형 앱에는 다른 뒤로가기 수단이 없어, 사진을 띄운 채 뒤로가기를 누르면
+  // 사진은 그대로고 뒤 화면만 넘어갔다 (테스터 제보, 10/10). 열 때 같은 주소로 표시용 엔트리(pilsaLightbox)를 쌓고
+  // popstate 로 그것만 소비한다. X·바깥 탭으로 닫으면 엔트리를 back() 으로 치운다 (이동이 없어 안전).
+  const closedByPopRef = useRef(false);
+  const isOpenRef = useRef(false);
+  isOpenRef.current = Boolean(lightbox);
+  useEffect(() => {
+    const onPop = () => {
+      if (!isOpenRef.current) return;
+      closedByPopRef.current = true;
+      close();
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, [close]);
+  useEffect(() => {
+    if (!lightbox) return undefined;
+    closedByPopRef.current = false;
+    if (!window.history.state?.pilsaLightbox) {
+      window.history.pushState({ ...window.history.state, pilsaLightbox: true }, '', window.location.href);
+    }
+    return () => {
+      if (closedByPopRef.current) return;
+      if (window.history.state?.pilsaLightbox) window.history.back();
+    };
+    // 열림/닫힘에만 반응한다 — 사진을 넘길 때(index 변경)는 엔트리를 다시 쌓지 않는다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Boolean(lightbox)]);
+
   // 키보드: ESC 닫기, ←/→ 넘기기. 떠 있는 동안 뒤 페이지 스크롤은 잠근다
   useEffect(() => {
     if (!lightbox) return undefined;

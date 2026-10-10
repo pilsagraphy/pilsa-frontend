@@ -57,9 +57,11 @@ export default function ReportRow({ group, number }) {
       ) : (
         <span className="text-[#919191]">-</span>
       )}
-      <Link href={group.reportsLink} className={linkClass}>
-        신고 관리
-      </Link>
+      {group.reportsLink && (
+        <Link href={group.reportsLink} className={linkClass}>
+          신고 관리
+        </Link>
+      )}
     </>
   );
 
@@ -80,7 +82,9 @@ export default function ReportRow({ group, number }) {
         <ol className="flex flex-col gap-[6px]">
           {group.events.map((event) => (
             <li key={event.key} className="flex gap-[6px]">
-              <span className="shrink-0 text-[#919191]">{event.sub}.</span>
+              <span className="shrink-0 text-[#919191]">
+                {number}-{event.sub}
+              </span>
               <div className="flex min-w-0 flex-1 flex-col gap-[1px]">
                 {event.lines.map((line) => (
                   <EventLine key={line.label} line={line} />
@@ -113,7 +117,9 @@ export default function ReportRow({ group, number }) {
         {group.events.map((event) => (
           <div key={event.key} className={`${REPORT_GRID} py-[3px]`}>
             <div />
-            <div className="text-center text-[#919191]">{event.sub}</div>
+            <div className="text-center text-[#919191]">
+              {number}-{event.sub}
+            </div>
             <div />
             <div className="flex min-w-0 flex-col gap-[1px] pr-[4px] text-left">
               {event.lines.map((line) => (

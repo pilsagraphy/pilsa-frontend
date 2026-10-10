@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 
+import { ROUTES } from '@/constants/routes';
 import RowCheckbox from '@/components/shared/admin/RowCheckbox';
 import {
   Select,
@@ -216,12 +218,22 @@ export default function MemberRow({
         />
       </TableCell>
 
-      {/* 5. 활동 수치 */}
+      {/* 5. 활동 수치 — 누르면 게시글·댓글 관리에서 이 회원 이름으로 검색한 목록으로 (PM, 10/10) */}
       <TableCell className="whitespace-nowrap text-center">
-        {member.postCount?.toLocaleString() ?? 0}
+        <Link
+          href={`${ROUTES.ADMIN_POSTS}?keyword=${encodeURIComponent(member.name ?? '')}`}
+          className="underline underline-offset-2 hover:text-[#212121]"
+        >
+          {member.postCount?.toLocaleString() ?? 0}
+        </Link>
       </TableCell>
       <TableCell className="whitespace-nowrap text-center">
-        {member.commentCount?.toLocaleString() ?? 0}
+        <Link
+          href={`${ROUTES.ADMIN_COMMENTS}?keyword=${encodeURIComponent(member.name ?? '')}`}
+          className="underline underline-offset-2 hover:text-[#212121]"
+        >
+          {member.commentCount?.toLocaleString() ?? 0}
+        </Link>
       </TableCell>
 
       {/* 6. 정지 기간 (없으면 '-') */}

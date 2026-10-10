@@ -128,7 +128,8 @@ export default function MyPageBoard() {
       {/* 정렬 · 게시판 · 검색 — 라인 왼쪽 시작을 아래 표 번호↔제목 경계(≈64px)에 맞추고, 검색창이 오른쪽 경계까지 채움 */}
       <div className="mt-[12px] flex flex-row items-center gap-2">
         {/* 댓글 탭은 서버가 최신순 고정이라 고를 수 있게 두면 안 된다 → compactSort(읽기 전용 '최신순') */}
-        <div className="w-[96px] shrink-0 sm:w-auto">
+        {/* 폰: 셀렉트는 글자 폭만큼(w-auto), 검색창이 남는 폭을 가진다 — 96px 고정이라 "전체 게시판"·"자유게시판" 이 잘렸다 (10/10) */}
+        <div className="w-auto shrink-0">
           <SortSelect
             compactSort={isComments}
             value={sortOrder}
@@ -138,7 +139,7 @@ export default function MyPageBoard() {
             }}
           />
         </div>
-        <div className="w-[96px] shrink-0 sm:w-auto">
+        <div className="w-auto shrink-0">
           <BoardSelect
             boards={boards}
             value={boardFilter}

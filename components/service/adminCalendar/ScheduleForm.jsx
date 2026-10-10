@@ -13,9 +13,67 @@ import BoardWriteToolbar from '@/components/shared/board/boardWrite/BoardWriteTo
 import { apiUrl } from '@/lib/apiBase';
 import ScheduleSelect from './ScheduleSelect';
 import { FIELD_CLASS, ScheduleFormRow } from './ScheduleFormField';
+import { getEventList } from '@/apis/event';
 
 // 셀렉트 후보값.
 const pad2 = (n) => String(n).padStart(2, '0');
+
+// ── 반복 일정 (등록 전용, PM 요청 10/10) ─────────────────────────────────────────
+// 반복 규칙은 서버에 저장하지 않는다. 폼이 시작일들을 계산해 올리면 부모가 일정을 하나씩 만든다 (개별 수정·삭제 가능).
+const REPEAT_OPTIONS = [
+  { value: 'none', label: '반복 안 함' },
+  { value: 'daily', label: '매일' },
+  { value: 'weekly', label: '매주' },
+  { value: 'biweekly', label: '격주' },
+  { value: 'monthly', label: '매월 (같은 날짜)' },
+];
+const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
+const MAX_OCCURRENCES = 60; // 한 번에 만드는 상한 — 실수로 몇 년치를 만들지 않게
+
+const toLocalDate = (ymd) => {
+  const [y, m, d] = ymd.split('-').map(Number);
+  return new Date(y, m - 1, d);
+};
+const toYmd = (date) => `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
+const addDaysLocal = (date, n) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + n);
+// 일요일 시작 주의 첫날 — 격주 판정에 쓴다
+const weekStart = (date) => addDaysLocal(date, -date.getDay());
+
+// 시작일 · 규칙 · 요일 · 종료일 → 시작일 목록('yyyy-MM-dd'). 상한을 넘으면 그 앞까지만 돌려준다 (호출자가 길이로 안다)
+function buildOccurrences({ startDate, repeat, days, until }) {
+  const start = toLocalDate(startDate);
+  const end = toLocalDate(until);
+  const out = [];
+  if (repeat === 'monthly') {
+    for (let k = 0; out.length <= MAX_OCCURRENCES; k += 1) {
+      const date = new Date(start.getFullYear(), start.getMonth() + k, start.getDate());
+      if (date > end) break;
+      if (date.getDate() !== start.getDate()) continue; // 31일 같은 날짜가 없는 달은 건너뛴다
+      out.push(toYmd(date));
+    }
+    return out;
+  }
+  const startWeek = weekStart(start);
+  for (let date = start; date <= end && out.length <= MAX_OCCURRENCES; date = addDaysLocal(date, 1)) {
+    if (repeat === 'daily') {
+      out.push(toYmd(date));
+      continue;
+    }
+    if (!days.has(date.getDay())) continue;
+    if (repeat === 'biweekly') {
+      const weeks = Math.round((weekStart(date) - startWeek) / (7 * 86400000));
+      if (weeks % 2 !== 0) continue;
+    }
+    out.push(toYmd(date));
+  }
+  return out;
+}
+
+// 기본 종료일 — 시작일로부터 3개월 뒤 (학기 단위에 가깝다). 관리자가 바꾼다
+const defaultUntil = (startDate) => {
+  const start = toLocalDate(startDate);
+  return toYmd(new Date(start.getFullYear(), start.getMonth() + 3, start.getDate()));
+};
 const range = (length, start = 0, step = 1) =>
   Array.from({ length }, (_, i) => pad2(start + i * step));
 
@@ -142,6 +200,70 @@ export default function ScheduleForm({
   // 회원 전원 알림 — 등록은 기본 켬, 수정은 기본 끔 (고칠 때마다 전원에게 가면 안 된다). 관리자가 정한다 (PM, 2026-09-21)
   const [notify, setNotify] = React.useState(isCreate);
 
+  // 반복 (등록 전용). 요일은 시작일의 요일로 시작한다
+  const [repeat, setRepeat] = React.useState('none');
+  const [repeatDays, setRepeatDays] = React.useState(() => new Set([toLocalDate(partsToInput(start)).getDay()]));
+  const [repeatUntil, setRepeatUntil] = React.useState(() => defaultUntil(partsToInput(start)));
+  const toggleRepeatDay = (day) =>
+    setRepeatDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(day)) next.delete(day);
+      else next.add(day);
+      return next;
+    });
+  const occurrences = React.useMemo(() => {
+    if (!isCreate || repeat === 'none') return null;
+    const startDate = partsToInput(start);
+    if (!repeatUntil || repeatUntil < startDate) return [];
+    return buildOccurrences({ startDate, repeat, days: repeatDays, until: repeatUntil });
+  }, [isCreate, repeat, repeatDays, repeatUntil, start]);
+
+  // 지난 일정 불러오기 (등록 전용, 박수민 요청 10/10 "템플릿") — 최근 6개월 일정의 제목·구분·시각·내용을 그대로 채운다.
+  // 따로 템플릿 저장소를 두지 않고 이미 등록된 일정을 본으로 쓴다. 날짜는 채우지 않는다
+  const [recentSchedules, setRecentSchedules] = React.useState([]);
+  React.useEffect(() => {
+    if (!isCreate) return undefined;
+    let alive = true;
+    const today = new Date();
+    const from = toYmd(addDaysLocal(today, -180));
+    const to = toYmd(addDaysLocal(today, 60));
+    getEventList(from, to)
+      .then((res) => {
+        if (!alive) return;
+        const seen = new Set();
+        const latestFirst = [...(res?.data ?? [])].reverse();
+        setRecentSchedules(
+          latestFirst.filter((item) => {
+            const key = (item.title ?? '').trim();
+            if (!key || seen.has(key)) return false;
+            seen.add(key);
+            return true;
+          })
+        );
+      })
+      .catch(() => {
+        /* 불러오기 실패는 조용히 — 폼의 본 기능과 무관하다 */
+      });
+    return () => {
+      alive = false;
+    };
+  }, [isCreate]);
+  const applyRecent = (scheduleId) => {
+    const picked = recentSchedules.find((item) => String(item.scheduleId) === String(scheduleId));
+    if (!picked) return;
+    setTitle(picked.title ?? '');
+    if (picked.category && categories.includes(picked.category)) setCategory(picked.category);
+    const html = picked.content ?? '';
+    setContent(html);
+    contentEditor?.commands?.setContent(html, true);
+    const allDay = !picked.startTime;
+    setIsAllDay(allDay);
+    if (!allDay) {
+      setStartTime(toTimeParts(picked.startTime));
+      setEndTime(toTimeParts(picked.endTime ?? picked.startTime));
+    }
+  };
+
   // normalize: 값이 바뀐 뒤 한 번 더 손보는 함수. 날짜는 일자 clamp에 쓴다.
   const patch = (setter, normalize) => (key) => (value) =>
     setter((prev) => {
@@ -187,6 +309,20 @@ export default function ScheduleForm({
       return;
     }
 
+    // 반복: 종료일·요일·개수를 확인하고 시작일 목록을 함께 올린다
+    let repeatDates;
+    if (occurrences) {
+      if (!occurrences.length) {
+        toast.error('반복 설정을 확인해 주세요.', { description: '종료일이 시작일보다 빠르거나, 고른 요일에 해당하는 날이 없습니다.' });
+        return;
+      }
+      if (occurrences.length > MAX_OCCURRENCES) {
+        toast.error(`반복 일정은 한 번에 ${MAX_OCCURRENCES}개까지 만들 수 있어요.`, { description: '종료일을 앞당겨 주세요.' });
+        return;
+      }
+      repeatDates = occurrences;
+    }
+
     onSubmit?.({
       ...schedule,
       title: trimmedTitle,
@@ -200,6 +336,7 @@ export default function ScheduleForm({
       newImages: newFiles.map((item) => item.file),
       deleteImageIds: removedImageIds,
       notify,
+      repeatDates,
     });
   };
 
@@ -253,6 +390,28 @@ export default function ScheduleForm({
       </h3>
 
       <div className="mt-6 flex flex-col gap-[26px] md:mt-[34px]">
+        {/* 지난 일정 불러오기 — 정기모임·제작스터디처럼 반복되는 일정의 내용을 다시 치지 않게 (등록 전용) */}
+        {isCreate && recentSchedules.length > 0 && (
+          <ScheduleFormRow label="불러오기" htmlFor="schedule-template">
+            <select
+              id="schedule-template"
+              defaultValue=""
+              onChange={(event) => {
+                applyRecent(event.target.value);
+                event.target.value = '';
+              }}
+              className={`${FIELD_CLASS} w-full sm:w-[360px]`}
+            >
+              <option value="">지난 일정에서 제목·구분·시각·내용 가져오기…</option>
+              {recentSchedules.map((item) => (
+                <option key={item.scheduleId} value={item.scheduleId}>
+                  {item.title} ({item.startDate})
+                </option>
+              ))}
+            </select>
+          </ScheduleFormRow>
+        )}
+
         {/* 제목과 일정 구분을 한 줄에 — 폰에서는 아래로 내려온다 */}
         <ScheduleFormRow label="제목" htmlFor="schedule-title">
           <div className="flex flex-col gap-[8px] sm:flex-row sm:items-center">
@@ -326,6 +485,60 @@ export default function ScheduleForm({
             )}
           </div>
         </ScheduleFormRow>
+
+        {/* 반복 (등록 전용) — 규칙 · 요일 · 종료일. 만들어질 개수를 미리 보여 준다 */}
+        {isCreate && (
+          <ScheduleFormRow label="반복" htmlFor="schedule-repeat">
+            <div className="flex flex-col gap-[10px]">
+              <div className="flex flex-wrap items-center gap-[8px]">
+                <select
+                  id="schedule-repeat"
+                  value={repeat}
+                  onChange={(event) => setRepeat(event.target.value)}
+                  className={`${FIELD_CLASS} w-[160px]`}
+                >
+                  {REPEAT_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {(repeat === 'weekly' || repeat === 'biweekly') && (
+                  <div className="flex items-center gap-[4px]" role="group" aria-label="반복 요일">
+                    {WEEKDAY_LABELS.map((label, day) => (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => toggleRepeatDay(day)}
+                        aria-pressed={repeatDays.has(day)}
+                        className={`size-[32px] rounded-full text-[13px] transition-colors ${
+                          repeatDays.has(day)
+                            ? 'bg-[#212121] text-white'
+                            : 'border border-[#dedede] text-[#454545] hover:bg-[#f6f6f6]'
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {repeat !== 'none' && (
+                <div className="flex flex-wrap items-center gap-[8px]">
+                  <span className="w-[32px] shrink-0 text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">종료</span>
+                  <div className="w-[160px] shrink-0 [&>div>button]:h-[40px] [&>div>button]:text-[14px]">
+                    <DateField value={repeatUntil} min={partsToInput(start)} ariaLabel="반복 종료일" onChange={setRepeatUntil} />
+                  </div>
+                  <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
+                    {occurrences?.length
+                      ? `${Math.min(occurrences.length, MAX_OCCURRENCES)}개 일정이 만들어져요 (알림은 첫 일정만)`
+                      : '해당하는 날이 없어요'}
+                  </span>
+                </div>
+              )}
+            </div>
+          </ScheduleFormRow>
+        )}
 
         <ScheduleFormRow label="세부 사항">
           <div className="flex w-full flex-col gap-[8px]">

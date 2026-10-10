@@ -35,7 +35,11 @@ export default function useAdminModerationList({ store, idKey, contentKey, repor
 
   const [currentPage, setCurrentPage] = useState(1);
   const [boardFilter, setBoardFilter] = useState(BOARD_FILTER_ALL);
-  const [searchQuery, setSearchQuery] = useState('');
+  // ?keyword= 로 들어오면 그 검색어로 시작한다 — 회원 목록의 게시글·댓글 수가 "이 회원 이름으로 검색한 목록" 으로 잇는다 (PM, 10/10).
+  // useSearchParams 는 정적 페이지에서 Suspense 경계를 요구하므로 마운트 시점에 window 에서 읽는다
+  const [searchQuery, setSearchQuery] = useState(() =>
+    typeof window === 'undefined' ? '' : (new URLSearchParams(window.location.search).get('keyword') ?? '')
+  );
   const [selectedIds, setSelectedIds] = useState([]);
 
   // 글자를 칠 때마다 조회하지 않도록 서버에 보낼 검색어만 늦춘다 (입력창은 즉시 반응)

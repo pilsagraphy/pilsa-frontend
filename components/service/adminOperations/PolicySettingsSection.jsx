@@ -146,11 +146,16 @@ function BanPolicyRow({ item, canEdit, onSaved }) {
 export default function PolicySettingsSection() {
   const adminLevel = useAuthStore((s) => s.adminLevel);
   const canEdit = adminLevel >= EDIT_LEVEL;
+  // 레벨 3 미만은 화면 자체를 열지 않는다 (PM, 10/10). 서버도 notify_* 만 내려 주므로 읽기 전용으로 보여 줄 것도 없다
   const [data, setData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const load = useCallback(async () => {
+    if (!canEdit) {
+      setIsLoading(false);
+      return;
+    }
     setIsLoading(true);
     setError(null);
     try {
@@ -160,7 +165,7 @@ export default function PolicySettingsSection() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [canEdit]);
   useEffect(() => {
     load();
   }, [load]);
@@ -188,11 +193,13 @@ export default function PolicySettingsSection() {
         <h2 className={listTitleClass}>정책 설정</h2>
         <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
           서버가 실행 중에 읽는 값(policy_settings · ban_policy)입니다. 저장하면 바로 적용됩니다.
-          {!canEdit && ' 수정은 관리 레벨 3 관리자만 할 수 있어 지금은 읽기 전용입니다.'}
         </p>
       </div>
 
       {isLoading && <p className="py-6 text-center text-[14px] text-[#919191]">불러오는 중...</p>}
+      {!canEdit && (
+        <p className="py-6 text-center text-[14px] text-[#919191]">정책 설정은 관리 레벨 3 관리자만 볼 수 있습니다.</p>
+      )}
       {!isLoading && error && <p className="py-6 text-center text-[14px] text-[#919191]">{error}</p>}
 
       {!isLoading && !error && data && (

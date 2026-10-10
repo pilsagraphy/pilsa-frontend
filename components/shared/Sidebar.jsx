@@ -67,7 +67,8 @@ const Sidebar = () => {
         closeMobile();
         return;
       }
-      if (event.state?.pilsaSidebar) window.history.back();
+      // 링크로 닫혀 남은 죽은 표시용 엔트리(메뉴·크게 보기)는 한 번 더 뒤로 가서 건너뛴다
+      if (event.state?.pilsaSidebar || event.state?.pilsaLightbox) window.history.back();
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
@@ -219,7 +220,8 @@ const Sidebar = () => {
       label: '운영 관리',
       subMenus: [
         { name: '모니터링', path: ROUTES.ADMIN_MONITORING },
-        { name: '정책 설정', path: ROUTES.ADMIN_POLICIES },
+        // 정책 설정은 관리 레벨 3 전용 — 메뉴 자체를 숨긴다 (PM, 10/10). 화면과 API 도 각각 막는다
+        ...(adminLevel >= 3 ? [{ name: '정책 설정', path: ROUTES.ADMIN_POLICIES }] : []),
         { name: '알림 설정', path: ROUTES.ADMIN_NOTIFICATION_SETTINGS },
       ],
     },
