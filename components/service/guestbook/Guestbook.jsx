@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '@/apis/auth';
-import { deleteGuestbookNote, getGuestbook, restoreGuestbookNote } from '@/apis/guestbook';
+import { deleteGuestbookNote, getGuestbook } from '@/apis/guestbook';
 import AppLoading from '@/components/common/AppLoading';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import AdminPageLink from '@/components/shared/AdminPageLink';
@@ -129,25 +129,16 @@ export default function Guestbook({ boardTheme = 'cream' }) {
   // 고치고 지운 뒤에는 그 학기만 다시 받는다
   const refresh = (label) => fetchSemester(label ?? meta?.currentSemester).catch(() => {});
 
+  // 지우기는 로그인해서 남긴 내 글만 — 관리자도 남의 글은 방명록 관리에서 숨긴다 (PM 10/11)
   const confirmDelete = async () => {
     const note = deleting;
     setDeleting(null);
     try {
       await deleteGuestbookNote(note.noteId);
-      toast.success(note.isMine ? '지웠어요.' : '숨겼어요. 필요하면 복원할 수 있어요.');
+      toast.success('지웠어요.');
       refresh(note.semesterLabel);
     } catch (err) {
       toast.error(getErrorMessage(err, '지우지 못했어요.'));
-    }
-  };
-
-  const restore = async (note) => {
-    try {
-      await restoreGuestbookNote(note.noteId);
-      toast.success('복원했어요.');
-      refresh(note.semesterLabel);
-    } catch (err) {
-      toast.error(getErrorMessage(err, '복원하지 못했어요.'));
     }
   };
 
@@ -209,7 +200,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
                     {isCurrent ? '아직 비어 있어요. 첫 장을 남겨 주세요.' : '이 학기에는 남은 글이 없어요.'}
                   </p>
                 ) : (
-                  <Masonry notes={notes} onEdit={setEditing} onDelete={setDeleting} onRestore={restore} />
+                  <Masonry notes={notes} onEdit={setEditing} onDelete={setDeleting} />
                 )}
               </div>
             );
@@ -224,12 +215,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
         )}
       </section>
 
-      <ConfirmModal
-        open={Boolean(deleting)}
-        title={deleting?.isMine ? '내가 남긴 글을 지울까요?' : '이 글을 숨길까요? (복원할 수 있어요)'}
-        onConfirm={confirmDelete}
-        onCancel={() => setDeleting(null)}
-      />
+      <ConfirmModal open={Boolean(deleting)} title="내가 남긴 글을 지울까요?" onConfirm={confirmDelete} onCancel={() => setDeleting(null)} />
 
       {/* 고치기 — 쓰기 칸을 그대로 모달에 (종이 폭은 카드와 같은 320px) */}
       <Dialog open={Boolean(editing)} onOpenChange={(v) => !v && setEditing(null)}>
@@ -273,7 +259,7 @@ function useColumnCount() {
   return count;
 }
 
-function Masonry({ notes, onEdit, onDelete, onRestore }) {
+function Masonry({ notes, onEdit, onDelete }) {
   const count = useColumnCount();
   const columns = Array.from({ length: count }, () => []);
   notes.forEach((note, i) => columns[i % count].push(note));
@@ -282,7 +268,7 @@ function Masonry({ notes, onEdit, onDelete, onRestore }) {
       {columns.map((col, ci) => (
         <div key={ci} className="flex min-w-0 flex-1 flex-col gap-7">
           {col.map((note) => (
-            <GuestbookNote key={note.noteId} note={note} onEdit={onEdit} onDelete={onDelete} onRestore={onRestore} />
+            <GuestbookNote key={note.noteId} note={note} onEdit={onEdit} onDelete={onDelete} />
           ))}
         </div>
       ))}
