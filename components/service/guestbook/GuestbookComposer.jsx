@@ -10,10 +10,11 @@ import DrawingModal from './DrawingModal';
 import PaperMarks from './PaperMarks';
 import { ALIGNS, DESIGN_WIDTH, FONTS, INKS, PAPERS, fontOf, inkColor, paperOf, paperStyle, textStyle } from './guestbookStyle';
 
-const NAME_KEY = 'pilsaGuestbookName';
-const readSavedName = () => {
+// 기억해 둔 이름은 계정별로 — 예전엔 키 하나라 관리자가 남의 글을 고치면 그 이름이 내 기본값으로 남았다 (PM 10/11 "왜 자꾸 수민으로")
+const nameKey = (userId) => (userId ? `pilsaGuestbookName:${userId}` : 'pilsaGuestbookName:anon');
+const readSavedName = (userId) => {
   try {
-    return localStorage.getItem(NAME_KEY) ?? '';
+    return localStorage.getItem(nameKey(userId)) ?? '';
   } catch {
     return '';
   }
@@ -33,7 +34,8 @@ const MAX_W = 80;
 // mode='edit' 면 initial(기존 글)을 채워 놓고 PUT 으로 고친다 (본인 또는 관리자).
 export default function GuestbookComposer({ mode = 'create', initial = null, maxLength = 300, maxDrawings = 3, drawingMaxKb = 200, onDone, onCancel }) {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
-  const [name, setName] = useState(initial?.displayName ?? readSavedName);
+  const myUserId = useAuthStore((s) => s.user?.userId ?? null);
+  const [name, setName] = useState(() => initial?.displayName ?? readSavedName(myUserId));
   const [content, setContent] = useState(initial?.content ?? '');
   const [font, setFont] = useState(initial?.font ?? FONTS[0].key);
   const [ink, setInk] = useState(initial?.ink ?? INKS[0].key);
@@ -172,10 +174,10 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
         })),
       };
       const saved = mode === 'edit' ? await editGuestbookNote(initial.noteId, body) : await writeGuestbookNote(body);
-      // 내 이름 기억은 새로 쓸 때만 — 관리자가 남의 글을 고친 뒤 그 이름이 기본값으로 남던 문제 (PM 10/10 밤)
+      // 내 이름 기억은 새로 쓸 때만, 계정별로
       if (mode === 'create') {
         try {
-          localStorage.setItem(NAME_KEY, name.trim());
+          localStorage.setItem(nameKey(myUserId), name.trim());
         } catch {
           // 저장 못 해도 그만
         }
