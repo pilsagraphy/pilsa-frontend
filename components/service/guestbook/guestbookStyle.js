@@ -32,7 +32,7 @@ export const INKS = [
 // 줄노트는 살짝 파랑, 모눈은 살짝 초록 기운 (PM 10/10 밤 "그게 좋았는데")
 export const PAPERS = [
   { key: 'plain', label: '무지', bg: '#fffdf8', marks: 'ink' },
-  { key: 'lined', label: '줄노트', bg: '#f7f9fb', lines: true, lineColor: '#d7dfe8' },
+  { key: 'lined', label: '줄노트', bg: '#f7f9fb', lines: true, lineColor: '#c9d4e0' },
   { key: 'grid', label: '모눈', bg: '#f6f8f5', grid: true, lineColor: '#dde4da' },
   { key: 'cream', label: '크림', bg: '#f8f1e1' },
   // 빈티지 — 바랜 종이(연하게)에 커피 자국. 가장자리는 살짝 그을린 듯
@@ -90,7 +90,12 @@ export const textStyle = (paperKey, fontKey, color, align) => {
     textAlign: align,
   };
   if (p.lines) {
-    style.backgroundImage = `repeating-linear-gradient(transparent 0 calc(${LINE_HEIGHT_EM}em - 1px), ${p.lineColor} calc(${LINE_HEIGHT_EM}em - 1px) ${LINE_HEIGHT_EM}em)`;
+    // 줄은 손으로 그은 듯 살짝 구불거리는 선 하나(SVG)를 줄 높이마다 반복한다.
+    // 1px 그라데이션은 카드를 축소하면 점선처럼 끊겨 보였다 (PM 10/11 "---- 안 이쁨")
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 320 20' preserveAspectRatio='none'><path d='M0 18 C30 17.2 60 18.8 90 18 S150 17.3 180 18.1 S250 18.9 280 17.6 S310 18.3 320 18' fill='none' stroke='${p.lineColor}' stroke-width='1' stroke-linecap='round'/></svg>`;
+    style.backgroundImage = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+    style.backgroundSize = `100% ${LINE_HEIGHT_EM}em`;
+    style.backgroundRepeat = 'repeat-y';
     style.backgroundAttachment = 'local';
   }
   return style;
