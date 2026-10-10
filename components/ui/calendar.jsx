@@ -150,18 +150,9 @@ export function Calendar({
           left: -1px;
           background-color: #f6f6f6;
         }
-        /* 고른 일정: 흰 바탕에 진한 테두리 알약. 예전엔 진한 채움(#454545)이었는데 그 모양을 오늘 표시로 넘겼다 (테스터 요청, 10/10).
-           여러 날짜에 걸친 막대는 칸마다 그리므로 위아래 선만 두고, 양 끝 칸에서만 좌우 선을 닫는다 */
+        /* 고른 일정: 나머지 일정(#f6f6f6)보다 한 단계 진한 회색 채움. 예전의 진한 채움(#454545)은 오늘 표시로 넘겼다 (PM, 10/10) */
         .pilsa-schedule-active::before {
-          background-color: #ffffff;
-          border-top: 1.5px solid #454545;
-          border-bottom: 1.5px solid #454545;
-        }
-        .pilsa-schedule-active.pilsa-schedule-start::before {
-          border-left: 1.5px solid #454545;
-        }
-        .pilsa-schedule-active.pilsa-schedule-end::before {
-          border-right: 1.5px solid #454545;
+          background-color: #d9d9d9;
         }
         /* 칸마다 따로 그리다 보니 딱 붙여만 두면 두 경계가 각각 안티에일리어싱되어
            날짜 사이에 옅은 세로선이 보인다. 이어지는 쪽만 1px씩 겹치게 해서 이음매를 없앤다.
