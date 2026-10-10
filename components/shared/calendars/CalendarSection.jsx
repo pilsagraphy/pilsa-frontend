@@ -28,7 +28,9 @@ function isDateIncludedInSchedule(date, schedule) {
 }
 
 // 처음 보여 줄 일정 — 그 달의 첫 일정이 아니라 **오늘 기준 가장 가까운 다음 일정**(오늘 진행 중인 것 포함).
-// 24일에 22일 일정과 29~30일 일정이 있으면 29~30일 것을 편다 (PM, 2026-09-24). 오늘 이후 일정이 없는 달(지난 달 등)은 첫 일정.
+// 24일에 22일 일정과 29~30일 일정이 있으면 29~30일 것을 편다 (PM, 2026-09-24).
+// 오늘 이후 일정이 없으면 **가장 최근에 지난 일정**(끝난 날이 오늘에 가장 가까운 것). 예전엔 그 달의 첫 일정이라
+// 10일에 1일·8일 일정이 있으면 1일 것이 열렸다 — "가장 가까운 일정이 1일이냐" (PM, 10/10). 지난 달은 자연히 마지막 일정.
 // 달력 · 메인 · 관리자 홈이 전부 이 컴포넌트를 쓰므로 여기 한 곳이면 된다.
 function pickDefaultScheduleId(schedules) {
   const today = startOfDay(new Date());
@@ -37,7 +39,9 @@ function pickDefaultScheduleId(schedules) {
   const upcoming = schedules
     .filter((schedule) => endOf(schedule) >= today.getTime())
     .sort((a, b) => startOf(a) - startOf(b) || endOf(a) - endOf(b));
-  return (upcoming[0] ?? schedules[0]).scheduleId;
+  if (upcoming[0]) return upcoming[0].scheduleId;
+  const latestPast = [...schedules].sort((a, b) => endOf(b) - endOf(a) || startOf(b) - startOf(a));
+  return latestPast[0].scheduleId;
 }
 
 // 한 칸에 그려지는 막대는 '고른 일정'(ACTIVE) 아니면 '그 외 일정들'(OTHER) 중 하나다.

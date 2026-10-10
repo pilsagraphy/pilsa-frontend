@@ -150,8 +150,18 @@ export function Calendar({
           left: -1px;
           background-color: #f6f6f6;
         }
+        /* 고른 일정: 흰 바탕에 진한 테두리 알약. 예전엔 진한 채움(#454545)이었는데 그 모양을 오늘 표시로 넘겼다 (테스터 요청, 10/10).
+           여러 날짜에 걸친 막대는 칸마다 그리므로 위아래 선만 두고, 양 끝 칸에서만 좌우 선을 닫는다 */
         .pilsa-schedule-active::before {
-          background-color: #454545;
+          background-color: #ffffff;
+          border-top: 1.5px solid #454545;
+          border-bottom: 1.5px solid #454545;
+        }
+        .pilsa-schedule-active.pilsa-schedule-start::before {
+          border-left: 1.5px solid #454545;
+        }
+        .pilsa-schedule-active.pilsa-schedule-end::before {
+          border-right: 1.5px solid #454545;
         }
         /* 칸마다 따로 그리다 보니 딱 붙여만 두면 두 경계가 각각 안티에일리어싱되어
            날짜 사이에 옅은 세로선이 보인다. 이어지는 쪽만 1px씩 겹치게 해서 이음매를 없앤다.
@@ -174,9 +184,6 @@ export function Calendar({
           position: relative;
           z-index: 1;
           background-color: transparent !important;
-        }
-        td.pilsa-schedule-active > button {
-          color: #ffffff !important;
         }
 
         /* 선택한 날짜 표시.
@@ -203,12 +210,13 @@ export function Calendar({
           pointer-events: none;
         }
 
-        /* 오늘: 숫자 굵게 + 숫자 둘레에 가는 원. 점은 PM 이 빼 달라 해서(2026-09-21) 굵기만 뒀더니 테스터가 일정 막대가
-           칠해진 날(그 달의 첫 일정)을 오늘로 읽었다 (10/9). 원은 글자색(currentColor)이라 진한 막대 위에서는 흰색,
-           평소에는 검정으로 그려져 어디서든 보인다. 선택 테두리(td[data-selected]::after, 칸 전체 알약)와는 모양이 다르다 */
+        /* 오늘: 진한 원에 흰 숫자 — 예전 '고른 일정' 채움색을 그대로 가져왔다 (테스터들이 이 모양을 오늘로 읽어서, 10/10).
+           점(9/21 제거) → 굵기만 → 가는 원(10/10 오전) 을 거쳐 여기로. 막대가 있는 날에도 원이 막대 위(z-index 1)에 올라간다.
+           막대 칸의 '배경 투명 !important' 보다 뒤에 두어 이 규칙이 이긴다 */
         td[data-today] > button {
           font-weight: 700;
-          box-shadow: inset 0 0 0 1.5px currentColor;
+          background-color: #454545 !important;
+          color: #ffffff !important;
         }
       `}</style>
 
