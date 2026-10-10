@@ -203,9 +203,12 @@ export function Calendar({
           pointer-events: none;
         }
 
-        /* 오늘: 숫자만 굵게 (점은 PM 이 빼 달라 함, 2026-09-21). 어느 달인지는 헤더의 '오늘' 버튼으로 돌아온다 */
+        /* 오늘: 숫자 굵게 + 숫자 둘레에 가는 원. 점은 PM 이 빼 달라 해서(2026-09-21) 굵기만 뒀더니 테스터가 일정 막대가
+           칠해진 날(그 달의 첫 일정)을 오늘로 읽었다 (10/9). 원은 글자색(currentColor)이라 진한 막대 위에서는 흰색,
+           평소에는 검정으로 그려져 어디서든 보인다. 선택 테두리(td[data-selected]::after, 칸 전체 알약)와는 모양이 다르다 */
         td[data-today] > button {
           font-weight: 700;
+          box-shadow: inset 0 0 0 1.5px currentColor;
         }
       `}</style>
 
