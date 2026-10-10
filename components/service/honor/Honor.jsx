@@ -6,6 +6,8 @@ import DeveloperCredits from "./DeveloperCredits";
 import AppLoading from "@/components/common/AppLoading";
 import { getDonations } from "@/apis/donation";
 import { getErrorMessage } from "@/apis/auth";
+import AdminPageLink from "@/components/shared/AdminPageLink";
+import { ROUTES } from "@/constants/routes";
 
 export default function Honor() {
   // 폐기된 /api/public/honor/ 를 부르다 401 을 맞고 있었다. 공개 API 는 GET /api/donations 다(비로그인 열람 가능).
@@ -52,9 +54,10 @@ export default function Honor() {
     <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
       {/* 타이틀 영역 */}
       <header className="flex flex-col gap-[8px] border-b-[1.5px] border-[#DEDEDE] pb-6 md:gap-[12px] md:pb-[40px]">
-        <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.48px] text-[#212121]">
-          명예의 전당
-        </h2>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.48px] text-[#212121]">명예의 전당</h2>
+          <AdminPageLink href={ROUTES.ADMIN_DONATIONS} label="명예의 전당 관리" />
+        </div>
         <p className="font-['Pretendard',sans-serif] font-normal text-[16px] leading-[1.6] tracking-[-0.32px] text-[#919191]">
           필사그래피 명예의 전당
         </p>
