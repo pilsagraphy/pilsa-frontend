@@ -31,9 +31,11 @@ export const INKS = [
 
 export const PAPERS = [
   { key: 'plain', label: '무지', bg: '#fffdf8', blot: true },
-  { key: 'lined', label: '줄노트', bg: '#f7f9fb', lines: true },
-  { key: 'grid', label: '모눈', bg: '#f6f8f5', grid: true },
+  { key: 'lined', label: '줄노트', bg: '#fdfbf6', lines: true },
+  { key: 'grid', label: '모눈', bg: '#fbfbf8', grid: true },
   { key: 'cream', label: '크림', bg: '#f8f1e1' },
+  // 빈티지 — 누렇게 바랜 종이. 가장자리가 어둡고 커피 얼룩이 진하다 (PM 10/10 밤)
+  { key: 'vintage', label: '빈티지', bg: '#e9dcbb', blot: true, vintage: true },
 ];
 
 export const ALIGNS = [
@@ -53,19 +55,26 @@ export const BOARD_THEMES = {
 export const LINE_HEIGHT_PX = 28;
 
 export const fontOf = (key) => FONTS.find((f) => f.key === key) ?? FONTS[0];
-export const inkColor = (key) => (INKS.find((i) => i.key === key) ?? INKS[0]).color;
+// 기본 6색 키 또는 사용자가 컬러피커로 고른 #rrggbb
+export const inkColor = (key) => (typeof key === 'string' && /^#[0-9a-fA-F]{6}$/.test(key) ? key : (INKS.find((i) => i.key === key) ?? INKS[0]).color);
+// 작성 칸과 카드가 똑같이 보이도록 카드는 이 폭으로 그린 뒤 칸 폭에 맞춰 축소한다 (스티커 위치가 어긋나던 원인, PM 10/10 밤)
+export const DESIGN_WIDTH = 320;
 export const paperOf = (key) => PAPERS.find((p) => p.key === key) ?? PAPERS[0];
 
 // 종이 바탕 스타일 — 종류마다 색이 다르고 줄노트·모눈은 선을 그린다 (스크롤해도 글과 같이 움직이게 local)
 export const paperStyle = (key) => {
   const p = paperOf(key);
   const style = { backgroundColor: p.bg };
-  if (p.lines) {
-    style.backgroundImage = `repeating-linear-gradient(transparent 0 ${LINE_HEIGHT_PX - 1}px, #dde3ea ${LINE_HEIGHT_PX - 1}px ${LINE_HEIGHT_PX}px)`;
+  if (p.vintage) {
+    // 가운데는 밝고 가장자리로 갈수록 누렇게, 테두리는 그을린 듯 어둡게
+    style.backgroundImage = 'radial-gradient(ellipse at 45% 40%, #f3e9d0 0%, #e9dcbb 55%, #d6c293 100%)';
+    style.boxShadow = 'inset 0 0 26px rgba(92, 61, 30, 0.32), 2px 3px 0 rgba(0,0,0,0.05)';
+  } else if (p.lines) {
+    style.backgroundImage = `repeating-linear-gradient(transparent 0 ${LINE_HEIGHT_PX - 1}px, #d8d3c8 ${LINE_HEIGHT_PX - 1}px ${LINE_HEIGHT_PX}px)`;
     style.backgroundAttachment = 'local';
   } else if (p.grid) {
     style.backgroundImage =
-      'linear-gradient(to right, #e1e6df 1px, transparent 1px), linear-gradient(to bottom, #e1e6df 1px, transparent 1px)';
+      'linear-gradient(to right, #e3e1da 1px, transparent 1px), linear-gradient(to bottom, #e3e1da 1px, transparent 1px)';
     style.backgroundSize = '14px 14px';
     style.backgroundAttachment = 'local';
   }

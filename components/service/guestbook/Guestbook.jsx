@@ -5,17 +5,19 @@ import { getErrorMessage } from '@/apis/auth';
 import { deleteGuestbookNote, getGuestbook, restoreGuestbookNote } from '@/apis/guestbook';
 import AppLoading from '@/components/common/AppLoading';
 import ConfirmModal from '@/components/common/ConfirmModal';
-import SemesterJump, { scrollToSemester, semesterAnchorId } from '@/components/shared/SemesterJump';
+import AdminPageLink from '@/components/shared/AdminPageLink';
+import SemesterJump, { scrollToSemester, semesterAnchorId, useActiveSemester } from '@/components/shared/SemesterJump';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import { ROUTES } from '@/constants/routes';
 import { toast } from '@/lib/toast';
 import GuestbookComposer from './GuestbookComposer';
 import GuestbookNote from './GuestbookNote';
 import { BOARD_THEMES } from './guestbookStyle';
 
 // 방명록 (PM 2026-10-10) — 학기별로 묶은 손글씨 메모판을 한 페이지에 이어 붙인다 (밤: 탭 대신 무한 스크롤 + 학기 드롭다운).
-// 처음엔 이번 학기만 보이고, 아래로 내리면 지난 학기를 하나씩 더 불러온다. 드롭다운에서 고르면 거기까지 불러온 뒤 스크롤.
+// 처음엔 이번 학기만 보이고, 아래로 내리면 지난 학기를 하나씩 더 불러온다. 드롭다운은 보고 있는 학기를 보여 주고 고르면 그 구간으로.
 // 학기 구분은 서버가 글을 남긴 시점의 학기(정책의 학기 시작 월)로 매긴다. 쓰기 칸은 이번 학기 구간 맨 위에만.
-// 로그인한 본인과 관리자는 글을 고치거나 지울 수 있고, 관리자가 지운 글은 숨김이라 그 자리에서 복원할 수 있다.
+// 로그인한 본인과 관리자는 글을 고치거나 지울 수 있고, 관리자가 지운 글은 숨김이라 그 자리에서 복원할 수 있다. 관리자에겐 관리 페이지 버튼.
 // boardTheme: 메모판 바탕 — 크림/회색/흰색 중 무엇이 나은지 보려는 임시 비교용
 export default function Guestbook({ boardTheme = 'cream' }) {
   const [meta, setMeta] = useState(null); // { currentSemester, semesters, maxLength, maxDrawings, drawingMaxKb }
@@ -59,6 +61,8 @@ export default function Guestbook({ boardTheme = 'cream' }) {
   }, []);
 
   const semesters = meta?.semesters ?? [];
+  const visibleSemesters = semesters.slice(0, visibleCount);
+  const [activeSemester, setActiveSemester] = useActiveSemester(visibleSemesters);
 
   // n 번째 학기까지 전부 불러온 뒤 그만큼 편다 (바닥 감시·드롭다운 공용)
   const revealUpTo = useCallback(
@@ -98,6 +102,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
   const jump = async (label) => {
     const idx = semesters.indexOf(label);
     if (idx < 0) return;
+    setActiveSemester(label);
     if (idx >= visibleCount) await revealUpTo(idx + 1);
     setPendingJump(label);
   };
@@ -141,7 +146,10 @@ export default function Guestbook({ boardTheme = 'cream' }) {
             방명록
             {boardTheme !== 'cream' && <span className="ml-2 text-[13px] font-normal text-[#919191]">바탕 테스트 · {boardTheme}</span>}
           </h2>
-          <SemesterJump semesters={semesters} currentSemester={meta?.currentSemester} onJump={jump} />
+          <div className="flex flex-wrap items-center gap-2">
+            <SemesterJump semesters={semesters} value={activeSemester} currentSemester={meta?.currentSemester} onJump={jump} />
+            <AdminPageLink href={ROUTES.ADMIN_GUESTBOOK} label="방명록 관리" />
+          </div>
         </div>
         <p className="font-['Pretendard',sans-serif] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
           다녀간 흔적을 한 줄 남겨 주세요
@@ -162,7 +170,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
         {error && <p className="py-10 text-center text-[14px] text-[#919191]">{error}</p>}
 
         {meta &&
-          semesters.slice(0, visibleCount).map((label) => {
+          visibleSemesters.map((label) => {
             const isCurrent = label === meta.currentSemester;
             const notes = notesBySemester[label] ?? [];
             return (
@@ -210,7 +218,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
         onCancel={() => setDeleting(null)}
       />
 
-      {/* 고치기 — 쓰기 칸을 그대로 모달에 */}
+      {/* 고치기 — 쓰기 칸을 그대로 모달에 (종이 폭은 카드와 같은 320px) */}
       <Dialog open={Boolean(editing)} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent hideCloseButton className="max-h-[90dvh] max-w-[560px] overflow-y-auto rounded-[8px] border-[#dedede] p-4 md:p-5">
           <DialogTitle className="text-[16px] font-semibold text-[#212121]">방명록 고치기</DialogTitle>
@@ -236,21 +244,18 @@ export default function Guestbook({ boardTheme = 'cream' }) {
   );
 }
 
-// 세로 칸 n 개에 글을 차례로 나눠 담는 벽돌 배치. CSS columns 를 썼더니 카드 위로 삐져나온 테이프 조각이
-// 칸 경계에서 잘려 엉뚱한 자리에 남았다(10/10 밤 제보) — 칸을 직접 나누면 카드가 통째로 한 칸에 들어간다
+// 세로 칸 n 개에 글을 차례로 나눠 담는 벽돌 배치 (CSS columns 는 카드 위 테이프 조각이 칸 경계에서 잘렸다).
+// 카드는 320px 로 그려 칸 폭에 맞춰 줄어드니, 폰(640 미만)은 한 칸으로 둬 작성 칸과 같은 크기로 보인다
 function useColumnCount() {
-  const [count, setCount] = useState(2);
+  const [count, setCount] = useState(1);
   useEffect(() => {
     const lg = window.matchMedia('(min-width: 1024px)');
     const md = window.matchMedia('(min-width: 768px)');
-    const update = () => setCount(lg.matches ? 4 : md.matches ? 3 : 2);
+    const sm = window.matchMedia('(min-width: 640px)');
+    const update = () => setCount(lg.matches ? 4 : md.matches ? 3 : sm.matches ? 2 : 1);
     update();
-    lg.addEventListener('change', update);
-    md.addEventListener('change', update);
-    return () => {
-      lg.removeEventListener('change', update);
-      md.removeEventListener('change', update);
-    };
+    [lg, md, sm].forEach((m) => m.addEventListener('change', update));
+    return () => [lg, md, sm].forEach((m) => m.removeEventListener('change', update));
   }, []);
   return count;
 }

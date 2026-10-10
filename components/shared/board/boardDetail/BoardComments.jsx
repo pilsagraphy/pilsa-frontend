@@ -44,7 +44,7 @@ const COMPOSER_TEXT = {
  * - 내용에 맞춰 높이가 자동으로 늘어난다. 예전엔 3줄 고정이라 조금만 길어져도 안에서 스크롤돼 타이핑이 불편했다.
  * - 답글·수정은 그 댓글 바로 아래에 인라인으로 뜬다(autoFocus). 예전엔 맨 아래 입력창 하나를 답글 모드로 바꿔 써서
  *   답글 한 번에 화면 끝까지 내려가야 했다.
- * - Enter 는 줄바꿈, 등록은 버튼 또는 Ctrl/Cmd+Enter (웹·앱 모두 — PM 2026-10-10 밤. 처음엔 앱만 바꿨다가 웹도).
+ * - Enter 는 줄바꿈이고 등록은 버튼으로만 한다 (웹·앱 모두 — PM 2026-10-10 밤. Ctrl+Enter 도 뺐다).
  *   예전엔 채팅처럼 Enter 가 등록이라 줄을 바꾸려다 글이 나가 버렸다. 인라인 입력창은 Esc 로 닫는다.
  *   한글 조합 중(isComposing)의 Enter 는 조합 확정이라 무시한다 — 안 그러면 마지막 글자가 잘린 채 나간다.
  *
@@ -125,11 +125,7 @@ function CommentComposer({
               onCancel();
               return;
             }
-            // Ctrl/Cmd+Enter 만 등록. 그냥 Enter 는 줄바꿈 (웹·앱 모두 — PM 2026-10-10)
-            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-              e.preventDefault();
-              submit();
-            }
+            // 키보드로는 등록하지 않는다 — Enter 는 늘 줄바꿈, 등록은 버튼만 (웹·앱 모두, PM 2026-10-10 밤)
           }}
         />
         <button
