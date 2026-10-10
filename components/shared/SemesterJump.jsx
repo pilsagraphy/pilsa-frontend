@@ -32,7 +32,8 @@ export function useActiveSemester(labels) {
   return [active, setActive];
 }
 
-export default function SemesterJump({ semesters = [], value, onJump, currentSemester, className = '' }) {
+// '(이번 학기)' 꼬리표는 붙이지 않는다 — 라벨만 (PM 10/10 밤)
+export default function SemesterJump({ semesters = [], value, onJump, className = '' }) {
   if (semesters.length === 0) return null;
   return (
     <label className={`flex items-center gap-2 text-[13px] text-[#919191] ${className}`}>
@@ -45,7 +46,6 @@ export default function SemesterJump({ semesters = [], value, onJump, currentSem
         {semesters.map((label) => (
           <option key={label} value={label}>
             {label}
-            {label === currentSemester ? ' (이번 학기)' : ''}
           </option>
         ))}
       </select>

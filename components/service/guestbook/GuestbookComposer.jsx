@@ -7,8 +7,8 @@ import useAuthStore from '@/stores/useAuthStore';
 import { apiUrl } from '@/lib/apiBase';
 import { toast } from '@/lib/toast';
 import DrawingModal from './DrawingModal';
-import InkBlot from './InkBlot';
-import { ALIGNS, DESIGN_WIDTH, FONTS, INKS, LINE_HEIGHT_PX, PAPERS, fontOf, inkColor, paperOf, paperStyle } from './guestbookStyle';
+import PaperMarks from './PaperMarks';
+import { ALIGNS, DESIGN_WIDTH, FONTS, INKS, PAPERS, fontOf, inkColor, paperOf, paperStyle, textStyle } from './guestbookStyle';
 
 const NAME_KEY = 'pilsaGuestbookName';
 const readSavedName = () => {
@@ -210,14 +210,14 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
           style={{ ...paperStyle(paper), width: DESIGN_WIDTH, maxWidth: '100%' }}
         >
           {!sel && <span aria-hidden className="absolute -top-[9px] left-1/2 h-[18px] w-[52px] -translate-x-1/2 rotate-[2deg] bg-[#d9d6cd]/70" />}
-          {p.blot && <InkBlot color={p.vintage ? '#6b4a2b' : inkHex} strength={p.vintage ? 2.2 : 1} />}
+          {p.marks && <PaperMarks key={`${paper}-${inkHex}`} kind={p.marks} color={inkHex} />}
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value.slice(0, maxLength))}
             placeholder="필사그래피에 한 줄 남겨 주세요."
             rows={4}
             className={`${f.className} relative w-full resize-none bg-transparent outline-none antialiased placeholder:text-[#b8b5ad]`}
-            style={{ color: inkHex, fontSize: `${Math.round(22 * f.scale)}px`, lineHeight: `${LINE_HEIGHT_PX}px`, textAlign: align }}
+            style={textStyle(paper, font, inkHex, align)}
           />
           <div className="relative mt-2 flex items-end justify-between gap-3">
             <span className="text-[11px] text-[#a3a09a]">
@@ -396,9 +396,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
 
         <div className="flex items-center justify-between gap-3 border-t border-dashed border-[#e0ddd4] pt-3">
           <span className="text-[11px] leading-[1.5] text-[#a3a09a]">
-            {isLoggedIn
-              ? '로그인 상태라 남긴 글을 나중에 고치거나 지울 수 있어요.'
-              : '로그인 없이도 남길 수 있지만, 로그인하지 않고 남긴 글은 나중에 고치거나 지울 수 없어요.'}
+            {isLoggedIn ? '로그인 상태에서 남긴 글만 고치거나 지울 수 있어요.' : '로그인 없이도 남길 수 있어요. 로그인 상태에서 남긴 글만 고치거나 지울 수 있어요.'}
           </span>
           <span className="flex shrink-0 gap-2">
             {onCancel && (

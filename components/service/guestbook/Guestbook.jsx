@@ -10,6 +10,7 @@ import SemesterJump, { scrollToSemester, semesterAnchorId, useActiveSemester } f
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { ROUTES } from '@/constants/routes';
 import { toast } from '@/lib/toast';
+import useAuthStore from '@/stores/useAuthStore';
 import GuestbookComposer from './GuestbookComposer';
 import GuestbookNote from './GuestbookNote';
 import { BOARD_THEMES } from './guestbookStyle';
@@ -63,6 +64,18 @@ export default function Guestbook({ boardTheme = 'cream' }) {
   const semesters = meta?.semesters ?? [];
   const visibleSemesters = semesters.slice(0, visibleCount);
   const [activeSemester, setActiveSemester] = useActiveSemester(visibleSemesters);
+
+  // 공개 화면이라 첫 조회가 로그인 복원(자동 로그인)보다 먼저 나갈 수 있다 → 그때는 내 글이어도 canManage 가 false 로 온다.
+  // 로그인 상태가 바뀌면 이미 받은 학기를 다시 받아 수정·지우기 버튼을 맞춘다 (PM 10/10 밤 "내 글인데 수정이 안 보여")
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const loadedLabelsRef = useRef([]);
+  loadedLabelsRef.current = Object.keys(notesBySemester);
+  useEffect(() => {
+    if (!meta) return;
+    loadedLabelsRef.current.forEach((label) => fetchSemester(label).catch(() => {}));
+    // meta 가 생긴 뒤 isLoggedIn 이 바뀔 때만 — 첫 로드와 겹치지 않게 meta 는 의존성에서 뺀다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]);
 
   // n 번째 학기까지 전부 불러온 뒤 그만큼 편다 (바닥 감시·드롭다운 공용)
   const revealUpTo = useCallback(
@@ -147,7 +160,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
             {boardTheme !== 'cream' && <span className="ml-2 text-[13px] font-normal text-[#919191]">바탕 테스트 · {boardTheme}</span>}
           </h2>
           <div className="flex flex-wrap items-center gap-2">
-            <SemesterJump semesters={semesters} value={activeSemester} currentSemester={meta?.currentSemester} onJump={jump} />
+            <SemesterJump semesters={semesters} value={activeSemester} onJump={jump} />
             <AdminPageLink href={ROUTES.ADMIN_GUESTBOOK} label="방명록 관리" />
           </div>
         </div>
@@ -245,14 +258,14 @@ export default function Guestbook({ boardTheme = 'cream' }) {
 }
 
 // 세로 칸 n 개에 글을 차례로 나눠 담는 벽돌 배치 (CSS columns 는 카드 위 테이프 조각이 칸 경계에서 잘렸다).
-// 카드는 320px 로 그려 칸 폭에 맞춰 줄어드니, 폰(640 미만)은 한 칸으로 둬 작성 칸과 같은 크기로 보인다
+// 카드는 320px 로 그려 칸 폭에 맞춰 줄어드니 칸을 너무 잘게 나누면 글씨가 작아진다 — PC 3칸, 태블릿 2칸, 폰 1칸 (PM 10/10 밤 "글꼴이 작아졌다")
 function useColumnCount() {
   const [count, setCount] = useState(1);
   useEffect(() => {
     const lg = window.matchMedia('(min-width: 1024px)');
     const md = window.matchMedia('(min-width: 768px)');
     const sm = window.matchMedia('(min-width: 640px)');
-    const update = () => setCount(lg.matches ? 4 : md.matches ? 3 : sm.matches ? 2 : 1);
+    const update = () => setCount(lg.matches ? 3 : md.matches ? 2 : sm.matches ? 2 : 1);
     update();
     [lg, md, sm].forEach((m) => m.addEventListener('change', update));
     return () => [lg, md, sm].forEach((m) => m.removeEventListener('change', update));
