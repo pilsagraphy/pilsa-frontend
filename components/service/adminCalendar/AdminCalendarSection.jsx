@@ -5,9 +5,10 @@ import { format } from 'date-fns';
 import { Plus } from 'lucide-react';
 import { toast } from '@/lib/toast';
 
+import { addDays, differenceInCalendarDays, parseISO } from 'date-fns';
 import { createEvent, deleteEvent, deleteEventImage, updateEvent, uploadEventImages } from '@/apis/admin/event';
 import { getErrorMessage } from '@/apis/auth';
-import { getEventCategories } from '@/apis/event';
+import { getEvent, getEventCategories } from '@/apis/event';
 import CalendarSection from '@/components/shared/calendars/CalendarSection';
 import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
 
@@ -72,6 +73,30 @@ export default function AdminCalendarSection() {
 
   const closeForm = React.useCallback(() => setFormTarget(null), []);
 
+  // 회원 달력의 ⋮ 메뉴('관리자 화면에서 수정/삭제')로 들어온 경우 — ?scheduleId=&date=&action=delete.
+  // 그 달로 옮기고, 일정을 받아 수정 폼(또는 삭제 확인)을 바로 연다. 주소에서 지워 새로고침 때 다시 열리지 않게 한다 (10/10).
+  // useSearchParams 는 정적 페이지에서 Suspense 경계를 요구하므로 마운트 뒤 window 에서 읽는다
+  React.useEffect(() => {
+    const url = new URL(window.location.href);
+    const scheduleId = url.searchParams.get('scheduleId');
+    const date = url.searchParams.get('date');
+    const action = url.searchParams.get('action');
+    if (!scheduleId) return;
+    url.searchParams.delete('scheduleId');
+    url.searchParams.delete('date');
+    url.searchParams.delete('action');
+    window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`);
+
+    if (date) setRefreshSignal((prev) => ({ key: prev.key + 1, date }));
+    getEvent(scheduleId)
+      .then((schedule) => {
+        if (!schedule) return;
+        if (action === 'delete') setDeletingSchedule(schedule);
+        else setFormTarget({ mode: 'edit', schedule });
+      })
+      .catch((error) => toast.error(getErrorMessage(error, '일정을 불러오지 못했습니다.')));
+  }, []);
+
   // 달력에서 단일 클릭으로 고른 날짜('yyyy-MM-dd'). '일정 추가' 버튼의 초깃값으로 쓴다 — 날짜를 누르고 버튼을
   // 눌렀는데 오늘만 들어간다는 테스터 제보(2026-10-05). 선택을 풀면 null → ScheduleForm 이 오늘로 채운다.
   const [selectedDate, setSelectedDate] = React.useState(null);
@@ -103,6 +128,40 @@ export default function AdminCalendarSection() {
       setIsSaving(true);
 
       try {
+        // 반복 등록 — 폼이 계산해 준 시작일들(repeatDates)마다 같은 내용의 일정을 하나씩 만든다 (PM 요청, 10/10).
+        // 반복 규칙을 서버에 저장하지 않고 개별 일정으로 두므로 하나씩 고치거나 지울 수 있다.
+        // 알림은 첫 일정 한 번만 보낸다 — 12주짜리 반복에 12번 푸시가 가면 안 된다.
+        const repeatDates = !isEdit && values.repeatDates?.length > 1 ? values.repeatDates : null;
+        if (repeatDates) {
+          const spanDays = differenceInCalendarDays(parseISO(values.endDate), parseISO(values.startDate));
+          const newImages = values.newImages ?? [];
+          let created = 0;
+          let imageFailed = false;
+          for (const startDate of repeatDates) {
+            const endDate = format(addDays(parseISO(startDate), spanDays), 'yyyy-MM-dd');
+            // eslint-disable-next-line no-await-in-loop
+            const one = await createEvent({ ...values, startDate, endDate, notify: values.notify && created === 0 });
+            created += 1;
+            const eventId = one?.data?.eventId;
+            if (eventId && newImages.length) {
+              try {
+                // eslint-disable-next-line no-await-in-loop
+                await uploadEventImages(eventId, newImages);
+              } catch {
+                imageFailed = true;
+              }
+            }
+          }
+          toast.success(`일정 ${created}건을 반복 등록했습니다.`, {
+            description: imageFailed
+              ? '일부 일정의 이미지는 올리지 못했습니다. 해당 일정을 수정해 다시 붙여 주세요.'
+              : '구글 캘린더를 구독 중인 회원에게는 최대 10분 안에 반영돼요.',
+          });
+          setFormTarget(null);
+          refresh(repeatDates[0]);
+          return;
+        }
+
         const result = isEdit
           ? await updateEvent(values.scheduleId, values)
           : await createEvent(values);

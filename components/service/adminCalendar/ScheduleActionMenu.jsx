@@ -7,10 +7,11 @@ const MENU_WIDTH = 120;
 const MENU_GAP = 6;
 
 // 월별 일정 카드 오른쪽의 ⋮ 버튼. 누르면 '일정 수정 · 일정 삭제'가 열린다.
+// items([{ label, onSelect }])를 주면 그 항목으로 대신 그린다 — 회원 달력에서 관리자에게 '관리자 화면에서 …' 를 띄우는 데 쓴다 (10/10).
 //
 // 목록(MonthlyScheduleList)이 overflow-y-auto라서 메뉴를 카드 안에 absolute로 두면 잘린다.
 // 그래서 버튼 위치를 재서 fixed로 띄운다. (열려 있는 동안 스크롤 · 리사이즈되면 닫는다)
-export default function ScheduleActionMenu({ isSelected = false, onEdit, onDelete }) {
+export default function ScheduleActionMenu({ isSelected = false, onEdit, onDelete, items = null, menuWidth = MENU_WIDTH }) {
   const [position, setPosition] = React.useState(null);
   const buttonRef = React.useRef(null);
   const menuRef = React.useRef(null);
@@ -28,7 +29,7 @@ export default function ScheduleActionMenu({ isSelected = false, onEdit, onDelet
     const rect = buttonRef.current?.getBoundingClientRect();
     if (!rect) return;
 
-    setPosition({ top: rect.bottom + MENU_GAP, left: rect.right - MENU_WIDTH });
+    setPosition({ top: rect.bottom + MENU_GAP, left: rect.right - menuWidth });
   };
 
   React.useEffect(() => {
@@ -85,25 +86,25 @@ export default function ScheduleActionMenu({ isSelected = false, onEdit, onDelet
         <div
           ref={menuRef}
           role="menu"
-          style={{ top: position.top, left: position.left, width: MENU_WIDTH }}
+          style={{ top: position.top, left: position.left, width: menuWidth }}
           className="fixed z-50 overflow-hidden rounded-[4px] border border-[#dedede] bg-white py-[4px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
         >
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => runAction(onEdit)}
-            className="block w-full px-[14px] py-[8px] text-left text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6]"
-          >
-            일정 수정
-          </button>
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => runAction(onDelete)}
-            className="block w-full px-[14px] py-[8px] text-left text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6]"
-          >
-            일정 삭제
-          </button>
+          {(
+            items ?? [
+              { label: '일정 수정', onSelect: onEdit },
+              { label: '일정 삭제', onSelect: onDelete },
+            ]
+          ).map((item) => (
+            <button
+              key={item.label}
+              type="button"
+              role="menuitem"
+              onClick={() => runAction(item.onSelect)}
+              className="block w-full px-[14px] py-[8px] text-left text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6]"
+            >
+              {item.label}
+            </button>
+          ))}
         </div>
       )}
     </>

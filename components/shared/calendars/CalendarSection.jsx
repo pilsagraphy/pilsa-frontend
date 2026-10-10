@@ -17,8 +17,12 @@ import ScheduleDetail from '@/components/shared/calendars/ScheduleDetail';
 import CalendarSubscribeButton from '@/components/shared/calendars/CalendarSubscribeButton';
 import AddSingleEventDialog from '@/components/shared/calendars/AddSingleEventDialog';
 import { Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { getEvent, getEventList } from '@/apis/event';
 import { CALENDAR_COLUMN_MAX_W } from '@/components/shared/calendars/calendarLayout';
+import ScheduleActionMenu from '@/components/service/adminCalendar/ScheduleActionMenu';
+import useAuthStore from '@/stores/useAuthStore';
+import { ROUTES } from '@/constants/routes';
 
 function isDateIncludedInSchedule(date, schedule) {
   return isWithinInterval(startOfDay(date), {
@@ -286,21 +290,41 @@ export default function CalendarSection({
 
   // 카드 오른쪽 + 로 '이 일정만' 담기. 관리자 화면은 그 자리에 ⋮ 메뉴를 넣으므로 그때는 그대로 둔다
   // 선택된 카드는 배경이 어두워서(#454545) 마우스를 올렸을 때 검정으로 바뀌면 사라졌다 → 흰색 유지 (PM, 2026-09-21)
+  // 관리자가 회원 달력(메인·일정 달력)을 볼 때는 + 옆에 ⋮ 를 더 두어 관리자 화면의 수정·삭제로 바로 간다 (테스터 요청, 10/10)
+  const router = useRouter();
+  const adminLevel = useAuthStore((s) => s.adminLevel);
+  const isAdmin = adminLevel >= 1;
+  const adminHref = (schedule, action) =>
+    `${ROUTES.ADMIN_CALENDAR}?scheduleId=${schedule.scheduleId}&date=${schedule.startDate}${action ? `&action=${action}` : ''}`;
   const renderAddAction = (schedule, isSelected = false) => (
-    <button
-      type="button"
-      aria-label={`${schedule.title} 일정을 내 캘린더에 담기`}
-      onClick={(event) => {
-        event.stopPropagation();
-        setAddTarget(schedule);
-      }}
-      className={`grid size-6 place-items-center rounded-full transition ${
-        isSelected ? 'text-white hover:bg-white/20' : 'text-[#919191] hover:bg-black/5 hover:text-[#212121]'
-      }`}
-    >
-      {/* 팀이 만든 원래 모양(+)을 그대로 쓴다 (PM, 2026-09-21) */}
-      <Plus size={20} strokeWidth={1.8} aria-hidden />
-    </button>
+    <span className="flex items-center gap-[2px]">
+      <button
+        type="button"
+        aria-label={`${schedule.title} 일정을 내 캘린더에 담기`}
+        onClick={(event) => {
+          event.stopPropagation();
+          setAddTarget(schedule);
+        }}
+        className={`grid size-6 place-items-center rounded-full transition ${
+          isSelected ? 'text-white hover:bg-white/20' : 'text-[#919191] hover:bg-black/5 hover:text-[#212121]'
+        }`}
+      >
+        {/* 팀이 만든 원래 모양(+)을 그대로 쓴다 (PM, 2026-09-21) */}
+        <Plus size={20} strokeWidth={1.8} aria-hidden />
+      </button>
+      {isAdmin && (
+        <span onClick={(event) => event.stopPropagation()}>
+          <ScheduleActionMenu
+            isSelected={isSelected}
+            menuWidth={168}
+            items={[
+              { label: '관리자 화면에서 수정', onSelect: () => router.push(adminHref(schedule)) },
+              { label: '관리자 화면에서 삭제', onSelect: () => router.push(adminHref(schedule, 'delete')) },
+            ]}
+          />
+        </span>
+      )}
+    </span>
   );
 
   return (
@@ -348,6 +372,43 @@ export default function CalendarSection({
         <div className="flex w-full min-w-0 flex-col gap-3 sm:gap-[12px] min-[960px]:max-w-[404px] min-[960px]:flex-1">
           {/* 목록은 오른쪽에 여백 6px + 스크롤바 자리 4px을 비워 둔다(MonthlyScheduleList).
               라벨 줄에도 같은 10px을 줘야 버튼이 일정 카드의 오른쪽 끝과 맞는다. */}
+          {/* 오늘 일정 — 달력 바로 아래에서 "오늘 뭐 있나" 를 한눈에 (테스터 가성연 요청, 10/10). 이번 달을 보고 있을 때만 */}
+          {!isLoading && !hasFetchError && isSameMonth(currentMonth, new Date()) && (
+            <div className={`flex flex-col gap-[6px] ${scheduleListAction && scrollableScheduleList ? 'pe-[10px]' : ''}`}>
+              <p className="text-[14px] tracking-[-0.32px] text-[#212121] md:text-[16px]">오늘 일정</p>
+              {(() => {
+                const todaySchedules = schedules.filter((schedule) => isDateIncludedInSchedule(new Date(), schedule));
+                if (!todaySchedules.length) {
+                  return (
+                    <p className="rounded-[8px] bg-[#f6f6f6] px-[14px] py-[10px] text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">
+                      오늘은 일정이 없어요
+                    </p>
+                  );
+                }
+                return (
+                  <ul className="flex flex-col gap-[6px]">
+                    {todaySchedules.map((schedule) => (
+                      <li key={schedule.scheduleId}>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectSchedule(schedule)}
+                          className="flex w-full items-center justify-between gap-3 rounded-[8px] border border-[#212121] bg-white px-[14px] py-[10px] text-left transition-colors hover:bg-[#f6f6f6]"
+                        >
+                          <span className="min-w-0 truncate text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121]">
+                            {schedule.title}
+                          </span>
+                          <span className="shrink-0 text-[12px] tracking-[-0.24px] text-[#919191]">
+                            {schedule.startTime ? `${schedule.startTime}${schedule.endTime ? ` ~ ${schedule.endTime}` : ''}` : '종일'}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })()}
+            </div>
+          )}
+
           <div
             className={`flex items-center justify-between gap-3 ${
               scheduleListAction && scrollableScheduleList ? 'pe-[10px]' : ''

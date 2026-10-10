@@ -111,7 +111,8 @@ function toGroups(entries, targetType) {
         link,
         targetTitle: entry.title,
         linkLabel: entry.title ? `${isComment ? '원글' : '게시글'} 보기: ${entry.title}` : undefined,
-        reportsLink: ROUTES.ADMIN_REPORTS_TAB(targetType),
+        // 신고 관리에 지금 보이는 대상(반려되지 않은 신고 행이 있음)만 링크를 건다 — 복원돼 반려로 끝난 글은 거기 가도 없다 (PM, 10/10)
+        reportsLink: entry.listedInReports ? ROUTES.ADMIN_REPORTS_TAB(targetType) : null,
         state: entry.state,
         stateLabel: STATE_LABEL[entry.state] ?? entry.state,
         events: [],

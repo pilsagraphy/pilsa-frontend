@@ -77,8 +77,10 @@ export default function BoardSection({ boardId }) {
   const [loading, setLoading] = useState(() => !cached);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // 떠날 때(상세로 이동 = 언마운트) 스크롤 위치를 적어 둔다
-  useEffect(() => {
+  // 떠날 때(상세로 이동 = 언마운트) 스크롤 위치를 적어 둔다.
+  // useEffect 의 정리는 페인트 뒤에 돌아서, 그때는 Next 가 새 화면을 그리며 이미 맨 위로 올린 뒤라 0 이 적혔다
+  // ("여전히 맨 위로 간다" 제보, 10/10). useLayoutEffect 의 정리는 새 화면이 그려지기 전(커밋 중)에 돌아 값이 살아 있다
+  useLayoutEffect(() => {
     return () => rememberScroll(cacheKey, window.scrollY);
   }, [cacheKey, rememberScroll]);
 
