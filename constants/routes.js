@@ -65,7 +65,8 @@ export const ROUTES = {
   ADMIN_POLICIES: `${BASE_PATH}admin/operations/policies`,
   ADMIN_NOTIFICATION_SETTINGS: `${BASE_PATH}admin/operations/notifications`,
   ADMIN_ORGANIZATION: `${BASE_PATH}admin/operations/organization`, // 조직도 편집 (역대 회장 · 학기별 임원진, 2026-10-10)
-  ADMIN_GUESTBOOK: `${BASE_PATH}admin/operations/guestbook`, // 방명록 관리 (글 숨김 · 스티커, 2026-10-10)
+  ADMIN_GUESTBOOK: `${BASE_PATH}admin/operations/guestbook`, // 방명록 관리 (글 숨김, 2026-10-10)
+  ADMIN_GALLERY: `${BASE_PATH}admin/operations/gallery`, // 활동 사진 관리 (숨김/복원, 2026-10-10 밤)
 };
 
 // 비로그인 접근 가능

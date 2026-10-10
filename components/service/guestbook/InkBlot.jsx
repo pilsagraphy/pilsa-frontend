@@ -1,19 +1,40 @@
-// 무지 종이의 잉크 자국 — 카드 오른쪽 아래에 잉크 색으로 옅게. 번진 방울 하나와 튄 점 둘 (PM 10/10 밤 "무지는 잉크자국 있으면")
-export default function InkBlot({ color, className = '' }) {
+// 무지 종이의 얼룩 — 컵 자국처럼 둥근 테두리가 진하고 안은 옅은 고리 하나, 반대편엔 물감 튄 자국 (PM 10/10 밤 참고 이미지).
+// 잉크 색을 아주 옅게 써서 글씨를 방해하지 않는다. 모서리에 걸쳐 일부가 종이 밖으로 나간다
+// strength: 얼룩 진하기 배수 (빈티지 종이는 2 쯤으로 진하게)
+export default function InkBlot({ color, strength = 1 }) {
   return (
-    <svg
-      aria-hidden
-      viewBox="0 0 100 100"
-      className={`pointer-events-none absolute -bottom-2 -right-1 h-[64px] w-[64px] ${className}`}
-      style={{ color, opacity: 0.14 }}
-    >
-      <path
-        fill="currentColor"
-        d="M62 22c9-6 22-3 27 7 4 8 0 15 6 22 6 8 4 20-5 26-9 7-19 5-28 10-10 6-22 4-29-5-6-8-3-17-9-24-7-8-5-21 4-27 8-5 16 0 24-3 4-2 6-4 10-6z"
-      />
-      <circle cx="18" cy="20" r="4" fill="currentColor" />
-      <circle cx="30" cy="12" r="2.2" fill="currentColor" />
-      <circle cx="88" cy="78" r="2.6" fill="currentColor" />
-    </svg>
+    <>
+      {/* 컵 자국 — 오른쪽 위 */}
+      <svg aria-hidden viewBox="0 0 120 120" className="pointer-events-none absolute -right-6 -top-5 h-[112px] w-[112px]" style={{ color, opacity: strength }}>
+        <defs>
+          <filter id="blotSoft" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="1.2" />
+          </filter>
+        </defs>
+        <g filter="url(#blotSoft)" fill="none" stroke="currentColor" strokeLinecap="round">
+          {/* 고리 — 두께가 들쭉날쭉하도록 살짝 어긋난 원 둘 */}
+          <circle cx="60" cy="60" r="42" strokeWidth="5" opacity="0.16" />
+          <circle cx="61.5" cy="58.5" r="41" strokeWidth="2.5" opacity="0.12" strokeDasharray="40 14 60 9 50 20" />
+        </g>
+        {/* 고리 안쪽은 옅게 번진 자국 */}
+        <circle cx="60" cy="60" r="39" fill="currentColor" opacity="0.045" />
+      </svg>
+
+      {/* 물감 튄 자국 — 왼쪽 아래 */}
+      <svg aria-hidden viewBox="0 0 100 100" className="pointer-events-none absolute -bottom-3 -left-3 h-[76px] w-[76px]" style={{ color, opacity: strength }}>
+        <g fill="currentColor">
+          <path
+            opacity="0.17"
+            d="M38 58c-6-9 2-20 12-19 8 1 10-8 18-6 9 2 7 12 13 16 8 6 2 18-7 19-7 1-9 8-17 7-9-1-8-9-14-11-4-2-4-4-5-6z"
+          />
+          <circle cx="24" cy="44" r="3.2" opacity="0.2" />
+          <circle cx="30" cy="34" r="1.8" opacity="0.18" />
+          <circle cx="78" cy="38" r="2.4" opacity="0.18" />
+          <circle cx="70" cy="84" r="2" opacity="0.16" />
+          <circle cx="52" cy="90" r="1.3" opacity="0.16" />
+          <circle cx="16" cy="60" r="1.4" opacity="0.14" />
+        </g>
+      </svg>
+    </>
   );
 }
