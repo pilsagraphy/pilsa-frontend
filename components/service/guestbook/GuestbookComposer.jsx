@@ -1,13 +1,14 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '@/apis/auth';
 import { editGuestbookNote, writeGuestbookNote } from '@/apis/guestbook';
 import useAuthStore from '@/stores/useAuthStore';
 import { apiUrl } from '@/lib/apiBase';
 import { toast } from '@/lib/toast';
+import ColorPicker from '@/components/shared/ColorPicker';
 import DrawingModal from './DrawingModal';
-import PaperMarks from './PaperMarks';
+import PaperMarks, { newMarksSeed } from './PaperMarks';
 import { ALIGNS, DESIGN_WIDTH, FONTS, INKS, PAPERS, fontOf, inkColor, paperOf, paperStyle, textStyle } from './guestbookStyle';
 
 // 기억해 둔 이름은 계정별로 — 예전엔 키 하나라 관리자가 남의 글을 고치면 그 이름이 내 기본값으로 남았다 (PM 10/11 "왜 자꾸 수민으로")
@@ -41,6 +42,9 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   const [ink, setInk] = useState(initial?.ink ?? INKS[0].key);
   const [paper, setPaper] = useState(initial?.paper ?? PAPERS[0].key);
   const [align, setAlign] = useState(initial?.align ?? 'left');
+  // 얼룩 배치 씨앗 — 종이 버튼을 누를 때마다 새로 뽑고(마음에 드는 배치를 고른다), 글과 함께 저장돼 카드에서도 그대로 (PM 10/11)
+  const [marksSeed, setMarksSeed] = useState(() => initial?.marksSeed ?? initial?.noteId ?? newMarksSeed());
+  const [inkPickerOpen, setInkPickerOpen] = useState(false);
   // 스티커: { id(화면용), drawingId?, dataUrl?, imageUrl?, posX, posY, widthPct, rotation, opacity, aspect(세로÷가로) }. 배열 순서 = 겹침 순서
   const [drawings, setDrawings] = useState(() =>
     [...(initial?.drawings ?? [])]
@@ -61,8 +65,19 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   const [drawOpen, setDrawOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const paperRef = useRef(null);
-  const colorRef = useRef(null);
+  const textareaRef = useRef(null);
   const drag = useRef(null);
+
+  // 글 칸 높이를 내용에 맞춘다 (글씨체가 바뀌어도). 늘어난 종이 높이에 맞춰 스티커 자리도 다시 가둔다
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = '0px';
+    el.style.height = `${el.scrollHeight}px`;
+    setDrawings((list) => list.map((d) => ({ ...d, ...clampPos(d, d.posX, d.posY) })));
+    // clampPos 는 ref 로 종이 크기를 읽는 순수 함수 — 의존성에 넣으면 렌더마다 돈다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content, font, paper]);
 
   const f = fontOf(font);
   const p = paperOf(paper);
@@ -163,6 +178,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
         ink,
         paper,
         align,
+        marksSeed,
         drawings: drawings.map((d) => ({
           drawingId: d.drawingId ?? null,
           dataUrl: d.dataUrl ?? null,
@@ -184,6 +200,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
         setContent('');
         setDrawings([]);
         setSelected(null);
+        setMarksSeed(newMarksSeed());
       }
       toast.success(mode === 'edit' ? '고쳤어요.' : '방명록에 한 장 붙였어요.');
       onDone?.(saved);
@@ -212,13 +229,15 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
           style={{ ...paperStyle(paper), width: DESIGN_WIDTH, maxWidth: '100%' }}
         >
           {!sel && <span aria-hidden className="absolute -top-[9px] left-1/2 h-[18px] w-[52px] -translate-x-1/2 rotate-[2deg] bg-[#d9d6cd]/70" />}
-          {p.marks && <PaperMarks key={`${paper}-${inkHex}`} kind={p.marks} color={inkHex} />}
+          {p.marks && <PaperMarks kind={p.marks} color={inkHex} seed={marksSeed} />}
+          {/* 글 칸은 한 줄로 시작해 글 양만큼만 늘어난다 — 카드도 글 양만큼만 커지므로 작성 칸이 곧 실제 크기 (얼룩·스티커 자리를 실제 크기에서 고른다, PM 10/11) */}
           <textarea
+            ref={textareaRef}
             value={content}
             onChange={(e) => setContent(e.target.value.slice(0, maxLength))}
             placeholder="필사그래피에 한 줄 남겨 주세요."
-            rows={4}
-            className={`${f.className} relative w-full resize-none bg-transparent outline-none antialiased placeholder:text-[#b8b5ad]`}
+            rows={1}
+            className={`${f.className} relative block w-full resize-none overflow-hidden bg-transparent outline-none antialiased placeholder:text-[#b8b5ad]`}
             style={textStyle(paper, font, inkHex, align)}
           />
           <div className="relative mt-2 flex items-end justify-between gap-3">
@@ -339,12 +358,12 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               style={{ backgroundColor: i.color }}
             />
           ))}
-          {/* + 를 누르면 컬러피커 — 고른 색은 옆에 칩으로 (PM 10/10 밤) */}
+          {/* + 를 누르면 포토샵 식 컬러피커 — 고른 색은 옆에 칩으로 (PM 10/11) */}
           <button
             type="button"
             title="직접 고르기"
             aria-label="잉크 색 직접 고르기"
-            onClick={() => colorRef.current?.click()}
+            onClick={() => setInkPickerOpen((v) => !v)}
             className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border text-[14px] leading-none ${
               isHex(ink) ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-dashed border-[#919191] text-[#919191]'
             }`}
@@ -352,16 +371,18 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
           >
             +
           </button>
-          <input
-            ref={colorRef}
-            type="color"
-            value={isHex(ink) ? ink : '#1f1f1f'}
-            onChange={(e) => setInk(e.target.value.toLowerCase())}
-            className="h-0 w-0 opacity-0"
-            tabIndex={-1}
-            aria-hidden
-          />
         </Row>
+        {inkPickerOpen && (
+          <ColorPicker
+            value={inkHex}
+            swatches={INKS.map((i) => i.color)}
+            onCancel={() => setInkPickerOpen(false)}
+            onConfirm={(hex) => {
+              setInk(hex.toLowerCase());
+              setInkPickerOpen(false);
+            }}
+          />
+        )}
         <Row label="종이">
           {PAPERS.map((x) => (
             <button
@@ -369,7 +390,11 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               type="button"
               title={x.label}
               aria-pressed={paper === x.key}
-              onClick={() => setPaper(x.key)}
+              onClick={() => {
+                // 같은 종이를 또 눌러도 얼룩을 새로 뽑는다 — 마음에 드는 배치가 나올 때까지 (PM 10/11)
+                setPaper(x.key);
+                setMarksSeed(newMarksSeed());
+              }}
               className={`h-[26px] rounded-[4px] border px-[8px] text-[11px] ${paper === x.key ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-[#d4d1c8]'}`}
               style={paperStyle(x.key)}
             >

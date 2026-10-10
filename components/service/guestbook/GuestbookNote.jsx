@@ -58,7 +58,8 @@ export default function GuestbookNote({ note, onEdit, onDelete, onRestore, compa
       >
         {/* 테이프 조각 — 무채색 반투명 */}
         <span aria-hidden className="absolute -top-[9px] left-1/2 h-[18px] w-[52px] -translate-x-1/2 rotate-[-2deg] bg-[#d9d6cd]/70" />
-        {paper.marks && <PaperMarks kind={paper.marks} color={ink} />}
+        {/* 얼룩은 저장된 씨앗으로 늘 같은 자리 (씨앗이 없는 옛 글은 글 번호로) */}
+        {paper.marks && <PaperMarks kind={paper.marks} color={ink} seed={note.marksSeed ?? note.noteId ?? 1} />}
 
         <p className={`${font.className} relative whitespace-pre-wrap break-words antialiased`} style={textStyle(note.paper, note.font, ink, textAlignOf(note.align))}>
           {note.content}

@@ -1,27 +1,32 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import ColorPicker from '@/components/shared/ColorPicker';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/lib/toast';
 import { INKS } from './guestbookStyle';
 
 // 그림판 — 방명록에 붙일 스티커를 직접 그린다 (PM 10/10 밤: 관리자 등록 스티커 대신 유저가 그려서 붙이기).
-// 투명 바탕 캔버스에 펜/지우개, 굵기 3단, 되돌리기, 지우기. 완료하면 그린 부분만 잘라낸(여백 제거) 투명 PNG data URL 을 돌려준다.
+// 투명 바탕 캔버스에 펜/지우개, 굵기 4단, 되돌리기, 지우기. 완료하면 그린 부분만 잘라낸(여백 제거) 투명 PNG data URL 을 돌려준다.
+// 도구는 세 줄 — 색(기본색 + 컬러피커) / 굵기 / 지우개·되돌리기·전부 지우기 (PM 10/11).
+// 좌표는 화면에 보이는 캔버스 크기와 실제 픽셀 크기의 비율로 바로 환산한다 — 손가락이 닿은 자리에 그려진다 (어긋나던 문제, PM 10/11).
 const SIZE = 320;
-const BRUSHES = [3, 6, 12];
-const COLORS = [...INKS.map((i) => i.color), '#e2b007', '#d9534f', '#3b82f6'];
+const BRUSHES = [2, 4, 8, 14];
+const PRESETS = [...INKS.map((i) => i.color), '#e2b007', '#d9534f', '#3b82f6', '#ffffff'];
 
 export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
   const canvasRef = useRef(null);
   const drawing = useRef(false);
   const last = useRef(null);
   const history = useRef([]);
-  const [color, setColor] = useState(COLORS[0]);
+  const [color, setColor] = useState(PRESETS[0]);
+  const [custom, setCustom] = useState(null); // 컬러피커로 고른 색
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [brush, setBrush] = useState(BRUSHES[1]);
   const [eraser, setEraser] = useState(false);
   const [dirty, setDirty] = useState(false);
 
-  // 열 때마다 깨끗한 캔버스. 선명하게 보이도록 기기 배율만큼 크게 그린다
+  // 열 때마다 깨끗한 캔버스. 선명하게 보이도록 기기 배율만큼 크게 그린다 (좌표는 pos() 가 실제 픽셀로 환산)
   useEffect(() => {
     if (!open) return;
     const canvas = canvasRef.current;
@@ -30,18 +35,25 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     canvas.width = SIZE * ratio;
     canvas.height = SIZE * ratio;
     const ctx = canvas.getContext('2d');
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
-    ctx.clearRect(0, 0, SIZE, SIZE);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     history.current = [];
     setDirty(false);
     setEraser(false);
+    setPickerOpen(false);
   }, [open]);
 
+  // 화면 좌표 → 캔버스 실제 픽셀 좌표. CSS 로 늘어나거나 줄어든 크기와 무관하게 닿은 자리에 그려진다
   const pos = (event) => {
-    const rect = canvasRef.current.getBoundingClientRect();
-    return { x: ((event.clientX - rect.left) / rect.width) * SIZE, y: ((event.clientY - rect.top) / rect.height) * SIZE };
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: ((event.clientX - rect.left) / rect.width) * canvas.width,
+      y: ((event.clientY - rect.top) / rect.height) * canvas.height,
+      scale: canvas.width / SIZE,
+    };
   };
 
   const snapshot = () => {
@@ -56,15 +68,16 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     event.currentTarget.setPointerCapture?.(event.pointerId);
     snapshot();
     drawing.current = true;
-    last.current = pos(event);
+    const p = pos(event);
+    last.current = p;
     const ctx = canvasRef.current.getContext('2d');
     ctx.globalCompositeOperation = eraser ? 'destination-out' : 'source-over';
     ctx.strokeStyle = color;
-    ctx.lineWidth = eraser ? brush * 2.5 : brush;
+    ctx.lineWidth = (eraser ? brush * 2.5 : brush) * p.scale;
     // 점 하나도 찍히게
     ctx.beginPath();
-    ctx.moveTo(last.current.x, last.current.y);
-    ctx.lineTo(last.current.x + 0.1, last.current.y + 0.1);
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(p.x + 0.1, p.y + 0.1);
     ctx.stroke();
     setDirty(true);
   };
@@ -88,22 +101,13 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
   const undo = () => {
     const prev = history.current.pop();
     if (!prev) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.putImageData(prev, 0, 0);
-    ctx.restore();
+    canvasRef.current.getContext('2d').putImageData(prev, 0, 0);
   };
 
   const clear = () => {
     snapshot();
     const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    ctx.save();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.restore();
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
     setDirty(false);
   };
 
@@ -152,10 +156,11 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     `flex h-[32px] min-w-[32px] items-center justify-center rounded-[6px] border px-2 text-[12px] transition ${
       active ? 'border-[#212121] bg-[#212121] text-white' : 'border-[#dedede] bg-white text-[#454545] hover:bg-[#f5f5f5]'
     }`;
+  const rowLabel = 'w-[40px] shrink-0 text-[12px] text-[#a3a09a]';
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent hideCloseButton className="max-w-[380px] gap-3 rounded-[8px] border-[#dedede] p-4">
+      <DialogContent hideCloseButton className="max-h-[92dvh] max-w-[380px] gap-3 overflow-y-auto rounded-[8px] border-[#dedede] p-4">
         <DialogTitle className="text-[16px] font-semibold text-[#212121]">스티커 그리기</DialogTitle>
         <DialogDescription className="text-[12px] text-[#919191]">
           투명한 종이에 그려요. 그린 부분만 잘라서 방명록에 붙이고, 자리는 붙인 뒤 끌어서 옮길 수 있어요.
@@ -163,10 +168,9 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
 
         {/* 캔버스 — 투명이 보이도록 체크무늬 바탕 */}
         <div
-          className="mx-auto overflow-hidden rounded-[6px] border border-[#dedede]"
+          className="mx-auto w-full overflow-hidden rounded-[6px] border border-[#dedede]"
           style={{
-            width: SIZE,
-            maxWidth: '100%',
+            maxWidth: SIZE,
             backgroundImage:
               'linear-gradient(45deg, #f1f1f1 25%, transparent 25%), linear-gradient(-45deg, #f1f1f1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f1f1f1 75%), linear-gradient(-45deg, transparent 75%, #f1f1f1 75%)',
             backgroundSize: '16px 16px',
@@ -175,7 +179,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
         >
           <canvas
             ref={canvasRef}
-            style={{ width: '100%', aspectRatio: '1 / 1', touchAction: 'none', display: 'block', cursor: 'crosshair' }}
+            style={{ width: '100%', height: 'auto', aspectRatio: '1 / 1', touchAction: 'none', display: 'block', cursor: 'crosshair' }}
             onPointerDown={start}
             onPointerMove={move}
             onPointerUp={end}
@@ -184,9 +188,10 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
           />
         </div>
 
-        {/* 색 · 굵기 · 지우개 */}
+        {/* 1줄: 색 — 기본색 + 컬러피커 */}
         <div className="flex flex-wrap items-center gap-2">
-          {COLORS.map((c) => (
+          <span className={rowLabel}>색</span>
+          {PRESETS.map((c) => (
             <button
               key={c}
               type="button"
@@ -195,38 +200,68 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
                 setColor(c);
                 setEraser(false);
               }}
-              className={`h-[22px] w-[22px] rounded-full border-2 ${!eraser && color === c ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-white'}`}
+              className={`h-[22px] w-[22px] rounded-full border-2 ${!eraser && color === c ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-black/10'}`}
               style={{ backgroundColor: c }}
             />
           ))}
-          <span className="mx-1 h-[20px] w-px bg-[#dedede]" />
+          <button
+            type="button"
+            title="직접 고르기"
+            aria-label="색 직접 고르기"
+            onClick={() => setPickerOpen((v) => !v)}
+            className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border text-[14px] leading-none ${
+              !eraser && custom && color === custom ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-dashed border-[#919191] text-[#919191]'
+            }`}
+            style={custom ? { backgroundColor: custom, color: '#fff' } : undefined}
+          >
+            +
+          </button>
+        </div>
+        {pickerOpen && (
+          <ColorPicker
+            value={custom ?? color}
+            swatches={PRESETS}
+            onCancel={() => setPickerOpen(false)}
+            onConfirm={(hex) => {
+              setCustom(hex);
+              setColor(hex);
+              setEraser(false);
+              setPickerOpen(false);
+            }}
+          />
+        )}
+
+        {/* 2줄: 굵기 */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={rowLabel}>굵기</span>
           {BRUSHES.map((b) => (
             <button key={b} type="button" aria-label={`굵기 ${b}`} onClick={() => setBrush(b)} className={toolBtn(brush === b)}>
-              <span className="rounded-full bg-current" style={{ width: b + 2, height: b + 2 }} />
+              <span className="rounded-full bg-current" style={{ width: Math.min(b + 2, 16), height: Math.min(b + 2, 16) }} />
             </button>
           ))}
+        </div>
+
+        {/* 3줄: 지우개 · 되돌리기 · 전부 지우기 */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={rowLabel}>지우개</span>
           <button type="button" onClick={() => setEraser((v) => !v)} className={toolBtn(eraser)}>
-            지우개
+            {eraser ? '지우개 켜짐' : '지우개'}
+          </button>
+          <button type="button" onClick={undo} className={toolBtn(false)}>
+            되돌리기
+          </button>
+          <button type="button" onClick={clear} className={toolBtn(false)}>
+            전부 지우기
           </button>
         </div>
 
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex gap-2">
-            <button type="button" onClick={undo} className={toolBtn(false)}>
-              되돌리기
-            </button>
-            <button type="button" onClick={clear} className={toolBtn(false)}>
-              전부 지우기
-            </button>
-          </span>
-          <span className="flex gap-2">
-            <button type="button" onClick={onClose} className={toolBtn(false)}>
-              취소
-            </button>
-            <button type="button" onClick={done} disabled={!dirty} className={`${toolBtn(true)} disabled:opacity-40`}>
-              붙이기
-            </button>
-          </span>
+        <div className="flex justify-end gap-2 border-t border-[#ededed] pt-3">
+          <button type="button" onClick={onClose} className={toolBtn(false)}>
+            취소
+          </button>
+          <button type="button" onClick={done} disabled={!dirty} className={`${toolBtn(true)} disabled:opacity-40`}>
+            붙이기
+          </button>
         </div>
       </DialogContent>
     </Dialog>

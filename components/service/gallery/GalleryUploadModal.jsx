@@ -49,6 +49,10 @@ export default function GalleryUploadModal({ open, onClose, onUploaded, maxFiles
       toast.error('제목을 적어 주세요.');
       return;
     }
+    if (!hashtags.trim()) {
+      toast.error('해시태그를 하나 이상 적어 주세요.');
+      return;
+    }
     setSending(true);
     try {
       const prepared = [];
@@ -93,12 +97,12 @@ export default function GalleryUploadModal({ open, onClose, onUploaded, maxFiles
           </div>
         )}
         <input type="text" value={title} maxLength={100} onChange={(e) => setTitle(e.target.value)} placeholder="제목 (필수, 예: 정기모임)" className={inputClass} />
-        <input type="text" value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="해시태그 (선택, 쉼표로 구분: 정기모임, 가을)" className={inputClass} />
+        <input type="text" value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="해시태그 (필수, 하나 이상 · 쉼표로 구분: 정기모임, 가을)" className={inputClass} />
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} disabled={sending} className="h-[36px] rounded-[6px] border border-[#dedede] bg-white px-4 text-[13px] text-[#454545]">
             취소
           </button>
-          <button type="button" onClick={submit} disabled={sending || !title.trim() || files.length === 0} className="h-[36px] rounded-[6px] bg-[#212121] px-4 text-[13px] text-white disabled:opacity-50">
+          <button type="button" onClick={submit} disabled={sending || !title.trim() || !hashtags.trim() || files.length === 0} className="h-[36px] rounded-[6px] bg-[#212121] px-4 text-[13px] text-white disabled:opacity-50">
             {sending ? '올리는 중…' : `올리기${files.length ? ` (${files.length}장)` : ''}`}
           </button>
         </div>
