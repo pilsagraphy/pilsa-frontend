@@ -56,3 +56,11 @@ export const withdrawUser = async (userId) => {
   );
   return response.data;
 };
+
+// 6. 회원 상세 (GET /api/admin/users/{userId}) [ADMIN] — 회원 목록에서 아이디를 눌러 들어오는 화면 (PM 2026-10-10)
+//    응답: 기본 정보 · 활동 수치 · 알림(deviceCount, notificationSettings, muteCount) · 구글 연동 · 제재 요약 ·
+//          최근 30일 접속(accessDaily[{date,count}])/앱 실행(appLaunchDaily). 없는 회원 404
+export const getUserDetail = async (userId) => {
+  const response = await axiosInstance.get(`/api/admin/users/${encodeURIComponent(userId)}`);
+  return response.data;
+};

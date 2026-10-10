@@ -41,6 +41,7 @@ export const ROUTES = {
   ADMIN_HOME: `${BASE_PATH}admin`,
   ADMIN_MEMBERS: `${BASE_PATH}admin/members`, // 회원관리 그룹 prefix (활성 판정용)
   ADMIN_MEMBER_LIST: `${BASE_PATH}admin/members/memberslist`,
+  ADMIN_MEMBER_DETAIL: (userId) => `${BASE_PATH}admin/members/memberslist/${encodeURIComponent(userId)}`, // 회원 상세 (10/10)
   ADMIN_MEMBER_PENALTY: `${BASE_PATH}admin/members/penalty`,
   ADMIN_BOARDS: `${BASE_PATH}admin/community/boards`,
   ADMIN_POSTS: `${BASE_PATH}admin/community/posts`,

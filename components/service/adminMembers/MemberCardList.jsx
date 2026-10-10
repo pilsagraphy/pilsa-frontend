@@ -192,7 +192,10 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
             )}
           </div>
           <p className="mt-[2px] truncate pl-1 text-[13px] leading-[1.6] text-[#919191]">
-            {member.loginId}
+            <Link href={ROUTES.ADMIN_MEMBER_DETAIL(member.memberId)} className="underline underline-offset-2">
+              {member.loginId}
+            </Link>
+            <span className="ml-1 text-[12px]">· 상세</span>
           </p>
         </div>
 

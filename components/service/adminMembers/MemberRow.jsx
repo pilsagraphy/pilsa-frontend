@@ -167,8 +167,11 @@ export default function MemberRow({
 
       {/* 2. 기본 정보 — 이름·전화번호·학번은 두 번 누르면 그 자리에서 고친다.
              ID 와 Email 은 서버가 수정 대상에서 빼 둔 값이라(로그인 열쇠·본인 확인 수단) 잠가 둔다 */}
-      <TableCell className="whitespace-nowrap text-center" title="ID 는 수정할 수 없어요">
-        {member.loginId}
+      {/* 아이디를 누르면 회원 상세 (PM 2026-10-10). 이름 칸은 두 번 눌러 고치는 칸이라 링크를 아이디에 건다 */}
+      <TableCell className="whitespace-nowrap text-center" title="회원 상세 보기">
+        <Link href={ROUTES.ADMIN_MEMBER_DETAIL(member.memberId)} className="underline underline-offset-2 hover:text-[#212121]">
+          {member.loginId}
+        </Link>
       </TableCell>
       <TableCell className="whitespace-nowrap text-center">
         <EditableText
