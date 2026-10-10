@@ -13,17 +13,18 @@ export default function GuestbookNote({ note, onDelete, compact = false }) {
     <article
       className={`relative break-inside-avoid border border-[#e3e0d8] px-[18px] pb-[14px] pt-[22px] shadow-[2px_3px_0_rgba(0,0,0,0.05)] ${paperClass(
         note.paper
-      )} ${compact ? '' : 'mb-4'}`}
+      )}`}
       style={{ transform: compact ? undefined : `rotate(${note.tilt ?? 0}deg)` }}
     >
       {/* 테이프 조각 — 무채색 반투명 */}
       <span
         aria-hidden
-        className="absolute -top-[9px] left-1/2 h-[18px] w-[52px] -translate-x-1/2 rotate-[-2deg] bg-[#d9d6cd]/70 backdrop-blur-[1px]"
+        className="absolute -top-[9px] left-1/2 h-[18px] w-[52px] -translate-x-1/2 rotate-[-2deg] bg-[#d9d6cd]/70"
       />
 
+      {/* 글씨가 번지지 않게 — 테이프의 backdrop-blur 가 카드를 합성 레이어로 만들어 회전된 글자가 비트맵처럼 흐려졌다(10/10 밤). 블러는 뺐다 */}
       <p
-        className={`${penFont.className} whitespace-pre-wrap break-words ${compact ? 'text-[18px]' : 'text-[21px] md:text-[23px]'}`}
+        className={`${penFont.className} whitespace-pre-wrap break-words antialiased ${compact ? 'text-[18px]' : 'text-[21px] md:text-[23px]'}`}
         style={{
           color: inkColor(note.ink),
           lineHeight: `${LINE_HEIGHT_PX}px`,

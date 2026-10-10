@@ -113,11 +113,7 @@ export default function Guestbook() {
             {viewingCurrent ? '아직 비어 있어요. 첫 장을 남겨 주세요.' : '이 학기에는 남은 글이 없어요.'}
           </p>
         ) : (
-          <div className="columns-2 gap-4 pt-2 md:columns-3 lg:columns-4">
-            {notes.map((note) => (
-              <GuestbookNote key={note.noteId} note={note} onDelete={setDeleting} />
-            ))}
-          </div>
+          <Masonry notes={notes} onDelete={setDeleting} />
         )}
       </section>
 
@@ -127,6 +123,42 @@ export default function Guestbook() {
         onConfirm={confirmDelete}
         onCancel={() => setDeleting(null)}
       />
+    </div>
+  );
+}
+
+// 세로 칸 n 개에 글을 차례로 나눠 담는 벽돌 배치. CSS columns 를 썼더니 카드 위로 삐져나온 테이프 조각이
+// 칸 경계에서 잘려 엉뚱한 자리에 남았다(10/10 밤 제보) — 칸을 직접 나누면 카드가 통째로 한 칸에 들어간다
+function useColumnCount() {
+  const [count, setCount] = useState(2);
+  useEffect(() => {
+    const lg = window.matchMedia('(min-width: 1024px)');
+    const md = window.matchMedia('(min-width: 768px)');
+    const update = () => setCount(lg.matches ? 4 : md.matches ? 3 : 2);
+    update();
+    lg.addEventListener('change', update);
+    md.addEventListener('change', update);
+    return () => {
+      lg.removeEventListener('change', update);
+      md.removeEventListener('change', update);
+    };
+  }, []);
+  return count;
+}
+
+function Masonry({ notes, onDelete }) {
+  const count = useColumnCount();
+  const columns = Array.from({ length: count }, () => []);
+  notes.forEach((note, i) => columns[i % count].push(note));
+  return (
+    <div className="flex items-start gap-4 pt-3">
+      {columns.map((col, ci) => (
+        <div key={ci} className="flex min-w-0 flex-1 flex-col gap-6">
+          {col.map((note) => (
+            <GuestbookNote key={note.noteId} note={note} onDelete={onDelete} />
+          ))}
+        </div>
+      ))}
     </div>
   );
 }
