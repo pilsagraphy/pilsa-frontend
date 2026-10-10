@@ -90,3 +90,40 @@ export const deleteToast = async (toastId) => {
   );
   return response.data;
 };
+
+// ─────────────────────────── 회원 알림 설정 (PM 2026-10-10) ───────────────────────────
+
+// 7. 내 알림 유형 설정 (GET /api/user/mypage/notification-settings)
+//    응답: { settings: { COMMENT: true, REPLY: true, PINNED_POST: false, EVENT: true } } — 행이 없으면 켜짐
+export const getNotificationSettings = async () => {
+  const response = await axiosInstance.get('/api/user/mypage/notification-settings');
+  return response.data?.settings ?? {};
+};
+
+// 8. 알림 유형 켜기/끄기 (PUT /api/user/mypage/notification-settings/{type}) 본문 { enabled } → 바뀐 전체 설정
+export const updateNotificationSetting = async (type, enabled) => {
+  const response = await axiosInstance.put(
+    `/api/user/mypage/notification-settings/${encodeURIComponent(type)}`,
+    { enabled }
+  );
+  return response.data?.settings ?? {};
+};
+
+// 9. 글/댓글 알림 끔 여부 (GET /api/user/mypage/notification-mutes?targetType=&targetId=) → { muted }
+//    post = 이 글의 댓글 알림, comment = 이 댓글의 답글 알림
+export const getNotificationMute = async (targetType, targetId) => {
+  const response = await axiosInstance.get('/api/user/mypage/notification-mutes', {
+    params: { targetType, targetId },
+  });
+  return Boolean(response.data?.muted);
+};
+
+// 10. 글/댓글 알림 끄기/켜기 (PUT /api/user/mypage/notification-mutes) 본문 { targetType, targetId, muted } → { muted }
+export const setNotificationMute = async (targetType, targetId, muted) => {
+  const response = await axiosInstance.put('/api/user/mypage/notification-mutes', {
+    targetType,
+    targetId,
+    muted,
+  });
+  return Boolean(response.data?.muted);
+};

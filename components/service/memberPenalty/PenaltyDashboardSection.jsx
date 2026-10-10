@@ -237,7 +237,8 @@ export default function PenaltyDashboardSection() {
         </div>
 
         {/* 우측: 선택 회원 상세 (넓은 화면에서만 디자인 폭으로 고정) */}
-        <div className="w-full min-w-0 xl:w-[618px] xl:shrink-0">
+        {/* 상세는 남는 폭을 전부 쓴다 — 618px 고정일 때 내역 칸이 좁아 사유가 한 글자씩 끊겼다 (PM, 10/10) */}
+        <div className="w-full min-w-0 xl:flex-1">
           {selectedUser ? (
             <div className="flex flex-col">
               {/* 회원명 (아이디) + 회색 가로선 */}
