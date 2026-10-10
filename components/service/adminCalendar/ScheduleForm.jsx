@@ -13,22 +13,34 @@ import BoardWriteToolbar from '@/components/shared/board/boardWrite/BoardWriteTo
 import { apiUrl } from '@/lib/apiBase';
 import ScheduleSelect from './ScheduleSelect';
 import { FIELD_CLASS, ScheduleFormRow } from './ScheduleFormField';
-import { getEventList } from '@/apis/event';
+import { createEventTemplate, deleteEventTemplate, getEventTemplates, updateEventTemplate } from '@/apis/admin/event';
+import { getErrorMessage } from '@/apis/auth';
 
 // 셀렉트 후보값.
 const pad2 = (n) => String(n).padStart(2, '0');
 
 // ── 반복 일정 (등록 전용, PM 요청 10/10) ─────────────────────────────────────────
 // 반복 규칙은 서버에 저장하지 않는다. 폼이 시작일들을 계산해 올리면 부모가 일정을 하나씩 만든다 (개별 수정·삭제 가능).
+// 구글 캘린더처럼: 매일 / 매주 / 격주 / 매월 / 매년 / 사용자 지정(N일·N주·N개월·N년마다), 주 단위는 요일 선택,
+// 월 단위는 '같은 날짜' 또는 '같은 주의 같은 요일'(둘째 주 화요일), 종료는 날짜까지 또는 N회.
 const REPEAT_OPTIONS = [
   { value: 'none', label: '반복 안 함' },
   { value: 'daily', label: '매일' },
   { value: 'weekly', label: '매주' },
   { value: 'biweekly', label: '격주' },
-  { value: 'monthly', label: '매월 (같은 날짜)' },
+  { value: 'monthly', label: '매월' },
+  { value: 'yearly', label: '매년' },
+  { value: 'custom', label: '사용자 지정…' },
+];
+const UNIT_OPTIONS = [
+  { value: 'day', label: '일' },
+  { value: 'week', label: '주' },
+  { value: 'month', label: '개월' },
+  { value: 'year', label: '년' },
 ];
 const WEEKDAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
-const MAX_OCCURRENCES = 60; // 한 번에 만드는 상한 — 실수로 몇 년치를 만들지 않게
+const ORDINAL_LABELS = ['첫째', '둘째', '셋째', '넷째', '다섯째'];
+const MAX_OCCURRENCES = 100; // 한 번에 만드는 상한 — 실수로 몇 년치를 만들지 않게
 
 const toLocalDate = (ymd) => {
   const [y, m, d] = ymd.split('-').map(Number);
@@ -36,35 +48,100 @@ const toLocalDate = (ymd) => {
 };
 const toYmd = (date) => `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 const addDaysLocal = (date, n) => new Date(date.getFullYear(), date.getMonth(), date.getDate() + n);
-// 일요일 시작 주의 첫날 — 격주 판정에 쓴다
+// 일요일 시작 주의 첫날 — 주 단위 간격 판정에 쓴다
 const weekStart = (date) => addDaysLocal(date, -date.getDay());
+// 그 달의 N번째 요일 (n 1~5). 없으면 null (다섯째 수요일이 없는 달)
+const nthWeekdayOfMonth = (year, month, weekday, n) => {
+  const first = new Date(year, month, 1);
+  const offset = (weekday - first.getDay() + 7) % 7;
+  const date = new Date(year, month, 1 + offset + (n - 1) * 7);
+  return date.getMonth() === month ? date : null;
+};
 
-// 시작일 · 규칙 · 요일 · 종료일 → 시작일 목록('yyyy-MM-dd'). 상한을 넘으면 그 앞까지만 돌려준다 (호출자가 길이로 안다)
-function buildOccurrences({ startDate, repeat, days, until }) {
+// 프리셋 → { unit, interval }. custom 은 폼의 값을 그대로 쓴다
+const resolveRule = (repeat, custom) => {
+  switch (repeat) {
+    case 'daily':
+      return { unit: 'day', interval: 1 };
+    case 'weekly':
+      return { unit: 'week', interval: 1 };
+    case 'biweekly':
+      return { unit: 'week', interval: 2 };
+    case 'monthly':
+      return { unit: 'month', interval: 1 };
+    case 'yearly':
+      return { unit: 'year', interval: 1 };
+    default:
+      return { unit: custom.unit, interval: Math.max(1, Number(custom.interval) || 1) };
+  }
+};
+
+// 시작일 · 규칙 · 종료 조건 → 시작일 목록('yyyy-MM-dd'). 상한(MAX_OCCURRENCES)을 넘으면 그 앞까지만 돌려준다 (호출자가 길이로 안다)
+//   days      : 주 단위일 때 요일 집합
+//   monthMode : 월 단위일 때 'date'(같은 날짜) | 'weekday'(같은 주의 같은 요일)
+//   end       : { mode: 'until', until: 'yyyy-MM-dd' } | { mode: 'count', count }
+function buildOccurrences({ startDate, unit, interval, days, monthMode, end }) {
   const start = toLocalDate(startDate);
-  const end = toLocalDate(until);
+  const limit = end.mode === 'count' ? Math.max(1, Number(end.count) || 1) : MAX_OCCURRENCES + 1;
+  const until = end.mode === 'until' && end.until ? toLocalDate(end.until) : null;
   const out = [];
-  if (repeat === 'monthly') {
-    for (let k = 0; out.length <= MAX_OCCURRENCES; k += 1) {
-      const date = new Date(start.getFullYear(), start.getMonth() + k, start.getDate());
-      if (date > end) break;
-      if (date.getDate() !== start.getDate()) continue; // 31일 같은 날짜가 없는 달은 건너뛴다
-      out.push(toYmd(date));
+  const accept = (date) => {
+    if (until && date > until) return false;
+    out.push(toYmd(date));
+    return out.length < limit && out.length <= MAX_OCCURRENCES;
+  };
+
+  if (unit === 'day') {
+    for (let date = start; ; date = addDaysLocal(date, interval)) {
+      if (!accept(date)) break;
     }
     return out;
   }
-  const startWeek = weekStart(start);
-  for (let date = start; date <= end && out.length <= MAX_OCCURRENCES; date = addDaysLocal(date, 1)) {
-    if (repeat === 'daily') {
-      out.push(toYmd(date));
-      continue;
+  if (unit === 'week') {
+    const startWeek = weekStart(start);
+    // 시작 주부터 interval 주마다, 그 주의 고른 요일들. 시작일 이전 요일은 건너뛴다
+    for (let w = 0; ; w += interval) {
+      const base = addDaysLocal(startWeek, w * 7);
+      let stop = false;
+      for (let d = 0; d < 7; d += 1) {
+        if (!days.has(d)) continue;
+        const date = addDaysLocal(base, d);
+        if (date < start) continue;
+        if (!accept(date)) {
+          stop = true;
+          break;
+        }
+      }
+      if (stop) break;
+      if (until && base > until) break;
+      if (w > 52 * 10 * interval) break; // 안전장치
     }
-    if (!days.has(date.getDay())) continue;
-    if (repeat === 'biweekly') {
-      const weeks = Math.round((weekStart(date) - startWeek) / (7 * 86400000));
-      if (weeks % 2 !== 0) continue;
+    return out;
+  }
+  if (unit === 'month') {
+    const weekday = start.getDay();
+    const ordinal = Math.ceil(start.getDate() / 7); // 1~5
+    for (let k = 0; ; k += interval) {
+      const year = start.getFullYear();
+      const month = start.getMonth() + k;
+      const date =
+        monthMode === 'weekday'
+          ? nthWeekdayOfMonth(year, month, weekday, ordinal)
+          : new Date(year, month, start.getDate());
+      if (k > 12 * 20) break;
+      if (!date) continue; // 그 달엔 다섯째 X요일이 없다
+      if (monthMode !== 'weekday' && date.getDate() !== start.getDate()) continue; // 31일이 없는 달
+      if (until && date > until) break;
+      if (!accept(date)) break;
     }
-    out.push(toYmd(date));
+    return out;
+  }
+  // year
+  for (let k = 0; ; k += interval) {
+    const date = new Date(start.getFullYear() + k, start.getMonth(), start.getDate());
+    if (k > 50) break;
+    if (date.getDate() !== start.getDate()) continue; // 2월 29일
+    if (!accept(date)) break;
   }
   return out;
 }
@@ -74,6 +151,21 @@ const defaultUntil = (startDate) => {
   const start = toLocalDate(startDate);
   return toYmd(new Date(start.getFullYear(), start.getMonth() + 3, start.getDate()));
 };
+
+// 반복 요약 문구 — "2주마다 화·목, 2026-12-31까지"
+function describeRule({ unit, interval, days, monthMode, end, start }) {
+  const unitLabel = UNIT_OPTIONS.find((u) => u.value === unit)?.label ?? unit;
+  let text = interval === 1 ? { day: '매일', week: '매주', month: '매월', year: '매년' }[unit] : `${interval}${unitLabel}마다`;
+  if (unit === 'week') text += ` ${[...days].sort().map((d) => WEEKDAY_LABELS[d]).join('·') || '(요일 없음)'}`;
+  if (unit === 'month') {
+    text +=
+      monthMode === 'weekday'
+        ? ` ${ORDINAL_LABELS[Math.ceil(start.getDate() / 7) - 1]} ${WEEKDAY_LABELS[start.getDay()]}요일`
+        : ` ${start.getDate()}일`;
+  }
+  text += end.mode === 'count' ? `, ${end.count}회` : `, ${end.until}까지`;
+  return text;
+}
 const range = (length, start = 0, step = 1) =>
   Array.from({ length }, (_, i) => pad2(start + i * step));
 
@@ -202,8 +294,10 @@ export default function ScheduleForm({
 
   // 반복 (등록 전용). 요일은 시작일의 요일로 시작한다
   const [repeat, setRepeat] = React.useState('none');
+  const [custom, setCustom] = React.useState({ interval: 1, unit: 'week' });
   const [repeatDays, setRepeatDays] = React.useState(() => new Set([toLocalDate(partsToInput(start)).getDay()]));
-  const [repeatUntil, setRepeatUntil] = React.useState(() => defaultUntil(partsToInput(start)));
+  const [monthMode, setMonthMode] = React.useState('date'); // 'date' | 'weekday'
+  const [repeatEnd, setRepeatEnd] = React.useState(() => ({ mode: 'until', until: defaultUntil(partsToInput(start)), count: 10 }));
   const toggleRepeatDay = (day) =>
     setRepeatDays((prev) => {
       const next = new Set(prev);
@@ -211,49 +305,38 @@ export default function ScheduleForm({
       else next.add(day);
       return next;
     });
+  const rule = React.useMemo(() => resolveRule(repeat, custom), [repeat, custom]);
   const occurrences = React.useMemo(() => {
     if (!isCreate || repeat === 'none') return null;
     const startDate = partsToInput(start);
-    if (!repeatUntil || repeatUntil < startDate) return [];
-    return buildOccurrences({ startDate, repeat, days: repeatDays, until: repeatUntil });
-  }, [isCreate, repeat, repeatDays, repeatUntil, start]);
+    if (repeatEnd.mode === 'until' && (!repeatEnd.until || repeatEnd.until < startDate)) return [];
+    if (rule.unit === 'week' && repeatDays.size === 0) return [];
+    return buildOccurrences({ startDate, ...rule, days: repeatDays, monthMode, end: repeatEnd });
+  }, [isCreate, repeat, rule, repeatDays, monthMode, repeatEnd, start]);
 
-  // 지난 일정 불러오기 (등록 전용, 박수민 요청 10/10 "템플릿") — 최근 6개월 일정의 제목·구분·시각·내용을 그대로 채운다.
-  // 따로 템플릿 저장소를 두지 않고 이미 등록된 일정을 본으로 쓴다. 날짜는 채우지 않는다
-  const [recentSchedules, setRecentSchedules] = React.useState([]);
-  React.useEffect(() => {
-    if (!isCreate) return undefined;
-    let alive = true;
-    const today = new Date();
-    const from = toYmd(addDaysLocal(today, -180));
-    const to = toYmd(addDaysLocal(today, 60));
-    getEventList(from, to)
-      .then((res) => {
-        if (!alive) return;
-        const seen = new Set();
-        const latestFirst = [...(res?.data ?? [])].reverse();
-        setRecentSchedules(
-          latestFirst.filter((item) => {
-            const key = (item.title ?? '').trim();
-            if (!key || seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          })
-        );
-      })
+  // 템플릿 (등록 전용, 박수민 요청 10/10) — 정기모임·제작스터디처럼 반복되는 내용을 저장해 두고 불러온다 (event_templates).
+  // 제목·구분·세부 사항·시각만 담고 날짜는 담지 않는다. 등록·수정·삭제는 이 폼에서 바로 한다
+  const [templates, setTemplates] = React.useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = React.useState('');
+  const [templateBusy, setTemplateBusy] = React.useState(false);
+  const reloadTemplates = React.useCallback(() => {
+    getEventTemplates()
+      .then((rows) => setTemplates(Array.isArray(rows) ? rows : []))
       .catch(() => {
-        /* 불러오기 실패는 조용히 — 폼의 본 기능과 무관하다 */
+        /* 템플릿은 보조 기능 — 못 받아도 폼은 그대로 쓴다 */
       });
-    return () => {
-      alive = false;
-    };
-  }, [isCreate]);
-  const applyRecent = (scheduleId) => {
-    const picked = recentSchedules.find((item) => String(item.scheduleId) === String(scheduleId));
+  }, []);
+  React.useEffect(() => {
+    if (isCreate) reloadTemplates();
+  }, [isCreate, reloadTemplates]);
+
+  const applyTemplate = (templateId) => {
+    setSelectedTemplateId(templateId);
+    const picked = templates.find((item) => String(item.templateId) === String(templateId));
     if (!picked) return;
     setTitle(picked.title ?? '');
     if (picked.category && categories.includes(picked.category)) setCategory(picked.category);
-    const html = picked.content ?? '';
+    const html = picked.description ?? '';
     setContent(html);
     contentEditor?.commands?.setContent(html, true);
     const allDay = !picked.startTime;
@@ -261,6 +344,71 @@ export default function ScheduleForm({
     if (!allDay) {
       setStartTime(toTimeParts(picked.startTime));
       setEndTime(toTimeParts(picked.endTime ?? picked.startTime));
+    }
+  };
+
+  // 지금 폼의 내용(제목·구분·세부 사항·시각)을 템플릿으로 — 이름은 prompt 대신 제목을 기본값으로 묻는다
+  const currentAsTemplate = () => ({
+    title: title.trim(),
+    category,
+    description: content,
+    startTime: isAllDay ? null : `${startTime.hour}:${startTime.minute}`,
+    endTime: isAllDay ? null : `${endTime.hour}:${endTime.minute}`,
+  });
+  const saveAsTemplate = async () => {
+    if (templateBusy) return;
+    if (!title.trim()) {
+      toast.error('템플릿으로 저장하려면 제목부터 입력해 주세요.');
+      return;
+    }
+    // eslint-disable-next-line no-alert
+    const name = window.prompt('템플릿 이름', title.trim());
+    if (name === null) return;
+    if (!name.trim()) {
+      toast.error('템플릿 이름을 입력해 주세요.');
+      return;
+    }
+    setTemplateBusy(true);
+    try {
+      const created = await createEventTemplate({ name: name.trim(), ...currentAsTemplate() });
+      toast.success(`템플릿 '${created?.name ?? name.trim()}' 을 저장했습니다.`);
+      reloadTemplates();
+      if (created?.templateId) setSelectedTemplateId(String(created.templateId));
+    } catch (error) {
+      toast.error(getErrorMessage(error, '템플릿을 저장하지 못했습니다.'));
+    } finally {
+      setTemplateBusy(false);
+    }
+  };
+  const overwriteTemplate = async () => {
+    const picked = templates.find((item) => String(item.templateId) === String(selectedTemplateId));
+    if (!picked || templateBusy) return;
+    setTemplateBusy(true);
+    try {
+      await updateEventTemplate(picked.templateId, { name: picked.name, ...currentAsTemplate() });
+      toast.success(`템플릿 '${picked.name}' 을 지금 내용으로 바꿨습니다.`);
+      reloadTemplates();
+    } catch (error) {
+      toast.error(getErrorMessage(error, '템플릿을 수정하지 못했습니다.'));
+    } finally {
+      setTemplateBusy(false);
+    }
+  };
+  const removeTemplate = async () => {
+    const picked = templates.find((item) => String(item.templateId) === String(selectedTemplateId));
+    if (!picked || templateBusy) return;
+    // eslint-disable-next-line no-alert
+    if (!window.confirm(`템플릿 '${picked.name}' 을 삭제할까요?`)) return;
+    setTemplateBusy(true);
+    try {
+      await deleteEventTemplate(picked.templateId);
+      toast.success('템플릿을 삭제했습니다.');
+      setSelectedTemplateId('');
+      reloadTemplates();
+    } catch (error) {
+      toast.error(getErrorMessage(error, '템플릿을 삭제하지 못했습니다.'));
+    } finally {
+      setTemplateBusy(false);
     }
   };
 
@@ -390,25 +538,52 @@ export default function ScheduleForm({
       </h3>
 
       <div className="mt-6 flex flex-col gap-[26px] md:mt-[34px]">
-        {/* 지난 일정 불러오기 — 정기모임·제작스터디처럼 반복되는 일정의 내용을 다시 치지 않게 (등록 전용) */}
-        {isCreate && recentSchedules.length > 0 && (
-          <ScheduleFormRow label="불러오기" htmlFor="schedule-template">
-            <select
-              id="schedule-template"
-              defaultValue=""
-              onChange={(event) => {
-                applyRecent(event.target.value);
-                event.target.value = '';
-              }}
-              className={`${FIELD_CLASS} w-full sm:w-[360px]`}
-            >
-              <option value="">지난 일정에서 제목·구분·시각·내용 가져오기…</option>
-              {recentSchedules.map((item) => (
-                <option key={item.scheduleId} value={item.scheduleId}>
-                  {item.title} ({item.startDate})
-                </option>
-              ))}
-            </select>
+        {/* 템플릿 — 고르면 제목·구분·세부 사항·시각이 채워진다. 지금 내용을 새 템플릿으로 저장하거나, 고른 템플릿을 덮어쓰기·삭제 (등록 전용) */}
+        {isCreate && (
+          <ScheduleFormRow label="템플릿" htmlFor="schedule-template">
+            <div className="flex flex-wrap items-center gap-[8px]">
+              <select
+                id="schedule-template"
+                value={selectedTemplateId}
+                onChange={(event) => applyTemplate(event.target.value)}
+                className={`${FIELD_CLASS} w-full sm:w-[260px]`}
+              >
+                <option value="">{templates.length ? '템플릿 선택…' : '저장된 템플릿이 없어요'}</option>
+                {templates.map((item) => (
+                  <option key={item.templateId} value={item.templateId}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={saveAsTemplate}
+                disabled={templateBusy}
+                className="h-[40px] rounded-[4px] border border-[#b9b9b9] bg-white px-[12px] text-[13px] text-[#212121] hover:bg-[#f6f6f6] disabled:opacity-50"
+              >
+                지금 내용을 템플릿으로 저장
+              </button>
+              {selectedTemplateId && (
+                <>
+                  <button
+                    type="button"
+                    onClick={overwriteTemplate}
+                    disabled={templateBusy}
+                    className="h-[40px] rounded-[4px] border border-[#b9b9b9] bg-white px-[12px] text-[13px] text-[#212121] hover:bg-[#f6f6f6] disabled:opacity-50"
+                  >
+                    템플릿 덮어쓰기
+                  </button>
+                  <button
+                    type="button"
+                    onClick={removeTemplate}
+                    disabled={templateBusy}
+                    className="h-[40px] rounded-[4px] border border-[#b9b9b9] bg-white px-[12px] text-[13px] text-[#ae0000] hover:bg-[#f6f6f6] disabled:opacity-50"
+                  >
+                    템플릿 삭제
+                  </button>
+                </>
+              )}
+            </div>
           </ScheduleFormRow>
         )}
 
@@ -486,7 +661,7 @@ export default function ScheduleForm({
           </div>
         </ScheduleFormRow>
 
-        {/* 반복 (등록 전용) — 규칙 · 요일 · 종료일. 만들어질 개수를 미리 보여 준다 */}
+        {/* 반복 (등록 전용) — 프리셋 또는 사용자 지정(N일·주·개월·년마다) · 요일 · 월 기준 · 종료(날짜/횟수). 만들어질 개수를 미리 보여 준다 */}
         {isCreate && (
           <ScheduleFormRow label="반복" htmlFor="schedule-repeat">
             <div className="flex flex-col gap-[10px]">
@@ -495,7 +670,7 @@ export default function ScheduleForm({
                   id="schedule-repeat"
                   value={repeat}
                   onChange={(event) => setRepeat(event.target.value)}
-                  className={`${FIELD_CLASS} w-[160px]`}
+                  className={`${FIELD_CLASS} w-[150px]`}
                 >
                   {REPEAT_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -503,38 +678,134 @@ export default function ScheduleForm({
                     </option>
                   ))}
                 </select>
-                {(repeat === 'weekly' || repeat === 'biweekly') && (
-                  <div className="flex items-center gap-[4px]" role="group" aria-label="반복 요일">
-                    {WEEKDAY_LABELS.map((label, day) => (
-                      <button
-                        key={label}
-                        type="button"
-                        onClick={() => toggleRepeatDay(day)}
-                        aria-pressed={repeatDays.has(day)}
-                        className={`size-[32px] rounded-full text-[13px] transition-colors ${
-                          repeatDays.has(day)
-                            ? 'bg-[#212121] text-white'
-                            : 'border border-[#dedede] text-[#454545] hover:bg-[#f6f6f6]'
-                        }`}
-                      >
-                        {label}
-                      </button>
-                    ))}
+                {repeat === 'custom' && (
+                  <div className="flex items-center gap-[6px] text-[13px] text-[#454545]">
+                    <input
+                      type="number"
+                      min="1"
+                      max="99"
+                      value={custom.interval}
+                      onChange={(event) => setCustom((prev) => ({ ...prev, interval: event.target.value }))}
+                      aria-label="반복 간격"
+                      className={`${FIELD_CLASS} w-[72px] text-center`}
+                    />
+                    <select
+                      value={custom.unit}
+                      onChange={(event) => setCustom((prev) => ({ ...prev, unit: event.target.value }))}
+                      aria-label="반복 단위"
+                      className={`${FIELD_CLASS} w-[90px]`}
+                    >
+                      {UNIT_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                    <span>마다</span>
                   </div>
                 )}
               </div>
-              {repeat !== 'none' && (
-                <div className="flex flex-wrap items-center gap-[8px]">
-                  <span className="w-[32px] shrink-0 text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">종료</span>
-                  <div className="w-[160px] shrink-0 [&>div>button]:h-[40px] [&>div>button]:text-[14px]">
-                    <DateField value={repeatUntil} min={partsToInput(start)} ariaLabel="반복 종료일" onChange={setRepeatUntil} />
-                  </div>
-                  <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
-                    {occurrences?.length
-                      ? `${Math.min(occurrences.length, MAX_OCCURRENCES)}개 일정이 만들어져요 (알림은 첫 일정만)`
-                      : '해당하는 날이 없어요'}
-                  </span>
+
+              {repeat !== 'none' && rule.unit === 'week' && (
+                <div className="flex items-center gap-[4px]" role="group" aria-label="반복 요일">
+                  {WEEKDAY_LABELS.map((label, day) => (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() => toggleRepeatDay(day)}
+                      aria-pressed={repeatDays.has(day)}
+                      className={`size-[32px] rounded-full text-[13px] transition-colors ${
+                        repeatDays.has(day)
+                          ? 'bg-[#212121] text-white'
+                          : 'border border-[#dedede] text-[#454545] hover:bg-[#f6f6f6]'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
+              )}
+
+              {repeat !== 'none' && rule.unit === 'month' && (
+                <div className="flex flex-wrap items-center gap-[12px] text-[13px] text-[#454545]">
+                  {[
+                    { value: 'date', label: `매월 ${toLocalDate(partsToInput(start)).getDate()}일` },
+                    {
+                      value: 'weekday',
+                      label: `매월 ${ORDINAL_LABELS[Math.ceil(toLocalDate(partsToInput(start)).getDate() / 7) - 1]} ${
+                        WEEKDAY_LABELS[toLocalDate(partsToInput(start)).getDay()]
+                      }요일`,
+                    },
+                  ].map((option) => (
+                    <label key={option.value} className="flex cursor-pointer items-center gap-[6px]">
+                      <input
+                        type="radio"
+                        name="schedule-month-mode"
+                        value={option.value}
+                        checked={monthMode === option.value}
+                        onChange={() => setMonthMode(option.value)}
+                      />
+                      {option.label}
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              {repeat !== 'none' && (
+                <div className="flex flex-wrap items-center gap-x-[12px] gap-y-[8px] text-[13px] text-[#454545]">
+                  <span className="w-[32px] shrink-0 text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">종료</span>
+                  <label className="flex cursor-pointer items-center gap-[6px]">
+                    <input
+                      type="radio"
+                      name="schedule-repeat-end"
+                      checked={repeatEnd.mode === 'until'}
+                      onChange={() => setRepeatEnd((prev) => ({ ...prev, mode: 'until' }))}
+                    />
+                    날짜까지
+                  </label>
+                  <div
+                    className={`w-[160px] shrink-0 [&>div>button]:h-[40px] [&>div>button]:text-[14px] ${
+                      repeatEnd.mode === 'until' ? '' : 'pointer-events-none opacity-40'
+                    }`}
+                  >
+                    <DateField
+                      value={repeatEnd.until}
+                      min={partsToInput(start)}
+                      ariaLabel="반복 종료일"
+                      onChange={(value) => setRepeatEnd((prev) => ({ ...prev, mode: 'until', until: value }))}
+                    />
+                  </div>
+                  <label className="flex cursor-pointer items-center gap-[6px]">
+                    <input
+                      type="radio"
+                      name="schedule-repeat-end"
+                      checked={repeatEnd.mode === 'count'}
+                      onChange={() => setRepeatEnd((prev) => ({ ...prev, mode: 'count' }))}
+                    />
+                    횟수
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={MAX_OCCURRENCES}
+                    value={repeatEnd.count}
+                    disabled={repeatEnd.mode !== 'count'}
+                    onChange={(event) => setRepeatEnd((prev) => ({ ...prev, count: event.target.value }))}
+                    aria-label="반복 횟수"
+                    className={`${FIELD_CLASS} w-[72px] text-center disabled:opacity-40`}
+                  />
+                  <span>회</span>
+                </div>
+              )}
+
+              {repeat !== 'none' && (
+                <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
+                  {occurrences?.length
+                    ? `${describeRule({ ...rule, days: repeatDays, monthMode, end: repeatEnd, start: toLocalDate(partsToInput(start)) })} — ${
+                        occurrences.length > MAX_OCCURRENCES ? `${MAX_OCCURRENCES}개 초과` : `${occurrences.length}개`
+                      } 일정이 만들어져요 (알림은 첫 일정만)`
+                    : '해당하는 날이 없어요 — 종료 조건이나 요일을 확인해 주세요'}
+                </p>
               )}
             </div>
           </ScheduleFormRow>

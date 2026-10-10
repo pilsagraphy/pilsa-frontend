@@ -194,6 +194,10 @@ export default function MemberRow({
       <TableCell className="whitespace-nowrap text-center" title="Email 은 수정할 수 없어요">
         {member.email}
       </TableCell>
+      {/* 가입일 (users.created_at) — PM 요청 10/10 */}
+      <TableCell className="whitespace-nowrap text-center text-[#454545]">
+        {member.joinedAt ? String(member.joinedAt).slice(0, 10) : '-'}
+      </TableCell>
 
       {/* 3. 재학상태 (누르면 select로 변경) */}
       <TableCell className="whitespace-nowrap text-center">

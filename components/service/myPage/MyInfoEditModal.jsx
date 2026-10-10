@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import NotificationToggle from './NotificationToggle';
+import NotificationPreferences from './NotificationPreferences';
 import GoogleIntegrationSection from './GoogleIntegrationSection';
 import WithdrawModal from './WithdrawModal';
 import PasswordChangeModal from './PasswordChangeModal';
@@ -67,15 +68,19 @@ export default function MyInfoEditModal({ open, onOpenChange, myInfo }) {
             </div>
           </section>
 
-          {/* 2. 알림 — 비밀번호 재설정(계정)과 구분된 독립 섹션. 모바일에서만 노출 */}
-          {showNotificationSection && (
-            <section className="flex flex-col gap-1">
-              <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-[#919191]">알림</h4>
-              <div className="rounded-[8px] border border-black/10 px-4 py-3">
-                <NotificationToggle />
-              </div>
-            </section>
-          )}
+          {/* 2. 알림 — 비밀번호 재설정(계정)과 구분된 독립 섹션.
+                 '무엇을 받을지'(유형 스위치)는 PC·폰 모두, '이 기기에서 받을지'(푸시 토글)는 모바일에서만 (PM 2026-10-10) */}
+          <section className="flex flex-col gap-1">
+            <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-[#919191]">알림</h4>
+            <div className="rounded-[8px] border border-black/10 px-4">
+              {showNotificationSection && (
+                <div className="border-b border-black/10 py-3">
+                  <NotificationToggle />
+                </div>
+              )}
+              <NotificationPreferences />
+            </div>
+          </section>
 
           {/* 3. 구글 연동 — 계정 연결(소셜 로그인) + 캘린더 자동 등록.
                  알림과 마찬가지로 계정(비밀번호·탈퇴)과는 성격이 달라 별도 섹션으로 둔다.

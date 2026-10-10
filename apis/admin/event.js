@@ -78,3 +78,26 @@ export const deleteEventImage = async (eventId, imageId) => {
   );
   return response.data;
 };
+
+// ─────────────────────────── 일정 템플릿 (PM 2026-10-10) ───────────────────────────
+// 정기모임·제작스터디처럼 반복되는 일정의 제목·구분·세부 사항·시각을 저장해 두고 폼에 불러온다. 날짜는 담지 않는다.
+//   [{ templateId, name, title, category, description, startTime, endTime }] — startTime null 이면 종일
+export const getEventTemplates = async () => {
+  const response = await axiosInstance.get('/api/admin/event/templates');
+  return response.data ?? [];
+};
+
+export const createEventTemplate = async (template) => {
+  const response = await axiosInstance.post('/api/admin/event/templates', template);
+  return response.data;
+};
+
+export const updateEventTemplate = async (templateId, template) => {
+  const response = await axiosInstance.put(`/api/admin/event/templates/${templateId}`, template);
+  return response.data;
+};
+
+export const deleteEventTemplate = async (templateId) => {
+  const response = await axiosInstance.delete(`/api/admin/event/templates/${templateId}`);
+  return response.data;
+};

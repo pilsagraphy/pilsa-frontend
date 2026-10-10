@@ -16,6 +16,7 @@ import { CornerDownRight, ArrowBigRight, Lock } from 'lucide-react';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { formatSlashDateTime } from '@/lib/boardDetail';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
+import MuteToggle from './MuteToggle';
 
 function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
@@ -584,6 +585,15 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
             <button type="button" className={actionClassName(false)} onClick={() => handleDelete(comment.commentId)}>
               삭제
             </button>
+            {/* 내 댓글의 답글 알림 끄기 (PM 2026-10-10). 삭제된 댓글엔 답글이 안 달리니 뺀다 */}
+            {!deleted && (
+              <MuteToggle
+                targetType="comment"
+                targetId={comment.commentId}
+                iconOnly
+                className={`${actionClassName(false)} inline-flex items-center`}
+              />
+            )}
           </>
         ) : (
           canReport(comment) && (

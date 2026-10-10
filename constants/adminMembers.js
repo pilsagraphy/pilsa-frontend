@@ -72,6 +72,7 @@ export const mapApiMemberToRow = (member) => ({
   phone: member.phone,
   studentNumber: member.studentNo,
   email: member.email,
+  joinedAt: member.joinedAt, // 가입일 (10/10)
   enrollmentStatus: MEMBER_TYPE_LABELS[member.memberType] ?? member.memberType,
   role: ADMIN_LEVEL_ROLES[member.adminLevel] ?? MEMBER_ROLES.GENERAL,
   postCount: member.postCount,
