@@ -374,7 +374,7 @@ export default function CalendarSection({
               라벨 줄에도 같은 10px을 줘야 버튼이 일정 카드의 오른쪽 끝과 맞는다. */}
           {/* 오늘 일정 — 달력 바로 아래에서 "오늘 뭐 있나" 를 한눈에 (테스터 가성연 요청, 10/10). 이번 달을 보고 있을 때만 */}
           {!isLoading && !hasFetchError && isSameMonth(currentMonth, new Date()) && (
-            <div className={`flex flex-col gap-[6px] ${scheduleListAction && scrollableScheduleList ? 'pe-[10px]' : ''}`}>
+            <div className={`flex flex-col gap-[6px] ${scrollableScheduleList ? 'pe-[10px]' : ''}`}>
               <p className="text-[14px] tracking-[-0.32px] text-[#212121] md:text-[16px]">오늘 일정</p>
               {(() => {
                 const todaySchedules = schedules.filter((schedule) => isDateIncludedInSchedule(new Date(), schedule));
@@ -411,7 +411,7 @@ export default function CalendarSection({
 
           <div
             className={`flex items-center justify-between gap-3 ${
-              scheduleListAction && scrollableScheduleList ? 'pe-[10px]' : ''
+              scrollableScheduleList ? 'pe-[10px]' : ''
             }`}
           >
             <p className="text-[14px] tracking-[-0.32px] text-[#212121] md:text-[16px]">
