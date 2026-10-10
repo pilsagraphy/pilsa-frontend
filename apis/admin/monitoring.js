@@ -41,3 +41,18 @@ export const getTrending = async ({ hours = 48, onlyTrending = false, limit = 50
   });
   return response.data;
 };
+
+// ── 고도화 (PM 2026-10-10 밤) ──
+// 요약 카드: { dau, wau, mau, membersTotal, signupsThisMonth, postsLast7, commentsLast7, postsLast30, commentsLast30, pendingReports, pushRegisteredMembers }
+export const getMonitoringSummary = async () => (await axiosInstance.get('/api/admin/monitoring/summary')).data;
+// N일 이상 미접속 회원: [{ userId, name, loginId, memberType, adminLevel, joinedAt, lastAccessAt, daysSince, deviceCount }]
+export const getInactiveMembers = async (days = 14) => (await axiosInstance.get('/api/admin/monitoring/inactive', { params: { days } })).data;
+// 게시판 활동: { days, boards: [{ boardId, boardName, postCount, commentCount, likeCount }], daily: [{ date, posts, comments }] }
+export const getBoardActivity = async (days = 30) => (await axiosInstance.get('/api/admin/monitoring/boards/activity', { params: { days } })).data;
+// 푸시 미등록 회원 (미접속 목록과 같은 행)
+export const getPushUnregistered = async () => (await axiosInstance.get('/api/admin/monitoring/push/unregistered')).data;
+// 활동 상위 회원 (postCount·commentCount 는 기간 안 수)
+export const getTopMembers = async (days = 30, limit = 10) =>
+  (await axiosInstance.get('/api/admin/monitoring/top-members', { params: { days, limit } })).data;
+// 급상승 판정 기준값: { minScore, spikeRatio, topN }
+export const getTrendingPolicy = async () => (await axiosInstance.get('/api/admin/monitoring/trending/policy')).data;

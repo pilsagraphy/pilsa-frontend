@@ -260,6 +260,9 @@ const Sidebar = () => {
         { name: '조직도 편집', path: ROUTES.ADMIN_ORGANIZATION },
         { name: '활동 사진 관리', path: ROUTES.ADMIN_GALLERY },
         { name: '방명록 관리', path: ROUTES.ADMIN_GUESTBOOK },
+        { name: '동아리 소개 관리', path: ROUTES.ADMIN_INTRO },
+        { name: '연혁 관리', path: ROUTES.ADMIN_HISTORY },
+        { name: '명예의 전당 관리', path: ROUTES.ADMIN_DONATIONS },
       ],
     },
   };
