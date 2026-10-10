@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import AdminUserPopover from '@/components/shared/admin/AdminUserPopover';
 
 import RowActionButton from '@/components/shared/admin/RowActionButton';
 import RowCheckbox from '@/components/shared/admin/RowCheckbox';
@@ -68,7 +69,8 @@ export default function ReportRow({
       {/* 3. 게시판 · 작성자 */}
       <TableCell className="whitespace-nowrap px-[4px] text-center">{report.boardName}</TableCell>
       <TableCell className="whitespace-nowrap px-[4px] text-center">
-        {report.authorName}
+        {/* 이름을 누르면 회원 요약 팝업 (PM 10/10) */}
+        <AdminUserPopover userId={report.authorId} name={report.authorName} />
       </TableCell>
 
       {/* 4. 신고 사유 - 여러 건이 들어와도 대표(최초) 사유 하나만 보여준다.

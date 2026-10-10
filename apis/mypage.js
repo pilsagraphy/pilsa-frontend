@@ -98,3 +98,10 @@ export const getMyLikes = async ({ page = 1, size = 10, sort = 'created', boardI
   const response = await axiosInstance.get('/api/user/mypage/likes', { params });
   return response.data;
 };
+
+// 7. 내 잔디 (GET /api/user/mypage/activity-grid?days=112) [MEMBER] — 깃허브 기여 그래프처럼 날짜별 칸 (PM 2026-10-10)
+//    응답: { days, activity: [{ date, count }], access: [{ date, count }] } — activity = 그 날 쓴 글+댓글, access = 접속 시간대 수. 0 인 날은 빠진다
+export const getMyActivityGrid = async (days = 112) => {
+  const response = await axiosInstance.get('/api/user/mypage/activity-grid', { params: { days } });
+  return response.data;
+};

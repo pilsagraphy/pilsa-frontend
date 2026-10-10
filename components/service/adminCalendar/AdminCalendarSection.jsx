@@ -81,6 +81,15 @@ export default function AdminCalendarSection() {
     const scheduleId = url.searchParams.get('scheduleId');
     const date = url.searchParams.get('date');
     const action = url.searchParams.get('action');
+    // ?action=create[&date=] — 회원 달력의 '일정 등록' 링크. 그 날짜(없으면 오늘)로 추가 폼을 연다
+    if (!scheduleId && action === 'create') {
+      url.searchParams.delete('date');
+      url.searchParams.delete('action');
+      window.history.replaceState(window.history.state, '', `${url.pathname}${url.search}`);
+      if (date) setRefreshSignal((prev) => ({ key: prev.key + 1, date }));
+      setFormTarget({ mode: 'create', date: date ?? null });
+      return;
+    }
     if (!scheduleId) return;
     url.searchParams.delete('scheduleId');
     url.searchParams.delete('date');

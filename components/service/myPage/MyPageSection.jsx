@@ -9,6 +9,7 @@ import MyPageStats from './MyPageStats';
 import MyPageBoard from './MyPageBoard';
 import MyInfoCard from './MyInfoCard';
 import MyActivityCard from './MyActivityCard';
+import MyContributionGrid from './MyContributionGrid';
 
 // 구글 연동 콜백이 붙여 보내는 쿼리 → 사용자에게 보여줄 안내
 // (백엔드가 처리 후 /user/myPage?google=... | ?calendar=... 로 302 로 돌려보낸다)
@@ -70,6 +71,9 @@ export default function MyPageSection() {
           <MyPageStats />
         </div>
       </div>
+
+      {/* 영역 2: 내 잔디 — 글·댓글과 접속을 날짜 격자로 (PM 2026-10-10) */}
+      <MyContributionGrid />
 
       {/* 영역 3: 좌(목록) + 우(카드) 2단 */}
       <div className="flex flex-col gap-[30px] lg:flex-row lg:items-start">
