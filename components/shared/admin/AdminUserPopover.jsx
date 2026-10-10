@@ -104,8 +104,13 @@ export default function AdminUserPopover({ userId, name, className = '' }) {
                   <dd className="text-right">
                     {data.cautionPoints}점 · {data.warningCount}회
                   </dd>
-                  <dt className="text-[#919191]">푸시 기기</dt>
-                  <dd className="text-right">{data.deviceCount > 0 ? `${data.deviceCount}대` : '없음'}</dd>
+                  {/* 연락처 — 운영진이 바로 연락할 수 있게. 푸시 기기 수는 여기선 뺀다 (PM 2026-10-10) */}
+                  <dt className="text-[#919191]">학번</dt>
+                  <dd className="text-right">{data.studentNo || '-'}</dd>
+                  <dt className="text-[#919191]">전화번호</dt>
+                  <dd className="text-right">{data.phone || '-'}</dd>
+                  <dt className="text-[#919191]">이메일</dt>
+                  <dd className="break-all text-right">{data.email || '-'}</dd>
                 </dl>
                 <Link
                   href={ROUTES.ADMIN_MEMBER_DETAIL(userId)}
@@ -132,7 +137,7 @@ export default function AdminUserPopover({ userId, name, className = '' }) {
         }}
         aria-haspopup="dialog"
         aria-expanded={Boolean(pos)}
-        className={`underline decoration-dotted underline-offset-2 hover:text-[#212121] ${className}`}
+        className={`hover:text-[#212121] ${className}`}
       >
         {name}
       </button>

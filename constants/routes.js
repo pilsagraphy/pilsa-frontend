@@ -64,6 +64,7 @@ export const ROUTES = {
   ADMIN_MONITORING: `${BASE_PATH}admin/operations/monitoring`,
   ADMIN_POLICIES: `${BASE_PATH}admin/operations/policies`,
   ADMIN_NOTIFICATION_SETTINGS: `${BASE_PATH}admin/operations/notifications`,
+  ADMIN_ORGANIZATION: `${BASE_PATH}admin/operations/organization`, // 조직도 편집 (역대 회장 · 학기별 임원진, 2026-10-10)
 };
 
 // 비로그인 접근 가능
