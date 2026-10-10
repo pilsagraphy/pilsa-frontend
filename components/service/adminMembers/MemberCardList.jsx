@@ -222,7 +222,6 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
             />
           </DetailRow>
           <DetailRow label="Email">{member.email}</DetailRow>
-          <DetailRow label="가입일">{member.joinedAt ? String(member.joinedAt).slice(0, 10) : '-'}</DetailRow>
           <DetailRow label="게시글 · 댓글">
             <Link href={`${ROUTES.ADMIN_POSTS}?keyword=${encodeURIComponent(member.name ?? '')}`} className="underline underline-offset-2">
               {(member.postCount ?? 0).toLocaleString()}
