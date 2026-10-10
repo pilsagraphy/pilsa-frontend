@@ -33,6 +33,12 @@ const SWITCHES = [
     title: '일정 등록 · 수정',
     detail: '관리자가 일정을 등록·수정하면 회원 전원에게. 일정 폼의 알림 체크는 이 스위치 아래에서 건별로 끌 수 있다.',
   },
+  {
+    code: 'notify_trending',
+    title: '주간 인기 글 (미접속자)',
+    detail:
+      '매주 화요일 10시, 정책 설정의 trending_notify_inactive_days(기본 7)일 이상 안 들어온 회원에게 자유게시판(trending_notify_board_name) 인기 글을 모아 보낸다. 회원이 끌 수 있는 스위치는 없다 (PM 2026-10-10).',
+  },
 ];
 
 // 스위치가 없는 유형(신고 처리 결과 등)은 아직 발행 자체를 하지 않아 여기 두지 않는다.
