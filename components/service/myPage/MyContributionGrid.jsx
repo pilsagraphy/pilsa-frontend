@@ -84,8 +84,9 @@ function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
           {total}
           <span className="ml-[1px] text-[12px] font-normal text-[#919191]">{unit}</span>
         </span>
+        {/* '100개 · 15일' 이 뭔지 모르겠다는 말(PM 10/10 밤) — 기간과 뜻을 적는다: 최근 N주 합계, 그중 활동한 날 수 */}
         <span className="text-[11px] tracking-[-0.02em] text-[#919191]">
-          {caption} · {activeDays}일
+          {caption} · 최근 {weekCount}주 · 활동한 날 {activeDays}일
         </span>
       </p>
 

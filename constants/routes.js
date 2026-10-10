@@ -79,6 +79,8 @@ export const PUBLIC_ROUTES = [
   ROUTES.CALENDAR,
   ROUTES.GALLERY,
   ROUTES.GUESTBOOK,
+  `${ROUTES.GUESTBOOK}/test-gray`, // 바탕 비교 임시 페이지 (10/10 밤)
+  `${ROUTES.GUESTBOOK}/test-white`,
   ROUTES.LOGIN,
   ROUTES.SIGNUP,
   ROUTES.FIND_ID,
