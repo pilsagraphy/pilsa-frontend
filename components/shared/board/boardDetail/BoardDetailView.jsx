@@ -171,14 +171,17 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
         />
       )}
 
+      {/* 서버의 prevPost = 먼저 쓰인(오래된) 글, nextPost = 나중에 쓰인(새) 글.
+          화면은 목록(위 = 새 글) 순서를 따라 위 줄 '이전 글' = 새 글, 아래 줄 '다음 글' = 옛 글로 둔다 —
+          예전엔 아래 '다음 글'을 누르면 목록에서 위에 있던 새 글이 열려 방향이 거꾸로였다 (테스터 요청, 10/10) */}
       <PostPrevNext
         boardLabel={`${board?.boardName ?? ''}의 글`}
         listPath={listPath}
         current={{ categoryName: badgeLabel, title: post.title, date: post.created }}
-        prev={post.prevPost}
-        next={post.nextPost}
-        prevHref={postHref(post.prevPost?.postId)}
-        nextHref={postHref(post.nextPost?.postId)}
+        prev={post.nextPost}
+        next={post.prevPost}
+        prevHref={postHref(post.nextPost?.postId)}
+        nextHref={postHref(post.prevPost?.postId)}
       />
     </section>
   );
