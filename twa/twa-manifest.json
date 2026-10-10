@@ -22,7 +22,7 @@
     "alias": "pilsa-upload"
   },
   "appVersionName": "1.0.8",
-  "appVersionCode": 9,
+  "appVersionCode": 10,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://pilsa.co.kr/manifest.json",
