@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import AdminUserPopover from '@/components/shared/admin/AdminUserPopover';
 
 import { TableCell, TableRow } from '@/components/ui/table';
 import RowActionButton from '@/components/shared/admin/RowActionButton';
@@ -51,9 +52,8 @@ export default function CommentRow({
           로그인 아이디·학번은 조치 확인 모달의 '대상 회원'에서 함께 보여준다.
           (서버 검색이 아이디도 매칭하게 되면 authorLoginId 로 되돌릴 것) */}
       <TableCell className="text-center">
-        <span className="block truncate" title={comment.authorName}>
-          {comment.authorName}
-        </span>
+        {/* 이름을 누르면 회원 요약 팝업 (PM 10/10) */}
+        <AdminUserPopover userId={comment.authorId} name={comment.authorName} className="block max-w-full truncate" />
       </TableCell>
 
       {/* 3. 댓글 내용 - 길어도 행 높이(46px)가 늘어나지 않도록 한 줄로 줄여 말줄임 처리한다. */}

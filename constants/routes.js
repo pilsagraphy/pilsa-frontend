@@ -36,6 +36,7 @@ export const ROUTES = {
 
   // user 영역 (재학생·졸업생 공용)
   MY_PAGE: `${BASE_PATH}mypage`,
+  MY_PAGE_SETTINGS: `${BASE_PATH}mypage/settings`, // 폰 설정 페이지 (10/10)
 
   // admin 영역
   ADMIN_HOME: `${BASE_PATH}admin`,

@@ -418,6 +418,16 @@ export default function CalendarSection({
               월별 일정
             </p>
             {scheduleListAction}
+            {/* 관리자가 회원 달력에서 바로 일정 등록으로 — 고른 날짜가 있으면 그 날짜로 폼이 열린다 (PM 10/10) */}
+            {!scheduleListAction && isAdmin && (
+              <Link
+                href={`${ROUTES.ADMIN_CALENDAR}?action=create${selectedDate ? `&date=${format(selectedDate, 'yyyy-MM-dd')}` : ''}`}
+                className="flex h-[28px] shrink-0 items-center gap-[4px] rounded-[4px] border border-[#454545] bg-white pe-[10px] ps-[8px] text-[12px] leading-[1.6] tracking-[-0.24px] text-[#454545] transition-colors hover:bg-[#f6f6f6]"
+              >
+                <Plus aria-hidden="true" strokeWidth={1.8} className="size-[12px]" />
+                일정 등록
+              </Link>
+            )}
           </div>
 
           <MonthlyScheduleList
