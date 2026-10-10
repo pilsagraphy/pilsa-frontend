@@ -13,7 +13,7 @@ import MemberRow from './MemberRow';
 import MemberCardList from './MemberCardList';
 
 // 체크박스 열까지 포함한 전체 열 개수 (빈 목록 안내문 가로 병합에 사용)
-const COLUMN_COUNT = 13; // 가입일 열 추가 (10/10)
+const COLUMN_COUNT = 12;
 
 export default function MemberTable({
   members,
@@ -86,7 +86,6 @@ export default function MemberTable({
             <TableHead className="whitespace-nowrap text-center text-[#919191]">전화번호</TableHead>
             <TableHead className="whitespace-nowrap text-center text-[#919191]">학번</TableHead>
             <TableHead className="whitespace-nowrap text-center text-[#919191]">Email</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">가입일</TableHead>
             <TableHead className="whitespace-nowrap text-center text-[#919191]">재학상태</TableHead>
             <TableHead className="whitespace-nowrap text-center text-[#919191]">권한</TableHead>
             <TableHead className="whitespace-nowrap text-center text-[#919191]">게시글</TableHead>
