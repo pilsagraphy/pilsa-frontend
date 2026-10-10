@@ -1,17 +1,16 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { getMyActivityGrid } from '@/apis/mypage';
 
 // '잔디' — 깃허브 기여 그래프처럼 주(열) × 요일(행) 격자 두 개: 글·댓글과 접속 (PM 2026-10-10).
 // 무채색 컨셉이라 칸의 진하기로만 양을 나타낸다. 값이 없는 날은 연회색, 많을수록 검정에 가깝다.
-// 격자 위 제목은 두지 않는다(PM) — 격자 아래 한 줄 설명만. 칸을 올리면 날짜와 수가 말풍선으로 뜬다 (title 속성은 폰에서 안 떠서 직접 그린다).
-const WEEKS = 16; // 16주 = 112일. 폭이 모자라면 격자가 가로로 스크롤된다
+// 격자는 주어진 폭을 전부 쓴다(칸 크기가 폭에 맞춰 늘어난다) — 왼쪽에 몰려 보인다는 지적(10/10). 제목은 없고 아래 한 줄 설명만.
+// 칸을 올리거나 누르면 날짜·수 말풍선 (title 속성은 폰에서 안 떠서 직접 그린다).
+const WEEKS = 16; // 16주 = 112일
 const DAYS = WEEKS * 7;
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
 const SHADES = ['#f3f3f3', '#d9d9d9', '#a8a8a8', '#5f5f5f', '#212121'];
-const CELL = 12;
-const GAP = 3;
 
 const ymd = (d) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -35,7 +34,8 @@ function Grid({ caption, rows, unit }) {
   const max = Math.max(1, ...byDate.values());
   const total = [...byDate.values()].reduce((a, b) => a + b, 0);
   const activeDays = [...byDate.values()].filter((v) => v > 0).length;
-  const [hover, setHover] = useState(null); // { key, v, x, y } — 격자 기준 좌표
+  const gridRef = useRef(null);
+  const [hover, setHover] = useState(null); // { key, v, x, y } — 격자 상자 기준 좌표
 
   // 달이 바뀌는 첫 주에만 월 이름을 적는다
   const monthLabels = weeks.map((week, i) => {
@@ -46,32 +46,34 @@ function Grid({ caption, rows, unit }) {
   });
 
   const show = (event, cell, v) => {
-    const grid = event.currentTarget.parentElement.getBoundingClientRect();
+    const box = gridRef.current?.getBoundingClientRect();
     const rect = event.currentTarget.getBoundingClientRect();
-    setHover({ key: cell.key, v, x: rect.left - grid.left + rect.width / 2, y: rect.top - grid.top });
+    if (!box) return;
+    setHover({ key: cell.key, v, x: rect.left - box.left + rect.width / 2, y: rect.top - box.top });
   };
 
   return (
-    <div className="flex shrink-0 flex-col gap-[6px]">
-      <div className="overflow-x-auto pb-1">
+    <div className="flex min-w-0 flex-1 flex-col gap-[6px]">
+      {/* 바깥 상자: 요일 라벨 열(18px) + 주 열들이 남는 폭을 똑같이 나눠 가진다. 칸은 정사각형 */}
+      <div ref={gridRef} className="relative" onMouseLeave={() => setHover(null)}>
         <div
-          className="relative inline-grid grid-flow-col"
-          style={{ gridTemplateRows: `14px repeat(7, ${CELL}px)`, gap: GAP }}
-          onMouseLeave={() => setHover(null)}
+          className="grid gap-[3px]"
+          style={{ gridTemplateColumns: `18px repeat(${weeks.length}, minmax(0, 1fr))`, gridTemplateRows: `14px repeat(7, auto)` }}
         >
-          {/* 왼쪽 요일 라벨 열 */}
+          {/* 첫 행: 월 라벨 (요일 라벨 열은 비움) */}
           <span />
-          {DOW.map((d, i) => (
-            <span key={d} className="pr-1 text-right text-[9px] text-[#b9b9b9]" style={{ lineHeight: `${CELL}px` }}>
-              {i % 2 === 1 ? d : ''}
+          {weeks.map((week, wi) => (
+            <span key={`m-${week[0].key}`} className="overflow-visible whitespace-nowrap text-[9px] leading-[14px] text-[#919191]">
+              {monthLabels[wi]}
             </span>
           ))}
-          {weeks.map((week, wi) => (
-            <div key={week[0].key} className="contents">
-              <span className="whitespace-nowrap text-[9px] leading-[14px] text-[#919191]">{monthLabels[wi]}</span>
-              {Array.from({ length: 7 }, (_, dow) => {
+          {/* 요일 행 × 주 열 */}
+          {Array.from({ length: 7 }, (_, dow) => (
+            <div key={DOW[dow]} className="contents">
+              <span className="self-center pr-1 text-right text-[9px] leading-none text-[#b9b9b9]">{dow % 2 === 1 ? DOW[dow] : ''}</span>
+              {weeks.map((week) => {
                 const cell = week.find((c) => c.date.getDay() === dow);
-                if (!cell || !cell.inRange) return <span key={dow} style={{ width: CELL, height: CELL }} />;
+                if (!cell || !cell.inRange) return <span key={`${week[0].key}-${dow}`} className="aspect-square w-full" />;
                 const v = byDate.get(cell.key) ?? 0;
                 const level = v === 0 ? 0 : Math.min(4, Math.ceil((v / max) * 4));
                 return (
@@ -82,24 +84,24 @@ function Grid({ caption, rows, unit }) {
                     onMouseEnter={(event) => show(event, cell, v)}
                     onFocus={(event) => show(event, cell, v)}
                     onClick={(event) => show(event, cell, v)}
-                    className="rounded-[2px] outline-none ring-[#212121] focus-visible:ring-1"
-                    style={{ width: CELL, height: CELL, backgroundColor: SHADES[level] }}
+                    className="aspect-square w-full rounded-[2px] outline-none ring-[#212121] focus-visible:ring-1"
+                    style={{ backgroundColor: SHADES[level] }}
                   />
                 );
               })}
             </div>
           ))}
-          {hover && (
-            <span
-              role="tooltip"
-              className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-[4px] bg-[#212121] px-2 py-[2px] text-[11px] text-white"
-              style={{ left: hover.x, top: hover.y - 4 }}
-            >
-              {hover.key} · {hover.v}
-              {unit}
-            </span>
-          )}
         </div>
+        {hover && (
+          <span
+            role="tooltip"
+            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-[4px] bg-[#212121] px-2 py-[2px] text-[11px] text-white shadow"
+            style={{ left: hover.x, top: hover.y - 6 }}
+          >
+            {hover.key} · {hover.v}
+            {unit}
+          </span>
+        )}
       </div>
       <p className="text-[11px] tracking-[-0.02em] text-[#919191]">
         {caption} {activeDays}일 · {total}
@@ -133,7 +135,8 @@ export default function MyContributionGrid({ compact = false }) {
           : 'flex flex-col gap-3 rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px]'
       }
     >
-      <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
+      {/* 폰에서도 두 격자를 한 줄에 — 칸이 폭에 맞춰 줄어든다 (PM 10/10) */}
+      <div className="flex flex-row gap-4 md:gap-10">
         <Grid caption="글 · 댓글" rows={data?.activity} unit="개" />
         <Grid caption="접속" rows={data?.access} unit="회" />
       </div>

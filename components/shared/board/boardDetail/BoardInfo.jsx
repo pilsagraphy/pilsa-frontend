@@ -3,6 +3,8 @@
 import React from 'react';
 import { formatKoreanDate } from '@/lib/boardDetail';
 import { useMinWidthMd } from '@/lib/useMinWidthMd';
+import useAuthStore from '@/stores/useAuthStore';
+import AdminUserPopover from '@/components/shared/admin/AdminUserPopover';
 
 import StateChip from './StateChip';
 import CategoryBadge from '@/components/shared/board/boardList/CategoryBadge';
@@ -27,11 +29,19 @@ function Badge({ label }) {
 //   게시판 이름 옆에 붙이면 '게시판이 공개'라는 뜻으로 읽히므로 제목 옆에 둔다.
 //   (dev 머지 때 시그니처에서 빠졌는데 본문은 계속 써서 게시글 상세가 통째로 죽었다 — 2026-09-20)
 // viewCount: 조회수. 넘기면 등록일 오른쪽에 붙인다 (회원 상세). 관리자 상세는 안 넘겨 모양이 그대로다
-export default function BoardInfo({ badgeLabel, title, date, author, stateLabel, viewCount }) {
+// authorId: 작성자 user_id (익명 글은 null). 관리자가 보면 작성자 이름이 회원 요약 팝업으로 열린다 (PM 2026-10-10)
+export default function BoardInfo({ badgeLabel, title, date, author, stateLabel, viewCount, authorId = null }) {
   const isMdUp = useMinWidthMd();
+  const adminLevel = useAuthStore((s) => s.adminLevel);
   const safeTitle = title ?? '';
   const safeAuthor = author ?? '';
   const safeDate = formatKoreanDate(date);
+  const authorNode =
+    adminLevel >= 1 && authorId != null ? (
+      <AdminUserPopover userId={authorId} name={safeAuthor} className="min-w-0 break-all leading-none text-[#454545]" />
+    ) : (
+      <span className="min-w-0 break-all text-[#454545] leading-none">{safeAuthor}</span>
+    );
 
   // 모바일(#183): 등록일·작성자를 한 줄(좌·우)로. 데스크톱은 아래 return 그대로.
   if (!isMdUp) {
@@ -67,7 +77,7 @@ export default function BoardInfo({ badgeLabel, title, date, author, stateLabel,
           <div className="flex items-center gap-[12px]">
             <span className="shrink-0 text-[#919191] leading-none">작성자</span>
             <VLine />
-            <span className="min-w-0 break-all text-[#454545] leading-none">{safeAuthor}</span>
+            {authorNode}
           </div>
         </div>
       </section>
@@ -115,7 +125,7 @@ export default function BoardInfo({ badgeLabel, title, date, author, stateLabel,
         <div className="flex flex-wrap items-center gap-2 lg:gap-[12px]">
           <span className="shrink-0 text-[#919191] leading-none">작성자</span>
           <VLine />
-          <span className="min-w-0 break-all text-[#454545] leading-none">{safeAuthor}</span>
+          {authorNode}
         </div>
       </div>
     </section>

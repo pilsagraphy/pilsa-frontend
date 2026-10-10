@@ -185,15 +185,6 @@ export default function BoardActions({
 
           {canEdit || canDelete ? (
             <div className="flex items-center gap-[4px]">
-              {/* 내 글의 댓글 알림 끄기 (PM 2026-10-10) */}
-              {isAuthor && (
-                <MuteToggle
-                  targetType="post"
-                  targetId={postId}
-                  iconOnly
-                  className="flex h-[40px] w-[40px] items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] disabled:opacity-60"
-                />
-              )}
               {canEdit && (
                 <button
                   type="button"
@@ -212,6 +203,15 @@ export default function BoardActions({
                 >
                   {deleteLoading ? '삭제 중...' : '삭제하기'}
                 </button>
+              )}
+              {/* 내 글의 댓글 알림 끄기 — 삭제 오른쪽 (PM 2026-10-10) */}
+              {isAuthor && (
+                <MuteToggle
+                  targetType="post"
+                  targetId={postId}
+                  iconOnly
+                  className="flex h-[40px] w-[40px] items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] disabled:opacity-60"
+                />
               )}
             </div>
           ) : (
@@ -256,14 +256,6 @@ export default function BoardActions({
       {/* 작성자: 수정(흰 테두리) / 삭제(검정) — 폰(#183 피그마)과 같은 규칙. 그 외: 신고 */}
       {canEdit || canDelete ? (
         <div className="flex w-full items-center gap-2 lg:w-auto lg:gap-5">
-          {/* 내 글의 댓글 알림 끄기 (PM 2026-10-10) */}
-          {isAuthor && (
-            <MuteToggle
-              targetType="post"
-              targetId={postId}
-              className="flex h-12 shrink-0 items-center gap-[6px] rounded-[4px] border border-[#b9b9b9] bg-white px-4 text-[14px] text-[#212121] transition-colors hover:bg-[#f5f5f5] disabled:opacity-60 lg:h-[52px]"
-            />
-          )}
           {canEdit && (
             <button
               type="button"
@@ -282,6 +274,14 @@ export default function BoardActions({
             >
               {deleteLoading ? '삭제 중...' : '삭제'}
             </button>
+          )}
+          {/* 내 글의 댓글 알림 끄기 — 삭제 오른쪽 (PM 2026-10-10) */}
+          {isAuthor && (
+            <MuteToggle
+              targetType="post"
+              targetId={postId}
+              className="flex h-12 shrink-0 items-center gap-[6px] rounded-[4px] border border-[#b9b9b9] bg-white px-4 text-[14px] text-[#212121] transition-colors hover:bg-[#f5f5f5] disabled:opacity-60 lg:h-[52px]"
+            />
           )}
         </div>
       ) : (
