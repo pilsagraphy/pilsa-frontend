@@ -18,7 +18,6 @@ import { formatSlashDateTime } from '@/lib/boardDetail';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import MuteToggle from './MuteToggle';
 import AdminUserPopover from '@/components/shared/admin/AdminUserPopover';
-import { isStandalone } from '@/lib/push';
 
 function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
@@ -45,8 +44,8 @@ const COMPOSER_TEXT = {
  * - 내용에 맞춰 높이가 자동으로 늘어난다. 예전엔 3줄 고정이라 조금만 길어져도 안에서 스크롤돼 타이핑이 불편했다.
  * - 답글·수정은 그 댓글 바로 아래에 인라인으로 뜬다(autoFocus). 예전엔 맨 아래 입력창 하나를 답글 모드로 바꿔 써서
  *   답글 한 번에 화면 끝까지 내려가야 했다.
- * - 등록은 Enter (채팅처럼). 줄바꿈은 Shift+Enter. Ctrl/Cmd+Enter 도 등록이다. 인라인 입력창은 Esc 로 닫는다.
- *   단, 설치형 앱(standalone)에서는 Enter 가 줄바꿈이고 등록은 버튼·Ctrl/Cmd+Enter 만 (PM 2026-10-10).
+ * - Enter 는 줄바꿈, 등록은 버튼 또는 Ctrl/Cmd+Enter (웹·앱 모두 — PM 2026-10-10 밤. 처음엔 앱만 바꿨다가 웹도).
+ *   예전엔 채팅처럼 Enter 가 등록이라 줄을 바꾸려다 글이 나가 버렸다. 인라인 입력창은 Esc 로 닫는다.
  *   한글 조합 중(isComposing)의 Enter 는 조합 확정이라 무시한다 — 안 그러면 마지막 글자가 잘린 채 나간다.
  *
  * 값은 내부 상태로 갖고, 등록이 끝나면 부모가 key 를 바꾸거나(새 댓글) 입력창을 떼어(답글·수정) 비운다.
@@ -101,8 +100,6 @@ function CommentComposer({
   // 폰(#183 피그마): 입력칸 40px + 오른쪽 화살표 버튼 55px 한 줄, 체크박스 18px, 안내문 '내용을 입력하세요.'
   // PC 는 예전 그대로(넓은 입력칸, 아래 줄에 체크박스와 글자 버튼). 마크업은 한 벌이고 클래스로 가른다.
   const isMdUp = useMinWidthMd();
-  // 앱 창(standalone)인지는 키 입력 때만 쓴다 — 렌더 결과에 안 섞여 hydration 불일치가 없다
-  const appMode = isStandalone();
   const placeholder = isMdUp ? labels.placeholder : '내용을 입력하세요.';
   const checkboxClass =
     'h-[18px] w-[18px] cursor-pointer rounded-[2px] border border-[#919191] accent-[#212121] lg:h-[24px] lg:w-[24px]';
@@ -128,10 +125,8 @@ function CommentComposer({
               onCancel();
               return;
             }
-            // Enter = 등록, Shift+Enter = 줄바꿈 (Ctrl/Cmd+Enter 도 등록).
-            // 설치형 앱(TWA·홈 화면 앱)에서는 Enter 가 줄바꿈이다 — 폰 자판의 Enter 로 글이 그냥 나가 버렸다 (PM 2026-10-10).
-            // 앱에서 등록은 화살표 버튼 또는 Ctrl/Cmd+Enter
-            if (e.key === 'Enter' && !e.shiftKey && (!appMode || e.ctrlKey || e.metaKey)) {
+            // Ctrl/Cmd+Enter 만 등록. 그냥 Enter 는 줄바꿈 (웹·앱 모두 — PM 2026-10-10)
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
               e.preventDefault();
               submit();
             }
