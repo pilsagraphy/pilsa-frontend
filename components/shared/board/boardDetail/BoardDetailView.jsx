@@ -134,6 +134,7 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
             date={post.created}
             viewCount={post.viewCount}
             author={post.authorName}
+            authorId={post.userId}
           />
           <BoardAttachments attachments={post.attachments} />
         </div>

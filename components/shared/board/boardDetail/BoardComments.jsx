@@ -17,6 +17,7 @@ import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { formatSlashDateTime } from '@/lib/boardDetail';
 import PaginationWithEllipsis from '@/components/shared/PaginationWithEllipsis';
 import MuteToggle from './MuteToggle';
+import AdminUserPopover from '@/components/shared/admin/AdminUserPopover';
 
 function Divider() {
   return <div className="w-full h-px bg-[#DEDEDE]" />;
@@ -269,6 +270,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
 
   // 현재 로그인 사용자 (본인 댓글 판별용)
   const currentUserId = useAuthStore((s) => s.user?.userId);
+  const adminLevel = useAuthStore((s) => s.adminLevel);
 
   // 어느 댓글에 답글/수정 입력창이 열려 있는지 (동시에 하나만)
   const [editingId, setEditingId] = useState(null);
@@ -640,7 +642,12 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                     }`}
                   >
                     {replyMark}
-                    <span className="truncate">{comment.authorName}</span>
+                    {/* 관리자가 보면 댓글 작성자도 회원 요약 팝업 (익명 댓글은 userId 가 없어 그냥 글자) */}
+                    {adminLevel >= 1 && comment.userId != null ? (
+                      <AdminUserPopover userId={comment.userId} name={comment.authorName} className="truncate" />
+                    ) : (
+                      <span className="truncate">{comment.authorName}</span>
+                    )}
                     {/* 내 댓글 표식 — 긴 스레드에서 내가 쓴 것을 바로 찾게. 익명 댓글도 서버 isMine 으로 판별된다 */}
                     {owner && (
                       <span className="shrink-0 rounded-[3px] bg-[#212121] px-1.5 py-[1px] text-[11px] font-medium leading-[16px] tracking-[-0.2px] text-white">
