@@ -117,25 +117,37 @@ const Gallery = () => {
     return res;
   }, []);
 
+  // 처음부터 다시 — 첫 조회는 사진이 있는 가장 최근 학기(이번 학기에 없으면 그 전)부터 온다. 올린 뒤에도 이걸로 새 학기 구간을 받는다
+  const loadFromStart = useCallback(async () => {
+    const res = await getGallery();
+    setMeta({ currentSemester: res.currentSemester, semesters: res.semesters, maxFilesPerUpload: res.maxFilesPerUpload });
+    setPhotosBySemester({ [res.semester]: res.photos.map(toTile) });
+    setVisibleCount(1);
+    return res;
+  }, []);
+
   useEffect(() => {
     let alive = true;
-    getGallery()
-      .then((res) => {
-        if (!alive) return;
-        setMeta({ currentSemester: res.currentSemester, semesters: res.semesters, maxFilesPerUpload: res.maxFilesPerUpload });
-        setPhotosBySemester({ [res.semester]: res.photos.map(toTile) });
-      })
-      .catch((err) => {
-        if (alive) setError(getErrorMessage(err, '활동 사진을 불러오지 못했어요.'));
-      });
+    loadFromStart().catch((err) => {
+      if (alive) setError(getErrorMessage(err, '활동 사진을 불러오지 못했어요.'));
+    });
     return () => {
       alive = false;
     };
-  }, []);
+  }, [loadFromStart]);
 
   const semesters = meta?.semesters ?? [];
   const visibleSemesters = semesters.slice(0, visibleCount);
   const [activeSemester, setActiveSemester] = useActiveSemester(visibleSemesters);
+
+  // 공개 화면이라 첫 조회가 로그인 복원보다 먼저 나갈 수 있다 → 로그인 상태가 바뀌면 받은 학기를 다시 받아 지우기 버튼을 맞춘다
+  const loadedLabelsRef = useRef([]);
+  loadedLabelsRef.current = Object.keys(photosBySemester);
+  useEffect(() => {
+    if (!meta) return;
+    loadedLabelsRef.current.forEach((label) => fetchSemester(label).catch(() => {}));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoggedIn]);
   // 크게 보기(라이트박스)의 앞·뒤 넘기기 순서 — 펼친 학기의 사진을 위에서부터 이어 붙인 것
   const allPhotos = visibleSemesters.flatMap((label) => photosBySemester[label] ?? []);
 
@@ -205,7 +217,7 @@ const Gallery = () => {
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="font-semibold text-[20px] leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]">활동 사진</h2>
           <div className="flex flex-wrap items-center gap-2">
-            <SemesterJump semesters={semesters} value={activeSemester} currentSemester={meta?.currentSemester} onJump={jump} />
+            <SemesterJump semesters={semesters} value={activeSemester} onJump={jump} />
             {isLoggedIn && meta && (
               <button
                 type="button"
@@ -269,8 +281,10 @@ const Gallery = () => {
         onClose={() => setUploadOpen(false)}
         maxFiles={meta?.maxFilesPerUpload ?? 10}
         onUploaded={() => {
-          refresh(meta?.currentSemester);
-          if (meta?.currentSemester) jump(meta.currentSemester);
+          // 이번 학기 구간이 새로 생겼을 수 있으니(첫 사진) 학기 목록부터 다시 받고 맨 위로
+          loadFromStart()
+            .then(() => window.scrollTo({ top: 0, behavior: 'smooth' }))
+            .catch(() => {});
         }}
       />
       <ConfirmModal

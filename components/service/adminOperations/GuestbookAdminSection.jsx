@@ -88,7 +88,7 @@ export default function GuestbookAdminSection() {
                   <div className="flex items-center justify-between gap-2 px-1 text-[12px] text-[#919191]">
                     <span>
                       #{note.noteId} · {STATE_LABEL[note.state] ?? note.state}
-                      {note.userId != null ? ` · 회원 ${note.userId}` : ' · 비로그인'}
+                      {note.userId != null ? ` · ${note.authorName ?? '회원'} (${note.authorLoginId ?? note.userId})` : ' · 비로그인'}
                     </span>
                     {note.state !== 'deleted' && (
                       <button type="button" className={smallBtn} disabled={busy === note.noteId} onClick={() => toggle(note)}>

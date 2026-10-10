@@ -16,3 +16,9 @@ export const restoreGalleryPhoto = async (photoId) => {
   const response = await axiosInstance.patch(`/api/admin/gallery/photos/${encodeURIComponent(photoId)}/restore`);
   return response.data;
 };
+
+// 3. 제목·해시태그 수정 (PUT /api/admin/gallery/photos/{photoId}) [ADMIN] — { title, hashtags(쉼표/공백 구분) } → 바뀐 사진
+export const updateGalleryPhotoMeta = async (photoId, { title, hashtags }) => {
+  const response = await axiosInstance.put(`/api/admin/gallery/photos/${encodeURIComponent(photoId)}`, { title, hashtags });
+  return response.data;
+};

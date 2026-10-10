@@ -258,8 +258,8 @@ const Sidebar = () => {
         ...(adminLevel >= 3 ? [{ name: '정책 설정', path: ROUTES.ADMIN_POLICIES }] : []),
         { name: '알림 설정', path: ROUTES.ADMIN_NOTIFICATION_SETTINGS },
         { name: '조직도 편집', path: ROUTES.ADMIN_ORGANIZATION },
-        { name: '방명록 관리', path: ROUTES.ADMIN_GUESTBOOK },
         { name: '활동 사진 관리', path: ROUTES.ADMIN_GALLERY },
+        { name: '방명록 관리', path: ROUTES.ADMIN_GUESTBOOK },
       ],
     },
   };
