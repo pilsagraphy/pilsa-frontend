@@ -1,10 +1,10 @@
 import ChairmanSection from "./ChairmanSection";
 import TeamSection from "./TeamSection";
 import OrgChartFit from "./OrgChartFit";
-import { chairman, teams } from "@/constants/organization";
 
-export default function OrganizationChart() {
-  const horizontalBarGap = Number(100 / (teams.length * 2)).toFixed(1);
+// T 자 조직도 — 데이터는 IntroOrgChart 가 서버에서 받아 넘긴다 (chairman: { title, leader, members[] }, teams: [{ title, leader, members[] }])
+export default function OrganizationChart({ chairman, teams = [] }) {
+  const horizontalBarGap = Number(100 / (Math.max(teams.length, 1) * 2)).toFixed(1);
   // 폰에서는 OrgChartFit 이 T 자 모양 그대로 폭에 맞게 축소한다 (모양 유지 · 가로 스크롤 없음)
   return (
     <div className="w-full overflow-x-auto">
@@ -14,40 +14,42 @@ export default function OrganizationChart() {
         <div className="flex flex-col items-center">
           {/* 회장단 */}
           <ChairmanSection
-            title={chairman.title}
-            leader={chairman.leader}
-            members={chairman.members}
+            title={chairman?.title ?? '회장단'}
+            leader={chairman?.leader ?? ''}
+            members={chairman?.members ?? []}
           />
 
           {/* T자형 중앙 세로선 */}
-          <div className="w-px h-16 border-l border-dashed border-[#919191]"></div>
+          {teams.length > 0 && <div className="w-px h-16 border-l border-dashed border-[#919191]"></div>}
 
           {/* 하위 팀 레이아웃 (T자 가로선 + 팀 섹션) */}
-          <div className="relative w-full flex justify-between">
-            {/* T자 가로 막대 */}
-            <div
-              className={`absolute top-0 border-t border-dashed border-[#919191]`}
-              style={{
-                left: `${horizontalBarGap}%`,
-                right: `${horizontalBarGap}%`,
-              }}
-            />
+          {teams.length > 0 && (
+            <div className="relative w-full flex justify-between">
+              {/* T자 가로 막대 */}
+              <div
+                className="absolute top-0 border-t border-dashed border-[#919191]"
+                style={{
+                  left: `${horizontalBarGap}%`,
+                  right: `${horizontalBarGap}%`,
+                }}
+              />
 
-            {/* 하위 팀 섹션 */}
-            {teams.map((team, index) => (
-              <div key={index} className="flex flex-col items-center flex-1">
-                {/* 세로선 */}
-                <div className="w-px h-12 border-l border-dashed border-[#919191]" />
-                <div>
-                  <TeamSection
-                    title={team.title}
-                    leader={team.leader}
-                    members={team.members}
-                  />
+              {/* 하위 팀 섹션 */}
+              {teams.map((team, index) => (
+                <div key={`${team.title}-${index}`} className="flex flex-col items-center flex-1">
+                  {/* 세로선 */}
+                  <div className="w-px h-12 border-l border-dashed border-[#919191]" />
+                  <div>
+                    <TeamSection
+                      title={team.title}
+                      leader={team.leader}
+                      members={team.members}
+                    />
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </section>
       </OrgChartFit>

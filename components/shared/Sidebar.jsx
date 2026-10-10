@@ -257,6 +257,7 @@ const Sidebar = () => {
         // 정책 설정은 관리 레벨 3 전용 — 메뉴 자체를 숨긴다 (PM, 10/10). 화면과 API 도 각각 막는다
         ...(adminLevel >= 3 ? [{ name: '정책 설정', path: ROUTES.ADMIN_POLICIES }] : []),
         { name: '알림 설정', path: ROUTES.ADMIN_NOTIFICATION_SETTINGS },
+        { name: '조직도 편집', path: ROUTES.ADMIN_ORGANIZATION },
       ],
     },
   };
