@@ -533,7 +533,8 @@
   display: inline-flex;
   font-size: clamp(18px, 4.6vw, 28px);
   letter-spacing: 0.14em;
-  color: #212121;
+  /* 색은 본문색 토큰 — #212121 고정이면 다크모드 바탕(#121212)에 묻혀 로딩 화면이 안 보였다 (PM 2026-10-12). 라이트에선 같은 #212121 */
+  color: rgb(var(--c-ink));
   white-space: nowrap;
   margin: 0;
 }
@@ -550,7 +551,7 @@
   position: relative;
   width: clamp(120px, 28vw, 220px);
   height: 1.5px;
-  background: rgba(33, 33, 33, 0.12);
+  background: rgb(var(--c-ink) / 0.12);
   overflow: hidden;
   border-radius: 9999px;
 }
@@ -561,7 +562,7 @@
   left: -40%;
   width: 40%;
   height: 100%;
-  background: #212121;
+  background: rgb(var(--c-ink));
   border-radius: 9999px;
   animation: appLoadingSweep 1.4s ease-in-out infinite;
 }
