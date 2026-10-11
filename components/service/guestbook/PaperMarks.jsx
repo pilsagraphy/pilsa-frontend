@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 // 종이 위 얼룩 — 카드 안쪽(overflow hidden)에만 그려 사각형 밖으로 삐져나오지 않는다 (PM 10/10 밤).
-// 무지(ink): 왼쪽 아래 튄 자국(글 모서리에 걸쳐도 됨 — PM 이 마음에 들어 함) + 네 변의 여백 띠에 작은 잉크 방울 여러 개
+// 무지(ink): 왼쪽 아래 튄 자국(글 모서리에 걸쳐도 됨 — PM 이 마음에 들어 함) + 그런 큰 잉크 장식(물방울·붓 자국·펜 뚜껑 고리) 0~2개가 가장자리에 잘리게 + 네 변의 여백 띠에 작은 잉크 방울 여러 개
 //   (동그라미·찌그러진 방울·튄 자국이 섞이고 크기가 1~7px 로 확 다르다 — PM 10/11 "너무 동그래, 사이즈도 거기서 거기", 타원은 뺌).
 // 빈티지(coffee): 커피잔 고리 자국 — **항상 종이 가장자리에 잘리게** 놓고(가운데 떠 있지 않게), 가끔은 꼭짓점에 걸쳐 1/4 만 보인다.
 //   두 개가 나오면 크기가 확연히 다르다(큰 것 84~110px, 작은 것 56~70px). 고리는 글 위에 걸쳐도 옅어서 괜찮다. + 여백 띠의 작은 방울.
@@ -41,6 +41,12 @@ const BLOBS = [
 ];
 // 튄 자국 (100×100 상자)
 const SPLAT = 'M50 18c14-6 30 4 32 18 2 12-8 22-18 28-12 8-28 6-36-4-8-12-2-30 10-38 4-2 8-3 12-4z';
+// 무지의 큰 잉크 장식 — 왼쪽 아래 튄 자국 같은 것이 가장자리에 랜덤으로 0~2개 더 (PM 10/11 "그런 디자인이 좀 생기면"). 물방울 · 붓 자국 · 펜 뚜껑 고리
+const DECO_KINDS = ['drip', 'dab', 'ring'];
+const DECO_PATHS = {
+  drip: 'M50 6c6 18 16 30 16 46 0 12-7 22-16 22s-16-10-16-22c0-16 10-28 16-46z M46 84a4 4 0 1 0 8 0a4 4 0 1 0-8 0z',
+  dab: 'M12 58c10-16 30-26 50-24 14 2 28 10 26 22-2 10-16 14-30 16-18 2-38 0-46-14z',
+};
 
 // 고리 — 반드시 가장자리에 잘리게. 35% 는 꼭짓점에 걸쳐 1/4 만 보이고, 나머지는 한 변에 걸쳐 중심이 변에서 반지름 안쪽(-0.45r ~ +0.55r)
 function edgeRing(r, size) {
@@ -75,6 +81,17 @@ const nearRing = (d, rings) => {
 const nearDrop = (d, drops) => drops.some((o) => o.side === d.side && Math.abs(o.along - d.along) < 9);
 // 무지의 왼쪽 아래 튄 자국(76px) 자리 — 아래 변 왼쪽 끝·왼쪽 변 아래 끝에는 방울을 안 놓는다
 const nearSplash = (d) => (d.side === 1 && d.along < 26) || (d.side === 2 && d.along > 78);
+// 큰 것(고리·장식)끼리 — 대략 위치가 가로나 세로로 dist% 이상 떨어져야 한다. 커피 고리끼리는 절대 안 겹친다 (PM 10/11)
+const farApart = (a, b, dist) => {
+  const p = approxPct(a);
+  const q = approxPct(b);
+  return Math.abs(p.x - q.x) >= dist || Math.abs(p.y - q.y) >= dist;
+};
+// 큰 장식이 왼쪽 아래 튄 자국 자리에 오지 않게
+const nearSplashBig = (m) => {
+  const p = approxPct(m);
+  return p.x < 35 && p.y > 65;
+};
 
 function makeMarks(kind, seed) {
   const r = rng(seed);
@@ -83,9 +100,34 @@ function makeMarks(kind, seed) {
   // 두 번째 고리를 허용할지(종이가 커졌을 때만 쓰인다)와 방울 개수 자리(0~1, 높이별 범위 안에서 어디쯤인지) — 씨앗마다 다르다
   const extraRing = r() < 0.45;
   const dropFactor = r();
-  // 후보는 넉넉히 뽑아 두고 실제 개수는 종이 높이가 정한다 (visibleCounts). 고리 둘은 크기가 확연히 다르게
-  const rings = coffee ? [edgeRing(r, rand(84, 110)), edgeRing(r, rand(56, 70))] : [];
-  const count = coffee ? 4 : 7;
+  // 후보는 넉넉히 뽑아 두고 실제 개수는 종이 높이가 정한다 (visibleCounts). 고리 둘은 크기가 확연히 다르고 서로 절대 안 겹친다
+  const rings = [];
+  if (coffee) {
+    rings.push(edgeRing(r, rand(84, 110)));
+    for (let tries = 0; tries < 20; tries += 1) {
+      const cand = edgeRing(r, rand(56, 70));
+      if (farApart(cand, rings[0], 45)) {
+        rings.push(cand);
+        break;
+      }
+    }
+  }
+  // 무지의 큰 잉크 장식 0~2개 — 가장자리·꼭짓점에 잘리게, 서로·튄 자국과 안 겹치게
+  const decos = [];
+  if (!coffee) {
+    const roll = r();
+    const want = roll < 0.3 ? 2 : roll < 0.85 ? 1 : 0;
+    for (let i = 0; i < want; i += 1) {
+      for (let tries = 0; tries < 20; tries += 1) {
+        const cand = { ...edgeRing(r, rand(36, 64)), kind: DECO_KINDS[Math.floor(r() * DECO_KINDS.length)] };
+        if (nearSplashBig(cand) || decos.some((o) => !farApart(cand, o, 30))) continue;
+        decos.push(cand);
+        break;
+      }
+    }
+  }
+  const bigOnes = [...rings, ...decos];
+  const count = coffee ? 5 : 9;
   const drops = [];
   for (let i = 0; i < count; i += 1) {
     for (let tries = 0; tries < 24; tries += 1) {
@@ -103,13 +145,13 @@ function makeMarks(kind, seed) {
       if (band - extent * 2 < 2) continue; // 띠보다 큰 모양은 다시 뽑는다
       const near = rand(extent + 1, band - extent - 1);
       const d = { side, along, near, r: radius, o: rand(0.14, 0.28), shape, rot: rand(0, 360), squash, blob: Math.floor(r() * BLOBS.length) };
-      if (!nearRing(d, rings) && !nearDrop(d, drops) && (coffee || !nearSplash(d))) {
+      if (!nearRing(d, bigOnes) && !nearDrop(d, drops) && (coffee || !nearSplash(d))) {
         drops.push(d);
         break;
       }
     }
   }
-  return { drops, rings, extraRing, dropFactor };
+  return { drops, rings, decos, extraRing, dropFactor };
 }
 
 // 종이 높이(px)에 따른 개수 — 개수 자체는 씨앗별 랜덤(dropFactor)이고, 그 범위가 종이가 길어질수록 넓어진다 (PM 10/11 "작을 때도 몇 개는").
@@ -161,6 +203,7 @@ export default function PaperMarks({ kind = 'ink', color, seed = 1 }) {
   const shown = visibleCounts(marks, coffee, height);
   const rings = marks.rings.slice(0, shown.rings);
   const drops = marks.drops.slice(0, shown.drops);
+  const decos = marks.decos.slice(0, shown.decos);
 
   return (
     <div ref={ref} aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden" style={{ color: tone }}>
@@ -182,7 +225,26 @@ export default function PaperMarks({ kind = 'ink', color, seed = 1 }) {
         </svg>
       )}
 
-      {/* 커피잔 고리 — 빈티지에만. 늘 가장자리·꼭짓점에 걸쳐 잘린다. 테두리가 진하고 안은 옅다 */}
+      {/* 큰 잉크 장식 — 무지에만. 물방울·붓 자국·펜 뚜껑 고리가 가장자리·꼭짓점에 걸쳐 잘린다 */}
+      {decos.map((m, i) => {
+        const anchor = anchorStyle(m);
+        return (
+          <svg
+            key={`deco-${i}`}
+            viewBox="0 0 100 100"
+            className="absolute"
+            style={{ ...anchor, width: m.size, height: m.size, transform: `${anchor.transform} rotate(${m.rot}deg)` }}
+          >
+            {m.kind === 'ring' ? (
+              <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="7" opacity="0.18" />
+            ) : (
+              <path d={DECO_PATHS[m.kind]} fill="currentColor" fillRule="evenodd" opacity="0.17" />
+            )}
+          </svg>
+        );
+      })}
+
+      {/* 커피잔 고리 — 빈티지에만. 늘 가장자리·꼭짓점에 걸쳐 잘린다(둘이면 서로 안 겹침). 테두리가 진하고 안은 옅다 */}
       {rings.map((ring, i) => {
         const anchor = anchorStyle(ring);
         return (
