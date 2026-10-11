@@ -94,7 +94,7 @@ export default function ColorPicker({ value = '#1f1f1f', onConfirm, onCancel, sw
 
   const hueColor = hsvToHex({ h: hsv.h, s: 1, v: 1 });
   return (
-    <div className="flex w-full max-w-[360px] flex-col gap-3 rounded-[8px] border border-line bg-surface p-3 shadow-lg" onClick={(e) => e.stopPropagation()}>
+    <div className="flex w-full max-w-[360px] flex-col gap-3 rounded-[8px] border border-line bg-elevated p-3 shadow-lg" onClick={(e) => e.stopPropagation()}>
       <div className="flex gap-3">
         {/* 채도·명도 네모 */}
         <div
@@ -176,7 +176,7 @@ export default function ColorPicker({ value = '#1f1f1f', onConfirm, onCancel, sw
       )}
 
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onCancel} className="h-[30px] rounded-[6px] border border-line bg-surface px-3 text-[12px] text-ink-2">
+        <button type="button" onClick={onCancel} className="h-[30px] rounded-[6px] border border-line bg-elevated px-3 text-[12px] text-ink-2">
           취소
         </button>
         <button type="button" onClick={() => onConfirm(hex)} className="h-[30px] rounded-[6px] bg-inverse px-3 text-[12px] text-inverse-fg">

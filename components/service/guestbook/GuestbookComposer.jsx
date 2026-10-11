@@ -21,23 +21,22 @@ const fitTextarea = (el) => {
   el.style.height = `${el.scrollHeight}px`;
 };
 
-// 종이 안쪽 여백(px) — 스티커는 이 안에만 붙는다 (카드의 padding 과 같은 값)
-const PAD = { left: 18, right: 18, top: 22, bottom: 14 };
+// 스티커는 종이 밖으로 절반까지 삐져나갈 수 있다(커피 자국처럼). 종이 밖 부분은 카드에서 잘려 보이지 않는다 (PM 10/11 "붙일 영역이 너무 좁다")
 const MIN_W = 8;
 const MAX_W = 80;
 // 고른 스티커의 모서리 손잡이 네 개 — 끌면 가운데를 기준으로 커지고 작아진다
 const CORNERS = [
-  { key: 'tl', className: '-left-[7px] -top-[7px]', cursor: 'nwse-resize' },
-  { key: 'tr', className: '-right-[7px] -top-[7px]', cursor: 'nesw-resize' },
-  { key: 'bl', className: '-bottom-[7px] -left-[7px]', cursor: 'nesw-resize' },
-  { key: 'br', className: '-bottom-[7px] -right-[7px]', cursor: 'nwse-resize' },
+  { key: 'tl', className: '-left-[11px] -top-[11px] sm:-left-[7px] sm:-top-[7px]', cursor: 'nwse-resize' },
+  { key: 'tr', className: '-right-[11px] -top-[11px] sm:-right-[7px] sm:-top-[7px]', cursor: 'nesw-resize' },
+  { key: 'bl', className: '-bottom-[11px] -left-[11px] sm:-bottom-[7px] sm:-left-[7px]', cursor: 'nesw-resize' },
+  { key: 'br', className: '-bottom-[11px] -right-[11px] sm:-bottom-[7px] sm:-right-[7px]', cursor: 'nwse-resize' },
 ];
 const SNAP_ANGLES = [-180, -90, 0, 90, 180];
 
 // 방명록 쓰기 칸 — 편지지 한 장을 그대로 쓰는 느낌. 쓰는 종이가 곧 미리보기다.
 // 종이는 카드와 같은 폭(DESIGN_WIDTH)으로 두어 줄바꿈·스티커 자리가 카드에서 똑같이 보인다 (어긋나던 원인, PM 10/10 밤).
 // 글씨체·잉크(기본 6색 + 컬러피커)·종이·테이프 색·정렬을 고르고, 그림판에서 그린 스티커를 붙여 끌어서 자리를 잡는다 —
-// 잡은 지점을 유지하며 끌기, 안쪽 여백 밖으로 못 나감, 고르는 동안 바깥은 어둡게. 크기·회전은 PPT 처럼 도형의 모서리·위 손잡이를 끌어
+// 잡은 지점을 유지하며 끌기, 종이 밖으로 절반까지 삐져나갈 수 있음(밖은 카드에서 잘림), 고르는 동안 바깥은 어둡게. 크기·회전은 PPT 처럼 도형의 모서리·위 손잡이를 끌어
 // 바로 바꾸고, 투명도·순서·떼기만 아래 작은 창에서 (PM 10/11 "슬라이더는 불편, ppt 처럼").
 // mode='edit' 면 initial(기존 글)을 채워 놓고 PUT 으로 고친다 (로그인해서 남긴 본인 글만).
 export default function GuestbookComposer({ mode = 'create', initial = null, maxLength = 300, maxDrawings = 3, drawingMaxKb = 200, onDone, onCancel }) {
@@ -71,6 +70,19 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
       }))
   );
   const [selected, setSelected] = useState(null);
+  // 새 글은 글씨체·종이·테이프를 랜덤으로 시작한다 — 다들 똑같은 기본값으로 남기지 않게 (PM 10/11). 마운트 뒤에 돌리는 이유: 서버 렌더와 어긋나지 않게
+  const randomizeLook = () => {
+    const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    setFont(pick(FONTS).key);
+    setPaper(pick(PAPERS).key);
+    setTape(pick(TAPES).key);
+    setMarksSeed(newMarksSeed());
+  };
+  useEffect(() => {
+    if (mode === 'create' && !initial) randomizeLook();
+    // 처음 한 번만
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [drawOpen, setDrawOpen] = useState(false);
   const [sending, setSending] = useState(false);
   const paperRef = useRef(null);
@@ -102,22 +114,8 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   const p = paperOf(paper);
   const inkHex = inkColor(ink);
 
-  // 종이 안쪽 여백 안에 스티커 전체가 들어가도록 중심 좌표를 가둔다 (스티커가 영역보다 크면 가운데)
-  const clampPos = (d, posX, posY) => {
-    const rect = paperRef.current?.getBoundingClientRect();
-    if (!rect || rect.width === 0 || rect.height === 0) return { posX, posY };
-    const halfW = d.widthPct / 2;
-    const heightPct = (((d.widthPct / 100) * rect.width * (d.aspect || 1)) / rect.height) * 100;
-    const halfH = heightPct / 2;
-    const minX = (PAD.left / rect.width) * 100 + halfW;
-    const maxX = 100 - (PAD.right / rect.width) * 100 - halfW;
-    const minY = (PAD.top / rect.height) * 100 + halfH;
-    const maxY = 100 - (PAD.bottom / rect.height) * 100 - halfH;
-    return {
-      posX: minX > maxX ? 50 : clamp(posX, minX, maxX),
-      posY: minY > maxY ? 50 : clamp(posY, minY, maxY),
-    };
-  };
+  // 스티커 중심은 종이 안(0~100%)에만 — 절반까지는 종이 밖으로 나갈 수 있고, 완전히 밖으로 나가 잃어버리는 일은 없다
+  const clampPos = (d, posX, posY) => ({ posX: clamp(posX, 0, 100), posY: clamp(posY, 0, 100) });
 
   const patch = (id, part) =>
     setDrawings((list) =>
@@ -135,7 +133,8 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
     }
     const id = `n${Date.now()}`;
     const n = drawings.length;
-    const fresh = { id, dataUrl, posX: 78 - n * 14, posY: 26 + n * 12, widthPct: 28, rotation: 0, opacity: 1, aspect: aspect || 1 };
+    // 캔버스를 통째로 붙이므로 처음 크기를 종이의 40% 로 — 그릴 때 본 크기와 비슷하게 (PM 10/11)
+    const fresh = { id, dataUrl, posX: 70 - n * 14, posY: 30 + n * 12, widthPct: 40, rotation: 0, opacity: 1, aspect: aspect || 1 };
     setDrawings([...drawings, { ...fresh, ...clampPos(fresh, fresh.posX, fresh.posY) }]);
     setSelected(id);
     setDrawOpen(false);
@@ -249,7 +248,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
         setContent('');
         setDrawings([]);
         setSelected(null);
-        setMarksSeed(newMarksSeed());
+        randomizeLook();
       }
       toast.success(mode === 'edit' ? '고쳤어요.' : '방명록에 한 장 붙였어요.');
       onDone?.(saved);
@@ -264,7 +263,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   const selIndex = drawings.findIndex((d) => d.id === selected);
   const isCustomTape = !TAPES.some((t) => t.key === tape);
   const chip = (active) =>
-    `h-[28px] rounded-full px-[10px] text-[12px] transition ${active ? 'bg-inverse text-inverse-fg' : 'bg-surface text-ink-2 ring-1 ring-line hover:bg-surface-2'}`;
+    `h-[40px] rounded-full px-[14px] text-[14px] transition sm:h-[28px] sm:px-[10px] sm:text-[12px] ${active ? 'bg-inverse text-inverse-fg' : 'bg-surface text-ink-2 ring-1 ring-line hover:bg-surface-2'}`;
 
   return (
     <section className="flex flex-col gap-4">
@@ -314,30 +313,19 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
             </span>
           </div>
 
-          {/* 붙일 수 있는 영역 — 고르는 동안만 점선으로 보이고 여백 띠는 어둡게. 띠 네 개로 그려 종이 밖으로 번지지 않으니
-              overflow 를 막지 않아도 되고, 그래서 회전 손잡이가 종이 위로 나와도 잘리지 않는다 */}
-          {sel && (
-            <>
-              <div aria-hidden className="pointer-events-none absolute left-0 right-0 top-0 z-[5] bg-black/20" style={{ height: PAD.top }} />
-              <div aria-hidden className="pointer-events-none absolute bottom-0 left-0 right-0 z-[5] bg-black/20" style={{ height: PAD.bottom }} />
-              <div aria-hidden className="pointer-events-none absolute left-0 z-[5] bg-black/20" style={{ top: PAD.top, bottom: PAD.bottom, width: PAD.left }} />
-              <div aria-hidden className="pointer-events-none absolute right-0 z-[5] bg-black/20" style={{ top: PAD.top, bottom: PAD.bottom, width: PAD.right }} />
-              <div
-                aria-hidden
-                className="pointer-events-none absolute z-[5]"
-                style={{ left: PAD.left, right: PAD.right, top: PAD.top, bottom: PAD.bottom, outline: '1px dashed rgba(0,0,0,0.45)' }}
-              />
-            </>
-          )}
+          {/* 고르는 동안 종이 테두리를 점선으로 — 이 선 밖은 카드에서 잘려 보이지 않는다 */}
+          {sel && <div aria-hidden className="pointer-events-none absolute inset-0 z-[5]" style={{ outline: '1px dashed rgba(0,0,0,0.45)' }} />}
 
-          {/* 붙인 스티커 — 끌어서 옮긴다. 배열 순서 = 겹침 순서. 고른 스티커는 점선 테두리 + 모서리 손잡이(크기) + 위 손잡이(회전) */}
+          {/* 붙인 스티커 층 — 끌어서 옮긴다. 배열 순서 = 겹침 순서. 고른 스티커는 점선 테두리 + 모서리 손잡이(크기) + 위 손잡이(회전).
+              고르는 동안은 종이 밖으로 나간 부분도 보여 주고(손잡이를 잡을 수 있게), 완료하면 카드처럼 종이 안만 보인다 */}
+          <div className={`pointer-events-none absolute inset-0 z-[10] ${sel ? '' : 'overflow-hidden'}`}>
           {drawings.map((d, i) => {
             const isSel = selected === d.id;
             return (
               <div
                 key={d.id}
                 data-sticker
-                className="absolute"
+                className="pointer-events-auto absolute"
                 style={{
                   left: `${d.posX}%`,
                   top: `${d.posY}%`,
@@ -375,7 +363,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
                         onPointerMove={onHandleMove}
                         onPointerUp={onHandleUp}
                         onPointerCancel={onHandleUp}
-                        className={`absolute h-[14px] w-[14px] touch-none rounded-[2px] border border-ink bg-surface shadow-sm ${c.className}`}
+                        className={`absolute h-[22px] w-[22px] touch-none rounded-[2px] sm:h-[14px] sm:w-[14px] border border-ink bg-surface shadow-sm ${c.className}`}
                         style={{ cursor: c.cursor }}
                       />
                     ))}
@@ -387,7 +375,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
                       onPointerMove={onHandleMove}
                       onPointerUp={onHandleUp}
                       onPointerCancel={onHandleUp}
-                      className="absolute left-1/2 top-[-38px] flex h-[18px] w-[18px] -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded-full border border-ink bg-surface text-[11px] leading-none text-ink shadow-sm active:cursor-grabbing"
+                      className="absolute left-1/2 top-[-46px] flex h-[26px] w-[26px] -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded-full border border-ink bg-surface text-[14px] sm:top-[-38px] sm:h-[18px] sm:w-[18px] sm:text-[11px] leading-none text-ink shadow-sm active:cursor-grabbing"
                     >
                       ↻
                     </span>
@@ -396,6 +384,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               </div>
             );
           })}
+          </div>
         </div>
 
         {/* 고른 스티커의 작은 창 — 크기·회전은 도형에서 직접, 여기서는 투명도·순서·떼기만 (PM 10/11) */}
@@ -435,7 +424,9 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
                 떼기
               </button>
             </div>
-            <p className="text-[11px] leading-[1.5] text-[#a3a09a]">끌어서 옮기고, 모서리를 끌면 크기, 위의 ↻ 를 끌면 회전해요 (0°·90° 근처는 딱 맞춰져요).</p>
+            <p className="text-[11px] leading-[1.5] text-[#a3a09a]">
+              끌어서 옮기고, 모서리를 끌면 크기, 위의 ↻ 를 끌면 회전해요 (0°·90° 근처는 딱 맞춰져요). 종이 밖으로 나간 부분은 붙인 뒤 잘려 보여요.
+            </p>
           </div>
         )}
       </div>
@@ -444,7 +435,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
       <div className="flex flex-col gap-3 rounded-[6px] border border-dashed border-[#cfcbc1] bg-surface/60 p-3 text-[12px] text-ink-2">
         <Row label="글씨체">
           {FONTS.map((x) => (
-            <button key={x.key} type="button" onClick={() => setFont(x.key)} className={`${chip(font === x.key)} ${x.className} text-[15px]`}>
+            <button key={x.key} type="button" onClick={() => setFont(x.key)} className={`${chip(font === x.key)} ${x.className} text-[17px] sm:text-[15px]`}>
               {x.label}
             </button>
           ))}
@@ -458,7 +449,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               aria-label={i.label}
               aria-pressed={ink === i.key}
               onClick={() => setInk(i.key)}
-              className={`h-[22px] w-[22px] rounded-full border-2 ${ink === i.key ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-white'}`}
+              className={`h-[34px] w-[34px] rounded-full border-2 sm:h-[22px] sm:w-[22px] ${ink === i.key ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-white'}`}
               style={{ backgroundColor: i.color }}
             />
           ))}
@@ -468,7 +459,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
             title="직접 고르기"
             aria-label="잉크 색 직접 고르기"
             onClick={() => setInkPickerOpen((v) => !v)}
-            className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border text-[14px] leading-none ${
+            className={`flex h-[34px] w-[34px] items-center justify-center rounded-full border text-[16px] leading-none sm:h-[22px] sm:w-[22px] sm:text-[14px] ${
               isHex(ink) ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-dashed border-ink-3 text-ink-3'
             }`}
             style={isHex(ink) ? { backgroundColor: ink, color: '#fff' } : undefined}
@@ -499,7 +490,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
                 setPaper(x.key);
                 setMarksSeed(newMarksSeed());
               }}
-              className={`h-[26px] rounded-[4px] border px-[8px] text-[11px] ${paper === x.key ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-[#d4d1c8]'}`}
+              className={`h-[40px] rounded-[4px] border px-[12px] text-[13px] sm:h-[26px] sm:px-[8px] sm:text-[11px] ${paper === x.key ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-[#d4d1c8]'}`}
               style={paperStyle(x.key)}
             >
               {x.label}
@@ -515,7 +506,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               aria-label={`테이프 ${t.label}`}
               aria-pressed={tape === t.key}
               onClick={() => setTape(t.key)}
-              className={`h-[14px] w-[34px] rotate-[-2deg] border ${tape === t.key ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-line'}`}
+              className={`h-[22px] w-[48px] rotate-[-2deg] border sm:h-[14px] sm:w-[34px] ${tape === t.key ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-line'}`}
               style={{ backgroundColor: t.key }}
             />
           ))}
@@ -524,7 +515,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
             title="직접 고르기"
             aria-label="테이프 색 직접 고르기"
             onClick={() => setTapePickerOpen((v) => !v)}
-            className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border text-[14px] leading-none ${
+            className={`flex h-[34px] w-[34px] items-center justify-center rounded-full border text-[16px] leading-none sm:h-[22px] sm:w-[22px] sm:text-[14px] ${
               isCustomTape ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-dashed border-ink-3 text-ink-3'
             }`}
             style={isCustomTape ? { backgroundColor: tape, color: '#454545' } : undefined}
@@ -568,7 +559,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
           </span>
           <span className="flex shrink-0 gap-2">
             {onCancel && (
-              <button type="button" onClick={onCancel} className="h-[38px] rounded-[4px] border border-line bg-surface px-4 text-[14px] text-ink-2">
+              <button type="button" onClick={onCancel} className="h-[44px] rounded-[4px] sm:h-[38px] border border-line bg-surface px-4 text-[14px] text-ink-2">
                 취소
               </button>
             )}
@@ -576,7 +567,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               type="button"
               onClick={submit}
               disabled={sending}
-              className="h-[38px] rounded-[4px] bg-inverse px-5 text-[14px] text-inverse-fg transition-colors hover:bg-inverse-hover disabled:opacity-50"
+              className="h-[44px] rounded-[4px] sm:h-[38px] bg-inverse px-5 text-[14px] text-inverse-fg transition-colors hover:bg-inverse-hover disabled:opacity-50"
             >
               {sending ? (mode === 'edit' ? '고치는 중' : '붙이는 중') : mode === 'edit' ? '고치기' : '남기기'}
             </button>

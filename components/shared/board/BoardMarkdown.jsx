@@ -7,7 +7,7 @@ import remarkBreaks from 'remark-breaks';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 
-import { markdownSanitizeSchema, pickColorStyle } from '@/lib/markdown';
+import { highlightClass, markdownSanitizeSchema, pickColorStyle } from '@/lib/markdown';
 import AuthedImage from './AuthedImage';
 
 // 게시글 본문(마크다운) 렌더러. 상세 화면과 글쓰기 미리보기가 함께 쓴다.
@@ -35,7 +35,8 @@ const components = {
   ),
 
   // 글자색·배경색 — 편집기가 넣은 style 중 색만 통과시킨다 (pickColorStyle)
-  span: ({ node, style, ...props }) => <span style={pickColorStyle(style)} {...props} />,
+  // 형광펜(배경색)만 있는 글자는 배경 밝기에 맞춰 hl-light/hl-dark 클래스를 붙인다 — 다크모드에서 연한 배경 위 글자가 검정이 되게 (globals.css)
+  span: ({ node, style, ...props }) => <span style={pickColorStyle(style)} className={highlightClass(style)} {...props} />,
 
   h1: ({ node, ...props }) => (
     <h1 className="mt-6 mb-3 text-[22px] font-semibold text-ink lg:text-[24px]" {...props} />

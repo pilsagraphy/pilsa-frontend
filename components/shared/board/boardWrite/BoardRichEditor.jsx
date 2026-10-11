@@ -57,7 +57,7 @@ function EditorImageView({ node, selected, editor, getPos, deleteNode }) {
   };
 
   const controlClass =
-    'flex size-[30px] items-center justify-center rounded-full bg-surface/95 text-ink shadow-[0_2px_8px_rgba(0,0,0,0.18)] disabled:opacity-30';
+    'flex size-[30px] items-center justify-center rounded-full bg-elevated/95 text-ink shadow-[0_2px_8px_rgba(0,0,0,0.18)] disabled:opacity-30';
 
   return (
     <NodeViewWrapper className="my-3" data-drag-handle>

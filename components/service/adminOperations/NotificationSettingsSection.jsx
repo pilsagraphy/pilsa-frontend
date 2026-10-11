@@ -125,7 +125,7 @@ export default function NotificationSettingsSection() {
                   }`}
                 >
                   <span
-                    className={`absolute top-[3px] size-[22px] rounded-full bg-surface shadow transition-all ${
+                    className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-all ${
                       on ? 'left-[25px]' : 'left-[3px]'
                     }`}
                   />

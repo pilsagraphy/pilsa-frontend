@@ -86,7 +86,7 @@ export default function DesktopSiteNotice() {
           type="button"
           onClick={dismiss}
           aria-label="안내 닫기"
-          className="shrink-0 rounded-[4px] p-1 text-white/70 transition hover:bg-white/10 hover:text-white"
+          className="shrink-0 rounded-[4px] p-1 text-inverse-fg/70 transition hover:bg-inverse-fg/10 hover:text-inverse-fg"
         >
           <X size={18} />
         </button>

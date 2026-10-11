@@ -153,7 +153,7 @@ export default function ReasonDialog({
                   ref={listRef}
                   role="listbox"
                   aria-label="사유"
-                  className="mt-[4px] max-h-[240px] w-full overflow-y-auto rounded-[4px] border border-line bg-surface shadow-[0_4px_16px_rgba(0,0,0,0.1)]"
+                  className="mt-[4px] max-h-[240px] w-full overflow-y-auto rounded-[4px] border border-line bg-elevated shadow-[0_4px_16px_rgba(0,0,0,0.1)]"
                 >
                   {REPORT_REASONS.map(({ code, label }) => (
                     <li key={code} role="option" aria-selected={reason === code}>

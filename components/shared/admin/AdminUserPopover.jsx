@@ -69,7 +69,7 @@ export default function AdminUserPopover({ userId, name, className = '' }) {
             role="dialog"
             aria-label={`${name} 회원 요약`}
             style={{ position: 'fixed', width: WIDTH, ...pos }}
-            className="z-[70] rounded-[8px] border border-line bg-surface p-4 text-left shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
+            className="z-[70] rounded-[8px] border border-line bg-elevated p-4 text-left shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
             onClick={(event) => event.stopPropagation()}
           >
             {error && <p className="text-[13px] text-ink-3">{error}</p>}

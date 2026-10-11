@@ -87,7 +87,7 @@ export default function ScheduleActionMenu({ isSelected = false, onEdit, onDelet
           ref={menuRef}
           role="menu"
           style={{ top: position.top, left: position.left, width: menuWidth }}
-          className="fixed z-50 overflow-hidden rounded-[4px] border border-line bg-surface py-[4px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
+          className="fixed z-50 overflow-hidden rounded-[4px] border border-line bg-elevated py-[4px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
         >
           {(
             items ?? [
