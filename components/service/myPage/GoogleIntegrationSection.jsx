@@ -178,8 +178,8 @@ export default function GoogleIntegrationSection() {
           }`}
         >
           <span
-            className={`absolute left-[3px] top-[3px] size-5 rounded-full bg-white shadow transition-transform duration-200 ${
-              calendarOn ? 'translate-x-[20px]' : 'translate-x-0'
+            className={`absolute left-[3px] top-[3px] size-5 rounded-full shadow transition-transform duration-200 ${
+              calendarOn ? 'translate-x-[20px] bg-inverse-fg' : 'translate-x-0 bg-white'
             }`}
           />
         </button>

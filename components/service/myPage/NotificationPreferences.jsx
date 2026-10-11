@@ -69,8 +69,8 @@ export default function NotificationPreferences() {
               }`}
             >
               <span
-                className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-all ${
-                  on ? 'left-[25px]' : 'left-[3px]'
+                className={`absolute top-[3px] size-[22px] rounded-full shadow transition-all ${
+                  on ? 'left-[25px] bg-inverse-fg' : 'left-[3px] bg-white'
                 }`}
               />
             </button>
