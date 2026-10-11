@@ -43,8 +43,11 @@ export const viewport = {
 export default function RootLayout({ children }) {
   return (
     // suppressHydrationWarning: 아래 스크립트가 React 보다 먼저 <html> 에 dark 클래스를 붙이므로 class 불일치 경고를 끈다
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" translate="no" suppressHydrationWarning>
       <head>
+        {/* 크롬 자동 번역 차단 — 댓글에 이모티콘·영문이 섞이면 크롬이 다른 언어로 오판해 '한국어로 번역됨' 을 띄우고 글을 바꿔 놓았다 (PM 2026-10-11).
+            translate="no" 는 표준, meta google notranslate 는 크롬 번역 제안 자체를 막는다 */}
+        <meta name="google" content="notranslate" />
         {/* 화면 모드(다크모드) — 첫 페인트 전에 저장값(localStorage pilsaTheme: system|light|dark)대로 dark 클래스를 붙여 깜빡임을 막는다.
             규칙은 stores/useThemeStore.js 의 resolveTheme/applyTheme 와 같아야 한다 (PM 2026-10-11) */}
         <script

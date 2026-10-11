@@ -116,7 +116,7 @@ function makeMarks(kind, seed) {
   const decos = [];
   if (!coffee) {
     const roll = r();
-    const want = roll < 0.3 ? 2 : roll < 0.85 ? 1 : 0;
+    const want = roll < 0.25 ? 3 : roll < 0.6 ? 2 : roll < 0.9 ? 1 : 0;
     for (let i = 0; i < want; i += 1) {
       for (let tries = 0; tries < 20; tries += 1) {
         const cand = { ...edgeRing(r, rand(36, 64)), kind: DECO_KINDS[Math.floor(r() * DECO_KINDS.length)] };
@@ -127,7 +127,7 @@ function makeMarks(kind, seed) {
     }
   }
   const bigOnes = [...rings, ...decos];
-  const count = coffee ? 5 : 9;
+  const count = coffee ? 6 : 12;
   const drops = [];
   for (let i = 0; i < count; i += 1) {
     for (let tries = 0; tries < 24; tries += 1) {
@@ -144,7 +144,7 @@ function makeMarks(kind, seed) {
       const band = SIDE_BAND[side];
       if (band - extent * 2 < 2) continue; // 띠보다 큰 모양은 다시 뽑는다
       const near = rand(extent + 1, band - extent - 1);
-      const d = { side, along, near, r: radius, o: rand(0.14, 0.28), shape, rot: rand(0, 360), squash, blob: Math.floor(r() * BLOBS.length) };
+      const d = { side, along, near, r: radius, o: rand(0.2, 0.36), shape, rot: rand(0, 360), squash, blob: Math.floor(r() * BLOBS.length) };
       if (!nearRing(d, bigOnes) && !nearDrop(d, drops) && (coffee || !nearSplash(d))) {
         drops.push(d);
         break;
@@ -160,11 +160,12 @@ function makeMarks(kind, seed) {
 const clampInt = (v, min, max) => Math.max(min, Math.min(max, v));
 function visibleCounts(marks, coffee, height) {
   const grown = Math.max(0, height - 95);
-  const lo = coffee ? 1 : height >= 220 ? 3 : 2;
-  const hi = coffee ? clampInt(2 + Math.floor(grown / 110), 2, 4) : clampInt(3 + Math.floor(grown / 60), 3, 7);
+  const lo = coffee ? 1 + Math.floor(grown / 200) : 3 + Math.floor(grown / 120);
+  const hi = coffee ? clampInt(2 + Math.floor(grown / 80), 2, 6) : clampInt(4 + Math.floor(grown / 40), 4, 12);
   const drops = Math.min(marks.drops.length, lo + Math.round(marks.dropFactor * (hi - lo)));
   const rings = coffee ? (height >= 220 && marks.extraRing ? 2 : 1) : 0;
-  return { drops, rings };
+  const decos = coffee ? 0 : Math.min(marks.decos.length, height >= 400 ? 3 : height >= 220 ? 2 : 1);
+  return { drops, rings, decos };
 }
 
 // 변·꼭짓점에 붙는 좌표 — 위·왼쪽은 top/left, 아래·오른쪽은 bottom/right 로 잡고 그 방향으로 반만큼 밀어 중심을 맞춘다 (음수면 종이 밖으로 나가 잘린다)

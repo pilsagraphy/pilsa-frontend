@@ -145,8 +145,18 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     }
     // 캔버스를 자르지 않고 통째로 — 그린 부분만 잘라내면 작게 그린 그림이 확대돼 붙어 "비율이 깨진" 듯 보였다 (PM 10/11).
     // 이제 그린 화면이 곧 스티커다. 여백이 거슬리면 붙인 뒤 모서리로 줄이면 된다
-    const dataUrl = canvas.toDataURL('image/png');
-    if ((dataUrl.length * 3) / 4 > maxKb * 1024) {
+    const limit = maxKb * 1024;
+    const bytesOf = (url) => (url.length * 3) / 4;
+    let dataUrl = canvas.toDataURL('image/png');
+    // 색을 꽉 채우면 기기 배율(2배) 비트맵은 한도를 넘을 수 있다 — 그러면 320px(1배)로 줄여 다시 담는다. 붙였을 때 최대 240px 이라 충분하다 (PM 10/11)
+    if (bytesOf(dataUrl) > limit && canvas.width > SIZE) {
+      const small = document.createElement('canvas');
+      small.width = SIZE;
+      small.height = SIZE;
+      small.getContext('2d').drawImage(canvas, 0, 0, SIZE, SIZE);
+      dataUrl = small.toDataURL('image/png');
+    }
+    if (bytesOf(dataUrl) > limit) {
       toast.error(`그림이 너무 커요 (${maxKb}KB 까지). 조금 단순하게 그려 주세요.`);
       return;
     }
