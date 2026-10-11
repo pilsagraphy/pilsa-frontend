@@ -106,15 +106,16 @@ function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete, onEdit 
                 ×
               </button>
             )}
-            {photo.state === 'hidden' && (
-              <span className="pointer-events-none absolute left-1 top-1 z-10 rounded-[2px] bg-inverse-2 px-1 text-[10px] text-inverse-fg">숨김</span>
-            )}
           </div>
         ))}
       </div>
     );
   });
 }
+
+// 숨긴 사진은 관리자에게도 활동 사진 화면에서 빼고 그린다 — 서버는 관리자에게 숨긴 사진도 내려 주는데, 섞어 그렸더니
+// '숨김' 딱지 붙은 사진이 줄 배치·장수·크게 보기 넘기기에 끼어들었다 (PM 2026-10-12). 숨긴 사진은 메뉴 관리 > 활동 사진 관리에서 본다
+const visibleTiles = (photos) => (photos ?? []).filter((p) => p.state !== 'hidden').map(toTile);
 
 const Gallery = () => {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
@@ -131,7 +132,7 @@ const Gallery = () => {
 
   const fetchSemester = useCallback(async (label) => {
     const res = await getGallery(label);
-    setPhotosBySemester((prev) => ({ ...prev, [res.semester]: res.photos.map(toTile) }));
+    setPhotosBySemester((prev) => ({ ...prev, [res.semester]: visibleTiles(res.photos) }));
     return res;
   }, []);
 
@@ -139,7 +140,7 @@ const Gallery = () => {
   const loadFromStart = useCallback(async () => {
     const res = await getGallery();
     setMeta({ currentSemester: res.currentSemester, semesters: res.semesters, maxFilesPerUpload: res.maxFilesPerUpload });
-    setPhotosBySemester({ [res.semester]: res.photos.map(toTile) });
+    setPhotosBySemester({ [res.semester]: visibleTiles(res.photos) });
     setVisibleCount(1);
     return res;
   }, []);
