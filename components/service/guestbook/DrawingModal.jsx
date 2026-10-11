@@ -16,7 +16,12 @@ const BRUSHES = [2, 4, 8, 14];
 const PRESETS = [...INKS.map((i) => i.color), '#e2b007', '#d9534f', '#3b82f6', '#ffffff'];
 const MAX_CUSTOM = 10;
 
-export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
+// initialImage: 고른 스티커의 그림을 수정할 때 캔버스에 미리 깔 이미지(data URL 또는 서버 주소). 없으면 빈 캔버스
+export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initialImage = null }) {
+  const initialImageRef = useRef(initialImage);
+  initialImageRef.current = initialImage;
+  // 한 손가락이 닿자마자 찍히는 점·채우기를 핀치가 시작되면 되돌리기 위해 — 아직 거의 안 움직였을 때만
+  const tap = useRef({ armed: false, dist: 0 });
   const canvasRef = useRef(null);
   const drawing = useRef(false);
   const last = useRef(null);
@@ -49,6 +54,16 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+    // 그림 수정이면 기존 스티커를 캔버스 전체에 깔고 시작한다 (스티커는 캔버스 통째라 비율이 같다)
+    if (initialImageRef.current) {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        setDirty(true);
+      };
+      img.src = initialImageRef.current;
+    }
   }, []);
 
   // 열 때마다 도구 상태 초기화 (캔버스 자체는 닫히면 사라지고 다시 열면 새로 붙어 위 콜백이 비운다)
@@ -151,6 +166,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     snapshot();
+    tap.current = { armed: true, dist: 0 };
     const p = pos(event);
     const ctx = canvasRef.current.getContext('2d');
     ctx.globalCompositeOperation = eraser ? 'destination-out' : 'source-over';
@@ -182,6 +198,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     if (!drawing.current) return;
     event.preventDefault();
     const p = pos(event);
+    tap.current.dist += Math.hypot(p.x - last.current.x, p.y - last.current.y);
     const ctx = canvasRef.current.getContext('2d');
     if (tool === 'spray') {
       sprayAt(ctx, p, p.scale);
@@ -210,10 +227,23 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
       ty: Math.min(0, Math.max(frame.height - frame.height * v.scale, v.ty)),
     };
   };
+  // 슬라이더·± 버튼 확대 — 보이는 영역의 가운데를 기준으로
+  const zoomTo = (next) => {
+    const scale = Math.min(4, Math.max(1, Math.round(next * 100) / 100));
+    const frame = frameRef.current?.getBoundingClientRect();
+    if (!frame) return;
+    const cx = frame.width / 2;
+    const cy = frame.height / 2;
+    const px = (cx - view.tx) / view.scale;
+    const py = (cy - view.ty) / view.scale;
+    setView(clampView({ scale, tx: cx - px * scale, ty: cy - py * scale }));
+  };
   const onDown = (event) => {
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointers.current.size === 2) {
-      // 두 번째 손가락 — 그리기를 멈추고 핀치 시작
+      // 두 번째 손가락 — 그리기를 멈추고 핀치 시작. 첫 손가락이 찍어 둔 점(이나 채우기)이 거의 안 움직였으면 되돌린다 (PM 10/11 "확대했는데 점이 찍힌다")
+      if (tap.current.armed && tap.current.dist < 12 * (canvasRef.current.width / SIZE)) undo();
+      tap.current.armed = false;
       drawing.current = false;
       event.preventDefault();
       event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -432,11 +462,28 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
           <button type="button" onClick={clear} className={toolBtn(false)}>
             전부 지우기
           </button>
-          {view.scale > 1 && (
-            <button type="button" onClick={() => setView({ scale: 1, tx: 0, ty: 0 })} className={toolBtn(false)}>
-              확대 {Math.round(view.scale * 100)}% → 원래대로
-            </button>
-          )}
+        </div>
+
+        {/* 5줄: 확대 — 엑셀처럼 − 슬라이더 + 와 배율. 캔버스 가운데를 기준으로 1~4배 (PM 10/11) */}
+        <div className="flex items-center gap-2">
+          <span className={rowLabel}>확대</span>
+          <button type="button" aria-label="축소" onClick={() => zoomTo(view.scale - 0.25)} className={toolBtn(false)}>
+            −
+          </button>
+          <input
+            type="range"
+            min={100}
+            max={400}
+            step={5}
+            value={Math.round(view.scale * 100)}
+            onChange={(e) => zoomTo(Number(e.target.value) / 100)}
+            aria-label="확대 배율"
+            className="min-w-0 flex-1 accent-ink"
+          />
+          <button type="button" aria-label="확대" onClick={() => zoomTo(view.scale + 0.25)} className={toolBtn(false)}>
+            +
+          </button>
+          <span className="w-[44px] shrink-0 text-right text-[12px] tabular-nums text-ink-2">{Math.round(view.scale * 100)}%</span>
         </div>
 
         <div className="flex justify-end gap-2 border-t border-line pt-3">

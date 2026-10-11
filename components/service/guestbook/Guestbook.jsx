@@ -163,7 +163,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
 
       {/* 메모판 — 점 격자 종이. 학기 구간이 위에서 아래로 이어진다 */}
       <section
-        className="theme-light flex flex-col gap-10 rounded-[8px] border px-2 py-6 sm:px-4 md:px-8 md:py-8"
+        className="theme-light flex flex-col gap-10 overflow-x-clip rounded-[8px] border px-2 py-6 sm:px-4 md:px-8 md:py-8"
         style={{
           borderColor: theme.border,
           backgroundColor: theme.bg,

@@ -127,6 +127,13 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
     );
 
   const addDrawing = ({ dataUrl, aspect }) => {
+    // 고른 스티커의 그림만 바꾸는 경우 — 자리·크기·회전·투명도는 그대로. 서버에 있던 그림(drawingId)은 새 그림으로 갈아 끼운다(목록에서 빠진 옛 그림은 서버가 뗀다) (PM 10/11)
+    const editId = drawOpen?.editId;
+    if (editId) {
+      setDrawings((list) => list.map((d) => (d.id === editId ? { ...d, dataUrl, imageUrl: undefined, drawingId: null, aspect: aspect || 1 } : d)));
+      setDrawOpen(false);
+      return;
+    }
     if (drawings.length >= maxDrawings) {
       toast.error(`스티커는 ${maxDrawings}개까지 붙일 수 있어요.`);
       return;
@@ -420,6 +427,9 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               <button type="button" disabled={selIndex <= 0} onClick={() => reorder(sel.id, -1)} className={`${chip(false)} disabled:opacity-40`}>
                 뒤로
               </button>
+              <button type="button" onClick={() => setDrawOpen({ editId: sel.id })} className={chip(false)}>
+                그림 수정
+              </button>
               <button type="button" onClick={() => removeDrawing(sel.id)} className={`${chip(false)} ml-auto text-danger`}>
                 떼기
               </button>
@@ -550,7 +560,6 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               스티커 {i + 1}
             </button>
           ))}
-          {drawings.length > 0 && <span className="text-[#a3a09a]">누르면 골라서 옮기고 모서리로 크기, 손잡이로 회전해요</span>}
         </Row>
 
         <div className="flex items-center justify-between gap-3 border-t border-dashed border-[#e0ddd4] pt-3">
@@ -575,7 +584,14 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
         </div>
       </div>
 
-      <DrawingModal open={drawOpen} onClose={() => setDrawOpen(false)} onDone={addDrawing} maxKb={drawingMaxKb} />
+      {/* drawOpen: false | true(새로 그리기) | { editId }(고른 스티커 그림 수정 — 기존 그림을 캔버스에 깔고 시작) */}
+      <DrawingModal
+        open={Boolean(drawOpen)}
+        initialImage={drawOpen?.editId ? (drawings.find((d) => d.id === drawOpen.editId)?.dataUrl ?? apiUrl(drawings.find((d) => d.id === drawOpen.editId)?.imageUrl)) : null}
+        onClose={() => setDrawOpen(false)}
+        onDone={addDrawing}
+        maxKb={drawingMaxKb}
+      />
     </section>
   );
 }
