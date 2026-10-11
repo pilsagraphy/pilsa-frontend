@@ -9,7 +9,7 @@ import { INKS } from './guestbookStyle';
 // 그림판 — 방명록에 붙일 스티커를 직접 그린다 (PM 10/10 밤: 관리자 등록 스티커 대신 유저가 그려서 붙이기).
 // 투명 바탕 캔버스에 펜/지우개, 굵기 4단, 되돌리기, 지우기. 완료하면 **캔버스 전체(정사각형)를 그대로** 투명 PNG data URL 로 돌려준다
 // — 그림 부분만 잘라내면 붙였을 때 모양·크기가 그릴 때와 달라져서(직사각형이 되거나 확대돼 보여서) PM 이 두 번 지적 (10/11). 그린 화면 = 스티커.
-// 도구는 세 줄 — 색(기본색 + 직접 고른 색은 열 개까지 칩으로 누적) / 굵기 / 지우개·되돌리기·전부 지우기 (PM 10/11).
+// 도구는 네 줄 — 색(기본색 + 직접 고른 색은 열 개까지 칩으로 누적) / 굵기 / 도구(펜·색연필·스프레이·채우기·지우개) / 되돌리기·전부 지우기·확대 초기화 (PM 10/11).
 // 좌표는 화면에 보이는 캔버스 크기와 실제 픽셀 크기의 비율로 바로 환산한다 — 손가락이 닿은 자리에 그려진다 (어긋나던 문제, PM 10/11).
 const SIZE = 320;
 const BRUSHES = [2, 4, 8, 14];
@@ -25,8 +25,15 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
   const [customs, setCustoms] = useState([]); // 컬러피커로 고른 색들 — '+' 를 누를 때마다 칩이 하나 늘고, 열 개가 넘으면 오래된 것부터 빠진다 (PM 10/11)
   const [pickerOpen, setPickerOpen] = useState(false);
   const [brush, setBrush] = useState(BRUSHES[1]);
-  const [eraser, setEraser] = useState(false);
+  // 도구: 펜(매끈한 선) · 색연필(거칠게 겹친 선) · 스프레이(점 뿌리기) · 채우기(닫힌 영역 색 채우기) · 지우개 (PM 10/11)
+  const [tool, setTool] = useState('pen');
+  const eraser = tool === 'eraser';
   const [dirty, setDirty] = useState(false);
+  // 핀치 줌 — 두 손가락을 벌리면 캔버스 안에서만 1~4배 확대되고(화면은 그대로), 같이 움직이면 이동, 한 손가락으로 돌아오면 다시 그린다 (PM 10/11)
+  const frameRef = useRef(null); // 체크무늬 상자(overflow hidden) — 확대된 캔버스를 이 안에서만 보여 준다
+  const pointers = useRef(new Map()); // 눌려 있는 손가락들
+  const pinch = useRef(null); // 두 손가락 시작 상태
+  const [view, setView] = useState({ scale: 1, tx: 0, ty: 0 });
 
   // 캔버스가 DOM 에 붙는 순간 정사각형 비트맵으로 잡는다 (선명하도록 기기 배율만큼 크게, 좌표는 pos() 가 실제 픽셀로 환산).
   // 예전엔 open 이 바뀔 때 useEffect 에서 잡았는데, Dialog 내용이 그 시점엔 아직 없어서 건너뛰었고 캔버스가 기본 300×150 그대로였다 —
@@ -48,8 +55,11 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
   useEffect(() => {
     if (!open) return;
     history.current = [];
+    pointers.current.clear();
+    pinch.current = null;
+    setView({ scale: 1, tx: 0, ty: 0 });
     setDirty(false);
-    setEraser(false);
+    setTool((t) => (t === 'eraser' ? 'pen' : t));
     setPickerOpen(false);
   }, [open]);
 
@@ -71,23 +81,101 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     if (history.current.length > 30) history.current.shift();
   };
 
+  // 색연필 — 가늘고 반투명한 선을 살짝 어긋나게 두 번 긋는다 (종이에 긁히는 느낌)
+  const pencilStroke = (ctx, from, to, scale) => {
+    ctx.save();
+    ctx.globalAlpha = 0.5;
+    ctx.lineWidth = Math.max(1, brush * 0.55) * scale;
+    const j = brush * 0.35 * scale;
+    for (let k = 0; k < 2; k += 1) {
+      ctx.beginPath();
+      ctx.moveTo(from.x + (Math.random() - 0.5) * j, from.y + (Math.random() - 0.5) * j);
+      ctx.lineTo(to.x + (Math.random() - 0.5) * j, to.y + (Math.random() - 0.5) * j);
+      ctx.stroke();
+    }
+    ctx.restore();
+  };
+  // 스프레이 — 손가락 둘레에 점을 흩뿌린다 (굵기가 곧 반지름)
+  const sprayAt = (ctx, p, scale) => {
+    const radius = brush * 3 * scale;
+    ctx.save();
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = color;
+    for (let k = 0; k < brush * 6; k += 1) {
+      const a = Math.random() * Math.PI * 2;
+      const d = Math.sqrt(Math.random()) * radius;
+      ctx.fillRect(p.x + Math.cos(a) * d, p.y + Math.sin(a) * d, scale, scale);
+    }
+    ctx.restore();
+  };
+  // 채우기 — 누른 자리와 비슷한 색(투명 포함)으로 이어진 영역을 지금 색으로 채운다. 선의 안티에일리어싱 가장자리는 넉넉한 오차로 넘어간다
+  const floodFill = (ctx, x0, y0) => {
+    const { width, height } = ctx.canvas;
+    const sx = Math.floor(x0);
+    const sy = Math.floor(y0);
+    if (sx < 0 || sy < 0 || sx >= width || sy >= height) return;
+    const img = ctx.getImageData(0, 0, width, height);
+    const d = img.data;
+    const i0 = (sy * width + sx) * 4;
+    const target = [d[i0], d[i0 + 1], d[i0 + 2], d[i0 + 3]];
+    const fr = parseInt(color.slice(1, 3), 16);
+    const fg = parseInt(color.slice(3, 5), 16);
+    const fb = parseInt(color.slice(5, 7), 16);
+    const transparentTarget = target[3] < 16;
+    const match = (i) => {
+      if (transparentTarget) return d[i + 3] < 48;
+      return Math.abs(d[i + 3] - target[3]) < 48 && Math.abs(d[i] - target[0]) + Math.abs(d[i + 1] - target[1]) + Math.abs(d[i + 2] - target[2]) < 96;
+    };
+    const seen = new Uint8Array(width * height);
+    const stack = [sy * width + sx];
+    while (stack.length) {
+      const p = stack.pop();
+      if (seen[p]) continue;
+      const i = p * 4;
+      if (!match(i)) continue;
+      seen[p] = 1;
+      d[i] = fr;
+      d[i + 1] = fg;
+      d[i + 2] = fb;
+      d[i + 3] = 255;
+      const x = p % width;
+      if (x > 0) stack.push(p - 1);
+      if (x < width - 1) stack.push(p + 1);
+      if (p >= width) stack.push(p - width);
+      if (p + width < width * height) stack.push(p + width);
+    }
+    ctx.putImageData(img, 0, 0);
+  };
+
   const start = (event) => {
     event.preventDefault();
     event.currentTarget.setPointerCapture?.(event.pointerId);
     snapshot();
-    drawing.current = true;
     const p = pos(event);
-    last.current = p;
     const ctx = canvasRef.current.getContext('2d');
     ctx.globalCompositeOperation = eraser ? 'destination-out' : 'source-over';
     ctx.strokeStyle = color;
+    setDirty(true);
+    if (tool === 'fill') {
+      floodFill(ctx, p.x, p.y);
+      return;
+    }
+    drawing.current = true;
+    last.current = p;
+    if (tool === 'spray') {
+      sprayAt(ctx, p, p.scale);
+      return;
+    }
+    if (tool === 'pencil') {
+      pencilStroke(ctx, p, { x: p.x + 0.1, y: p.y + 0.1 }, p.scale);
+      return;
+    }
     ctx.lineWidth = (eraser ? brush * 2.5 : brush) * p.scale;
     // 점 하나도 찍히게
     ctx.beginPath();
     ctx.moveTo(p.x, p.y);
     ctx.lineTo(p.x + 0.1, p.y + 0.1);
     ctx.stroke();
-    setDirty(true);
   };
 
   const move = (event) => {
@@ -95,15 +183,73 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     event.preventDefault();
     const p = pos(event);
     const ctx = canvasRef.current.getContext('2d');
-    ctx.beginPath();
-    ctx.moveTo(last.current.x, last.current.y);
-    ctx.lineTo(p.x, p.y);
-    ctx.stroke();
+    if (tool === 'spray') {
+      sprayAt(ctx, p, p.scale);
+    } else if (tool === 'pencil') {
+      pencilStroke(ctx, last.current, p, p.scale);
+    } else {
+      ctx.beginPath();
+      ctx.moveTo(last.current.x, last.current.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.stroke();
+    }
     last.current = p;
   };
 
   const end = () => {
     drawing.current = false;
+  };
+
+  // 확대한 캔버스가 상자 밖으로 빠져 빈 곳이 보이지 않게 이동량을 가둔다
+  const clampView = (v) => {
+    const frame = frameRef.current?.getBoundingClientRect();
+    if (!frame) return v;
+    return {
+      scale: v.scale,
+      tx: Math.min(0, Math.max(frame.width - frame.width * v.scale, v.tx)),
+      ty: Math.min(0, Math.max(frame.height - frame.height * v.scale, v.ty)),
+    };
+  };
+  const onDown = (event) => {
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointers.current.size === 2) {
+      // 두 번째 손가락 — 그리기를 멈추고 핀치 시작
+      drawing.current = false;
+      event.preventDefault();
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      const [a, b] = [...pointers.current.values()];
+      const frame = frameRef.current.getBoundingClientRect();
+      pinch.current = {
+        d0: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+        mid0: { x: (a.x + b.x) / 2 - frame.left, y: (a.y + b.y) / 2 - frame.top },
+        view0: view,
+      };
+      return;
+    }
+    if (pointers.current.size === 1) start(event);
+  };
+  const onMove = (event) => {
+    if (!pointers.current.has(event.pointerId)) return;
+    pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pinch.current && pointers.current.size >= 2) {
+      event.preventDefault();
+      const [a, b] = [...pointers.current.values()];
+      const frame = frameRef.current.getBoundingClientRect();
+      const { d0, mid0, view0 } = pinch.current;
+      const scale = Math.min(4, Math.max(1, (view0.scale * Math.hypot(a.x - b.x, a.y - b.y)) / d0));
+      const mid = { x: (a.x + b.x) / 2 - frame.left, y: (a.y + b.y) / 2 - frame.top };
+      // 처음 두 손가락 가운데에 있던 그림 지점이 계속 손가락 가운데에 오도록
+      const px = (mid0.x - view0.tx) / view0.scale;
+      const py = (mid0.y - view0.ty) / view0.scale;
+      setView(clampView({ scale, tx: mid.x - px * scale, ty: mid.y - py * scale }));
+      return;
+    }
+    move(event);
+  };
+  const onUp = (event) => {
+    pointers.current.delete(event.pointerId);
+    if (pointers.current.size < 2) pinch.current = null;
+    end();
   };
 
   const undo = () => {
@@ -174,13 +320,16 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
       <DialogContent hideCloseButton className="max-h-[92dvh] max-w-[380px] gap-3 overflow-y-auto rounded-[8px] border-line p-4">
         <DialogTitle className="text-[16px] font-semibold text-ink">스티커 그리기</DialogTitle>
         <DialogDescription className="text-[12px] text-ink-3">
-          투명한 정사각형 종이에 그려요. 그린 모양 그대로(정사각형) 방명록에 붙이고, 붙인 뒤 끌어서 옮기거나 모서리로 크기, 손잡이로 회전을 바꿀 수 있어요.
+          투명한 정사각형 종이에 그려요. 두 손가락을 벌리면 종이 안에서 확대돼 세밀하게 그릴 수 있어요. 그린 모양 그대로 방명록에 붙이고, 붙인 뒤 끌어서 옮기거나 모서리로 크기,
+          손잡이로 회전을 바꿀 수 있어요.
         </DialogDescription>
 
         {/* 캔버스 — 투명이 보이도록 체크무늬 바탕 */}
         <div
+          ref={frameRef}
           className="mx-auto w-full overflow-hidden rounded-[6px] border border-line"
           style={{
+            touchAction: 'none',
             maxWidth: SIZE,
             backgroundImage:
               'linear-gradient(45deg, #f1f1f1 25%, transparent 25%), linear-gradient(-45deg, #f1f1f1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f1f1f1 75%), linear-gradient(-45deg, transparent 75%, #f1f1f1 75%)',
@@ -190,12 +339,20 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
         >
           <canvas
             ref={setCanvasRef}
-            style={{ width: '100%', height: 'auto', aspectRatio: '1 / 1', touchAction: 'none', display: 'block', cursor: 'crosshair' }}
-            onPointerDown={start}
-            onPointerMove={move}
-            onPointerUp={end}
-            onPointerLeave={end}
-            onPointerCancel={end}
+            style={{
+              width: '100%',
+              height: 'auto',
+              aspectRatio: '1 / 1',
+              touchAction: 'none',
+              display: 'block',
+              cursor: 'crosshair',
+              transform: `translate(${view.tx}px, ${view.ty}px) scale(${view.scale})`,
+              transformOrigin: '0 0',
+            }}
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
           />
         </div>
 
@@ -209,7 +366,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
               aria-label={c}
               onClick={() => {
                 setColor(c);
-                setEraser(false);
+                setTool((t) => (t === 'eraser' ? 'pen' : t));
               }}
               className={`h-[22px] w-[22px] rounded-full border-2 ${!eraser && color === c ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-line'}`}
               style={{ backgroundColor: c }}
@@ -234,7 +391,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
               const h = hex.toLowerCase();
               setCustoms((list) => (PRESETS.includes(h) || list.includes(h) ? list : [...list, h].slice(-MAX_CUSTOM)));
               setColor(h);
-              setEraser(false);
+              setTool((t) => (t === 'eraser' ? 'pen' : t));
               setPickerOpen(false);
             }}
           />
@@ -250,18 +407,36 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
           ))}
         </div>
 
-        {/* 3줄: 지우개 · 되돌리기 · 전부 지우기 */}
+        {/* 3줄: 도구 */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className={rowLabel}>지우개</span>
-          <button type="button" onClick={() => setEraser((v) => !v)} className={toolBtn(eraser)}>
-            {eraser ? '지우개 켜짐' : '지우개'}
-          </button>
+          <span className={rowLabel}>도구</span>
+          {[
+            { key: 'pen', label: '펜' },
+            { key: 'pencil', label: '색연필' },
+            { key: 'spray', label: '스프레이' },
+            { key: 'fill', label: '채우기' },
+            { key: 'eraser', label: '지우개' },
+          ].map((t) => (
+            <button key={t.key} type="button" onClick={() => setTool(t.key)} className={toolBtn(tool === t.key)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 4줄: 되돌리기 · 전부 지우기 · 확대 초기화 */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className={rowLabel}>편집</span>
           <button type="button" onClick={undo} className={toolBtn(false)}>
             되돌리기
           </button>
           <button type="button" onClick={clear} className={toolBtn(false)}>
             전부 지우기
           </button>
+          {view.scale > 1 && (
+            <button type="button" onClick={() => setView({ scale: 1, tx: 0, ty: 0 })} className={toolBtn(false)}>
+              확대 {Math.round(view.scale * 100)}% → 원래대로
+            </button>
+          )}
         </div>
 
         <div className="flex justify-end gap-2 border-t border-line pt-3">
