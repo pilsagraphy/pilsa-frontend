@@ -3,6 +3,7 @@ import AdminGuard from '@/components/common/AdminGuard';
 import Header from '@/components/shared/Header';
 import Footer from '@/components/shared/Footer';
 import Sidebar from '@/components/shared/Sidebar';
+import MobileTabBar from '@/components/shared/MobileTabBar';
 
 export default function AdminLayout({ children }) {
   return (
@@ -34,9 +35,12 @@ export default function AdminLayout({ children }) {
       </div>
 
       {/* 푸터는 사이드바 옆이 아니라 아래 — 사이드바·본문 묶음 밖에서 전체 폭을 쓴다 (PM, 2026-09-20) */}
-      <div className="w-full max-w-[1440px] mx-auto">
+      {/* 푸터 아래 여백은 폰 하단 탭 바(56px + 안전 영역)만큼 — 바가 푸터를 가리지 않게 */}
+      <div className="mx-auto w-full max-w-[1440px] pb-[calc(56px_+_env(safe-area-inset-bottom,0px))] tablet:pb-0">
         <Footer />
       </div>
+      {/* 폰 하단 탭 바 — 768px 미만에서만 (PM 10/11 "여타 앱처럼 메뉴바가 아래에") */}
+      <MobileTabBar />
     </>
   );
 }
