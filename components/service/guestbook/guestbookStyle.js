@@ -1,10 +1,9 @@
-import { Gaegu, Gamja_Flower, Hi_Melody, Nanum_Brush_Script, Nanum_Pen_Script, Poor_Story } from 'next/font/google';
+import { Gaegu, Gamja_Flower, Hi_Melody, Nanum_Pen_Script, Poor_Story } from 'next/font/google';
 
-// 방명록 꾸밈 규칙 (PM 2026-10-10, 밤에 손봄): 손글씨체 6종 · 잉크 6색(만년필 잉크 느낌) + 컬러피커 · 종이 5종(종류마다 바탕색이 다르고
-// 무지에는 잉크 자국, 빈티지에는 커피 자국) · 정렬 3종. 스티커는 작성자가 그림판에서 직접 그린 투명 PNG 를 원하는 자리에 붙인다.
-// 카드는 새로고침마다 일정 범위에서 랜덤하게 기울어져 손으로 붙인 듯 보인다.
+// 방명록 꾸밈 규칙 (PM 2026-10-10, 밤에 손봄): 손글씨체 5종(나눔 붓은 PM 이 10/11 뺌 — 그 글꼴로 쓴 옛 글은 fontOf 가 나눔 펜으로 보여 준다) ·
+// 잉크 6색(만년필 잉크 느낌) + 컬러피커 · 종이 5종(종류마다 바탕색이 다르고 무지에는 잉크 자국, 빈티지에는 커피 자국) · 정렬 3종.
+// 스티커는 작성자가 그림판에서 직접 그린 투명 PNG 를 원하는 자리에 붙인다. 카드는 새로고침마다 일정 범위에서 랜덤하게 기울어져 손으로 붙인 듯 보인다.
 const pen = Nanum_Pen_Script({ weight: '400', subsets: ['latin'], display: 'swap' });
-const brush = Nanum_Brush_Script({ weight: '400', subsets: ['latin'], display: 'swap' });
 const gaegu = Gaegu({ weight: '400', subsets: ['latin'], display: 'swap' });
 const himelody = Hi_Melody({ weight: '400', subsets: ['latin'], display: 'swap' });
 const gamja = Gamja_Flower({ weight: '400', subsets: ['latin'], display: 'swap' });
@@ -13,7 +12,6 @@ const poor = Poor_Story({ weight: '400', subsets: ['latin'], display: 'swap' });
 // scale: 글꼴마다 같은 px 에서 보이는 크기가 달라 맞춰 준다
 export const FONTS = [
   { key: 'pen', label: '나눔 펜', className: pen.className, scale: 1 },
-  { key: 'brush', label: '나눔 붓', className: brush.className, scale: 1.05 },
   { key: 'gaegu', label: '개구', className: gaegu.className, scale: 0.9 },
   { key: 'himelody', label: '하이멜로디', className: himelody.className, scale: 0.9 },
   { key: 'gamja', label: '감자꽃', className: gamja.className, scale: 0.95 },
