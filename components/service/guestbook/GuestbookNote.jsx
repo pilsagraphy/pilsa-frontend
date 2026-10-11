@@ -34,11 +34,12 @@ function useFitScale(outerRef, innerRef) {
 // 방명록 한 장 — 종이 카드 위에 손글씨. 위에 작성자가 고른 색의 테이프 한 조각, 작성자가 그린 스티커(위치·크기·회전·투명도·겹침 순서),
 // 아래 오른쪽에 서명. 기울기는 새로고침마다 랜덤. canManage(로그인해서 남긴 본인 글)면 종이 아래에 수정·지우기,
 // 관리자가 숨긴 글(state=hidden)은 흐리게 + 복원. compact: 관리자 목록 — 기울기만 없다
-export default function GuestbookNote({ note, onEdit, onDelete, onRestore, compact = false }) {
+// tilt: 부모(Masonry)가 인접 카드와 다르게 정해 준 기울기. 없으면(관리자 목록 등) 스스로 뽑는다
+export default function GuestbookNote({ note, onEdit, onDelete, onRestore, compact = false, tilt: tiltProp = null }) {
   const outerRef = useRef(null);
   const innerRef = useRef(null);
   const { scale, height } = useFitScale(outerRef, innerRef);
-  const [tilt] = useState(() => (compact ? 0 : randomTilt()));
+  const [tilt] = useState(() => (compact ? 0 : (tiltProp ?? randomTilt())));
   const font = fontOf(note.font);
   const paper = paperOf(note.paper);
   const ink = inkColor(note.ink);

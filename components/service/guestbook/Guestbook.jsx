@@ -13,6 +13,7 @@ import { toast } from '@/lib/toast';
 import useAuthStore from '@/stores/useAuthStore';
 import GuestbookComposer from './GuestbookComposer';
 import GuestbookNote from './GuestbookNote';
+import { useTilts } from './useTilts';
 import { BOARD_THEMES } from './guestbookStyle';
 
 // 방명록 (PM 2026-10-10) — 학기별로 묶은 손글씨 메모판을 한 페이지에 이어 붙인다 (밤: 탭 대신 무한 스크롤 + 학기 드롭다운).
@@ -263,12 +264,14 @@ function Masonry({ notes, onEdit, onDelete }) {
   const count = useColumnCount();
   const columns = Array.from({ length: count }, () => []);
   notes.forEach((note, i) => columns[i % count].push(note));
+  // 인접 카드끼리 다른 기울기 (PM 10/11)
+  const tilts = useTilts(columns);
   return (
     <div className="flex items-start gap-4 pt-3">
       {columns.map((col, ci) => (
         <div key={ci} className="flex min-w-0 flex-1 flex-col gap-7">
           {col.map((note) => (
-            <GuestbookNote key={note.noteId} note={note} onEdit={onEdit} onDelete={onDelete} />
+            <GuestbookNote key={note.noteId} note={note} tilt={tilts.get(note.noteId)} onEdit={onEdit} onDelete={onDelete} />
           ))}
         </div>
       ))}
