@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '@/apis/auth';
 import { deleteGalleryPhoto, getGallery, updateMyGalleryPhoto } from '@/apis/gallery';
+import { updateGalleryPhotoMeta } from '@/apis/admin/gallery';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import AppLoading from '@/components/common/AppLoading';
 import ConfirmModal from '@/components/common/ConfirmModal';
@@ -75,8 +76,9 @@ function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete, onEdit 
               gallery={allPhotos}
               index={allPhotos.findIndex((x) => x.photoId === photo.photoId)}
             />
-            {/* 내 사진: 제목·해시태그 고치기 (PM 2026-10-11) — 지우기 왼쪽 */}
-            {photo.isMine && photo.state === 'normal' && (
+            {/* 내 사진: 제목·해시태그 고치기 (PM 2026-10-11) — 지우기 왼쪽.
+                관리자(canManage)는 남의 사진도 고친다 — 숨기기밖에 없어 오타 하나에도 관리 화면까지 가야 했다 (PM 2026-10-12) */}
+            {(photo.isMine || photo.canManage) && photo.state === 'normal' && (
               <button
                 type="button"
                 onClick={(e) => {
@@ -215,7 +217,8 @@ const Gallery = () => {
 
   const refresh = (label) => fetchSemester(label ?? meta?.currentSemester).catch(() => {});
 
-  // 내 사진 고치기 — 제목·해시태그만 (학기·올린 사람은 관리자가 활동 사진 관리에서)
+  // 사진 고치기 — 제목·해시태그만 (학기·올린 사람은 관리자가 활동 사진 관리에서).
+  // 내 사진은 회원 API, 남의 사진은 관리자 API(활동 사진 관리와 같은 PUT /api/admin/gallery/photos/{id})
   const [editing, setEditing] = useState(null); // { photo, title, hashtags }
   const [savingEdit, setSavingEdit] = useState(false);
   const openEdit = (photo) => setEditing({ photo, title: photo.title ?? '', hashtags: (photo.hashtags ?? []).join(', ') });
@@ -231,7 +234,9 @@ const Gallery = () => {
     }
     setSavingEdit(true);
     try {
-      await updateMyGalleryPhoto(editing.photo.photoId, { title: editing.title.trim(), hashtags: editing.hashtags.trim() });
+      const body = { title: editing.title.trim(), hashtags: editing.hashtags.trim() };
+      if (editing.photo.isMine) await updateMyGalleryPhoto(editing.photo.photoId, body);
+      else await updateGalleryPhotoMeta(editing.photo.photoId, body);
       toast.success('고쳤어요.');
       const label = editing.photo.semesterLabel;
       setEditing(null);

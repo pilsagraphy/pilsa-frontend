@@ -28,8 +28,9 @@ export default function MyInfoCard() {
     else router.push(ROUTES.MY_PAGE_SETTINGS);
   };
 
+  // h-full 을 두지 않는다 — 폰 2열 그리드가 알아서 같은 높이로 늘려 준다 (MyActivityCard 와 같은 이유)
   return (
-    <div className="flex h-full w-full flex-col rounded-[10px] border border-line bg-surface px-[17px] py-[16px] lg:h-auto lg:shrink-0">
+    <div className="flex w-full flex-col rounded-[10px] border border-line bg-surface px-[17px] py-[16px] lg:shrink-0">
       <h3 className="-mx-[12px] border-b border-line-strong px-[12px] pb-[12px] text-[16px] font-bold leading-[1.5] tracking-[-0.02em] text-ink">
         내 정보
       </h3>

@@ -20,12 +20,14 @@ const LeaderContent = ({ order, name, period, imageSrc, officers = [] }) => {
         {order}
       </span>
 
-      {/* 사진 영역: Next.js Image 최적화 적용. 사진만 연혁으로 가는 링크 */}
+      {/* 사진 영역: Next.js Image 최적화 적용. 사진만 연혁으로 가는 링크.
+          사진 바탕은 테마와 무관하게 라이트 값(#dedede) 고정 — 배경이 투명한 사진(누끼 딴 아바타)은 다크모드에서 bg-line 이 어두워져
+          혼자 색이 달라 보였다 (테스터 제보 10/11 "재연이만 색이 달라요") */}
       <Link
         href={year ? `${ROUTES.ABOUT_HISTORY}#year-${year}` : ROUTES.ABOUT_HISTORY}
         title={`${year ?? ''}년 연혁 보기`}
         aria-label={`${name} 회장 — ${year ?? ''}년 연혁 보기`}
-        className="relative aspect-[227/280] w-full shrink-0 overflow-hidden bg-line"
+        className="relative aspect-[227/280] w-full shrink-0 overflow-hidden bg-[#dedede]"
       >
         {imageSrc ? (
           <Image

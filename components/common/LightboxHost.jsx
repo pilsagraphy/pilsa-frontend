@@ -25,6 +25,18 @@ export default function LightboxHost() {
     setShowCaption(true);
   }, [lightbox, index]);
 
+  // 사진 확대(핀치·두 번 탭). 페이지 확대를 막은 뒤로(layout viewport maximumScale 1, 방명록 모달 때문) 브라우저 핀치가
+  // 먹지 않아 크게 보기에서 사진을 키울 방법이 없었다 (테스터 제보 10/11 "활동사진 누르고 확대가 안돼요").
+  // 그래서 여기서 직접 키운다 — 1~4배, 키운 상태에선 한 손가락으로 옮기고 넘기기(스와이프)는 쉰다. 사진을 넘기면 원래 크기로
+  const [zoom, setZoom] = useState({ scale: 1, x: 0, y: 0 });
+  const zoomRef = useRef(zoom);
+  zoomRef.current = zoom;
+  const gestureRef = useRef(null); // { kind: 'pinch', dist, scale, x, y, mx, my } | { kind: 'pan', sx, sy, x, y }
+  const lastTapRef = useRef(0);
+  useEffect(() => {
+    setZoom({ scale: 1, x: 0, y: 0 });
+  }, [lightbox, index]);
+
   // 폰의 뒤로가기 = 크게 보기 닫기. 설치형 앱에는 다른 뒤로가기 수단이 없어, 사진을 띄운 채 뒤로가기를 누르면
   // 사진은 그대로고 뒤 화면만 넘어갔다 (테스터 제보, 10/10). 열 때 같은 주소로 표시용 엔트리(pilsaLightbox)를 쌓고
   // popstate 로 그것만 소비한다. X·바깥 탭으로 닫으면 엔트리를 back() 으로 치운다 (이동이 없어 안전).
@@ -75,19 +87,63 @@ export default function LightboxHost() {
 
   const hasCaption = Boolean(current.caption || current.hashtags?.length);
 
+  const MAX_SCALE = 4;
+  const touchDist = (a, b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+
   const onTouchStart = (event) => {
-    // 두 손가락(핀치 확대)은 넘기기가 아니다
+    const z = zoomRef.current;
+    // 두 손가락 = 핀치 확대. 넘기기가 아니다
     if (event.touches.length > 1) {
       touchStartRef.current = null;
+      const [a, b] = event.touches;
+      gestureRef.current = {
+        kind: 'pinch',
+        dist: touchDist(a, b) || 1,
+        scale: z.scale,
+        x: z.x,
+        y: z.y,
+        mx: (a.clientX + b.clientX) / 2,
+        my: (a.clientY + b.clientY) / 2,
+      };
       return;
     }
     const t = event.touches[0];
+    // 키운 상태에서 한 손가락 = 사진 옮기기
+    if (z.scale > 1) {
+      touchStartRef.current = null;
+      gestureRef.current = { kind: 'pan', sx: t.clientX, sy: t.clientY, x: z.x, y: z.y };
+      return;
+    }
+    gestureRef.current = null;
     touchStartRef.current = { x: t.clientX, y: t.clientY };
   };
+  const onTouchMove = (event) => {
+    const g = gestureRef.current;
+    if (!g) return;
+    if (g.kind === 'pinch' && event.touches.length > 1) {
+      const [a, b] = event.touches;
+      const scale = Math.min(MAX_SCALE, Math.max(1, (g.scale * touchDist(a, b)) / g.dist));
+      const mx = (a.clientX + b.clientX) / 2;
+      const my = (a.clientY + b.clientY) / 2;
+      // 두 손가락 가운데를 따라 옮긴다
+      setZoom(scale === 1 ? { scale: 1, x: 0, y: 0 } : { scale, x: g.x + (mx - g.mx), y: g.y + (my - g.my) });
+    } else if (g.kind === 'pan' && event.touches.length === 1) {
+      const t = event.touches[0];
+      setZoom((z) => ({ ...z, x: g.x + (t.clientX - g.sx), y: g.y + (t.clientY - g.sy) }));
+    }
+  };
   const onTouchEnd = (event) => {
+    // 핀치 중 한 손가락만 떼면 남은 손가락으로 이어서 옮긴다
+    if (event.touches.length === 1 && zoomRef.current.scale > 1) {
+      const t = event.touches[0];
+      const z = zoomRef.current;
+      gestureRef.current = { kind: 'pan', sx: t.clientX, sy: t.clientY, x: z.x, y: z.y };
+      return;
+    }
+    if (event.touches.length === 0) gestureRef.current = null;
     const start = touchStartRef.current;
     touchStartRef.current = null;
-    if (!start || count < 2) return;
+    if (!start || count < 2 || zoomRef.current.scale > 1) return;
     const t = event.changedTouches[0];
     const dx = t.clientX - start.x;
     const dy = t.clientY - start.y;
@@ -106,7 +162,10 @@ export default function LightboxHost() {
       className="fixed inset-0 z-[90] flex items-center justify-center bg-black/90"
       onClick={close}
       onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
+      // 핀치·옮기기를 직접 처리하므로 브라우저 제스처(확대·당겨서 새로고침)는 끈다
+      style={{ touchAction: 'none' }}
     >
       <button
         type="button"
@@ -159,8 +218,23 @@ export default function LightboxHost() {
         key={current.src}
         src={current.src}
         alt={current.alt ?? ''}
-        onClick={(event) => event.stopPropagation()}
+        onClick={(event) => {
+          event.stopPropagation();
+          // 두 번 탭 = 2배로 키우기 / 원래대로 (PC 는 더블클릭)
+          const now = Date.now();
+          if (now - lastTapRef.current < 300) {
+            lastTapRef.current = 0;
+            setZoom((z) => (z.scale > 1 ? { scale: 1, x: 0, y: 0 } : { scale: 2, x: 0, y: 0 }));
+          } else {
+            lastTapRef.current = now;
+          }
+        }}
         className="max-h-[calc(100dvh-32px)] max-w-[calc(100vw-32px)] select-none object-contain"
+        style={{
+          transform: `translate(${zoom.x}px, ${zoom.y}px) scale(${zoom.scale})`,
+          // 손가락을 따라갈 땐 바로, 두 번 탭으로 바뀔 땐 부드럽게
+          transition: gestureRef.current ? 'none' : 'transform 0.2s ease-out',
+        }}
         draggable={false}
       />
 

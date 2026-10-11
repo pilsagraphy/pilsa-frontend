@@ -222,8 +222,9 @@ export default function NotificationBell() {
         )}
       </button>
 
+      {/* 종이 헤더 왼쪽으로 옮겨져(PM 10/11) 패널도 왼쪽 기준으로 편다 — 오른쪽 기준이면 화면 왼쪽 밖으로 잘렸다 (테스터 제보 10/11) */}
       {open && (
-        <div className="absolute right-[-8px] top-[44px] z-[70] w-[280px] max-w-[calc(100vw-20px)] overflow-hidden rounded-[12px] border border-line bg-elevated shadow-[0_8px_30px_rgba(0,0,0,0.12)] md:right-[-16px] md:top-[48px] md:w-[320px] lg:right-[-80px]">
+        <div className="absolute left-[-4px] top-[44px] z-[70] w-[280px] max-w-[calc(100vw-20px)] overflow-hidden rounded-[12px] border border-line bg-elevated shadow-[0_8px_30px_rgba(0,0,0,0.12)] md:left-0 md:top-[48px] md:w-[320px]">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <h3 className="text-[15px] font-semibold text-ink">알림</h3>
             <button

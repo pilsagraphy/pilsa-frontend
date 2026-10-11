@@ -1,6 +1,7 @@
 export default function TeamNameCard({ title, teamType = "teams" }) {
   const styles = {
-    chairman: "bg-inverse text-[#FFFFFF]",
+    // 글자도 토큰(text-inverse-fg)으로 — 흰색 고정이면 다크모드에서 바탕(bg-inverse)만 밝아져 회장 이름이 안 보였다 (테스터 제보 10/11)
+    chairman: "bg-inverse text-inverse-fg",
     teams: "bg-line text-ink",
   };
 

@@ -18,10 +18,13 @@ export default function MyActivityCard() {
 
   const semester = summary?.semester ?? null; // 불러오기 전에는 null
 
+  // h-full 을 두지 않는다 — 폰 2열 그리드에서는 그리드가 알아서 같은 높이로 늘려 주고, 아이폰 사파리는 h-full(퍼센트)을
+  // 엉뚱하게 풀어 카드가 길게 늘어나 아래 내용을 덮었다 (아이폰 테스터 제보 10/11)
   return (
-    <div className="flex h-full w-full flex-col rounded-[10px] border border-line bg-surface px-[17px] py-[16px] lg:flex-1">
+    <div className="flex w-full flex-col rounded-[10px] border border-line bg-surface px-[17px] py-[16px] lg:flex-1">
       <div className="flex items-center gap-[8px]">
-        <h3 className="break-keep text-[15px] font-bold leading-[1.5] tracking-[-0.02em] text-ink md:text-[16px]">
+        {/* 폰 2열 카드는 폭이 좁아 '요약' 한 단어만 다음 줄로 떨어졌다 — 두 줄 길이를 고르게 (테스터 제보 10/11) */}
+        <h3 className="min-w-0 text-balance break-keep text-[15px] font-bold leading-[1.5] tracking-[-0.02em] text-ink md:text-[16px]">
           이번 학기 활동 요약
         </h3>
 

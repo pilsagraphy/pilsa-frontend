@@ -6,6 +6,7 @@ import DialogHost from '@/components/common/DialogHost';
 import LightboxHost from '@/components/common/LightboxHost';
 import AppLaunchBeacon from '@/components/common/AppLaunchBeacon';
 import ThemeBootstrap from '@/components/common/ThemeBootstrap';
+import ScrollRestorer from '@/components/common/ScrollRestorer';
 
 export const metadata = {
   // 브라우저 탭·북마크·공유 카드에 그대로 나가는 이름이라 앱·스토어 표기와 같은 값을 쓴다
@@ -42,6 +43,9 @@ export const viewport = {
   // 페이지 자체가 확대돼 그 뒤로 모달이 화면보다 넓어 보이고 오른쪽이 잘렸다 (PM 10/11 "모바일에서 짤림"). 확대는 캔버스 안(핀치 줌)만 둔다.
   maximumScale: 1,
   userScalable: false,
+  // cover 여야 iOS 가 env(safe-area-inset-bottom) 에 홈 막대 높이를 준다 — 없으면 0 이라 하단 탭 바가 홈 막대 위에 겹쳐
+  // 탭이 잘 안 눌리고 아래 내용이 가려졌다 (아이폰 테스터 제보 10/11). 위쪽 상태바는 브라우저가 그대로 비워 둔다
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({ children }) {
@@ -72,6 +76,8 @@ export default function RootLayout({ children }) {
       <body className="min-h-screen bg-page font-sans text-ink flex flex-col">
         {/* 화면 모드 동기화 — 저장값을 스토어에 올리고 '시스템 설정'이면 OS 변화를 따라간다 */}
         <ThemeBootstrap />
+        {/* 뒤로가기로 돌아온 화면의 스크롤 위치 되살리기 (내용을 받아 와서 그리는 홈 등) */}
+        <ScrollRestorer />
         {/* 휴대폰인데 크롬 '데스크톱 사이트' 모드로 PC 화면이 그려질 때만 뜬다 (설치형 앱에서는 끌 방법이 없어 안내가 필요하다) */}
         <DesktopSiteNotice />
         {/* 아이폰으로 사이트 링크를 열고 들어온 사람에게 '홈 화면에 추가' 설치법 안내 (설치형 앱에서는 안 뜬다) */}

@@ -354,13 +354,16 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
           손잡이로 회전을 바꿀 수 있어요.
         </DialogDescription>
 
-        {/* 캔버스 — 투명이 보이도록 체크무늬 바탕 */}
+        {/* 캔버스 — 투명이 보이도록 체크무늬 바탕.
+            바탕색을 흰색으로 고정한다 — 비워 두면 다크모드에서 칸 사이가 모달의 검정 바탕이라 흑백 체크판이 되어 눈이 아팠다
+            (테스터 제보 10/11 "체크판 대비가 강해서 연하게"). 종이는 종이 — 라이트와 같은 연한 체크무늬 */}
         <div
           ref={frameRef}
           className="mx-auto w-full overflow-hidden rounded-[6px] border border-line"
           style={{
             touchAction: 'none',
             maxWidth: SIZE,
+            backgroundColor: '#ffffff',
             backgroundImage:
               'linear-gradient(45deg, #f1f1f1 25%, transparent 25%), linear-gradient(-45deg, #f1f1f1 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f1f1f1 75%), linear-gradient(-45deg, transparent 75%, #f1f1f1 75%)',
             backgroundSize: '16px 16px',

@@ -15,7 +15,8 @@ import { confirmDialog } from '@/stores/useDialogStore';
 // 묶음 탭은 누르면 바 바로 위에 선택창이 뜬다 — 같은 탭을 다시 누르거나 바깥을 누르면 닫히고, 이동하면 닫힌다.
 // 게시판 목록은 사이드바처럼 GET /api/user/boards(useBoardStore)로 그린다(하드코딩 금지).
 // 드로어(z-60)와 그 어둡게(z-50)보다 아래(z-40)라 드로어가 열리면 가려진다. 바 높이만큼은 layout 이 --bottom-bar 로 비워 둔다.
-export const TAB_BAR_HEIGHT = 56;
+// 56 → 62: 아이폰에서 바가 낮아 누르는 느낌이 없고 하단 홈 막대 근처라 입력이 씹힌다 (테스터 제보 10/11). globals.css 의 --bottom-bar 와 같은 값이어야 한다
+export const TAB_BAR_HEIGHT = 62;
 
 const ABOUT_ITEMS = [
   { name: '동아리 소개', path: ROUTES.ABOUT_INTRO },
@@ -180,7 +181,8 @@ export default function MobileTabBar() {
     <nav
       ref={navRef}
       aria-label="하단 메뉴"
-      className="fixed inset-x-0 bottom-0 z-40 tablet:hidden"
+      // 바닥 홈 막대 자리(safe-area)도 바와 같은 바탕으로 칠한다 — 비워 두면 그 틈으로 본문이 비쳐 보였다
+      className="fixed inset-x-0 bottom-0 z-40 bg-surface tablet:hidden"
       style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
     >
       {openTab && (
