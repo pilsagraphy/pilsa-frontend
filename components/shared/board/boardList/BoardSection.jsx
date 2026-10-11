@@ -306,7 +306,7 @@ export default function BoardSection({ boardId }) {
         <Link
           href={ROUTES.BOARD_WRITE(boardId)}
           aria-label="글 작성하기"
-          className="fixed bottom-6 right-4 z-40 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-inverse text-inverse-fg shadow-lg lg:hidden"
+          className="fixed bottom-[calc(24px_+_var(--bottom-bar,0px))] right-4 z-40 flex h-[60px] w-[60px] items-center justify-center rounded-full bg-inverse text-inverse-fg shadow-lg lg:hidden"
         >
           <PenLine size={26} strokeWidth={1.8} />
         </Link>
