@@ -47,7 +47,7 @@ export default function CommentListSection({ title = '댓글 관리' }) {
       <div className="mb-[5px] mt-[5px] flex flex-col gap-3 md:mb-4 md:mt-[10px] md:flex-row md:flex-wrap md:items-center md:justify-between">
         {/* min-w-0 을 주면 이 묶음이 0까지 찌그러지고 안의 셀렉트·검색창이 밖으로 넘쳐
             오른쪽 버튼 위에 겹쳐 그려진다. 자식들의 최소 너비가 이 묶음의 하한이 되게 둔다. */}
-        <div className="flex min-w-0 flex-1 basis-[260px] flex-row items-center gap-2">
+        <div className="flex min-w-0 flex-row md:flex-1 md:basis-[260px] items-center gap-2">
           {/* 정렬이 아니라 게시판 필터지만, 디자인상 트리거가 같아 SortSelect를 그대로 쓴다. */}
           <div className="w-[110px] shrink-0 sm:w-auto">
             <SortSelect
