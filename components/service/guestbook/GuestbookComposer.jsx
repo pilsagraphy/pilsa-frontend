@@ -586,7 +586,7 @@ function Row({ label, children }) {
   return (
     <div className="flex items-center gap-2">
       <span className="w-[40px] shrink-0 text-[#a3a09a]">{label}</span>
-      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto py-[3px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 sm:flex-wrap sm:overflow-visible">
+      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto px-[3px] py-[3px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 sm:flex-wrap sm:overflow-visible">
         {children}
       </div>
     </div>

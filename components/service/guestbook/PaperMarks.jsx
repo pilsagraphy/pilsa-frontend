@@ -65,7 +65,7 @@ function edgeDeco(r, size) {
   if (r() < 0.3) {
     return { corner: Math.floor(r() * 4), dx: rand(-0.9, -0.4) * radius, dy: rand(-0.9, -0.4) * radius, size, rot: rand(-30, 30) };
   }
-  return { side: Math.floor(r() * 4), along: rand(12, 88), near: rand(-0.9, -0.4) * radius, size, rot: rand(-30, 30) };
+  return { side: pickPlainSide(r()), along: rand(12, 88), near: rand(-0.9, -0.4) * radius, size, rot: rand(-30, 30) };
 }
 
 // 고리·방울의 대략적인 % 위치 (서로 겹치는지 볼 때만 쓴다)
@@ -87,6 +87,10 @@ const nearRing = (d, rings) => {
     return Math.abs(q.x - p.x) < 26 && Math.abs(q.y - p.y) < 60;
   });
 };
+// 무지의 변 고르기 — 왼쪽 10% · 위 30% · 아래 25% · 오른쪽 35%
+function pickPlainSide(roll) {
+  return roll < 0.1 ? 2 : roll < 0.4 ? 0 : roll < 0.65 ? 1 : 3;
+}
 // 같은 변의 방울끼리 겹치지 않게
 const nearDrop = (d, drops) => drops.some((o) => o.side === d.side && Math.abs(o.along - d.along) < 9);
 // 무지의 왼쪽 아래 튄 자국(76px) 자리 — 아래 변 왼쪽 끝·왼쪽 변 아래 끝에는 방울을 안 놓는다
@@ -139,7 +143,8 @@ function makeMarks(kind, seed) {
   const drops = [];
   for (let i = 0; i < count; i += 1) {
     for (let tries = 0; tries < 24; tries += 1) {
-      const side = Math.floor(r() * 4);
+      // 무지는 왼쪽 변에 잘 안 생기게(10%) — 글이 시작되는 쪽이라 거슬린다 (PM 10/11). 빈티지는 네 변 고르게
+      const side = coffee ? Math.floor(r() * 4) : pickPlainSide(r());
       const along = rand(5, 95);
       // 모양: 동그라미 / 찌그러진 방울 / 튄 자국(무지만) — 타원은 뺐다 (PM 10/11). 크기는 아주 작은 점부터 띠에 꽉 차는 것까지 확 다르게
       const roll = r();
@@ -168,8 +173,8 @@ function makeMarks(kind, seed) {
 const clampInt = (v, min, max) => Math.max(min, Math.min(max, v));
 function visibleCounts(marks, coffee, height) {
   const grown = Math.max(0, height - 95);
-  const lo = coffee ? 1 + Math.floor(grown / 200) : 3 + Math.floor(grown / 120);
-  const hi = coffee ? clampInt(2 + Math.floor(grown / 80), 2, 6) : clampInt(4 + Math.floor(grown / 40), 4, 12);
+  const hi = coffee ? clampInt(2 + Math.floor(grown / 80), 2, 6) : clampInt(3 + Math.floor(grown / 40), 3, 12);
+  const lo = Math.min(hi, coffee ? 1 + Math.floor(grown / 200) : 1 + Math.floor(grown / 100));
   const drops = Math.min(marks.drops.length, lo + Math.round(marks.dropFactor * (hi - lo)));
   const rings = coffee ? (height >= 220 && marks.extraRing ? 2 : 1) : 0;
   const decos = coffee ? 0 : Math.min(marks.decos.length, height >= 400 ? 3 : height >= 220 ? 2 : 1);
