@@ -38,6 +38,10 @@ export const viewport = {
   themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1,
+  // 페이지 확대(핀치·두 번 탭)를 막는다 — 방명록 고치기 모달 위에서 스티커 캔버스를 핀치하다 손가락 하나가 캔버스 밖에 닿으면
+  // 페이지 자체가 확대돼 그 뒤로 모달이 화면보다 넓어 보이고 오른쪽이 잘렸다 (PM 10/11 "모바일에서 짤림"). 확대는 캔버스 안(핀치 줌)만 둔다.
+  maximumScale: 1,
+  userScalable: false,
 };
 
 export default function RootLayout({ children }) {

@@ -347,7 +347,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent hideCloseButton className="max-h-[92dvh] w-[calc(100%-24px)] max-w-[380px] gap-3 overflow-x-hidden overflow-y-auto rounded-[8px] border-line p-4 sm:w-full">
+      <DialogContent hideCloseButton className="max-h-[92dvh] w-[calc(100%-24px)] max-w-[380px] gap-3 [touch-action:pan-x_pan-y] overflow-x-hidden overflow-y-auto rounded-[8px] border-line p-4 sm:w-full">
         <DialogTitle className="text-[16px] font-semibold text-ink">스티커 그리기</DialogTitle>
         <DialogDescription className="text-[12px] text-ink-3">
           투명한 정사각형 종이에 그려요. 두 손가락을 벌리면 종이 안에서 확대돼 세밀하게 그릴 수 있어요. 그린 모양 그대로 방명록에 붙이고, 붙인 뒤 끌어서 옮기거나 모서리로 크기,
