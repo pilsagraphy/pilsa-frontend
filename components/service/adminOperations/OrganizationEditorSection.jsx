@@ -18,7 +18,7 @@ import ConfirmModal from '@/components/common/ConfirmModal';
 import AppLoading from '@/components/common/AppLoading';
 import { toast } from '@/lib/toast';
 
-// 운영 관리 > 조직도 편집 (PM 2026-10-10)
+// 메뉴 관리 > 조직도 편집 (PM 2026-10-10)
 // 기수(역대 회장) 를 고르고 → 그 기수의 학기를 고르고 → 회장단 · 팀 · 자문 명단을 고쳐 저장한다.
 // 소개 페이지 조직도는 가장 최근 기수의 가장 최근 학기를, 역대 회장 페이지는 기수 전부를 그린다.
 // 이름 여러 명은 쉼표로 적는다 ("김서현, 김성은"). 순서는 적은 차례 그대로 화면에 나온다.

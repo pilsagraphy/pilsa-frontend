@@ -8,7 +8,7 @@ import AppLoading from '@/components/common/AppLoading';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import { toast } from '@/lib/toast';
 
-// 운영 관리 > 동아리 소개 관리 (PM 2026-10-11) — 소개 페이지의 문단(제목 + 본문)을 고치고 순서를 바꾼다. 조직도는 '조직도 편집'에서.
+// 메뉴 관리 > 동아리 소개 관리 (PM 2026-10-11) — 소개 페이지의 문단(제목 + 본문)을 고치고 순서를 바꾼다. 조직도는 '조직도 편집'에서.
 const inputClass =
   'h-[36px] w-full rounded-[6px] border border-[#dedede] bg-white px-3 text-[13px] text-[#212121] outline-none transition-colors focus:border-[#919191]';
 const textareaClass =
@@ -51,12 +51,15 @@ export default function IntroAdminSection() {
   const move = async (i, d) => {
     const j = i + d;
     if (j < 0 || j >= sections.length) return;
-    const a = sections[i];
-    const b = sections[j];
+    // 둘만 바꾸면 저장된 순서값에 빈틈이 있을 때 꼬인다 — 전체를 0..n-1 로 다시 매긴다 (검토 지적 10/11)
+    const reordered = [...sections];
+    [reordered[i], reordered[j]] = [reordered[j], reordered[i]];
     setBusy(true);
     try {
-      await updateIntroSection(a.sectionId, { title: a.title, content: a.content, sortOrder: j });
-      await updateIntroSection(b.sectionId, { title: b.title, content: b.content, sortOrder: i });
+      for (let k = 0; k < reordered.length; k += 1) {
+        const s = reordered[k];
+        if (s.sortOrder !== k) await updateIntroSection(s.sectionId, { title: s.title, content: s.content, sortOrder: k }); // eslint-disable-line no-await-in-loop
+      }
       await load();
     } catch (err) {
       toast.error(getErrorMessage(err, '순서를 바꾸지 못했습니다.'));
@@ -81,8 +84,15 @@ export default function IntroAdminSection() {
     <section className={listSectionClass}>
       <h1 className={listTitleClass}>동아리 소개 관리</h1>
       <p className="mb-5 text-[13px] leading-[1.6] text-[#919191]">소개 페이지의 문단입니다. 본문은 줄바꿈이 그대로 보입니다. 조직도는 「조직도 편집」에서 고칩니다.</p>
-      {error && <p className="py-6 text-center text-[13px] text-[#919191]">{error}</p>}
-      {sections == null && !error ? (
+      {/* 불러오기에 실패하면 추가 버튼까지 숨긴다 — 목록 없이 추가하면 순서값이 꼬인다 (검토 지적 10/11) */}
+      {error ? (
+        <div className="flex flex-col items-center gap-3 py-6">
+          <p className="text-[13px] text-[#919191]">{error}</p>
+          <button type="button" className={smallBtn} onClick={load}>
+            다시 불러오기
+          </button>
+        </div>
+      ) : sections == null ? (
         <AppLoading />
       ) : (
         <div className="flex flex-col gap-4">

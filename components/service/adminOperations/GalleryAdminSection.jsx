@@ -8,8 +8,8 @@ import AppLoading from '@/components/common/AppLoading';
 import { apiUrl } from '@/lib/apiBase';
 import { toast } from '@/lib/toast';
 
-// 운영 관리 > 활동 사진 관리 (PM 2026-10-10 밤) — 회원이 올린 사진을 학기별로 훑고 숨기기/복원, 제목·해시태그 수정.
-// 본인이 지운 사진(deleted)은 목록에 없다. '기존 사진'은 사이트를 만들 때 코드에 있던 사진을 DB 로 옮긴 것(올린 사람 없음).
+// 메뉴 관리 > 활동 사진 관리 (PM 2026-10-10 밤) — 회원이 올린 사진을 학기별로 훑고 숨기기/복원, 제목·해시태그 수정(둘 다 필수).
+// 본인이 지운 사진(deleted)은 목록에 없다. 올린 사람이 없는 사진(사이트를 만들 때 코드에 있던 것)은 따로 표시하지 않는다 (PM 10/11).
 const STATE_LABEL = { normal: '보임', hidden: '숨김' };
 const chipClass = (active) =>
   `h-[32px] shrink-0 rounded-full px-3 text-[13px] font-medium tracking-[-0.26px] transition ${
@@ -82,7 +82,12 @@ export default function GalleryAdminSection() {
       {loading ? (
         <AppLoading />
       ) : error ? (
-        <p className="py-10 text-center text-[14px] text-[#919191]">{error}</p>
+        <div className="flex flex-col items-center gap-3 py-10">
+          <p className="text-[14px] text-[#919191]">{error}</p>
+          <button type="button" className={smallBtn} onClick={() => load(semester)}>
+            다시 불러오기
+          </button>
+        </div>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-2">
@@ -116,7 +121,9 @@ function PhotoCard({ photo, busy, onToggle, onSave }) {
     setHashtags((photo.hashtags ?? []).join(', '));
   }, [photo.title, photo.hashtags]);
   const dirty = title !== (photo.title ?? '') || hashtags !== (photo.hashtags ?? []).join(', ');
-  const uploader = photo.userId == null ? '기존 사진' : photo.uploaderName ?? `회원 ${photo.userId}`;
+  // 올린 사람이 없는 사진(코드에 있던 것)은 따로 표시하지 않는다 (PM 10/11)
+  const uploader = photo.userId == null ? '' : photo.uploaderName ?? `회원 ${photo.userId}`;
+  const canSave = dirty && title.trim() && hashtags.trim();
 
   return (
     <li className={`flex flex-col gap-2 rounded-[8px] border border-[#ededed] p-2 ${photo.state === 'normal' ? '' : 'opacity-60'}`}>
@@ -126,16 +133,17 @@ function PhotoCard({ photo, busy, onToggle, onSave }) {
       </div>
       <div className="flex items-center justify-between gap-2 text-[11px] text-[#919191]">
         <span className="min-w-0 truncate">
-          #{photo.photoId} · {STATE_LABEL[photo.state] ?? photo.state} · {uploader}
+          #{photo.photoId} · {STATE_LABEL[photo.state] ?? photo.state}
+          {uploader ? ` · ${uploader}` : ''}
         </span>
         <button type="button" className={smallBtn} disabled={busy} onClick={onToggle}>
           {photo.state === 'normal' ? '숨기기' : '복원'}
         </button>
       </div>
-      <input type="text" value={title} maxLength={100} onChange={(e) => setTitle(e.target.value)} placeholder="제목" className={inputClass} />
+      <input type="text" value={title} maxLength={100} onChange={(e) => setTitle(e.target.value)} placeholder="제목 (필수)" className={inputClass} />
       <div className="flex gap-1">
-        <input type="text" value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="해시태그 (쉼표 구분)" className={inputClass} />
-        <button type="button" className={smallBtn} disabled={busy || !dirty} onClick={() => onSave(title, hashtags)}>
+        <input type="text" value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="해시태그 (필수, 쉼표 구분)" className={inputClass} />
+        <button type="button" className={smallBtn} disabled={busy || !canSave} onClick={() => onSave(title, hashtags)}>
           저장
         </button>
       </div>

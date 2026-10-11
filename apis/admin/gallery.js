@@ -1,4 +1,4 @@
-// 관리자 - 운영 관리 > 활동 사진 관리 API (PM 2026-10-10 밤)
+// 관리자 - 메뉴 관리 > 활동 사진 관리 API (PM 2026-10-10 밤)
 import axiosInstance from '@/apis/axiosInstance';
 
 // 1. 학기별 사진 전부 (GET /api/admin/gallery/photos?semester=) [ADMIN] — 숨긴 사진 포함 { semester, semesters[], photos[] }

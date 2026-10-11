@@ -18,7 +18,7 @@ import { BOARD_THEMES } from './guestbookStyle';
 // 방명록 (PM 2026-10-10) — 학기별로 묶은 손글씨 메모판을 한 페이지에 이어 붙인다 (밤: 탭 대신 무한 스크롤 + 학기 드롭다운).
 // 처음엔 이번 학기만 보이고, 아래로 내리면 지난 학기를 하나씩 더 불러온다. 드롭다운은 보고 있는 학기를 보여 주고 고르면 그 구간으로.
 // 학기 구분은 서버가 글을 남긴 시점의 학기(정책의 학기 시작 월)로 매긴다. 쓰기 칸은 이번 학기 구간 맨 위에만.
-// 로그인한 본인과 관리자는 글을 고치거나 지울 수 있고, 관리자가 지운 글은 숨김이라 그 자리에서 복원할 수 있다. 관리자에겐 관리 페이지 버튼.
+// 로그인해서 남긴 본인 글만 고치거나 지울 수 있다(남의 글은 관리자가 방명록 관리에서 숨긴다). 관리자에겐 관리 페이지 버튼.
 // boardTheme: 메모판 바탕 — 크림/회색/흰색 중 무엇이 나은지 보려는 임시 비교용
 export default function Guestbook({ boardTheme = 'cream' }) {
   const [meta, setMeta] = useState(null); // { currentSemester, semesters, maxLength, maxDrawings, drawingMaxKb }
@@ -162,7 +162,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
 
       {/* 메모판 — 점 격자 종이. 학기 구간이 위에서 아래로 이어진다 */}
       <section
-        className="flex flex-col gap-10 rounded-[8px] border px-4 py-6 md:px-8 md:py-8"
+        className="flex flex-col gap-10 rounded-[8px] border px-2 py-6 sm:px-4 md:px-8 md:py-8"
         style={{
           borderColor: theme.border,
           backgroundColor: theme.bg,
@@ -217,7 +217,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
 
       <ConfirmModal open={Boolean(deleting)} title="내가 남긴 글을 지울까요?" onConfirm={confirmDelete} onCancel={() => setDeleting(null)} />
 
-      {/* 고치기 — 쓰기 칸을 그대로 모달에 (종이 폭은 카드와 같은 320px) */}
+      {/* 고치기 — 쓰기 칸을 그대로 모달에 (종이 폭은 카드와 같은 DESIGN_WIDTH) */}
       <Dialog open={Boolean(editing)} onOpenChange={(v) => !v && setEditing(null)}>
         <DialogContent hideCloseButton className="max-h-[90dvh] max-w-[560px] overflow-y-auto rounded-[8px] border-[#dedede] p-4 md:p-5">
           <DialogTitle className="text-[16px] font-semibold text-[#212121]">방명록 고치기</DialogTitle>
@@ -244,7 +244,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
 }
 
 // 세로 칸 n 개에 글을 차례로 나눠 담는 벽돌 배치 (CSS columns 는 카드 위 테이프 조각이 칸 경계에서 잘렸다).
-// 카드는 320px 로 그려 칸 폭에 맞춰 줄어드니 칸을 너무 잘게 나누면 글씨가 작아진다 — PC 3칸, 태블릿 2칸, 폰 1칸 (PM 10/10 밤 "글꼴이 작아졌다")
+// 카드는 DESIGN_WIDTH(300px)로 그려 칸 폭에 맞춰 줄어드니 칸을 너무 잘게 나누면 글씨가 작아진다 — PC 3칸, 태블릿 2칸, 폰 1칸 (PM 10/10 밤 "글꼴이 작아졌다")
 function useColumnCount() {
   const [count, setCount] = useState(1);
   useEffect(() => {

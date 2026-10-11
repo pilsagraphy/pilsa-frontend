@@ -1,4 +1,4 @@
-// 관리자 - 운영 관리 > 명예의 전당 관리 API (PM 2026-10-11). 공개 조회는 apis/donation.js
+// 관리자 - 메뉴 관리 > 명예의 전당 관리 API (PM 2026-10-11). 공개 조회는 apis/donation.js
 import axiosInstance from '@/apis/axiosInstance';
 
 // 행: { donationId, userId, userName, userLoginId, displayName, amount, affiliation, major, message, donatedAt, isAnonymous, photoUrl }

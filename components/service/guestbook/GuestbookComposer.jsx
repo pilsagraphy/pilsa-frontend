@@ -9,19 +9,17 @@ import { toast } from '@/lib/toast';
 import ColorPicker from '@/components/shared/ColorPicker';
 import DrawingModal from './DrawingModal';
 import PaperMarks, { newMarksSeed } from './PaperMarks';
-import { ALIGNS, DESIGN_WIDTH, FONTS, INKS, PAPERS, fontOf, inkColor, paperOf, paperStyle, textStyle } from './guestbookStyle';
+import { ALIGNS, DESIGN_WIDTH, FONTS, INKS, PAPERS, TAPES, fontOf, inkColor, paperOf, paperStyle, tapeColor, textStyle } from './guestbookStyle';
 
-// 기억해 둔 이름은 계정별로 — 예전엔 키 하나라 관리자가 남의 글을 고치면 그 이름이 내 기본값으로 남았다 (PM 10/11 "왜 자꾸 수민으로")
-const nameKey = (userId) => (userId ? `pilsaGuestbookName:${userId}` : 'pilsaGuestbookName:anon');
-const readSavedName = (userId) => {
-  try {
-    return localStorage.getItem(nameKey(userId)) ?? '';
-  } catch {
-    return '';
-  }
-};
+// 이름은 기억하지 않는다 — 매번 새로 적는다 (PM 10/11). 예전엔 localStorage 에 남겨 관리자가 남의 글을 고친 이름이 기본값으로 남는 일이 있었다
 const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 const isHex = (v) => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
+// 글 칸 높이를 내용에 맞춘다 — 한 줄로 시작해 글 양만큼만 늘어난다
+const fitTextarea = (el) => {
+  if (!el) return;
+  el.style.height = '0px';
+  el.style.height = `${el.scrollHeight}px`;
+};
 
 // 종이 안쪽 여백(px) — 스티커는 이 안에만 붙는다 (카드의 padding 과 같은 값)
 const PAD = { left: 18, right: 18, top: 22, bottom: 14 };
@@ -29,19 +27,21 @@ const MIN_W = 8;
 const MAX_W = 80;
 
 // 방명록 쓰기 칸 — 편지지 한 장을 그대로 쓰는 느낌. 쓰는 종이가 곧 미리보기다.
-// 종이는 카드와 같은 320px 로 두어 줄바꿈·스티커 자리가 카드에서 똑같이 보인다 (어긋나던 원인, PM 10/10 밤).
-// 글씨체·잉크(기본 6색 + 컬러피커)·종이·정렬을 고르고, 그림판에서 그린 스티커를 붙여 끌어서 자리를 잡는다 —
+// 종이는 카드와 같은 폭(DESIGN_WIDTH)으로 두어 줄바꿈·스티커 자리가 카드에서 똑같이 보인다 (어긋나던 원인, PM 10/10 밤).
+// 글씨체·잉크(기본 6색 + 컬러피커)·종이·테이프 색·정렬을 고르고, 그림판에서 그린 스티커를 붙여 끌어서 자리를 잡는다 —
 // 잡은 지점을 유지하며 끌기, 안쪽 여백 밖으로 못 나감, 고르는 동안 바깥은 어둡게, 크기·회전·투명도 슬라이더, 앞/뒤 순서, 떼기.
-// mode='edit' 면 initial(기존 글)을 채워 놓고 PUT 으로 고친다 (본인 또는 관리자).
+// mode='edit' 면 initial(기존 글)을 채워 놓고 PUT 으로 고친다 (로그인해서 남긴 본인 글만).
 export default function GuestbookComposer({ mode = 'create', initial = null, maxLength = 300, maxDrawings = 3, drawingMaxKb = 200, onDone, onCancel }) {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
-  const myUserId = useAuthStore((s) => s.user?.userId ?? null);
-  const [name, setName] = useState(() => initial?.displayName ?? readSavedName(myUserId));
+  const [name, setName] = useState(initial?.displayName ?? '');
   const [content, setContent] = useState(initial?.content ?? '');
   const [font, setFont] = useState(initial?.font ?? FONTS[0].key);
   const [ink, setInk] = useState(initial?.ink ?? INKS[0].key);
   const [paper, setPaper] = useState(initial?.paper ?? PAPERS[0].key);
   const [align, setAlign] = useState(initial?.align ?? 'left');
+  // 테이프 색 — 기본 무채색, 파스텔 몇 가지 + 직접 고르기 (PM 10/11)
+  const [tape, setTape] = useState(() => tapeColor(initial?.tape));
+  const [tapePickerOpen, setTapePickerOpen] = useState(false);
   // 얼룩 배치 씨앗 — 종이 버튼을 누를 때마다 새로 뽑고(마음에 드는 배치를 고른다), 글과 함께 저장돼 카드에서도 그대로 (PM 10/11)
   const [marksSeed, setMarksSeed] = useState(() => initial?.marksSeed ?? initial?.noteId ?? newMarksSeed());
   const [inkPickerOpen, setInkPickerOpen] = useState(false);
@@ -70,14 +70,23 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
 
   // 글 칸 높이를 내용에 맞춘다 (글씨체가 바뀌어도). 늘어난 종이 높이에 맞춰 스티커 자리도 다시 가둔다
   useEffect(() => {
-    const el = textareaRef.current;
-    if (!el) return;
-    el.style.height = '0px';
-    el.style.height = `${el.scrollHeight}px`;
+    fitTextarea(textareaRef.current);
     setDrawings((list) => list.map((d) => ({ ...d, ...clampPos(d, d.posX, d.posY) })));
     // clampPos 는 ref 로 종이 크기를 읽는 순수 함수 — 의존성에 넣으면 렌더마다 돈다
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [content, font, paper]);
+  // 폭이 바뀌거나(폰 회전) 글꼴이 뒤늦게 내려오면 줄 수가 달라지므로 다시 잰다 (검토 지적 10/11)
+  useEffect(() => {
+    const measure = () => fitTextarea(textareaRef.current);
+    const fonts = document.fonts;
+    window.addEventListener('resize', measure);
+    fonts?.ready?.then(measure);
+    fonts?.addEventListener?.('loadingdone', measure);
+    return () => {
+      window.removeEventListener('resize', measure);
+      fonts?.removeEventListener?.('loadingdone', measure);
+    };
+  }, []);
 
   const f = fontOf(font);
   const p = paperOf(paper);
@@ -173,12 +182,13 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
     try {
       const body = {
         displayName: name.trim(),
-        content: content.trim(),
+        content, // 끝의 빈 줄도 그대로 — 스티커 자리를 만들려고 넣은 줄이 저장 뒤 사라지면 카드가 작아진다 (검토 지적 10/11)
         font,
         ink,
         paper,
         align,
         marksSeed,
+        tape,
         drawings: drawings.map((d) => ({
           drawingId: d.drawingId ?? null,
           dataUrl: d.dataUrl ?? null,
@@ -190,13 +200,9 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
         })),
       };
       const saved = mode === 'edit' ? await editGuestbookNote(initial.noteId, body) : await writeGuestbookNote(body);
-      // 내 이름 기억은 새로 쓸 때만, 계정별로
+      // 새로 쓴 뒤에는 이름까지 비운다 — 기억하지 않는다 (PM 10/11)
       if (mode === 'create') {
-        try {
-          localStorage.setItem(nameKey(myUserId), name.trim());
-        } catch {
-          // 저장 못 해도 그만
-        }
+        setName('');
         setContent('');
         setDrawings([]);
         setSelected(null);
@@ -213,6 +219,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
 
   const sel = drawings.find((d) => d.id === selected) ?? null;
   const selIndex = drawings.findIndex((d) => d.id === selected);
+  const isCustomTape = !TAPES.some((t) => t.key === tape);
   const chip = (active) =>
     `h-[28px] rounded-full px-[10px] text-[12px] transition ${active ? 'bg-[#212121] text-white' : 'bg-white text-[#454545] ring-1 ring-[#dedede] hover:bg-[#f5f5f5]'}`;
 
@@ -222,13 +229,19 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
       {sel && <div className="fixed inset-0 z-[60] bg-black/45" onClick={() => setSelected(null)} aria-hidden />}
 
       <div className={`flex flex-col gap-3 ${sel ? 'relative z-[61]' : ''}`}>
-        {/* 편지지 — 카드와 같은 320px */}
+        {/* 편지지 — 카드와 같은 폭 */}
         <div
           ref={paperRef}
           className={`relative mx-auto border border-black/[0.07] px-[18px] pb-[14px] pt-[22px] shadow-[2px_3px_0_rgba(0,0,0,0.05)] ${sel ? 'overflow-hidden' : ''}`}
           style={{ ...paperStyle(paper), width: DESIGN_WIDTH, maxWidth: '100%' }}
         >
-          {!sel && <span aria-hidden className="absolute -top-[9px] left-1/2 h-[18px] w-[52px] -translate-x-1/2 rotate-[2deg] bg-[#d9d6cd]/70" />}
+          {!sel && (
+            <span
+              aria-hidden
+              className="absolute -top-[9px] left-1/2 h-[18px] w-[52px] -translate-x-1/2 rotate-[2deg]"
+              style={{ backgroundColor: `${tape}b3` }}
+            />
+          )}
           {p.marks && <PaperMarks kind={p.marks} color={inkHex} seed={marksSeed} />}
           {/* 글 칸은 한 줄로 시작해 글 양만큼만 늘어난다 — 카드도 글 양만큼만 커지므로 작성 칸이 곧 실제 크기 (얼룩·스티커 자리를 실제 크기에서 고른다, PM 10/11) */}
           <textarea
@@ -402,6 +415,43 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
             </button>
           ))}
         </Row>
+        <Row label="테이프">
+          {TAPES.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              title={t.label}
+              aria-label={`테이프 ${t.label}`}
+              aria-pressed={tape === t.key}
+              onClick={() => setTape(t.key)}
+              className={`h-[14px] w-[34px] rotate-[-2deg] border ${tape === t.key ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-black/10'}`}
+              style={{ backgroundColor: t.key }}
+            />
+          ))}
+          <button
+            type="button"
+            title="직접 고르기"
+            aria-label="테이프 색 직접 고르기"
+            onClick={() => setTapePickerOpen((v) => !v)}
+            className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border text-[14px] leading-none ${
+              isCustomTape ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-dashed border-[#919191] text-[#919191]'
+            }`}
+            style={isCustomTape ? { backgroundColor: tape, color: '#454545' } : undefined}
+          >
+            +
+          </button>
+        </Row>
+        {tapePickerOpen && (
+          <ColorPicker
+            value={tape}
+            swatches={TAPES.map((t) => t.key)}
+            onCancel={() => setTapePickerOpen(false)}
+            onConfirm={(hex) => {
+              setTape(hex.toLowerCase());
+              setTapePickerOpen(false);
+            }}
+          />
+        )}
         <Row label="정렬">
           {ALIGNS.map((a) => (
             <button key={a.key} type="button" onClick={() => setAlign(a.key)} className={chip(align === a.key)}>

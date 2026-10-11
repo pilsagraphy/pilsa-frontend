@@ -257,12 +257,18 @@ const Sidebar = () => {
         // 정책 설정은 관리 레벨 3 전용 — 메뉴 자체를 숨긴다 (PM, 10/10). 화면과 API 도 각각 막는다
         ...(adminLevel >= 3 ? [{ name: '정책 설정', path: ROUTES.ADMIN_POLICIES }] : []),
         { name: '알림 설정', path: ROUTES.ADMIN_NOTIFICATION_SETTINGS },
-        { name: '조직도 편집', path: ROUTES.ADMIN_ORGANIZATION },
-        { name: '활동 사진 관리', path: ROUTES.ADMIN_GALLERY },
-        { name: '방명록 관리', path: ROUTES.ADMIN_GUESTBOOK },
+      ],
+    },
+    // 메뉴 관리 — 사이트 메뉴(소개 · 연혁 · 역대 회장 · 명예의 전당 · 활동 사진 · 방명록)의 내용을 고치는 화면들 (PM 2026-10-11)
+    menus: {
+      label: '메뉴 관리',
+      subMenus: [
         { name: '동아리 소개 관리', path: ROUTES.ADMIN_INTRO },
         { name: '연혁 관리', path: ROUTES.ADMIN_HISTORY },
+        { name: '조직도 편집 (역대 회장)', path: ROUTES.ADMIN_ORGANIZATION },
         { name: '명예의 전당 관리', path: ROUTES.ADMIN_DONATIONS },
+        { name: '활동 사진 관리', path: ROUTES.ADMIN_GALLERY },
+        { name: '방명록 관리', path: ROUTES.ADMIN_GUESTBOOK },
       ],
     },
   };
@@ -271,7 +277,15 @@ const Sidebar = () => {
   const isBoardActive = pathname.startsWith(ROUTES.STUDENTS_DASHBOARD);
   const isMembersActive = pathname.startsWith(ROUTES.ADMIN_MEMBERS);
   const isCommunityActive = pathname.startsWith(`${ROUTES.ADMIN_HOME}/community`);
-  const isOperationsActive = pathname.startsWith(ROUTES.ADMIN_OPERATIONS);
+  const isMenusActive = adminMenuConfig.menus.subMenus.some((m) => pathname === m.path);
+  const isOperationsActive = pathname.startsWith(ROUTES.ADMIN_OPERATIONS) && !isMenusActive;
+
+  // 관리자 묶음은 기본적으로 닫혀 있고, 지금 보는 화면이 속한 묶음만 펼친다 (PM 2026-10-11)
+  const openMenu = useSidebarStore((s) => s.openMenu);
+  useEffect(() => {
+    const active = isMembersActive ? 'members' : isCommunityActive ? 'community' : isMenusActive ? 'menus' : isOperationsActive ? 'operations' : null;
+    if (active) openMenu(active);
+  }, [isMembersActive, isCommunityActive, isMenusActive, isOperationsActive, openMenu]);
 
   // 단일 링크 색상 (선택: grayscale-06 / 미선택: grayscale-03)
   const singleLinkClass = (active) =>
@@ -323,6 +337,7 @@ const Sidebar = () => {
               { key: 'members', active: isMembersActive },
               { key: 'community', active: isCommunityActive },
               { key: 'operations', active: isOperationsActive },
+              { key: 'menus', active: isMenusActive },
             ].map(({ key, active }) => {
               const cfg = adminMenuConfig[key];
               return (

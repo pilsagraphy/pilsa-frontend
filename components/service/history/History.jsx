@@ -8,7 +8,7 @@ import AppLoading from '@/components/common/AppLoading';
 import { ROUTES } from '@/constants/routes';
 import HistoryRow from './HistoryRow';
 
-// 연혁 — 항목은 서버(history_items)에서 온다. 운영 관리 > 연혁 관리에서 고친다 (PM 2026-10-11)
+// 연혁 — 항목은 서버(history_items)에서 온다. 메뉴 관리 > 연혁 관리에서 고친다 (PM 2026-10-11)
 // 서버 항목 → ActivityItem 이 쓰는 모양 { text, href?, video?, link?: { href, label }, images? }
 const toActivity = (item) => ({
   text: item.text,
