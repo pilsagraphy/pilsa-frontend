@@ -10,6 +10,7 @@ import { toast } from '@/lib/toast';
 import ColorPicker from '@/components/shared/ColorPicker';
 import DrawingModal from './DrawingModal';
 import PaperMarks, { newMarksSeed } from './PaperMarks';
+import MarksToggle from './MarksToggle';
 import { ALIGNS, DESIGN_WIDTH, FONTS, INKS, PAPERS, TAPES, fontOf, inkColor, paperOf, paperStyle, tapeColor, textStyle } from './guestbookStyle';
 
 // 이름은 기억하지 않는다 — 매번 새로 적는다 (PM 10/11). 예전엔 localStorage 에 남겨 관리자가 남의 글을 고친 이름이 기본값으로 남는 일이 있었다
@@ -40,7 +41,19 @@ const SNAP_ANGLES = [-180, -90, 0, 90, 180];
 // 잡은 지점을 유지하며 끌기, 종이 밖으로 절반까지 삐져나갈 수 있음(밖은 카드에서 잘림), 고르는 동안 바깥은 어둡게. 크기·회전은 PPT 처럼 도형의 모서리·위 손잡이를 끌어
 // 바로 바꾸고, 투명도·순서·떼기만 아래 작은 창에서 (PM 10/11 "슬라이더는 불편, ppt 처럼").
 // mode='edit' 면 initial(기존 글)을 채워 놓고 PUT 으로 고친다 (로그인해서 남긴 본인 글만).
-export default function GuestbookComposer({ mode = 'create', initial = null, maxLength = 300, maxDrawings = 3, drawingMaxKb = 200, onDone, onCancel }) {
+// marksOn/onMarksOnChange: 새로 쓸 때는 Guestbook 의 학기 머리줄 스위치가 얼룩 켬/끔을 쥔다(제어 prop). onPaperMarksChange: 고른 종이에 얼룩이 있는지('ink'|'coffee'|null) 알려 스위치를 보이고 숨긴다
+export default function GuestbookComposer({
+  mode = 'create',
+  initial = null,
+  maxLength = 300,
+  maxDrawings = 3,
+  drawingMaxKb = 200,
+  onDone,
+  onCancel,
+  marksOn: marksOnProp = null,
+  onMarksOnChange = null,
+  onPaperMarksChange = null,
+}) {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const [name, setName] = useState(initial?.displayName ?? '');
   const [content, setContent] = useState(initial?.content ?? '');
@@ -52,7 +65,9 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   const [tape, setTape] = useState(() => tapeColor(initial?.tape));
   const [tapePickerOpen, setTapePickerOpen] = useState(false);
   // 얼룩(무지 잉크 자국·빈티지 커피 자국) 켬/끔 — 기본 켬, 글과 함께 저장 (PM 10/11)
-  const [marksOn, setMarksOn] = useState(initial?.marksOn !== false);
+  const [marksOnState, setMarksOnState] = useState(initial?.marksOn !== false);
+  const marksOn = marksOnProp ?? marksOnState;
+  const setMarksOn = onMarksOnChange ?? setMarksOnState;
   // 얼룩 배치 씨앗 — 종이 버튼을 누를 때마다 새로 뽑고(마음에 드는 배치를 고른다), 글과 함께 저장돼 카드에서도 그대로 (PM 10/11)
   const [marksSeed, setMarksSeed] = useState(() => initial?.marksSeed ?? initial?.noteId ?? newMarksSeed());
   const [inkPickerOpen, setInkPickerOpen] = useState(false);
@@ -125,6 +140,10 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
 
   const f = fontOf(font);
   const p = paperOf(paper);
+  // 고른 종이에 얼룩이 있는지 부모(학기 머리줄 스위치)에 알린다
+  useEffect(() => {
+    onPaperMarksChange?.(p.marks ?? null);
+  }, [p.marks, onPaperMarksChange]);
   const inkHex = inkColor(ink);
 
   // 스티커 중심은 종이 안(0~100%)에만 — 절반까지는 종이 밖으로 나갈 수 있고, 완전히 밖으로 나가 잃어버리는 일은 없다
@@ -296,12 +315,10 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
       {sel && mode === 'create' && <div className="fixed inset-0 z-[60] bg-black/45" onClick={() => setSelected(null)} aria-hidden />}
 
       <div className={`flex flex-col gap-3 ${sel ? 'relative z-[61]' : ''}`}>
-        {/* 얼룩 켬/끔 — 종이 오른쪽 위에 (PM 10/11 "사진의 위치"), 무지·빈티지에만. 새로 쓸 때는 위 학기 머리줄 쪽으로 끌어올린다 */}
-        {p.marks && (
-          <div className={`flex justify-end ${mode === 'create' ? '-mt-7 -mb-1' : ''}`}>
-            <button type="button" aria-pressed={marksOn} onClick={() => setMarksOn((v) => !v)} className={chip(marksOn)}>
-              {p.marks === 'coffee' ? '커피 자국' : '잉크 자국'} {marksOn ? '켬' : '끔'}
-            </button>
+        {/* 얼룩 켬/끔 — 고칠 때는 종이 오른쪽 위에 작은 스위치(새로 쓸 때는 Guestbook 의 학기 머리줄 스위치가 대신), 무지·빈티지에만 (PM 10/11) */}
+        {p.marks && !onMarksOnChange && (
+          <div className="flex justify-end">
+            <MarksToggle kind={p.marks} on={marksOn} onChange={setMarksOn} />
           </div>
         )}
         {/* 편지지 — 카드와 같은 폭 */}
@@ -423,6 +440,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
         {/* 고른 스티커의 작은 창 — 크기·회전은 도형에서 직접, 여기서는 투명도·순서·스티커 수정·떼기만. 화면 아래에 떠 있는 팝업(포털)이라
             글 흐름을 밀지 않고, 고치기 모달 안에서도 모달 상자에 갇히지 않는다. 모달의 바깥 클릭 판정은 data-sticker-panel 로 제외 (PM 10/11) */}
         {sel &&
+          !drawOpen &&
           typeof document !== 'undefined' &&
           createPortal(
           <div

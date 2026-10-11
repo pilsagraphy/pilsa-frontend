@@ -13,6 +13,7 @@ import { toast } from '@/lib/toast';
 import useAuthStore from '@/stores/useAuthStore';
 import GuestbookComposer from './GuestbookComposer';
 import GuestbookNote from './GuestbookNote';
+import MarksToggle from './MarksToggle';
 import { useTilts } from './useTilts';
 import { BOARD_THEMES } from './guestbookStyle';
 
@@ -30,6 +31,9 @@ export default function Guestbook({ boardTheme = 'cream' }) {
   const [deleting, setDeleting] = useState(null);
   const [editing, setEditing] = useState(null);
   const [pendingJump, setPendingJump] = useState(null);
+  // 새 글의 얼룩 켬/끔 — 학기 머리줄 오른쪽 끝의 작은 스위치가 쥐고 쓰기 칸에 내려 준다 (PM 10/11). composerMarks: 고른 종이의 얼룩 종류(없으면 스위치 숨김)
+  const [marksOn, setMarksOn] = useState(true);
+  const [composerMarks, setComposerMarks] = useState(null);
   const sentinelRef = useRef(null);
   const theme = BOARD_THEMES[boardTheme] ?? BOARD_THEMES.cream;
 
@@ -186,6 +190,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
                   {label}
                   {isCurrent && <span className="rounded-full bg-inverse px-2 py-[1px] text-[10px] font-medium text-inverse-fg">이번 학기</span>}
                   <span className="text-[12px] font-normal text-[#a3a09a]">{notes.length}장</span>
+                  {isCurrent && composerMarks && <MarksToggle kind={composerMarks} on={marksOn} onChange={setMarksOn} className="ml-auto" />}
                 </h3>
 
                 {/* 쓰기 칸은 이번 학기에서만 — 지난 학기에 새 글을 끼워 넣을 수는 없다 */}
@@ -195,6 +200,9 @@ export default function Guestbook({ boardTheme = 'cream' }) {
                     maxDrawings={meta.maxDrawings}
                     drawingMaxKb={meta.drawingMaxKb}
                     onDone={() => refresh(label)}
+                    marksOn={marksOn}
+                    onMarksOnChange={setMarksOn}
+                    onPaperMarksChange={setComposerMarks}
                   />
                 )}
 
@@ -222,7 +230,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
 
       {/* 고치기 — 쓰기 칸을 그대로 모달에 (종이 폭은 카드와 같은 DESIGN_WIDTH) */}
       <Dialog open={Boolean(editing)} onOpenChange={(v) => !v && setEditing(null)}>
-        <DialogContent hideCloseButton onInteractOutside={(e) => { if ((e.detail?.originalEvent?.target ?? e.target)?.closest?.('[data-sticker-panel]')) e.preventDefault(); }} className="theme-light max-h-[90dvh] max-w-[560px] overflow-y-auto rounded-[8px] border-line p-4 md:p-5">
+        <DialogContent hideCloseButton onInteractOutside={(e) => { if ((e.detail?.originalEvent?.target ?? e.target)?.closest?.('[data-sticker-panel]')) e.preventDefault(); }} className="theme-light max-h-[90dvh] w-[calc(100vw-24px)] max-w-[560px] overflow-x-hidden overflow-y-auto rounded-[8px] border-line p-4 sm:w-full md:p-5">
           <DialogTitle className="text-[16px] font-semibold text-ink">방명록 고치기</DialogTitle>
           <DialogDescription className="sr-only">내용·글씨체·잉크·종이·스티커를 고친다</DialogDescription>
           {editing && meta && (
