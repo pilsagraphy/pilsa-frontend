@@ -90,70 +90,7 @@ const Sidebar = () => {
   // 위 effect 는 pathname 이 바뀔 때만 돌아서, 지금 보고 있는 페이지의 메뉴를 다시 누르거나
   // (예: /students 에서 '메인페이지') 이동이 막힌 경우(권한 없음 토스트)에는 사이드바가 그대로 남았다.
   // 펼침 버튼(ABOUT PILSA · 회원 게시판 · 관리자 메뉴)은 <button> 이라 여기에 걸리지 않는다.
-  // 폰: 화면 어디서든 오른쪽으로 쓸면 사이드바가 열리고, 왼쪽으로 쓸면 닫힌다.
-  // 처음엔 왼쪽 가장자리 24px 에서 시작한 손가락만 봤는데 가장자리를 정확히 잡기 어려웠다 (PM, 2026-09-21).
-  // 세로 스크롤·가로 스크롤 표와 헷갈리지 않게 가로로 70px 넘게, 세로보다 1.5배 이상 움직였을 때만.
-  useEffect(() => {
-    let start = null;
-    // 무언가 하는 중에는 쓸어도 열리지 않는다 (PM, 10/10 "시도 때도 없이 열린다"):
-    //  - 모달·다이얼로그가 떠 있을 때 (Radix 는 열린 동안 body 에 data-scroll-locked 를 둔다)
-    //  - 사진 크게 보기 · 토스트 위
-    //  - 글을 쓰는 중 — 입력칸·편집기(contenteditable) 안에서 시작한 손짓, 또는 입력칸에 포커스가 있을 때
-    //  - 가로로 스크롤되는 상자(표·캐러셀) 안에서 시작한 손짓
-    //  - 열려 있지 않을 때는 화면 왼쪽 절반에서 시작한 손짓만 연다 (오른쪽에서 왼쪽으로 쓸어 닫는 건 어디서든)
-    const isTyping = () => {
-      const el = document.activeElement;
-      if (!el) return false;
-      const tag = el.tagName;
-      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
-    };
-    const inBlockedArea = (target) =>
-      Boolean(
-        target?.closest?.(
-          '[data-sonner-toaster], [role="dialog"], input, textarea, select, [contenteditable="true"], .board-editor, .ProseMirror, [data-no-sidebar-swipe]'
-        )
-      );
-    const inHorizontalScroller = (target) => {
-      let el = target;
-      while (el && el !== document.body) {
-        if (el.scrollWidth > el.clientWidth + 4) {
-          const overflowX = window.getComputedStyle(el).overflowX;
-          if (overflowX === 'auto' || overflowX === 'scroll') return true;
-        }
-        el = el.parentElement;
-      }
-      return false;
-    };
-    const onStart = (event) => {
-      const t = event.touches[0];
-      if (!t || window.innerWidth >= 768) {
-        start = null;
-        return;
-      }
-      const lightboxOpen = Boolean(useLightboxStore.getState().lightbox);
-      const modalOpen = document.body.hasAttribute('data-scroll-locked');
-      const blocked =
-        lightboxOpen || modalOpen || isTyping() || inBlockedArea(event.target) || inHorizontalScroller(event.target);
-      start = blocked ? null : { x: t.clientX, y: t.clientY };
-    };
-    const onEnd = (event) => {
-      if (!start) return;
-      const t = event.changedTouches[0];
-      const dx = t.clientX - start.x;
-      const dy = t.clientY - start.y;
-      const startX = start.x;
-      start = null;
-      if (Math.abs(dx) < 80 || Math.abs(dx) <= Math.abs(dy) * 2) return;
-      if (dx > 0 && !isMobileOpenRef.current && startX < window.innerWidth / 2) openMobile();
-      else if (dx < 0 && isMobileOpenRef.current) closeMobile();
-    };
-    document.addEventListener('touchstart', onStart, { passive: true });
-    document.addEventListener('touchend', onEnd, { passive: true });
-    return () => {
-      document.removeEventListener('touchstart', onStart);
-      document.removeEventListener('touchend', onEnd);
-    };
-  }, [openMobile, closeMobile]);
+  // 폰에서 쓸어 여는 손짓은 뺐다 — 하단 탭 바가 메뉴를 맡는다 (PM 2026-10-11 "모바일에서 스와이프 기능 제거")
 
   const closeOnLinkClick = useCallback((event) => {
     if (event.target.closest('a')) {

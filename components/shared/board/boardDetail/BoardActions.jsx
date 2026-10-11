@@ -184,6 +184,8 @@ export default function BoardActions({
     return (
       <>
         <div className="flex w-full items-center justify-between gap-2">
+          {/* 좋아요 · 공유를 한 덩어리로 (PM 2026-10-11 "공유버튼이 좋아요 버튼과 붙도록") */}
+          <div className="flex items-center gap-[4px]">
           <button
             type="button"
             onClick={handleLike}
@@ -206,6 +208,7 @@ export default function BoardActions({
           >
             <Share2 width={18} height={18} strokeWidth={1.5} aria-hidden="true" />
           </button>
+          </div>
 
           {canEdit || canDelete ? (
             <div className="flex items-center gap-[4px]">
@@ -213,9 +216,9 @@ export default function BoardActions({
                 <button
                   type="button"
                   onClick={handleEdit}
-                  className="h-[40px] w-[100px] rounded-[4px] border border-line-strong bg-surface text-[14px] tracking-[-0.28px] text-ink"
+                  className="h-[40px] w-[64px] rounded-[4px] border border-line-strong bg-surface text-[14px] tracking-[-0.28px] text-ink"
                 >
-                  수정하기
+                  수정
                 </button>
               )}
               {canDelete && (
@@ -223,9 +226,9 @@ export default function BoardActions({
                   type="button"
                   disabled={deleteLoading}
                   onClick={handleDelete}
-                  className="h-[40px] w-[100px] rounded-[4px] bg-inverse text-[14px] tracking-[-0.28px] text-inverse-fg disabled:opacity-60"
+                  className="h-[40px] w-[64px] rounded-[4px] bg-inverse text-[14px] tracking-[-0.28px] text-inverse-fg disabled:opacity-60"
                 >
-                  {deleteLoading ? '삭제 중...' : '삭제하기'}
+                  {deleteLoading ? '삭제 중' : '삭제'}
                 </button>
               )}
               {/* 내 글의 댓글 알림 끄기 — 삭제 오른쪽 (PM 2026-10-10) */}
