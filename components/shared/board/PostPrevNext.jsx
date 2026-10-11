@@ -112,7 +112,7 @@ export default function PostPrevNext({
       <Row
         label="다음 글"
         categoryName={next?.categoryName}
-        title={next?.title ?? '없습니다'}
+        title={next?.title ?? '다음 글이 없습니다'}
         date={next ? formatDotDate(next.created) : null}
         href={nextHref}
         empty={!next}
@@ -132,7 +132,7 @@ export default function PostPrevNext({
       <Row
         label="이전 글"
         categoryName={prev?.categoryName}
-        title={prev?.title ?? '없습니다'}
+        title={prev?.title ?? '이전 글이 없습니다'}
         date={prev ? formatDotDate(prev.created) : null}
         href={prevHref}
         empty={!prev}

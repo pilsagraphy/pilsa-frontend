@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { BookOpenText, CalendarDays, FileText, Home, LayoutDashboard, LayoutList, LogIn, Menu, Sparkles, UserRound, Users } from 'lucide-react';
@@ -56,6 +56,17 @@ export default function MobileTabBar() {
   useEffect(() => {
     setOpen(null);
   }, [pathname]);
+  // 바 바깥(본문)을 누르면 닫는다 — 화면을 덮는 투명 막 대신 document 리스너로. 막을 깔았더니 폰에서 다른 탭을 눌렀을 때
+  // 막이 먼저 닫히기만 하고 이동이 안 되는 일이 있었다 (PM 10/11). 바 안쪽(다른 탭·항목)은 각자의 onClick 이 처리한다
+  const navRef = useRef(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => {
+      if (navRef.current && !navRef.current.contains(e.target)) setOpen(null);
+    };
+    document.addEventListener('pointerdown', onDown, true);
+    return () => document.removeEventListener('pointerdown', onDown, true);
+  }, [open]);
 
   const isAdminArea = pathname.startsWith(ROUTES.ADMIN_HOME);
   const boardItems = (boards ?? []).map((b) => ({ name: b.boardName, path: ROUTES.BOARD(b.boardId) }));
@@ -84,11 +95,14 @@ export default function MobileTabBar() {
     }`;
 
   return (
-    <nav aria-label="하단 메뉴" className="fixed inset-x-0 bottom-0 z-40 tablet:hidden" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+    <nav
+      ref={navRef}
+      aria-label="하단 메뉴"
+      className="fixed inset-x-0 bottom-0 z-40 tablet:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+    >
       {openTab && (
         <>
-          {/* 바깥을 누르면 닫힘 — 바와 선택창보다 아래 층. 살짝 어둡게 해서 선택창이 떠 있음을 보여 준다 */}
-          <button type="button" aria-label="선택창 닫기" onClick={() => setOpen(null)} className="fixed inset-0 z-0 cursor-default bg-black/20" />
           <div
             role="menu"
             aria-label={openTab.title}
@@ -104,6 +118,7 @@ export default function MobileTabBar() {
                     <Link
                       href={it.path}
                       role="menuitem"
+                      onClick={() => setOpen(null)}
                       className={`flex h-[46px] items-center px-4 text-[15px] tracking-[-0.02em] active:bg-surface-2 ${
                         within(pathname, it.path) ? 'font-semibold text-ink' : 'text-ink-2'
                       }`}
@@ -139,14 +154,24 @@ export default function MobileTabBar() {
           }
           if (t.drawer) {
             return (
-              <button key={t.key} type="button" onClick={openMobile} aria-label="전체 메뉴 열기" className={itemClass(false)}>
+              <button
+                key={t.key}
+                type="button"
+                onClick={() => {
+                  setOpen(null);
+                  openMobile();
+                }}
+                aria-label="전체 메뉴 열기"
+                className={itemClass(false)}
+              >
                 <Icon size={22} strokeWidth={1.8} aria-hidden />
                 {t.label}
               </button>
             );
           }
+          // 선택창이 열린 채로 다른 탭을 누르면 닫히면서 바로 이동 (PM 10/11 "마음 바꿔서 마이페이지 누르면 닫히고 가야지")
           return (
-            <Link key={t.key} href={t.href} className={itemClass(active)} aria-current={active ? 'page' : undefined}>
+            <Link key={t.key} href={t.href} onClick={() => setOpen(null)} className={itemClass(active)} aria-current={active ? 'page' : undefined}>
               <Icon size={22} strokeWidth={active ? 2.2 : 1.8} aria-hidden />
               {t.label}
             </Link>
