@@ -50,6 +50,8 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   // 테이프 색 — 기본 무채색, 파스텔 몇 가지 + 직접 고르기 (PM 10/11)
   const [tape, setTape] = useState(() => tapeColor(initial?.tape));
   const [tapePickerOpen, setTapePickerOpen] = useState(false);
+  // 얼룩(무지 잉크 자국·빈티지 커피 자국) 켬/끔 — 기본 켬, 글과 함께 저장 (PM 10/11)
+  const [marksOn, setMarksOn] = useState(initial?.marksOn !== false);
   // 얼룩 배치 씨앗 — 종이 버튼을 누를 때마다 새로 뽑고(마음에 드는 배치를 고른다), 글과 함께 저장돼 카드에서도 그대로 (PM 10/11)
   const [marksSeed, setMarksSeed] = useState(() => initial?.marksSeed ?? initial?.noteId ?? newMarksSeed());
   const [inkPickerOpen, setInkPickerOpen] = useState(false);
@@ -223,8 +225,9 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
       toast.error('이름이나 닉네임을 적어 주세요.');
       return;
     }
-    if (!content.trim()) {
-      toast.error('내용을 적어 주세요.');
+    // 이름은 필수, 내용은 스티커가 하나라도 있으면 비워도 된다 (PM 10/11)
+    if (!content.trim() && drawings.length === 0) {
+      toast.error('내용을 쓰거나 스티커를 하나 붙여 주세요.');
       return;
     }
     setSending(true);
@@ -238,6 +241,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
         align,
         marksSeed,
         tape,
+        marksOn,
         drawings: drawings.map((d) => ({
           drawingId: d.drawingId ?? null,
           dataUrl: d.dataUrl ?? null,
@@ -291,7 +295,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               style={{ backgroundColor: `${tape}b3` }}
             />
           )}
-          {p.marks && <PaperMarks kind={p.marks} color={inkHex} seed={marksSeed} />}
+          {p.marks && marksOn && <PaperMarks kind={p.marks} color={inkHex} seed={marksSeed} />}
           {/* 글 칸은 한 줄로 시작해 글 양만큼만 늘어난다 — 카드도 글 양만큼만 커지므로 작성 칸이 곧 실제 크기 (얼룩·스티커 자리를 실제 크기에서 고른다, PM 10/11) */}
           <textarea
             ref={textareaRef}
@@ -506,6 +510,12 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               {x.label}
             </button>
           ))}
+          {/* 얼룩 켬/끔 — 무지·빈티지에만 (PM 10/11) */}
+          {p.marks && (
+            <button type="button" aria-pressed={marksOn} onClick={() => setMarksOn((v) => !v)} className={chip(marksOn)}>
+              {p.marks === 'coffee' ? '커피 자국' : '잉크 자국'} {marksOn ? '켬' : '끔'}
+            </button>
+          )}
         </Row>
         <Row label="테이프">
           {TAPES.map((t) => (

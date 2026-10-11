@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { apiUrl } from '@/lib/apiBase';
 import PaperMarks from './PaperMarks';
-import { DESIGN_WIDTH, fontOf, inkColor, paperOf, paperStyle, randomTilt, tapeColor, textAlignOf, textStyle } from './guestbookStyle';
+import { DESIGN_WIDTH, LINE_HEIGHT_EM, fontOf, inkColor, paperOf, paperStyle, randomTilt, tapeColor, textAlignOf, textStyle } from './guestbookStyle';
 
 const fmtDate = (iso) => (iso ? String(iso).slice(0, 10).replace(/-/g, '.') : '');
 
@@ -66,9 +66,9 @@ export default function GuestbookNote({ note, onEdit, onDelete, onRestore, compa
             style={{ backgroundColor: `${tapeColor(note.tape)}b3` }}
           />
           {/* 얼룩은 저장된 씨앗으로 늘 같은 자리 (씨앗이 없는 옛 글은 글 번호로) */}
-          {paper.marks && <PaperMarks kind={paper.marks} color={ink} seed={note.marksSeed ?? note.noteId ?? 1} />}
+          {paper.marks && note.marksOn !== false && <PaperMarks kind={paper.marks} color={ink} seed={note.marksSeed ?? note.noteId ?? 1} />}
 
-          <p className={`${font.className} relative whitespace-pre-wrap break-words antialiased`} style={textStyle(note.paper, note.font, ink, textAlignOf(note.align))}>
+          <p className={`${font.className} relative whitespace-pre-wrap break-words antialiased`} style={{ ...textStyle(note.paper, note.font, ink, textAlignOf(note.align)), minHeight: `${LINE_HEIGHT_EM}em` }}>
             {note.content}
           </p>
 
