@@ -27,7 +27,8 @@ const components = {
       target="_blank"
       rel="noopener noreferrer"
       // 본문에 붙여 넣은 긴 주소는 끊을 자리가 없어 break-all 로 (전역 keep-all 예외)
-      className="break-all text-ink underline underline-offset-2 hover:text-ink"
+      // 글자색은 상속 — 형광펜(hl-light) 안의 링크가 다크모드에서 밝은 글자로 남아 안 보였다 (PM 10/11). 밑줄만 링크 표시
+      className="break-all underline underline-offset-2 hover:opacity-80"
       {...props}
     >
       {children}
