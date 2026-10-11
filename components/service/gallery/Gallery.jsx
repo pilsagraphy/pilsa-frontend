@@ -324,7 +324,6 @@ const Gallery = () => {
         open={uploadOpen}
         onClose={() => setUploadOpen(false)}
         maxFiles={meta?.maxFilesPerUpload ?? 10}
-        semesters={semesters}
         currentSemester={meta?.currentSemester ?? ''}
         onUploaded={() => {
           // 이번 학기 구간이 새로 생겼을 수 있으니(첫 사진) 학기 목록부터 다시 받고 맨 위로

@@ -31,8 +31,9 @@ export default function Header() {
       <div className="flex h-full items-center px-3 tablet:mx-auto tablet:grid tablet:w-full tablet:max-w-[1180px] tablet:grid-cols-[auto_1fr_auto] tablet:px-6 lg:px-10">
         {/* 왼쪽: 폰에서만 사이드바 여는 버튼. PC 는 사이드바가 늘 보여서 자리만 남긴다.
             태블릿 이상에서만 좌우 칸 폭을 같게 둔다 — 그래야 가운데 로고가 화면 정중앙에 선다 */}
-        {/* 폰의 사이드바 여는 햄버거는 뺐다 — 하단 탭 바가 메뉴를 맡는다 (PM 2026-10-11 "모바일에선 사이드바 안 튀어 나오게") */}
-        <div className="flex shrink-0 items-center tablet:w-24" />
+        {/* 폰의 사이드바 여는 햄버거는 뺐다 — 하단 탭 바가 메뉴를 맡는다 (PM 2026-10-11 "모바일에선 사이드바 안 튀어 나오게").
+            대신 오른쪽 종(size-10)과 같은 폭의 빈 칸을 두어 로고가 화면 정중앙에 선다 (PM "로고가 모바일 화면의 가운데에") */}
+        <div className="w-10 shrink-0 tablet:w-24" />
 
         {/* 가운데 로고. clamp 로 폰에서는 작게, PC 에서는 크게.
             폰에서도 햄버거와 종 사이 남는 폭의 정가운데에 둔다 — flex-1 이 그 폭이고 text-center 가 그 가운데다 */}
@@ -42,7 +43,7 @@ export default function Header() {
             8.6 은 이 글꼴에서 'PILSAGRAPHY' 11글자가 글자 크기의 몇 배를 차지하는지다. */}
         <h1
           className={`${zenDots.className} min-w-0 flex-1 overflow-hidden whitespace-nowrap px-2 text-center`}
-          style={{ fontSize: 'clamp(15px, min(6.5vw, (100vw - 200px) / 8.6), 48px)' }}
+          style={{ fontSize: 'clamp(15px, min(6.5vw, (100vw - 120px) / 8.6), 48px)' }}
         >
           {/* 시계 게이트(/)로는 보내지 않는다 — 로그인 상태면 학생 홈, 아니면 소개 페이지 */}
           <Link
