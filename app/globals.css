@@ -16,7 +16,7 @@
   }
   @media (max-width: 767px) {
     html.has-tabbar {
-      --bottom-bar: calc(56px + env(safe-area-inset-bottom, 0px));
+      --bottom-bar: calc(62px + env(safe-area-inset-bottom, 0px));
     }
   }
 

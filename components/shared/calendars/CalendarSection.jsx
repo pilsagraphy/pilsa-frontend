@@ -306,7 +306,7 @@ export default function CalendarSection({
           setAddTarget(schedule);
         }}
         className={`grid size-6 place-items-center rounded-full transition ${
-          isSelected ? 'text-white hover:bg-white/20' : 'text-ink-3 hover:bg-black/5 hover:text-ink'
+          isSelected ? 'text-inverse-fg hover:bg-inverse-fg/20' : 'text-ink-3 hover:bg-black/5 hover:text-ink'
         }`}
       >
         {/* 팀이 만든 원래 모양(+)을 그대로 쓴다 (PM, 2026-09-21) */}

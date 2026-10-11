@@ -52,7 +52,7 @@ export default function MonthlyScheduleItem({
           <span
             className={[
               'truncate text-[14px] leading-[1.6] tracking-[-0.28px]',
-              isSelected ? 'text-white' : 'text-ink',
+              isSelected ? 'text-inverse-fg' : 'text-ink',
             ].join(' ')}
           >
             {schedule.title}
@@ -71,7 +71,7 @@ export default function MonthlyScheduleItem({
           <Plus
             aria-hidden="true"
             strokeWidth={1.4}
-            className={['size-6 shrink-0', isSelected ? 'text-white' : 'text-ink-3'].join(' ')}
+            className={['size-6 shrink-0', isSelected ? 'text-inverse-fg' : 'text-ink-3'].join(' ')}
           />
         )}
       </button>

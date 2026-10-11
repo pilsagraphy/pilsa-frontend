@@ -78,7 +78,7 @@ export default function ScheduleActionMenu({ isSelected = false, onEdit, onDelet
         <EllipsisVertical
           aria-hidden="true"
           strokeWidth={1.4}
-          className={['size-[18px]', isSelected ? 'text-white' : 'text-ink-3'].join(' ')}
+          className={['size-[18px]', isSelected ? 'text-inverse-fg' : 'text-ink-3'].join(' ')}
         />
       </button>
 

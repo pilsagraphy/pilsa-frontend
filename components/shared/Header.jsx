@@ -2,11 +2,13 @@
 
 import { LogOut, UserRound } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { Zen_Dots } from 'next/font/google';
 import useAuthStore from '@/stores/useAuthStore';
 import NotificationBell from '@/components/service/notification/NotificationBell';
 import { loginUrlWithReturnTo, currentPathForReturn } from '@/lib/returnTo';
+import { confirmLogout } from '@/lib/confirmLogout';
 
 const zenDots = Zen_Dots({
   weight: '400',
@@ -18,6 +20,7 @@ const zenDots = Zen_Dots({
 export default function Header() {
   // 로그인한 사람에게 '홈'은 학생 대시보드다 — 소개 페이지로 보내면 로그인하고도 계속 손님 화면에 떨어진다.
   // 비로그인은 그대로 소개 페이지(첫 실행이면 middleware 가 시계 게이트로 돌려보낸다)
+  const router = useRouter();
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const homeHref = isLoggedIn ? ROUTES.STUDENTS_DASHBOARD : ROUTES.ABOUT_INTRO;
 
@@ -61,9 +64,10 @@ export default function Header() {
             로그아웃은 사이드바와 같은 경로(/login?logout=1) — LoginSection 이 알림 기기 해제까지 처리한다 */}
         <div className="flex w-10 shrink-0 items-center justify-end tablet:w-24 tablet:gap-1">
           {isLoggedIn && (
-            <Link href={`${ROUTES.LOGIN}?logout=1`} aria-label="로그아웃" className={`${iconButton} tablet:hidden`}>
+            // 누르면 바로 나가지 않고 한 번 묻는다 (PM 2026-10-12) — 헤더 오른쪽 끝이라 잘못 눌리기 쉽다
+            <button type="button" onClick={() => confirmLogout(router)} aria-label="로그아웃" className={`${iconButton} tablet:hidden`}>
               <LogOut size={22} />
-            </Link>
+            </button>
           )}
           <Link
             href={isLoggedIn ? ROUTES.MY_PAGE : loginUrlWithReturnTo(currentPathForReturn())}
