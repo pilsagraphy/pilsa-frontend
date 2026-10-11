@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import ColorPicker from '@/components/shared/ColorPicker';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/lib/toast';
@@ -28,10 +28,11 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
   const [eraser, setEraser] = useState(false);
   const [dirty, setDirty] = useState(false);
 
-  // 열 때마다 깨끗한 캔버스. 선명하게 보이도록 기기 배율만큼 크게 그린다 (좌표는 pos() 가 실제 픽셀로 환산)
-  useEffect(() => {
-    if (!open) return;
-    const canvas = canvasRef.current;
+  // 캔버스가 DOM 에 붙는 순간 정사각형 비트맵으로 잡는다 (선명하도록 기기 배율만큼 크게, 좌표는 pos() 가 실제 픽셀로 환산).
+  // 예전엔 open 이 바뀔 때 useEffect 에서 잡았는데, Dialog 내용이 그 시점엔 아직 없어서 건너뛰었고 캔버스가 기본 300×150 그대로였다 —
+  // 그려진 그대로 보이긴 했지만(pos 가 비율을 맞춰 줘서) 저장된 PNG 가 2:1 이라 붙이면 납작해졌다 (PM 10/11 "아직도 비율 깨진다", 서버 파일로 확인)
+  const setCanvasRef = useCallback((canvas) => {
+    canvasRef.current = canvas;
     if (!canvas) return;
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = SIZE * ratio;
@@ -41,6 +42,11 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
+  }, []);
+
+  // 열 때마다 도구 상태 초기화 (캔버스 자체는 닫히면 사라지고 다시 열면 새로 붙어 위 콜백이 비운다)
+  useEffect(() => {
+    if (!open) return;
     history.current = [];
     setDirty(false);
     setEraser(false);
@@ -173,7 +179,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
           }}
         >
           <canvas
-            ref={canvasRef}
+            ref={setCanvasRef}
             style={{ width: '100%', height: 'auto', aspectRatio: '1 / 1', touchAction: 'none', display: 'block', cursor: 'crosshair' }}
             onPointerDown={start}
             onPointerMove={move}
