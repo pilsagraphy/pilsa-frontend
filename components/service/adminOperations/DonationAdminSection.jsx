@@ -7,9 +7,10 @@ import { getUsers } from '@/apis/admin/users';
 import { listSectionClass, listTitleClass } from '@/components/shared/admin/CommunityListStyles';
 import AppLoading from '@/components/common/AppLoading';
 import ConfirmModal from '@/components/common/ConfirmModal';
+import { apiUrl } from '@/lib/apiBase';
 import { toast } from '@/lib/toast';
 
-// 운영 관리 > 명예의 전당 관리 (PM 2026-10-11) — 후원 행 등록·수정·사진·삭제. 후원자는 회원 중에서 이름으로 찾아 고른다.
+// 메뉴 관리 > 명예의 전당 관리 (PM 2026-10-11) — 후원 행 등록·수정·사진·삭제. 후원자는 회원 중에서 이름으로 찾아 고른다.
 const inputClass =
   'h-[34px] w-full min-w-0 rounded-[6px] border border-[#dedede] bg-white px-3 text-[13px] text-[#212121] outline-none transition-colors focus:border-[#919191]';
 const smallBtn =
@@ -53,7 +54,8 @@ export default function DonationAdminSection() {
     <section className={listSectionClass}>
       <h1 className={listTitleClass}>명예의 전당 관리</h1>
       <p className="mb-5 text-[13px] leading-[1.6] text-[#919191]">후원자는 회원 중에서 고릅니다. 익명이면 화면에 「익명후원자」로 나갑니다. 사진은 올리면 바로 공개됩니다.</p>
-      {!adding && (
+      {/* 불러오기에 실패하면 등록 버튼도 숨긴다 (검토 지적 10/11) */}
+      {!adding && !error && (
         <button type="button" onClick={() => setAdding(true)} className={`${primaryBtn} mb-4 self-start`}>
           + 후원 등록
         </button>
@@ -67,7 +69,14 @@ export default function DonationAdminSection() {
           }}
         />
       )}
-      {error && <p className="py-6 text-center text-[13px] text-[#919191]">{error}</p>}
+      {error && (
+        <div className="flex flex-col items-center gap-3 py-6">
+          <p className="text-[13px] text-[#919191]">{error}</p>
+          <button type="button" className={smallBtn} onClick={load}>
+            다시 불러오기
+          </button>
+        </div>
+      )}
       {rows == null && !error ? (
         <AppLoading />
       ) : (
@@ -206,7 +215,7 @@ function DonationForm({ donation = null, onSaved, onCancel, onDelete }) {
           <div className="h-[96px] w-[96px] overflow-hidden rounded-full bg-[#D9D9D9]">
             {donation.photoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={`${donation.photoUrl}?v=${encodeURIComponent(donation.photoUrl)}`} alt="" className="h-full w-full object-cover" />
+              <img src={`${apiUrl(donation.photoUrl)}?v=${encodeURIComponent(donation.photoUrl)}`} alt="" className="h-full w-full object-cover" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-[11px] text-[#919191]">사진 없음</div>
             )}

@@ -1,4 +1,4 @@
-// 관리자 - 운영 관리 > 조직도 편집 API (PM 2026-10-10). 조회는 apis/org.js 의 getOrganization (공개)
+// 관리자 - 메뉴 관리 > 조직도 편집 API (PM 2026-10-10). 조회는 apis/org.js 의 getOrganization (공개)
 import axiosInstance from '@/apis/axiosInstance';
 
 // 1. 기수(회장) 등록 (POST /api/admin/org/presidents) [ADMIN]

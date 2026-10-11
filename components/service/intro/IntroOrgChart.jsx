@@ -5,7 +5,7 @@ import AppLoading from '@/components/common/AppLoading';
 import useOrganization from '@/hooks/useOrganization';
 import { findCurrentTerm } from '@/apis/org';
 
-// 소개 페이지 조직도 — 서버의 가장 최근 학기(currentTerm)를 그린다. 운영 관리 > 조직도 편집에서 고친다 (PM 2026-10-10)
+// 소개 페이지 조직도 — 서버의 가장 최근 학기(currentTerm)를 그린다. 메뉴 관리 > 조직도 편집에서 고친다 (PM 2026-10-10)
 // 회장단 카드: 회장이 맨 위(굵게), 나머지 회장단(부회장·총무·임원)은 아래에 이름만. 팀 카드: 팀장 위, 팀원 아래
 export default function IntroOrgChart() {
   const { data, loading, error } = useOrganization();

@@ -1,5 +1,5 @@
 // 조직 (역대 회장 · 학기별 임원진 · 현재 조직도) — 공개 API. 관리자 편집은 apis/admin/org.js
-// 예전엔 constants/leader.js · constants/organization.js 상수였다 → 운영 관리 > 조직도 편집에서 고친다 (PM 2026-10-10)
+// 예전엔 constants/leader.js · constants/organization.js 상수였다 → 메뉴 관리 > 조직도 편집에서 고친다 (PM 2026-10-10)
 import axiosInstance from '@/apis/axiosInstance';
 import { apiUrl } from '@/lib/apiBase';
 

@@ -8,7 +8,7 @@ import AppLoading from '@/components/common/AppLoading';
 import GuestbookNote from '@/components/service/guestbook/GuestbookNote';
 import { toast } from '@/lib/toast';
 
-// 운영 관리 > 방명록 관리 (PM 2026-10-10) — 글 숨기기/복원(소프트). 작성자가 지운 글(deleted)도 보이되 되돌리진 않는다.
+// 메뉴 관리 > 방명록 관리 (PM 2026-10-10) — 글 숨기기/복원(소프트). 작성자가 지운 글(deleted)도 보이되 되돌리진 않는다.
 // 방명록 화면에서도 관리자는 수정·지우기(=숨김)·복원이 되므로 여기는 학기별로 한눈에 훑는 용도.
 // 스티커는 작성자가 직접 그리므로 관리자가 등록할 것이 없다 (10/10 밤).
 

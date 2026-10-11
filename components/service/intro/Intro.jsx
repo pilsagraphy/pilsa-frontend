@@ -9,7 +9,7 @@ import { ROUTES } from '@/constants/routes';
 import IntroContent from './IntroContent';
 import IntroOrgChart from './IntroOrgChart';
 
-// 동아리 소개 — 문단은 서버(intro_sections)에서 온다. 운영 관리 > 동아리 소개 관리에서 고친다 (PM 2026-10-11). 조직도는 조직도 편집에서
+// 동아리 소개 — 문단은 서버(intro_sections)에서 온다. 메뉴 관리 > 동아리 소개 관리에서 고친다 (PM 2026-10-11). 조직도는 조직도 편집에서
 export default function Intro() {
   const [sections, setSections] = useState(null);
   const [error, setError] = useState(null);

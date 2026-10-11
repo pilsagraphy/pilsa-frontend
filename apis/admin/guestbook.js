@@ -1,4 +1,4 @@
-// 관리자 - 운영 관리 > 방명록 관리 API (PM 2026-10-10). 스티커는 작성자가 직접 그리므로 관리자 등록 API 는 없다
+// 관리자 - 메뉴 관리 > 방명록 관리 API (PM 2026-10-10). 스티커는 작성자가 직접 그리므로 관리자 등록 API 는 없다
 import axiosInstance from '@/apis/axiosInstance';
 
 // 1. 학기별 글 전부 (GET /api/admin/guestbook/notes?semester=) [ADMIN]

@@ -7,7 +7,7 @@ import { orgPhotoSrc } from '@/apis/org';
 import AdminPageLink from '@/components/shared/AdminPageLink';
 import { ROUTES } from '@/constants/routes';
 
-// 역대 회장 — 명단은 서버(org_presidents · org_members)에서 온다. 운영 관리 > 조직도 편집에서 고친다 (PM 2026-10-10)
+// 역대 회장 — 명단은 서버(org_presidents · org_members)에서 온다. 메뉴 관리 > 조직도 편집에서 고친다 (PM 2026-10-10)
 export default function Leader() {
   const { data, loading, error } = useOrganization();
   const presidents = data?.presidents ?? [];

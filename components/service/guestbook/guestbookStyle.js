@@ -55,9 +55,22 @@ export const BOARD_THEMES = {
 // 글 줄 높이 = 글자 크기의 배수. 줄노트의 줄도 같은 em 간격으로 그려 글씨체가 바뀌면 줄 간격도 따라가고,
 // 페이지 확대·축소에도 글과 줄이 같이 움직인다 (px 고정이었을 때 줄 수가 달라지던 문제, PM 10/10 밤)
 export const LINE_HEIGHT_EM = 1.3;
-// 작성 칸과 카드가 똑같이 보이도록 카드는 이 폭으로 그린 뒤 칸 폭에 맞춰 축소한다 (스티커 위치가 어긋나던 원인, PM 10/10 밤)
-export const DESIGN_WIDTH = 320;
+// 작성 칸과 카드가 똑같이 보이도록 카드는 이 폭으로 그린 뒤 칸 폭에 맞춰 축소한다 (스티커 위치가 어긋나던 원인, PM 10/10 밤).
+// 300px 인 이유: 360px 폰에서 바깥 여백을 빼도 작성 칸이 줄어들지 않는 폭 (줄어들면 카드와 줄바꿈이 달라진다, 검토 지적 10/11)
+export const DESIGN_WIDTH = 300;
 export const BASE_FONT_PX = 22;
+
+// 테이프 색 — 무채색 기본 + 파스텔 몇 가지. '+' 로 직접 고를 수도 있다 (PM 10/11)
+export const DEFAULT_TAPE = '#d9d6cd';
+export const TAPES = [
+  { key: '#d9d6cd', label: '기본' },
+  { key: '#efe3a8', label: '연노랑' },
+  { key: '#f0c9c9', label: '연분홍' },
+  { key: '#c9dcef', label: '연하늘' },
+  { key: '#cfe4c9', label: '연초록' },
+  { key: '#dccbea', label: '연보라' },
+];
+export const tapeColor = (v) => (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v : DEFAULT_TAPE);
 
 export const fontOf = (key) => FONTS.find((f) => f.key === key) ?? FONTS[0];
 // 기본 6색 키 또는 사용자가 컬러피커로 고른 #rrggbb

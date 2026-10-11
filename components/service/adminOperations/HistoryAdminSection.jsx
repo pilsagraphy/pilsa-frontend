@@ -9,7 +9,7 @@ import AppLoading from '@/components/common/AppLoading';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import { toast } from '@/lib/toast';
 
-// 운영 관리 > 연혁 관리 (PM 2026-10-11) — 연도별 항목(글 · 바로가기 · 영상 · 링크 · 사진)을 고치고 순서를 바꾼다.
+// 메뉴 관리 > 연혁 관리 (PM 2026-10-11) — 연도별 항목(글 · 바로가기 · 영상 · 링크 · 사진)을 고치고 순서를 바꾼다.
 // 영상은 서버 public/videos 의 mp4 경로를 적는다(파일 업로드는 용량 때문에 서버 담당). 사진은 여기서 올리면 주소가 들어간다.
 const inputClass =
   'h-[34px] w-full min-w-0 rounded-[6px] border border-[#dedede] bg-white px-3 text-[13px] text-[#212121] outline-none transition-colors focus:border-[#919191]';
@@ -64,12 +64,14 @@ export default function HistoryAdminSection() {
     const idx = siblings.findIndex((i) => i.itemId === item.itemId);
     const j = idx + d;
     if (j < 0 || j >= siblings.length) return;
-    const a = siblings[idx];
-    const b = siblings[j];
+    // 둘만 바꾸면 저장된 순서값에 빈틈이 있을 때(삭제·시드) 꼬인다 — 그 해 전체를 0..n-1 로 다시 매긴다 (검토 지적 10/11)
+    const reordered = [...siblings];
+    [reordered[idx], reordered[j]] = [reordered[j], reordered[idx]];
     setBusy(true);
     try {
-      await updateHistoryItem(a.itemId, { ...a, sortOrder: j });
-      await updateHistoryItem(b.itemId, { ...b, sortOrder: idx });
+      for (let k = 0; k < reordered.length; k += 1) {
+        if (reordered[k].sortOrder !== k) await updateHistoryItem(reordered[k].itemId, { ...reordered[k], sortOrder: k }); // eslint-disable-line no-await-in-loop
+      }
       await load();
     } catch (err) {
       toast.error(getErrorMessage(err, '순서를 바꾸지 못했습니다.'));
@@ -96,13 +98,23 @@ export default function HistoryAdminSection() {
       <p className="mb-5 text-[13px] leading-[1.6] text-[#919191]">
         연혁 페이지의 연도별 항목입니다. 바로가기 주소를 넣으면 글 자체가 링크가 되고, 영상·사진은 글 아래 16:9 상자에 나옵니다.
       </p>
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        <input type="number" value={newYear} onChange={(e) => setNewYear(e.target.value)} className={`${inputClass} w-[110px]`} />
-        <button type="button" onClick={add} disabled={busy} className={primaryBtn}>
-          + 이 연도에 항목 추가
-        </button>
-      </div>
-      {error && <p className="py-6 text-center text-[13px] text-[#919191]">{error}</p>}
+      {/* 불러오기에 실패하면 추가 칸을 숨긴다 — 목록 없이 추가하면 순서값이 꼬인다 (검토 지적 10/11) */}
+      {!error && (
+        <div className="mb-5 flex flex-wrap items-center gap-2">
+          <input type="number" value={newYear} onChange={(e) => setNewYear(e.target.value)} className={`${inputClass} w-[110px]`} />
+          <button type="button" onClick={add} disabled={busy} className={primaryBtn}>
+            + 이 연도에 항목 추가
+          </button>
+        </div>
+      )}
+      {error && (
+        <div className="flex flex-col items-center gap-3 py-6">
+          <p className="text-[13px] text-[#919191]">{error}</p>
+          <button type="button" className={smallBtn} onClick={load}>
+            다시 불러오기
+          </button>
+        </div>
+      )}
       {items == null && !error ? (
         <AppLoading />
       ) : (

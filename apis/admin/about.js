@@ -1,4 +1,4 @@
-// 관리자 - 운영 관리 > 동아리 소개 관리 · 연혁 관리 API (PM 2026-10-11)
+// 관리자 - 메뉴 관리 > 동아리 소개 관리 · 연혁 관리 API (PM 2026-10-11)
 import axiosInstance from '@/apis/axiosInstance';
 
 // 소개 문단: 목록 / 추가 / 수정 / 삭제 (소프트)
