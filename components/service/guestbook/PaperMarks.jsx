@@ -58,6 +58,16 @@ function edgeRing(r, size) {
   return { side: Math.floor(r() * 4), along: rand(15, 85), near: rand(-0.45, 0.55) * radius, size, rot: rand(-30, 30) };
 }
 
+// 장식 — 중심을 종이 밖에 두어 안쪽으로는 반지름의 0.1~0.6 만 보인다(여백 띠 14~22px 안). 글 영역을 침범하지 않는다 (PM 10/11)
+function edgeDeco(r, size) {
+  const rand = (min, max) => min + r() * (max - min);
+  const radius = size / 2;
+  if (r() < 0.3) {
+    return { corner: Math.floor(r() * 4), dx: rand(-0.9, -0.4) * radius, dy: rand(-0.9, -0.4) * radius, size, rot: rand(-30, 30) };
+  }
+  return { side: Math.floor(r() * 4), along: rand(12, 88), near: rand(-0.9, -0.4) * radius, size, rot: rand(-30, 30) };
+}
+
 // 고리·방울의 대략적인 % 위치 (서로 겹치는지 볼 때만 쓴다)
 const CORNER_PCT = [
   { x: 2, y: 2 },
@@ -88,10 +98,8 @@ const farApart = (a, b, dist) => {
   return Math.abs(p.x - q.x) >= dist || Math.abs(p.y - q.y) >= dist;
 };
 // 큰 장식이 왼쪽 아래 튄 자국 자리에 오지 않게
-const nearSplashBig = (m) => {
-  const p = approxPct(m);
-  return p.x < 35 && p.y > 65;
-};
+// — 왼쪽 아래는 고정 디자인이니 침범하지 않는다: 좌하 꼭짓점, 왼쪽 변 아래쪽 절반, 아래 변 왼쪽 절반은 비워 둔다 (PM 10/11)
+const nearSplashBig = (m) => m.corner === 2 || (m.side === 2 && m.along > 50) || (m.side === 1 && m.along < 50);
 
 function makeMarks(kind, seed) {
   const r = rng(seed);
@@ -119,7 +127,7 @@ function makeMarks(kind, seed) {
     const want = roll < 0.25 ? 3 : roll < 0.6 ? 2 : roll < 0.9 ? 1 : 0;
     for (let i = 0; i < want; i += 1) {
       for (let tries = 0; tries < 20; tries += 1) {
-        const cand = { ...edgeRing(r, rand(22, 38)), kind: DECO_KINDS[Math.floor(r() * DECO_KINDS.length)] };
+        const cand = { ...edgeDeco(r, rand(22, 38)), kind: DECO_KINDS[Math.floor(r() * DECO_KINDS.length)] };
         if (nearSplashBig(cand) || decos.some((o) => !farApart(cand, o, 30))) continue;
         decos.push(cand);
         break;
