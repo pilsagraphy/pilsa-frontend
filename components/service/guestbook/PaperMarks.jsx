@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 // 종이 위 얼룩 — 카드 안쪽(overflow hidden)에만 그려 사각형 밖으로 삐져나오지 않는다 (PM 10/10 밤).
-// 무지(ink): 왼쪽 아래 튄 자국(글 모서리에 걸쳐도 됨 — PM 이 마음에 들어 함) + 그런 큰 잉크 장식(물방울·붓 자국·펜 뚜껑 고리) 0~2개가 가장자리에 잘리게 + 네 변의 여백 띠에 작은 잉크 방울 여러 개
+// 무지(ink): 왼쪽 아래 튄 자국(글 모서리에 걸쳐도 됨 — PM 이 마음에 들어 함) + 그런 작은 잉크 장식(둥근 방울·붓 자국·펜 뚜껑 고리, 22~38px — 뾰족한 물방울은 뺌, 큰 건 거슬린다는 PM 지적) 0~3개가 가장자리에 잘리게 + 네 변의 여백 띠에 작은 잉크 방울 여러 개
 //   (동그라미·찌그러진 방울·튄 자국이 섞이고 크기가 1~7px 로 확 다르다 — PM 10/11 "너무 동그래, 사이즈도 거기서 거기", 타원은 뺌).
 // 빈티지(coffee): 커피잔 고리 자국 — **항상 종이 가장자리에 잘리게** 놓고(가운데 떠 있지 않게), 가끔은 꼭짓점에 걸쳐 1/4 만 보인다.
 //   두 개가 나오면 크기가 확연히 다르다(큰 것 84~110px, 작은 것 56~70px). 고리는 글 위에 걸쳐도 옅어서 괜찮다. + 여백 띠의 작은 방울.
@@ -41,10 +41,10 @@ const BLOBS = [
 ];
 // 튄 자국 (100×100 상자)
 const SPLAT = 'M50 18c14-6 30 4 32 18 2 12-8 22-18 28-12 8-28 6-36-4-8-12-2-30 10-38 4-2 8-3 12-4z';
-// 무지의 큰 잉크 장식 — 왼쪽 아래 튄 자국 같은 것이 가장자리에 랜덤으로 0~2개 더 (PM 10/11 "그런 디자인이 좀 생기면"). 물방울 · 붓 자국 · 펜 뚜껑 고리
-const DECO_KINDS = ['drip', 'dab', 'ring'];
+// 무지의 잉크 장식 — 왼쪽 아래 튄 자국 같은 것이 가장자리에 랜덤으로 0~3개 더 (PM 10/11 "그런 디자인이 좀 생기면"). 둥근 방울 · 붓 자국 · 펜 뚜껑 고리 (뾰족한 물방울은 PM 이 뺌, 크기도 22~38px 로)
+const DECO_KINDS = ['blob', 'dab', 'ring'];
 const DECO_PATHS = {
-  drip: 'M50 6c6 18 16 30 16 46 0 12-7 22-16 22s-16-10-16-22c0-16 10-28 16-46z M46 84a4 4 0 1 0 8 0a4 4 0 1 0-8 0z',
+  blob: BLOBS[0],
   dab: 'M12 58c10-16 30-26 50-24 14 2 28 10 26 22-2 10-16 14-30 16-18 2-38 0-46-14z',
 };
 
@@ -119,7 +119,7 @@ function makeMarks(kind, seed) {
     const want = roll < 0.25 ? 3 : roll < 0.6 ? 2 : roll < 0.9 ? 1 : 0;
     for (let i = 0; i < want; i += 1) {
       for (let tries = 0; tries < 20; tries += 1) {
-        const cand = { ...edgeRing(r, rand(36, 64)), kind: DECO_KINDS[Math.floor(r() * DECO_KINDS.length)] };
+        const cand = { ...edgeRing(r, rand(22, 38)), kind: DECO_KINDS[Math.floor(r() * DECO_KINDS.length)] };
         if (nearSplashBig(cand) || decos.some((o) => !farApart(cand, o, 30))) continue;
         decos.push(cand);
         break;
@@ -237,9 +237,9 @@ export default function PaperMarks({ kind = 'ink', color, seed = 1 }) {
             style={{ ...anchor, width: m.size, height: m.size, transform: `${anchor.transform} rotate(${m.rot}deg)` }}
           >
             {m.kind === 'ring' ? (
-              <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="7" opacity="0.18" />
+              <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" strokeWidth="6" opacity="0.16" />
             ) : (
-              <path d={DECO_PATHS[m.kind]} fill="currentColor" fillRule="evenodd" opacity="0.17" />
+              <path d={DECO_PATHS[m.kind]} fill="currentColor" opacity="0.15" />
             )}
           </svg>
         );
