@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ThumbsUp } from 'lucide-react';
+import { Share2, ThumbsUp } from 'lucide-react';
+import { toast } from '@/lib/toast';
 import { useRouter } from 'next/navigation';
 import { toggleBoardPostLike, deleteBoardPost } from '@/apis/board';
 import { submitReport } from '@/apis/report';
@@ -40,6 +41,21 @@ export default function BoardActions({
   const [liked, setLiked] = useState(Boolean(initialLiked));
   const [likeLoading, setLikeLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // 공유 — 폰은 OS 공유창(navigator.share), 없으면(PC) 링크 복사 (PM 2026-10-11). 주소는 목록 상태 쿼리 없이 글 주소만
+  const share = async () => {
+    const url = `${window.location.origin}${ROUTES.BOARD_POST(boardId, postId)}`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: postTitle, url });
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast.success('링크를 복사했습니다.');
+    } catch (e) {
+      if (e?.name !== 'AbortError') toast.error('공유하지 못했습니다.');
+    }
+  };
 
   // 게시글 신고 — 작성자가 아닌 사람에게만 보인다 (폰·PC 공통)
   const [reportOpen, setReportOpen] = useState(false);
@@ -182,6 +198,14 @@ export default function BoardActions({
             <ThumbsUp width={18} height={18} strokeWidth={1.5} aria-hidden="true" />
             <span>{likeCount}</span>
           </button>
+          <button
+            type="button"
+            onClick={share}
+            aria-label="공유"
+            className="flex h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[4px] border border-line-strong bg-surface text-ink"
+          >
+            <Share2 width={18} height={18} strokeWidth={1.5} aria-hidden="true" />
+          </button>
 
           {canEdit || canDelete ? (
             <div className="flex items-center gap-[4px]">
@@ -252,6 +276,14 @@ export default function BoardActions({
 
         {afterLikeOnMobile != null && <div className="w-full lg:hidden">{afterLikeOnMobile}</div>}
       </div>
+      <button
+        type="button"
+        onClick={share}
+        className="flex h-12 w-full items-center justify-center gap-[6px] rounded-[4px] border border-line-strong bg-surface text-[15px] text-ink transition-colors hover:bg-surface-2 lg:ml-5 lg:mr-auto lg:h-[52px] lg:w-[135px] lg:text-[16px]"
+      >
+        <Share2 width={18} height={18} strokeWidth={1.5} aria-hidden="true" />
+        <span>공유</span>
+      </button>
 
       {/* 작성자: 수정(흰 테두리) / 삭제(검정) — 폰(#183 피그마)과 같은 규칙. 그 외: 신고 */}
       {canEdit || canDelete ? (

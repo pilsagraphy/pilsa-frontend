@@ -46,7 +46,8 @@ function useCoarsePointer() {
   return coarse;
 }
 
-function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
+// tappable: 폰 — 칸을 누르면 날짜·수 말풍선(다시 누르거나 다른 칸을 누르면 바뀜). interactive: PC 마우스 올림 (PM 2026-10-11)
+function Grid({ caption, rows, unit, weekCount, compact, interactive, tappable }) {
   const weeks = useMemo(() => buildWeeks(weekCount), [weekCount]);
   const byDate = useMemo(() => new Map((rows ?? []).map((r) => [String(r.date).slice(0, 10), Number(r.count) || 0])), [rows]);
   // 진하기 기준(max)과 합계는 보이는 기간만 센다 — 폰에서 8주만 보이는데 16주 합계가 적히면 어긋난다
@@ -69,7 +70,7 @@ function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
   });
 
   const show = (event, cell, v) => {
-    if (!interactive) return;
+    if (!interactive && !tappable) return;
     const box = gridRef.current?.getBoundingClientRect();
     const rect = event.currentTarget.getBoundingClientRect();
     if (!box) return;
@@ -80,16 +81,30 @@ function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col gap-2">
       {/* 숫자 요약 — 큰 숫자 하나, 옆에 작은 설명 */}
-      <p className="flex items-baseline gap-[6px] leading-none">
-        <span className="text-[18px] font-semibold tracking-[-0.02em] text-ink md:text-[20px]">
-          {total}
-          <span className="ml-[1px] text-[12px] font-normal text-ink-3">{unit}</span>
-        </span>
-        {/* '100개 · 15일' 이 뭔지 모르겠다는 말(PM 10/10 밤) — 기간과 뜻을 적는다: 최근 N주 합계, 그중 활동한 날 수 */}
-        <span className="text-[11px] tracking-[-0.02em] text-ink-3">
-          {caption} · 최근 {weekCount}주 · 활동한 날 {activeDays}일
-        </span>
-      </p>
+      {/* '100개 · 15일' 이 뭔지 모르겠다는 말(PM 10/10 밤) — 기간과 뜻을 적는다: 최근 N주 합계, 그중 활동한 날 수.
+          폰은 글자 수가 많아 '최근 N주' 를 빼고 둘째 줄에 활동한 날만 (PM 10/11) */}
+      {compact ? (
+        <div className="flex flex-col gap-[3px] leading-none">
+          <p className="flex items-baseline gap-[6px]">
+            <span className="text-[18px] font-semibold tracking-[-0.02em] text-ink">
+              {total}
+              <span className="ml-[1px] text-[12px] font-normal text-ink-3">{unit}</span>
+            </span>
+            <span className="text-[11px] tracking-[-0.02em] text-ink-3">{caption}</span>
+          </p>
+          <p className="text-[11px] tracking-[-0.02em] text-ink-3">활동한 날 {activeDays}일</p>
+        </div>
+      ) : (
+        <p className="flex items-baseline gap-[6px] leading-none">
+          <span className="text-[18px] font-semibold tracking-[-0.02em] text-ink md:text-[20px]">
+            {total}
+            <span className="ml-[1px] text-[12px] font-normal text-ink-3">{unit}</span>
+          </span>
+          <span className="text-[11px] tracking-[-0.02em] text-ink-3">
+            {caption} · 최근 {weekCount}주 · 활동한 날 {activeDays}일
+          </span>
+        </p>
+      )}
 
       {/* 바깥 상자: (PC) 요일 라벨 열 + 주 열들이 남는 폭을 똑같이 나눠 가진다. 칸은 정사각형 */}
       <div ref={gridRef} className="relative" onMouseLeave={() => setHover(null)}>
@@ -118,10 +133,15 @@ function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
                 if (!cell || !cell.inRange) return <span key={`${week[0].key}-${dow}`} className="aspect-square w-full" />;
                 const v = byDate.get(cell.key) ?? 0;
                 const level = v === 0 ? 0 : Math.min(4, Math.ceil((v / max) * 4));
-                const Tag = interactive ? 'button' : 'span';
+                const Tag = interactive || tappable ? 'button' : 'span';
+                const handlers = interactive
+                  ? { type: 'button', onMouseEnter: (e) => show(e, cell, v), onFocus: (e) => show(e, cell, v) }
+                  : tappable
+                    ? { type: 'button', onClick: (e) => (hover?.key === cell.key ? setHover(null) : show(e, cell, v)) }
+                    : {};
                 return (
                   <Tag
-                    {...(interactive ? { type: 'button', onMouseEnter: (e) => show(e, cell, v), onFocus: (e) => show(e, cell, v) } : {})}
+                    {...handlers}
                     key={cell.key}
                     aria-label={`${cell.key} ${v}${unit}`}
                     className={`aspect-square w-full outline-none ring-ink focus-visible:ring-1 ${compact ? 'rounded-[3px]' : 'rounded-[2px]'}`}
@@ -175,7 +195,7 @@ export default function MyContributionGrid({ compact = false }) {
   }, []);
 
   const weekCount = isMdUp ? WEEKS_DESKTOP : WEEKS_MOBILE;
-  const gridProps = { weekCount, compact: !isMdUp, interactive: isMdUp && !coarse };
+  const gridProps = { weekCount, compact: !isMdUp, interactive: isMdUp && !coarse, tappable: !isMdUp || coarse };
 
   return (
     <section

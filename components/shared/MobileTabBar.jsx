@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BookOpenText, Home, LayoutList, LogIn, MessagesSquare, PanelsTopLeft, SlidersHorizontal, Sparkles, UserRound, Users } from 'lucide-react';
+import { BookOpenText, Home, LayoutList, LogIn, MessagesSquare, MoreHorizontal, PanelsTopLeft, SlidersHorizontal, Sparkles, UserRound, Users } from 'lucide-react';
 import useAuthStore from '@/stores/useAuthStore';
 import useBoardStore from '@/stores/useBoardStore';
 import { ADMIN_DRIVE_URL, ROUTES } from '@/constants/routes';
@@ -81,8 +81,6 @@ const adminTabs = (adminLevel) => [
       { name: '알림 설정', path: ROUTES.ADMIN_NOTIFICATION_SETTINGS },
       { name: '일정 달력 관리', path: ROUTES.ADMIN_CALENDAR },
       { name: '이 주의 문장', path: ROUTES.ADMIN_QUOTES },
-      // 동아리 공용 구글 드라이브 — 사이드바와 같이 확인 창 뒤 새 탭(외부 링크). PM 10/11 "운영에 넣자"
-      { name: '구글 드라이브', external: ADMIN_DRIVE_URL },
     ],
   },
   {
@@ -97,6 +95,17 @@ const adminTabs = (adminLevel) => [
       { name: '명예의 전당 관리', path: ROUTES.ADMIN_DONATIONS },
       { name: '활동 사진 관리', path: ROUTES.ADMIN_GALLERY },
       { name: '방명록 관리', path: ROUTES.ADMIN_GUESTBOOK },
+    ],
+  },
+  // 기타 — 맨 오른쪽: 구글 드라이브(외부, 확인 창 뒤 새 탭) · 마이페이지 (PM 2026-10-11 '기타를 맨 오른쪽에')
+  {
+    key: 'etc',
+    label: '기타',
+    icon: MoreHorizontal,
+    title: '기타',
+    items: [
+      { name: '구글 드라이브', external: ADMIN_DRIVE_URL },
+      { name: '마이페이지', path: ROUTES.MY_PAGE },
     ],
   },
 ];

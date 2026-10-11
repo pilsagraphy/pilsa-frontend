@@ -200,7 +200,8 @@ function anchorStyle(m) {
   return { top: `${m.along}%`, right: m.near, transform: 'translate(50%, -50%)' };
 }
 
-export default function PaperMarks({ kind = 'ink', color, seed = 1 }) {
+// holesKey: 스티커가 바뀌면 값이 달라지는 문자열 — 종이 안 [data-sticker-img] 자리를 재서 그 영역엔 자국을 그리지 않는다 (PM 10/11 '자국이 스티커 위로 안 그려지게')
+export default function PaperMarks({ kind = 'ink', color, seed = 1, holesKey = '' }) {
   const marks = useMemo(() => makeMarks(kind, seed), [kind, seed]);
   const coffee = kind === 'coffee';
   const tone = coffee ? '#6b4a2b' : color;
@@ -216,13 +217,38 @@ export default function PaperMarks({ kind = 'ink', color, seed = 1 }) {
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
+  // 스티커가 덮는 네모(종이 기준, 축소 전 px)는 clip-path 로 비운다 — 스티커 그림은 바탕이 투명해 자국이 사이로 비쳤다.
+  // 카드는 transform scale 이라 rect 를 clientWidth 비율로 되돌린다. 그림이 늦게 뜨면 높이가 바뀌므로 load 도 잡는다
+  const [holes, setHoles] = useState([]);
+  useEffect(() => {
+    const el = ref.current;
+    const paper = el?.parentElement;
+    if (!paper) return undefined;
+    const update = () => {
+      const base = el.getBoundingClientRect();
+      const k = base.width > 0 ? el.clientWidth / base.width : 1;
+      const next = [...paper.querySelectorAll('[data-sticker-img]')]
+        .map((img) => {
+          const r = img.getBoundingClientRect();
+          return { x: (r.left - base.left) * k, y: (r.top - base.top) * k, w: r.width * k, h: r.height * k };
+        })
+        .filter((h) => h.w > 0 && h.h > 0);
+      setHoles(next);
+    };
+    update();
+    paper.addEventListener('load', update, true);
+    return () => paper.removeEventListener('load', update, true);
+  }, [holesKey, height]);
+  const clip = holes.length
+    ? `path(evenodd, "M0 0H${Math.max(1, ref.current?.clientWidth ?? 0)}V${Math.max(1, height)}H0Z${holes.map((h) => `M${h.x} ${h.y}h${h.w}v${h.h}h${-h.w}Z`).join('')}")`
+    : undefined;
   const shown = visibleCounts(marks, coffee, height);
   const rings = marks.rings.slice(0, shown.rings);
   const drops = marks.drops.slice(0, shown.drops);
   const decos = marks.decos.slice(0, shown.decos);
 
   return (
-    <div ref={ref} aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden" style={{ color: tone }}>
+    <div ref={ref} aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden" style={{ color: tone, clipPath: clip }}>
       {/* 왼쪽 아래 튄 자국 — 무지에만. 이건 글 모서리에 걸쳐도 그대로 둔다 (PM 10/11 "이건 좋은데 유지해") */}
       {!coffee && (
         <svg viewBox="0 0 100 100" className="absolute -bottom-3 -left-3 h-[76px] w-[76px]">

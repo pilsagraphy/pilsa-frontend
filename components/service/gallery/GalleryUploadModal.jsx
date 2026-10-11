@@ -27,8 +27,11 @@ async function shrink(file) {
   return { file: new File([blob], name, { type: 'image/jpeg' }), ratio };
 }
 
-export default function GalleryUploadModal({ open, onClose, onUploaded, maxFiles = 10 }) {
+// semesters: 사진이 있는 학기들, currentSemester: 이번 학기 — 올릴 학기를 고른다(기본 이번 학기). 지난 학기 사진을 나중에 올리는 경우 (PM 2026-10-11)
+export default function GalleryUploadModal({ open, onClose, onUploaded, maxFiles = 10, semesters = [], currentSemester = '' }) {
   const [files, setFiles] = useState([]);
+  const [semester, setSemester] = useState(currentSemester);
+  const semesterOptions = [...new Set([currentSemester, ...semesters].filter(Boolean))].sort().reverse();
   const [title, setTitle] = useState('');
   const [hashtags, setHashtags] = useState('');
   const [sending, setSending] = useState(false);
@@ -60,7 +63,7 @@ export default function GalleryUploadModal({ open, onClose, onUploaded, maxFiles
       const saved = await uploadGalleryPhotos(
         prepared.map((p) => p.file),
         prepared.map((p) => Math.round(p.ratio * 1000) / 1000),
-        { title: title.trim(), hashtags: hashtags.trim() }
+        { title: title.trim(), hashtags: hashtags.trim(), semester: semester || currentSemester }
       );
       toast.success(`${saved.length}장을 올렸어요.`);
       setFiles([]);
@@ -84,8 +87,18 @@ export default function GalleryUploadModal({ open, onClose, onUploaded, maxFiles
       <DialogContent hideCloseButton className="max-w-[420px] gap-3 rounded-[8px] border-line p-4">
         <DialogTitle className="text-[16px] font-semibold text-ink">활동 사진 올리기</DialogTitle>
         <DialogDescription className="text-[12px] text-ink-3">
-          이번 학기 구간에 들어가요. 한 번에 {maxFiles}장까지, 큰 사진은 자동으로 줄여서 올려요. 올린 사진은 본인과 운영진이 지울 수 있어요.
+          한 번에 {maxFiles}장까지, 큰 사진은 자동으로 줄여서 올려요. 올린 사진은 본인이 고치거나 지울 수 있어요.
         </DialogDescription>
+        <label className="flex items-center gap-2 text-[12px] text-ink-3">
+          <span className="shrink-0">학기</span>
+          <select value={semester || currentSemester} onChange={(e) => setSemester(e.target.value)} className={inputClass}>
+            {semesterOptions.map((label) => (
+              <option key={label} value={label}>
+                {label}{label === currentSemester ? ' (이번 학기)' : ''}
+              </option>
+            ))}
+          </select>
+        </label>
         <input ref={inputRef} type="file" accept="image/*" multiple onChange={(e) => pick(e.target.files)} className="text-[12px]" />
         {files.length > 0 && (
           <div className="flex flex-wrap gap-1">

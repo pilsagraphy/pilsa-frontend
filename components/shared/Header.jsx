@@ -1,11 +1,10 @@
 'use client';
 
-import { Menu, UserRound } from 'lucide-react';
+import { UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { Zen_Dots } from 'next/font/google';
 import useAuthStore from '@/stores/useAuthStore';
-import useSidebarStore from '@/stores/sidebar';
 import NotificationBell from '@/components/service/notification/NotificationBell';
 import { loginUrlWithReturnTo, currentPathForReturn } from '@/lib/returnTo';
 
@@ -21,7 +20,6 @@ export default function Header() {
   // 비로그인은 그대로 소개 페이지(첫 실행이면 middleware 가 시계 게이트로 돌려보낸다)
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const homeHref = isLoggedIn ? ROUTES.STUDENTS_DASHBOARD : ROUTES.ABOUT_INTRO;
-  const openMobile = useSidebarStore((s) => s.openMobile);
 
   const iconButton =
     'grid size-10 place-items-center rounded-full text-ink transition hover:bg-surface-2';
@@ -33,16 +31,8 @@ export default function Header() {
       <div className="flex h-full items-center px-3 tablet:mx-auto tablet:grid tablet:w-full tablet:max-w-[1180px] tablet:grid-cols-[auto_1fr_auto] tablet:px-6 lg:px-10">
         {/* 왼쪽: 폰에서만 사이드바 여는 버튼. PC 는 사이드바가 늘 보여서 자리만 남긴다.
             태블릿 이상에서만 좌우 칸 폭을 같게 둔다 — 그래야 가운데 로고가 화면 정중앙에 선다 */}
-        <div className="flex shrink-0 items-center tablet:w-24">
-          <button
-            type="button"
-            aria-label="메뉴 열기"
-            onClick={openMobile}
-            className={`${iconButton} tablet:hidden`}
-          >
-            <Menu size={24} />
-          </button>
-        </div>
+        {/* 폰의 사이드바 여는 햄버거는 뺐다 — 하단 탭 바가 메뉴를 맡는다 (PM 2026-10-11 "모바일에선 사이드바 안 튀어 나오게") */}
+        <div className="flex shrink-0 items-center tablet:w-24" />
 
         {/* 가운데 로고. clamp 로 폰에서는 작게, PC 에서는 크게.
             폰에서도 햄버거와 종 사이 남는 폭의 정가운데에 둔다 — flex-1 이 그 폭이고 text-center 가 그 가운데다 */}
