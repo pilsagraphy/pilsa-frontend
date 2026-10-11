@@ -70,7 +70,8 @@ export default function Header() {
           <Link
             href={isLoggedIn ? ROUTES.MY_PAGE : loginUrlWithReturnTo(currentPathForReturn())}
             aria-label={isLoggedIn ? '마이페이지' : '로그인'}
-            className={iconButton}
+            // 폰에서는 하단 탭의 마이페이지가 대신하므로 숨긴다 (PM 10/11)
+            className={` hidden tablet:flex`}
           >
             <UserRound size={22} />
           </Link>

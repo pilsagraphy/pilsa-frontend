@@ -138,7 +138,8 @@ export default function MobileTabBar() {
   const isAdminArea = pathname.startsWith(ROUTES.ADMIN_HOME);
   const boardItems = (boards ?? []).map((b) => ({ name: b.boardName, path: ROUTES.BOARD(b.boardId) }));
   const isAdmin = (adminLevel ?? 0) >= 1;
-  const tabs = isAdminArea
+  // 관리자 탭은 관리자 계정일 때만 — 비로그인·일반 회원이 /admin 주소로 들어와 AdminGuard 가 돌려보내기 전까지 관리 링크가 보이지 않게 (검토 지적)
+  const tabs = isAdminArea && isAdmin
     ? adminTabs(adminLevel ?? 0)
     : [
         homeTab(isAdmin),

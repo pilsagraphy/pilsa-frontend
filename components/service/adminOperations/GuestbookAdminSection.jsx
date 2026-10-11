@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '@/apis/auth';
 import { getAdminGuestbookNotes, hideGuestbookNote, restoreGuestbookNote } from '@/apis/admin/guestbook';
 import { listSectionClass, listTitleClass } from '@/components/shared/admin/CommunityListStyles';
@@ -30,15 +30,19 @@ export default function GuestbookAdminSection() {
   const [keyword, setKeyword] = useState('');
   const [query, setQuery] = useState('');
 
+  // 빠르게 연달아 찾을 때 늦게 온 옛 응답이 새 결과를 덮지 않게 (검토 지적)
+  const seq = useRef(0);
   const load = useCallback(async (sem, quiet = false, kw = '') => {
+    const my = ++seq.current;
     if (!quiet) setLoading(true);
     setError(null);
     try {
-      setData(await getAdminGuestbookNotes(kw ? null : sem, kw));
+      const res = await getAdminGuestbookNotes(kw ? null : sem, kw);
+      if (my === seq.current) setData(res);
     } catch (err) {
-      setError(getErrorMessage(err, '불러오지 못했습니다.'));
+      if (my === seq.current) setError(getErrorMessage(err, '불러오지 못했습니다.'));
     } finally {
-      setLoading(false);
+      if (my === seq.current) setLoading(false);
     }
   }, []);
 
@@ -126,6 +130,7 @@ export default function GuestbookAdminSection() {
                   <div className="flex items-center justify-between gap-2 px-1 text-[12px] text-ink-3">
                     <span>
                       #{note.noteId} · {STATE_LABEL[note.state] ?? note.state}
+                      {query ? ` · ${note.semesterLabel}` : ''}
                       {note.userId != null ? ` · ${note.authorName ?? '회원'} (${note.authorLoginId ?? note.userId})` : ' · 비로그인'}
                     </span>
                     {note.state !== 'deleted' && (
