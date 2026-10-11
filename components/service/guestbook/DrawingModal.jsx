@@ -7,12 +7,15 @@ import { toast } from '@/lib/toast';
 import { INKS } from './guestbookStyle';
 
 // 그림판 — 방명록에 붙일 스티커를 직접 그린다 (PM 10/10 밤: 관리자 등록 스티커 대신 유저가 그려서 붙이기).
-// 투명 바탕 캔버스에 펜/지우개, 굵기 4단, 되돌리기, 지우기. 완료하면 그린 부분만 잘라낸(여백 제거) 투명 PNG data URL 을 돌려준다.
-// 도구는 세 줄 — 색(기본색 + 컬러피커) / 굵기 / 지우개·되돌리기·전부 지우기 (PM 10/11).
+// 투명 바탕 캔버스에 펜/지우개, 굵기 4단, 되돌리기, 지우기. 완료하면 그린 부분을 중심으로 **정사각형**으로 잘라낸 투명 PNG data URL 을 돌려준다
+// — 캔버스가 정사각형인데 붙이면 직사각형이 되어 비율이 달라지던 것(그림 부분만 잘라냈기 때문)을 PM 이 지적 (10/11). 여백은 가능한 만큼만 걷어낸다.
+// 도구는 세 줄 — 색(기본색 + 직접 고른 색은 열 개까지 칩으로 누적) / 굵기 / 지우개·되돌리기·전부 지우기 (PM 10/11).
 // 좌표는 화면에 보이는 캔버스 크기와 실제 픽셀 크기의 비율로 바로 환산한다 — 손가락이 닿은 자리에 그려진다 (어긋나던 문제, PM 10/11).
 const SIZE = 320;
 const BRUSHES = [2, 4, 8, 14];
 const PRESETS = [...INKS.map((i) => i.color), '#e2b007', '#d9534f', '#3b82f6', '#ffffff'];
+const MAX_CUSTOM = 10;
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
 export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
   const canvasRef = useRef(null);
@@ -20,7 +23,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
   const last = useRef(null);
   const history = useRef([]);
   const [color, setColor] = useState(PRESETS[0]);
-  const [custom, setCustom] = useState(null); // 컬러피커로 고른 색
+  const [customs, setCustoms] = useState([]); // 컬러피커로 고른 색들 — '+' 를 누를 때마다 칩이 하나 늘고, 열 개가 넘으면 오래된 것부터 빠진다 (PM 10/11)
   const [pickerOpen, setPickerOpen] = useState(false);
   const [brush, setBrush] = useState(BRUSHES[1]);
   const [eraser, setEraser] = useState(false);
@@ -111,7 +114,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     setDirty(false);
   };
 
-  // 그린 부분만 남기고 여백을 잘라낸다 — 스티커가 카드에서 차지하는 자리가 그림 크기와 같아진다
+  // 그린 부분을 중심으로 정사각형으로 잘라낸다 — 그릴 때와 붙일 때 비율이 같고(늘 1:1), 여백은 긴 변 기준으로만 걷어낸다
   const done = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -135,21 +138,22 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
       toast.error('아직 아무것도 그리지 않았어요.');
       return;
     }
-    const pad = 6;
-    const sx = Math.max(0, minX - pad);
-    const sy = Math.max(0, minY - pad);
-    const sw = Math.min(width, maxX + pad) - sx;
-    const sh = Math.min(height, maxY + pad) - sy;
+    const pad = Math.round(6 * (width / SIZE));
+    const bw = maxX - minX + 1;
+    const bh = maxY - minY + 1;
+    const side = Math.min(width, Math.max(bw, bh) + pad * 2);
+    const sx = clamp(Math.round(minX + bw / 2 - side / 2), 0, width - side);
+    const sy = clamp(Math.round(minY + bh / 2 - side / 2), 0, height - side);
     const out = document.createElement('canvas');
-    out.width = sw;
-    out.height = sh;
-    out.getContext('2d').drawImage(canvas, sx, sy, sw, sh, 0, 0, sw, sh);
+    out.width = side;
+    out.height = side;
+    out.getContext('2d').drawImage(canvas, sx, sy, side, side, 0, 0, side, side);
     const dataUrl = out.toDataURL('image/png');
     if ((dataUrl.length * 3) / 4 > maxKb * 1024) {
       toast.error(`그림이 너무 커요 (${maxKb}KB 까지). 조금 단순하게 그려 주세요.`);
       return;
     }
-    onDone({ dataUrl, aspect: sh / sw });
+    onDone({ dataUrl, aspect: 1 });
   };
 
   const toolBtn = (active) =>
@@ -163,7 +167,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
       <DialogContent hideCloseButton className="max-h-[92dvh] max-w-[380px] gap-3 overflow-y-auto rounded-[8px] border-[#dedede] p-4">
         <DialogTitle className="text-[16px] font-semibold text-[#212121]">스티커 그리기</DialogTitle>
         <DialogDescription className="text-[12px] text-[#919191]">
-          투명한 종이에 그려요. 그린 부분만 잘라서 방명록에 붙이고, 자리는 붙인 뒤 끌어서 옮길 수 있어요.
+          투명한 정사각형 종이에 그려요. 그린 모양 그대로(정사각형) 방명록에 붙이고, 붙인 뒤 끌어서 옮기거나 모서리로 크기, 손잡이로 회전을 바꿀 수 있어요.
         </DialogDescription>
 
         {/* 캔버스 — 투명이 보이도록 체크무늬 바탕 */}
@@ -188,10 +192,10 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
           />
         </div>
 
-        {/* 1줄: 색 — 기본색 + 컬러피커 */}
+        {/* 1줄: 색 — 기본색 + 직접 고른 색 칩(열 개까지 누적) + '+' */}
         <div className="flex flex-wrap items-center gap-2">
           <span className={rowLabel}>색</span>
-          {PRESETS.map((c) => (
+          {[...PRESETS, ...customs].map((c) => (
             <button
               key={c}
               type="button"
@@ -209,22 +213,20 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
             title="직접 고르기"
             aria-label="색 직접 고르기"
             onClick={() => setPickerOpen((v) => !v)}
-            className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border text-[14px] leading-none ${
-              !eraser && custom && color === custom ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-dashed border-[#919191] text-[#919191]'
-            }`}
-            style={custom ? { backgroundColor: custom, color: '#fff' } : undefined}
+            className="flex h-[22px] w-[22px] items-center justify-center rounded-full border border-dashed border-[#919191] text-[14px] leading-none text-[#919191]"
           >
             +
           </button>
         </div>
         {pickerOpen && (
           <ColorPicker
-            value={custom ?? color}
-            swatches={PRESETS}
+            value={color}
+            swatches={[...PRESETS, ...customs]}
             onCancel={() => setPickerOpen(false)}
             onConfirm={(hex) => {
-              setCustom(hex);
-              setColor(hex);
+              const h = hex.toLowerCase();
+              setCustoms((list) => (PRESETS.includes(h) || list.includes(h) ? list : [...list, h].slice(-MAX_CUSTOM)));
+              setColor(h);
               setEraser(false);
               setPickerOpen(false);
             }}

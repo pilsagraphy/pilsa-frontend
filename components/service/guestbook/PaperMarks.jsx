@@ -33,10 +33,10 @@ function edgeRing(r) {
   return { ...onEdge(Math.floor(r() * 4), rand(12, 88), rand(-8, 14)), size: rand(72, 104), rot: rand(-30, 30) };
 }
 
-// 방울은 네 변의 띠(안쪽 15%)에만 — 가운데는 글이 오는 자리
+// 방울은 네 변에 바짝(안쪽 2~9%)만 — 가운데는 글이 오는 자리 (PM 10/11 "조금 더 가장자리에만")
 function edgeDrop(r) {
   const rand = (min, max) => min + r() * (max - min);
-  return onEdge(Math.floor(r() * 4), rand(5, 95), rand(3, 15));
+  return onEdge(Math.floor(r() * 4), rand(5, 95), rand(2, 9));
 }
 
 // 고리 위에 방울이 올라가지 않게. 고리 지름이 카드 폭의 1/3 쯤이고 카드가 짧으면 세로로는 고리가 거의 다 차지하므로
@@ -53,7 +53,8 @@ function makeMarks(kind, seed) {
   const randInt = (min, max) => Math.floor(rand(min, max + 1));
   const coffee = kind === 'coffee';
   const rings = coffee ? Array.from({ length: r() < 0.55 ? 1 : 2 }, () => edgeRing(r)) : [];
-  const count = coffee ? randInt(2, 4) : randInt(4, 7);
+  // 무지 방울은 3~5개 (PM 10/11 "한두 개 더 줄이기" — 4~7 에서)
+  const count = coffee ? randInt(2, 4) : randInt(3, 5);
   const drops = [];
   for (let i = 0; i < count; i += 1) {
     for (let tries = 0; tries < 24; tries += 1) {

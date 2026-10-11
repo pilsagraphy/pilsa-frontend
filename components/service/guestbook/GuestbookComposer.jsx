@@ -25,11 +25,20 @@ const fitTextarea = (el) => {
 const PAD = { left: 18, right: 18, top: 22, bottom: 14 };
 const MIN_W = 8;
 const MAX_W = 80;
+// 고른 스티커의 모서리 손잡이 네 개 — 끌면 가운데를 기준으로 커지고 작아진다
+const CORNERS = [
+  { key: 'tl', className: '-left-[7px] -top-[7px]', cursor: 'nwse-resize' },
+  { key: 'tr', className: '-right-[7px] -top-[7px]', cursor: 'nesw-resize' },
+  { key: 'bl', className: '-bottom-[7px] -left-[7px]', cursor: 'nesw-resize' },
+  { key: 'br', className: '-bottom-[7px] -right-[7px]', cursor: 'nwse-resize' },
+];
+const SNAP_ANGLES = [-180, -90, 0, 90, 180];
 
 // 방명록 쓰기 칸 — 편지지 한 장을 그대로 쓰는 느낌. 쓰는 종이가 곧 미리보기다.
 // 종이는 카드와 같은 폭(DESIGN_WIDTH)으로 두어 줄바꿈·스티커 자리가 카드에서 똑같이 보인다 (어긋나던 원인, PM 10/10 밤).
 // 글씨체·잉크(기본 6색 + 컬러피커)·종이·테이프 색·정렬을 고르고, 그림판에서 그린 스티커를 붙여 끌어서 자리를 잡는다 —
-// 잡은 지점을 유지하며 끌기, 안쪽 여백 밖으로 못 나감, 고르는 동안 바깥은 어둡게, 크기·회전·투명도 슬라이더, 앞/뒤 순서, 떼기.
+// 잡은 지점을 유지하며 끌기, 안쪽 여백 밖으로 못 나감, 고르는 동안 바깥은 어둡게. 크기·회전은 PPT 처럼 도형의 모서리·위 손잡이를 끌어
+// 바로 바꾸고, 투명도·순서·떼기만 아래 작은 창에서 (PM 10/11 "슬라이더는 불편, ppt 처럼").
 // mode='edit' 면 initial(기존 글)을 채워 놓고 PUT 으로 고친다 (로그인해서 남긴 본인 글만).
 export default function GuestbookComposer({ mode = 'create', initial = null, maxLength = 300, maxDrawings = 3, drawingMaxKb = 200, onDone, onCancel }) {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
@@ -67,6 +76,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   const paperRef = useRef(null);
   const textareaRef = useRef(null);
   const drag = useRef(null);
+  const gesture = useRef(null); // 모서리(크기)·손잡이(회전) 끌기 상태
 
   // 글 칸 높이를 내용에 맞춘다 (글씨체가 바뀌어도). 늘어난 종이 높이에 맞춰 스티커 자리도 다시 가둔다
   useEffect(() => {
@@ -169,6 +179,39 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
     if (drag.current && drag.current.pointerId === event.pointerId) drag.current = null;
   };
 
+  // 모서리·회전 손잡이 — 스티커 중심(화면 좌표)을 기준으로 거리는 크기, 각도는 회전이 된다 (PPT 식, PM 10/11)
+  const onHandleDown = (event, d, type) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const box = event.currentTarget.closest('[data-sticker]')?.getBoundingClientRect();
+    if (!box) return;
+    const cx = box.left + box.width / 2;
+    const cy = box.top + box.height / 2;
+    const dx = event.clientX - cx;
+    const dy = event.clientY - cy;
+    gesture.current = { type, id: d.id, pointerId: event.pointerId, cx, cy, startDist: Math.hypot(dx, dy) || 1, startWidth: d.widthPct, startAngle: Math.atan2(dy, dx), startRot: d.rotation };
+  };
+  const onHandleMove = (event) => {
+    const g = gesture.current;
+    if (!g || g.pointerId !== event.pointerId) return;
+    const dx = event.clientX - g.cx;
+    const dy = event.clientY - g.cy;
+    if (g.type === 'resize') {
+      const w = clamp((g.startWidth * Math.hypot(dx, dy)) / g.startDist, MIN_W, MAX_W);
+      patch(g.id, { widthPct: Math.round(w * 10) / 10 });
+      return;
+    }
+    let rot = g.startRot + ((Math.atan2(dy, dx) - g.startAngle) * 180) / Math.PI;
+    rot = ((((rot + 180) % 360) + 360) % 360) - 180;
+    // 0°·90° 근처는 딱 맞춰 준다 — 손으로는 똑바로 세우기 어렵다
+    const snap = SNAP_ANGLES.find((a) => Math.abs(rot - a) < 4);
+    patch(g.id, { rotation: Math.round(snap ?? rot) });
+  };
+  const onHandleUp = (event) => {
+    if (gesture.current && gesture.current.pointerId === event.pointerId) gesture.current = null;
+  };
+
   const submit = async () => {
     if (!name.trim()) {
       toast.error('이름이나 닉네임을 적어 주세요.');
@@ -232,7 +275,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
         {/* 편지지 — 카드와 같은 폭 */}
         <div
           ref={paperRef}
-          className={`relative mx-auto border border-black/[0.07] px-[18px] pb-[14px] pt-[22px] shadow-[2px_3px_0_rgba(0,0,0,0.05)] ${sel ? 'overflow-hidden' : ''}`}
+          className="relative mx-auto border border-black/[0.07] px-[18px] pb-[14px] pt-[22px] shadow-[2px_3px_0_rgba(0,0,0,0.05)]"
           style={{ ...paperStyle(paper), width: DESIGN_WIDTH, maxWidth: '100%' }}
         >
           {!sel && (
@@ -271,80 +314,128 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
             </span>
           </div>
 
-          {/* 붙일 수 있는 영역 — 고르는 동안만 점선으로 보이고 여백 띠는 어둡게 */}
+          {/* 붙일 수 있는 영역 — 고르는 동안만 점선으로 보이고 여백 띠는 어둡게. 띠 네 개로 그려 종이 밖으로 번지지 않으니
+              overflow 를 막지 않아도 되고, 그래서 회전 손잡이가 종이 위로 나와도 잘리지 않는다 */}
           {sel && (
-            <div
-              aria-hidden
-              className="pointer-events-none absolute z-[5]"
-              style={{
-                left: PAD.left,
-                right: PAD.right,
-                top: PAD.top,
-                bottom: PAD.bottom,
-                outline: '1px dashed rgba(0,0,0,0.45)',
-                boxShadow: '0 0 0 600px rgba(0,0,0,0.22)',
-              }}
-            />
+            <>
+              <div aria-hidden className="pointer-events-none absolute left-0 right-0 top-0 z-[5] bg-black/20" style={{ height: PAD.top }} />
+              <div aria-hidden className="pointer-events-none absolute bottom-0 left-0 right-0 z-[5] bg-black/20" style={{ height: PAD.bottom }} />
+              <div aria-hidden className="pointer-events-none absolute left-0 z-[5] bg-black/20" style={{ top: PAD.top, bottom: PAD.bottom, width: PAD.left }} />
+              <div aria-hidden className="pointer-events-none absolute right-0 z-[5] bg-black/20" style={{ top: PAD.top, bottom: PAD.bottom, width: PAD.right }} />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute z-[5]"
+                style={{ left: PAD.left, right: PAD.right, top: PAD.top, bottom: PAD.bottom, outline: '1px dashed rgba(0,0,0,0.45)' }}
+              />
+            </>
           )}
 
-          {/* 붙인 스티커 — 끌어서 옮긴다. 배열 순서 = 겹침 순서. 고른 스티커는 점선 테두리 */}
-          {drawings.map((d, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              key={d.id}
-              src={d.dataUrl ?? apiUrl(d.imageUrl)}
-              alt=""
-              draggable={false}
-              onLoad={(e) => {
-                const img = e.currentTarget;
-                if (img.naturalWidth > 0 && !d.dataUrl) patch(d.id, { aspect: img.naturalHeight / img.naturalWidth });
-              }}
-              onPointerDown={(e) => onStickerDown(e, d)}
-              onPointerMove={onStickerMove}
-              onPointerUp={onStickerUp}
-              onPointerCancel={onStickerUp}
-              className={`absolute cursor-move select-none touch-none drop-shadow-[1px_1px_0_rgba(0,0,0,0.08)] ${
-                selected === d.id ? 'outline outline-1 outline-dashed outline-[#212121]' : ''
-              }`}
-              style={{
-                left: `${d.posX}%`,
-                top: `${d.posY}%`,
-                width: `${d.widthPct}%`,
-                opacity: d.opacity,
-                zIndex: 10 + i,
-                transform: `translate(-50%, -50%) rotate(${d.rotation}deg)`,
-              }}
-            />
-          ))}
+          {/* 붙인 스티커 — 끌어서 옮긴다. 배열 순서 = 겹침 순서. 고른 스티커는 점선 테두리 + 모서리 손잡이(크기) + 위 손잡이(회전) */}
+          {drawings.map((d, i) => {
+            const isSel = selected === d.id;
+            return (
+              <div
+                key={d.id}
+                data-sticker
+                className="absolute"
+                style={{
+                  left: `${d.posX}%`,
+                  top: `${d.posY}%`,
+                  width: `${d.widthPct}%`,
+                  zIndex: isSel ? 40 : 10 + i,
+                  transform: `translate(-50%, -50%) rotate(${d.rotation}deg)`,
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={d.dataUrl ?? apiUrl(d.imageUrl)}
+                  alt=""
+                  draggable={false}
+                  onLoad={(e) => {
+                    const img = e.currentTarget;
+                    if (img.naturalWidth > 0 && !d.dataUrl) patch(d.id, { aspect: img.naturalHeight / img.naturalWidth });
+                  }}
+                  onPointerDown={(e) => onStickerDown(e, d)}
+                  onPointerMove={onStickerMove}
+                  onPointerUp={onStickerUp}
+                  onPointerCancel={onStickerUp}
+                  className={`block w-full cursor-move select-none touch-none drop-shadow-[1px_1px_0_rgba(0,0,0,0.08)] ${
+                    isSel ? 'outline outline-1 outline-dashed outline-[#212121]' : ''
+                  }`}
+                  style={{ opacity: d.opacity }}
+                />
+                {isSel && (
+                  <>
+                    {CORNERS.map((c) => (
+                      <span
+                        key={c.key}
+                        role="presentation"
+                        title="끌어서 크기"
+                        onPointerDown={(e) => onHandleDown(e, d, 'resize')}
+                        onPointerMove={onHandleMove}
+                        onPointerUp={onHandleUp}
+                        onPointerCancel={onHandleUp}
+                        className={`absolute h-[14px] w-[14px] touch-none rounded-[2px] border border-[#212121] bg-white shadow-sm ${c.className}`}
+                        style={{ cursor: c.cursor }}
+                      />
+                    ))}
+                    <span aria-hidden className="absolute left-1/2 top-[-22px] h-[22px] w-px -translate-x-1/2 bg-[#212121]/60" />
+                    <span
+                      role="presentation"
+                      title="끌어서 회전"
+                      onPointerDown={(e) => onHandleDown(e, d, 'rotate')}
+                      onPointerMove={onHandleMove}
+                      onPointerUp={onHandleUp}
+                      onPointerCancel={onHandleUp}
+                      className="absolute left-1/2 top-[-38px] flex h-[18px] w-[18px] -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded-full border border-[#212121] bg-white text-[11px] leading-none text-[#212121] shadow-sm active:cursor-grabbing"
+                    >
+                      ↻
+                    </span>
+                  </>
+                )}
+              </div>
+            );
+          })}
         </div>
 
-        {/* 고른 스티커 조절판 */}
+        {/* 고른 스티커의 작은 창 — 크기·회전은 도형에서 직접, 여기서는 투명도·순서·떼기만 (PM 10/11) */}
         {sel && (
-          <div className="flex flex-col gap-2 rounded-[6px] border border-[#dedede] bg-white p-3 text-[12px] text-[#454545] shadow-lg">
-            <div className="flex items-center justify-between">
-              <span className="font-medium text-[#212121]">스티커 {selIndex + 1} — 종이 위에서 끌어 옮길 수 있어요</span>
+          <div className="mx-auto flex w-full flex-col gap-2 rounded-[6px] border border-[#dedede] bg-white px-3 py-2 text-[12px] text-[#454545] shadow-lg" style={{ maxWidth: DESIGN_WIDTH }}>
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-medium text-[#212121]">스티커 {selIndex + 1}</span>
+              <span className="text-[11px] text-[#a3a09a]">
+                {Math.round(sel.widthPct)}% · {sel.rotation}°
+              </span>
               <button type="button" onClick={() => setSelected(null)} className={chip(true)}>
                 완료
               </button>
             </div>
-            <Slider label="크기" value={Math.round(sel.widthPct)} min={MIN_W} max={MAX_W} step={1} unit="%" onChange={(v) => patch(sel.id, { widthPct: v })} />
-            <Slider label="회전" value={sel.rotation} min={-180} max={180} step={5} unit="°" onChange={(v) => patch(sel.id, { rotation: v })} />
-            <Slider label="투명도" value={Math.round(sel.opacity * 100)} min={10} max={100} step={5} unit="%" onChange={(v) => patch(sel.id, { opacity: v / 100 })} />
+            <label className="flex items-center gap-2">
+              <span className="w-[40px] shrink-0 text-[#a3a09a]">투명도</span>
+              <input
+                type="range"
+                min={10}
+                max={100}
+                step={5}
+                value={Math.round(sel.opacity * 100)}
+                onChange={(e) => patch(sel.id, { opacity: Number(e.target.value) / 100 })}
+                className="min-w-0 flex-1 accent-[#212121]"
+              />
+              <span className="w-[36px] shrink-0 text-right tabular-nums">{Math.round(sel.opacity * 100)}%</span>
+            </label>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="w-[44px] text-[#a3a09a]">순서</span>
+              <span className="w-[40px] shrink-0 text-[#a3a09a]">순서</span>
               <button type="button" disabled={selIndex >= drawings.length - 1} onClick={() => reorder(sel.id, 1)} className={`${chip(false)} disabled:opacity-40`}>
                 앞으로
               </button>
               <button type="button" disabled={selIndex <= 0} onClick={() => reorder(sel.id, -1)} className={`${chip(false)} disabled:opacity-40`}>
                 뒤로
               </button>
-              <button type="button" onClick={() => patch(sel.id, { rotation: 0, opacity: 1 })} className={chip(false)}>
-                회전·투명도 초기화
-              </button>
               <button type="button" onClick={() => removeDrawing(sel.id)} className={`${chip(false)} ml-auto text-[#b3261e]`}>
                 떼기
               </button>
             </div>
+            <p className="text-[11px] leading-[1.5] text-[#a3a09a]">끌어서 옮기고, 모서리를 끌면 크기, 위의 ↻ 를 끌면 회전해요 (0°·90° 근처는 딱 맞춰져요).</p>
           </div>
         )}
       </div>
@@ -468,7 +559,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               스티커 {i + 1}
             </button>
           ))}
-          {drawings.length > 0 && <span className="text-[#a3a09a]">누르면 크기·회전·투명도·순서를 조절해요</span>}
+          {drawings.length > 0 && <span className="text-[#a3a09a]">누르면 골라서 옮기고 모서리로 크기, 손잡이로 회전해요</span>}
         </Row>
 
         <div className="flex items-center justify-between gap-3 border-t border-dashed border-[#e0ddd4] pt-3">
@@ -504,18 +595,5 @@ function Row({ label, children }) {
       <span className="w-[40px] shrink-0 text-[#a3a09a]">{label}</span>
       {children}
     </div>
-  );
-}
-
-function Slider({ label, value, min, max, step, unit, onChange }) {
-  return (
-    <label className="flex items-center gap-2">
-      <span className="w-[44px] shrink-0 text-[#a3a09a]">{label}</span>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} className="min-w-0 flex-1 accent-[#212121]" />
-      <span className="w-[48px] shrink-0 text-right tabular-nums text-[#454545]">
-        {value}
-        {unit}
-      </span>
-    </label>
   );
 }
