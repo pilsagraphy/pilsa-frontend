@@ -7,15 +7,14 @@ import { toast } from '@/lib/toast';
 import { INKS } from './guestbookStyle';
 
 // 그림판 — 방명록에 붙일 스티커를 직접 그린다 (PM 10/10 밤: 관리자 등록 스티커 대신 유저가 그려서 붙이기).
-// 투명 바탕 캔버스에 펜/지우개, 굵기 4단, 되돌리기, 지우기. 완료하면 그린 부분을 중심으로 **정사각형**으로 잘라낸 투명 PNG data URL 을 돌려준다
-// — 캔버스가 정사각형인데 붙이면 직사각형이 되어 비율이 달라지던 것(그림 부분만 잘라냈기 때문)을 PM 이 지적 (10/11). 여백은 가능한 만큼만 걷어낸다.
+// 투명 바탕 캔버스에 펜/지우개, 굵기 4단, 되돌리기, 지우기. 완료하면 **캔버스 전체(정사각형)를 그대로** 투명 PNG data URL 로 돌려준다
+// — 그림 부분만 잘라내면 붙였을 때 모양·크기가 그릴 때와 달라져서(직사각형이 되거나 확대돼 보여서) PM 이 두 번 지적 (10/11). 그린 화면 = 스티커.
 // 도구는 세 줄 — 색(기본색 + 직접 고른 색은 열 개까지 칩으로 누적) / 굵기 / 지우개·되돌리기·전부 지우기 (PM 10/11).
 // 좌표는 화면에 보이는 캔버스 크기와 실제 픽셀 크기의 비율로 바로 환산한다 — 손가락이 닿은 자리에 그려진다 (어긋나던 문제, PM 10/11).
 const SIZE = 320;
 const BRUSHES = [2, 4, 8, 14];
 const PRESETS = [...INKS.map((i) => i.color), '#e2b007', '#d9534f', '#3b82f6', '#ffffff'];
 const MAX_CUSTOM = 10;
-const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
 export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
   const canvasRef = useRef(null);
@@ -114,7 +113,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
     setDirty(false);
   };
 
-  // 그린 부분을 중심으로 정사각형으로 잘라낸다 — 그릴 때와 붙일 때 비율이 같고(늘 1:1), 여백은 긴 변 기준으로만 걷어낸다
+  // 빈 캔버스인지만 확인하고(픽셀 훑기) 캔버스 전체를 돌려준다
   const done = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -138,17 +137,9 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
       toast.error('아직 아무것도 그리지 않았어요.');
       return;
     }
-    const pad = Math.round(6 * (width / SIZE));
-    const bw = maxX - minX + 1;
-    const bh = maxY - minY + 1;
-    const side = Math.min(width, Math.max(bw, bh) + pad * 2);
-    const sx = clamp(Math.round(minX + bw / 2 - side / 2), 0, width - side);
-    const sy = clamp(Math.round(minY + bh / 2 - side / 2), 0, height - side);
-    const out = document.createElement('canvas');
-    out.width = side;
-    out.height = side;
-    out.getContext('2d').drawImage(canvas, sx, sy, side, side, 0, 0, side, side);
-    const dataUrl = out.toDataURL('image/png');
+    // 캔버스를 자르지 않고 통째로 — 그린 부분만 잘라내면 작게 그린 그림이 확대돼 붙어 "비율이 깨진" 듯 보였다 (PM 10/11).
+    // 이제 그린 화면이 곧 스티커다. 여백이 거슬리면 붙인 뒤 모서리로 줄이면 된다
+    const dataUrl = canvas.toDataURL('image/png');
     if ((dataUrl.length * 3) / 4 > maxKb * 1024) {
       toast.error(`그림이 너무 커요 (${maxKb}KB 까지). 조금 단순하게 그려 주세요.`);
       return;

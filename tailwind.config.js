@@ -57,6 +57,8 @@ module.exports = {
         //   반전: inverse(검정 버튼 바탕) · inverse-2(배지) · inverse-hover · inverse-fg(그 위 글자)
         //   의미: danger(#b3261e, 삭제·오류) · danger-bg · alert(#f44336, 경고 글자) · link(#1a73e8) · highlight(급상승 노랑)
         page: 'rgb(var(--c-page) / <alpha-value>)',
+        // 떠 있는 것(드롭다운·팝오버·바텀시트·말풍선) 바탕 — 라이트에선 흰색, 다크에선 page 보다 한 단계 밝다. surface 는 다크에서 page 와 같다
+        elevated: 'rgb(var(--c-elevated) / <alpha-value>)',
         surface: {
           DEFAULT: 'rgb(var(--c-surface) / <alpha-value>)',
           2: 'rgb(var(--c-surface-2) / <alpha-value>)',

@@ -82,7 +82,9 @@ export default function GuestbookNote({ note, onEdit, onDelete, onRestore, compa
             </span>
           </div>
 
-          {/* 작성자가 그려 붙인 스티커 — 위치·크기는 카드 기준 %, 배열 순서가 겹침 순서(뒤에 올수록 위) */}
+          {/* 작성자가 그려 붙인 스티커 — 위치·크기는 카드 기준 %, 배열 순서가 겹침 순서(뒤에 올수록 위).
+              종이 밖으로 나간 부분은 잘라 보이지 않는다 — 커피 자국처럼 가장자리에 걸치게 붙일 수 있다 (PM 10/11) */}
+          <div aria-hidden className="pointer-events-none absolute inset-0 z-[1] overflow-hidden">
           {drawings.map((d, i) => (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -101,6 +103,7 @@ export default function GuestbookNote({ note, onEdit, onDelete, onRestore, compa
               }}
             />
           ))}
+          </div>
         </article>
       </div>
 

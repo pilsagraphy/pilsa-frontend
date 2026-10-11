@@ -54,6 +54,7 @@
     --c-alert: 244 67 54;
     --c-link: 26 115 232;
     --c-highlight: 255 248 230;
+    --c-elevated: 255 255 255;
     color-scheme: light;
   }
   /* 다크모드 예외 영역 — 이 클래스 아래는 다크여도 라이트 토큰을 쓴다 (방명록 메모판·작성 칸: 종이는 종이). 값은 :root 와 같아야 한다 */
@@ -77,6 +78,7 @@
     --c-alert: 244 67 54;
     --c-link: 26 115 232;
     --c-highlight: 255 248 230;
+    --c-elevated: 255 255 255;
     /* shadcn 토큰(Dialog 바탕·테두리 등)도 라이트로 — 방명록 고치기 모달이 통째로 라이트가 되게 */
     --background: 0 0% 100%;
     --foreground: 0 0% 3.9%;
@@ -98,7 +100,9 @@
   }
   .dark {
     --c-page: 18 18 18;
-    --c-surface: 28 28 28;
+    /* surface 는 다크에서도 page 와 같은 색 — 라이트에서 '흰 바탕 위 흰 영역'이던 헤더·사이드바·섹션 래퍼가
+       다크에서 서로 다른 회색 덩어리로 보이던 문제 (PM 10/11 "의문의 시커먼 배경"). 떠 있는 것(드롭다운·팝오버·시트)만 elevated */
+    --c-surface: 18 18 18;
     --c-surface-2: 38 38 38;
     --c-surface-3: 50 50 50;
     --c-line: 54 54 54;
@@ -116,7 +120,23 @@
     --c-alert: 255 121 97;
     --c-link: 138 180 248;
     --c-highlight: 58 51 32;
+    /* elevated(28) 는 page(18) 와 surface-2(38, 패널 안 hover·선택 표시) 사이 — 36 으로 두면 hover 가 안 보인다 (검토 지적 10/11) */
+    --c-elevated: 28 28 28;
     color-scheme: dark;
+  }
+
+  /* 본문(게시글·일정) 안의 형광펜 — 글쓴이가 고른 연한 배경 위 글자는 다크모드에서도 검정, 진한 배경 위 글자는 늘 밝게.
+     클래스는 BoardMarkdown 이 배경색 밝기를 보고 붙인다(lib/markdown.js highlightClass). 글자색을 따로 고른 글은
+     inline style 이 이 규칙을 이긴다 (PM 10/11 "연한 배경이면 글자 검정으로") */
+  .dark .hl-light {
+    color: #212121;
+  }
+  .hl-dark {
+    color: #ececec;
+  }
+  /* 편집기 안도 같은 규칙 — 편집기 형광펜 팔레트는 전부 연한 색이라 배경이 있으면 검정 글자로 둔다 */
+  .dark .board-editor span[style*='background-color'] {
+    color: #212121;
   }
 
   :root {

@@ -118,7 +118,7 @@ export function ChartTooltip({ leftRatio, title, rows }) {
   const flip = leftRatio > 0.7;
   return (
     <div
-      className="pointer-events-none absolute top-2 z-10 rounded-[6px] border border-line bg-surface/95 px-3 py-2 text-[12px] shadow-md"
+      className="pointer-events-none absolute top-2 z-10 rounded-[6px] border border-line bg-elevated/95 px-3 py-2 text-[12px] shadow-md"
       style={{ left: `${leftRatio * 100}%`, transform: flip ? 'translateX(calc(-100% - 10px))' : 'translateX(10px)' }}
     >
       <p className="mb-1 font-medium text-ink">{title}</p>

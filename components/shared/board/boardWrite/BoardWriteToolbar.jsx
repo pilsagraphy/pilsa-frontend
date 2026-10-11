@@ -117,7 +117,7 @@ function ToolbarPopover({ anchorRef, width = 196, onClose, children }) {
     <div
       data-toolbar-popover
       style={{ position: 'fixed', left: pos.left, top: pos.top, width }}
-      className="z-[80] rounded-[6px] border border-line bg-surface p-2 shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
+      className="z-[80] rounded-[6px] border border-line bg-elevated p-2 shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
       // 편집기 선택 영역이 풀리지 않게 한다
       onMouseDown={(e) => e.preventDefault()}
     >

@@ -52,7 +52,7 @@ export default function IosInstallGuide() {
       <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px]" onClick={dismiss} />
 
       {/* 바텀시트 — 알림 유도 바텀시트(PushPromptBottomSheet)와 같은 틀 */}
-      <div className="fixed inset-x-0 bottom-0 z-[90] mx-auto max-w-[480px] rounded-t-[20px] bg-surface px-6 pb-8 pt-5 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
+      <div className="fixed inset-x-0 bottom-0 z-[90] mx-auto max-w-[480px] rounded-t-[20px] bg-elevated px-6 pb-8 pt-5 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
         <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-surface-3" />
 
         <div className="flex flex-col items-center gap-3 text-center">

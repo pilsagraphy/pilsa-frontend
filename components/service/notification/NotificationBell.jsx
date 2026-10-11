@@ -32,7 +32,7 @@ const TYPE_STYLES = {
   },
   EVENT: {
     label: 'text-link',
-    row: 'bg-[#F3F8FF] border-l-[3px] border-l-link',
+    row: 'bg-link/10 border-l-[3px] border-l-link',
     Icon: CalendarDays,
   },
 };
@@ -223,7 +223,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-[-8px] top-[44px] z-[70] w-[280px] max-w-[calc(100vw-20px)] overflow-hidden rounded-[12px] border border-line bg-surface shadow-[0_8px_30px_rgba(0,0,0,0.12)] md:right-[-16px] md:top-[48px] md:w-[320px] lg:right-[-80px]">
+        <div className="absolute right-[-8px] top-[44px] z-[70] w-[280px] max-w-[calc(100vw-20px)] overflow-hidden rounded-[12px] border border-line bg-elevated shadow-[0_8px_30px_rgba(0,0,0,0.12)] md:right-[-16px] md:top-[48px] md:w-[320px] lg:right-[-80px]">
           <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <h3 className="text-[15px] font-semibold text-ink">알림</h3>
             <button

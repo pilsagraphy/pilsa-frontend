@@ -33,7 +33,7 @@ export default function ImageCarousel({ images = [], className = '' }) {
   };
 
   const navButtonClass =
-    'absolute top-1/2 z-10 hidden size-[36px] -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink shadow-[0_2px_8px_rgba(0,0,0,0.18)] transition hover:bg-surface md:flex';
+    'absolute top-1/2 z-10 hidden size-[36px] -translate-y-1/2 items-center justify-center rounded-full bg-elevated/90 text-ink shadow-[0_2px_8px_rgba(0,0,0,0.18)] transition hover:bg-elevated md:flex';
 
   return (
     <div className={`relative w-full ${className}`}>

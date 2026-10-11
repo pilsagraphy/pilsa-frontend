@@ -133,7 +133,7 @@ export default function MemberList({ member, selected = false, dimmed = false, o
       </div>
 
       {/* 정지 / 주의 뱃지: 우측 고정 + 뒤에 흰 배경으로 글자를 가림 (항상 불투명, 위치 고정) */}
-      <div className="absolute inset-y-0 right-0 flex items-center bg-surface pl-[10px] pr-[6px]">
+      <div className={`absolute inset-y-0 right-0 flex items-center pl-[10px] pr-[6px] ${selected ? 'bg-surface-2' : 'bg-surface'}`}>
         <StatusBadge status={member.currentStatus} />
       </div>
     </div>
