@@ -1,12 +1,15 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 // 종이 위 얼룩 — 카드 안쪽(overflow hidden)에만 그려 사각형 밖으로 삐져나오지 않는다 (PM 10/10 밤).
 // 무지(ink): 왼쪽 아래 튄 자국(글 모서리에 걸쳐도 됨 — PM 이 마음에 들어 함) + 네 변의 여백 띠에 작은 잉크 방울 여러 개(동그라미·타원·튄 자국, 개수·위치·크기 랜덤).
 // 빈티지(coffee): 커피잔 고리 자국 한두 개(글 위에 걸쳐도 됨) + 여백 띠의 작은 방울.
 // **작은 방울·점은 글자 영역에 절대 안 들어간다** — 종이의 글 블록 바깥 여백(왼·오른쪽 18px, 위 22px, 아래 14px, 카드 padding 과 같다)에만
 // px 로 놓는다. % 로 놓으면 카드가 길어질수록 글 위로 올라왔다 (PM 10/11 "점 자국이 글자 영역에는 없었으면").
+// **개수는 종이 높이에 따라** — 짧은 종이(한두 줄)는 방울 0~1개·고리 1개, 글이 길어져 종이가 커질수록 방울이 랜덤하게 늘고(최대 6) 고리도 가끔 2개
+// (PM 10/11 "작을 땐 1개만, 커지면 랜덤하게 추가"). 후보는 씨앗으로 전부 미리 뽑아 두고 높이만큼 앞에서부터 보여 주므로, 종이가 자라도
+// 이미 있던 자국은 그 자리에 그대로 있고 새 것만 더해진다.
 // 배치는 seed(정수)로 정해진다 — 작성 칸에서 종이 버튼을 누를 때마다 새 씨앗을 뽑고, 글과 함께 저장해 카드에서도 똑같이 그린다
 // ("확정된 디자인은 바뀌지 않게", PM 10/11). 그리는 규칙을 바꾸면 같은 씨앗이라도 배치가 달라지니 함부로 손대지 말 것.
 
@@ -57,8 +60,12 @@ function makeMarks(kind, seed) {
   const rand = (min, max) => min + r() * (max - min);
   const randInt = (min, max) => Math.floor(rand(min, max + 1));
   const coffee = kind === 'coffee';
-  const rings = coffee ? Array.from({ length: r() < 0.55 ? 1 : 2 }, () => edgeRing(r)) : [];
-  const count = coffee ? randInt(2, 4) : randInt(3, 5);
+  // 두 번째 고리를 허용할지(종이가 커졌을 때만 쓰인다)와 방울 개수 배율(0.6~1) — 씨앗마다 다르다
+  const extraRing = r() < 0.45;
+  const dropFactor = 0.6 + 0.4 * r();
+  // 후보는 넉넉히 뽑아 두고 실제 개수는 종이 높이가 정한다 (visibleCounts)
+  const rings = coffee ? Array.from({ length: 2 }, () => edgeRing(r)) : [];
+  const count = coffee ? 4 : 6;
   const drops = [];
   for (let i = 0; i < count; i += 1) {
     for (let tries = 0; tries < 24; tries += 1) {
@@ -81,6 +88,15 @@ function makeMarks(kind, seed) {
       }
     }
   }
+  return { drops, rings, extraRing, dropFactor };
+}
+
+// 종이 높이(px)에 따른 개수. 한두 줄 종이(≈95px)는 방울 0개·고리 1개, 한 줄(≈29px)씩 길어질수록 늘어난다
+const clampInt = (v, min, max) => Math.max(min, Math.min(max, v));
+function visibleCounts(marks, coffee, height) {
+  const base = coffee ? clampInt(Math.floor((height - 70) / 110), 0, 4) : clampInt(Math.floor((height - 70) / 75), 0, 6);
+  const drops = Math.min(marks.drops.length, Math.round(base * marks.dropFactor));
+  const rings = coffee ? (height >= 220 && marks.extraRing ? 2 : 1) : 0;
   return { drops, rings };
 }
 
@@ -96,9 +112,24 @@ export default function PaperMarks({ kind = 'ink', color, seed = 1 }) {
   const marks = useMemo(() => makeMarks(kind, seed), [kind, seed]);
   const coffee = kind === 'coffee';
   const tone = coffee ? '#6b4a2b' : color;
+  // 종이 높이를 재서 개수를 정한다 — 작성 칸에서 글이 길어지면 그 자리에서 늘어난다 (카드의 transform scale 은 clientHeight 에 안 끼친다)
+  const ref = useRef(null);
+  const [height, setHeight] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const update = () => setHeight(el.clientHeight);
+    update();
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  const shown = visibleCounts(marks, coffee, height);
+  const rings = marks.rings.slice(0, shown.rings);
+  const drops = marks.drops.slice(0, shown.drops);
 
   return (
-    <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden" style={{ color: tone }}>
+    <div ref={ref} aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden" style={{ color: tone }}>
       {/* 왼쪽 아래 튄 자국 — 무지에만. 이건 글 모서리에 걸쳐도 그대로 둔다 (PM 10/11 "이건 좋은데 유지해") */}
       {!coffee && (
         <svg viewBox="0 0 100 100" className="absolute -bottom-3 -left-3 h-[76px] w-[76px]">
@@ -118,7 +149,7 @@ export default function PaperMarks({ kind = 'ink', color, seed = 1 }) {
       )}
 
       {/* 커피잔 고리 — 빈티지에만. 테두리가 진하고 안은 옅다 */}
-      {marks.rings.map((ring, i) => (
+      {rings.map((ring, i) => (
         <svg
           key={`ring-${i}`}
           viewBox="0 0 120 120"
@@ -145,7 +176,7 @@ export default function PaperMarks({ kind = 'ink', color, seed = 1 }) {
       ))}
 
       {/* 작은 방울 — 여백 띠 안에만. 동그라미·타원은 span, 튄 자국은 작은 SVG */}
-      {marks.drops.map((d, i) => {
+      {drops.map((d, i) => {
         const anchor = anchorStyle(d);
         if (d.shape === 'splat') {
           return (
