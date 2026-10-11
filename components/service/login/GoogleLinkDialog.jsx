@@ -20,8 +20,10 @@ import {
  * 연결하지 않겠다고 하면 서버의 대기 정보를 지운다(onDecline) — 남겨 두면 10분 안에
  * 다른 아이디로 로그인할 때 그 계정에 붙어 버린다.
  */
-export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, onDecline }) {
+// providerLabel: 구글 · 네이버 · 카카오 — 네이버·카카오 로그인도 같은 모달을 쓴다 (2026-10-11)
+export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, onDecline, providerLabel = '구글' }) {
   if (!pending) return null;
+  const label = providerLabel;
   const { emailMatched, maskedEmail, maskedLoginId } = pending;
 
   return (
@@ -37,20 +39,20 @@ export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, on
         <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
           {emailMatched ? (
             <>
-              구글 계정 <span className="font-medium text-ink">{maskedEmail}</span>과 같은 이메일로
+              {label} 계정 <span className="font-medium text-ink">{maskedEmail}</span>과 같은 이메일로
               가입된 회원(아이디 <span className="font-medium text-ink">{maskedLoginId}</span>)이 있어요.
               <br />
-              이 구글 계정을 그 회원 계정에 연결할까요?
+              이 {label} 계정을 그 회원 계정에 연결할까요?
               <br />
-              본인 확인을 위해 아이디·비밀번호로 한 번만 로그인하면 연결되고, 다음부터는 구글로 바로
+              본인 확인을 위해 아이디·비밀번호로 한 번만 로그인하면 연결되고, 다음부터는 {label}로 바로
               로그인할 수 있어요.
             </>
           ) : (
             <>
-              구글 계정 <span className="font-medium text-ink">{maskedEmail}</span>로 가입된 회원이
+              {label} 계정 <span className="font-medium text-ink">{maskedEmail}</span>로 가입된 회원이
               없어요.
               <br />
-              회원가입을 진행할까요? 가입을 마치고 로그인하면 이 구글 계정이 자동으로 연결돼요.
+              회원가입을 진행할까요? 가입을 마치고 로그인하면 이 {label} 계정이 자동으로 연결돼요.
               <br />
               다른 이메일로 이미 가입했다면 아이디·비밀번호로 로그인해도 연결돼요.
             </>

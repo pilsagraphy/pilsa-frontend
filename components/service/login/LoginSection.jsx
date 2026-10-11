@@ -21,6 +21,7 @@ import { JUST_LOGGED_IN_KEY } from '@/components/service/notification/PushPrompt
 import LoginBannedSection from './LoginBannedSection';
 import LoginRestrictedSection from './LoginRestrictedSection';
 import GoogleLinkDialog from './GoogleLinkDialog';
+import { completeSocialLink, getSocialLoginUrl, providerLabel } from '@/apis/social';
 
 // 아이디 저장(로컬 스토리지) 키 — 아이디만 채워둘 뿐 세션과는 무관
 const SAVED_LOGIN_ID_KEY = 'savedLoginId';
@@ -34,7 +35,13 @@ const GOOGLE_ERROR_MESSAGES = {
     '연결된 계정이 없어요. 아이디로 로그인한 뒤 마이페이지에서 구글 계정을 연결해주세요.',
   GOOGLE_LOGIN_FAILED: '구글 로그인에 실패했어요. 잠시 후 다시 시도해주세요.',
   INVALID_STATE: '인증 정보가 만료되었어요. 다시 시도해주세요.',
+  NAVER_NOT_LINKED: '연결된 계정이 없어요. 아이디로 로그인한 뒤 마이페이지에서 네이버 계정을 연결해주세요.',
+  NAVER_LOGIN_FAILED: '네이버 로그인에 실패했어요. 잠시 후 다시 시도해주세요.',
+  KAKAO_NOT_LINKED: '연결된 계정이 없어요. 아이디로 로그인한 뒤 마이페이지에서 카카오 계정을 연결해주세요.',
+  KAKAO_LOGIN_FAILED: '카카오 로그인에 실패했어요. 잠시 후 다시 시도해주세요.',
 };
+// 소셜 로그인 콜백의 ?login= 값 (구글·네이버·카카오 공통 흐름, 2026-10-11)
+const SOCIAL_LOGIN_PROVIDERS = ['google', 'naver', 'kakao'];
 
 // 시안의 체크박스 — 아이디 저장 / 자동 로그인이 같은 모양을 공유한다
 function LoginCheckbox({ checked, onChange, label }) {
@@ -97,7 +104,8 @@ export default function LoginSection() {
   const [autoLogin, setAutoLogin] = useState(() => {
     if (typeof window === 'undefined') return false;
     const standalone = window.matchMedia?.('(display-mode: standalone)').matches;
-    const fromGoogle = new URLSearchParams(window.location.search).has('googleLink');
+    const q = new URLSearchParams(window.location.search);
+    const fromGoogle = q.has('googleLink') || q.has('socialLink');
     return Boolean(standalone || fromGoogle);
   });
   // 제재 계정 안내: { banType: 'temporary'|'permanent', bannedUntil }
@@ -182,13 +190,13 @@ export default function LoginSection() {
   useEffect(() => {
     if (pendingChecked.current) return;
     pendingChecked.current = true;
-    const justReturned = searchParams.get('googleLink') === '1';
+    const justReturned = searchParams.get('googleLink') === '1' || searchParams.has('socialLink');
 
     getGooglePendingLink()
       .then((info) => {
         if (!info?.pending) {
           if (justReturned) {
-            toast.error('구글 계정 연결 정보가 만료되었어요. 구글 로그인을 다시 시도해주세요.');
+            toast.error('계정 연결 정보가 만료되었어요. 소셜 로그인을 다시 시도해주세요.');
           }
           return;
         }
@@ -209,7 +217,7 @@ export default function LoginSection() {
 
     // 연결된 회원이 없는 구글 계정으로 들어온 경우 — 안내에 필요한 내용은 위 effect 가 서버에 묻는다.
     // 여기서는 쿼리만 정리한다 (matched/hint 는 백엔드가 참고용으로 붙이는 값이라 쓰지 않는다).
-    if (searchParams.get('googleLink')) {
+    if (searchParams.get('googleLink') || searchParams.get('socialLink')) {
       googleHandled.current = true;
       router.replace(ROUTES.LOGIN);
       return;
@@ -219,15 +227,17 @@ export default function LoginSection() {
     if (errorCode) {
       googleHandled.current = true;
       // 사용자가 동의 화면에서 직접 취소한 경우는 실패로 알리지 않는다
-      if (errorCode !== 'GOOGLE_CANCELLED') {
-        toast.error(GOOGLE_ERROR_MESSAGES[errorCode] ?? '구글 로그인에 실패했어요.');
+      if (!errorCode.endsWith('_CANCELLED')) {
+        toast.error(GOOGLE_ERROR_MESSAGES[errorCode] ?? '소셜 로그인에 실패했어요.');
       }
       router.replace(ROUTES.LOGIN);
       return;
     }
 
-    if (searchParams.get('login') !== 'google') return;
+    const loginProvider = searchParams.get('login');
+    if (!SOCIAL_LOGIN_PROVIDERS.includes(loginProvider)) return;
     googleHandled.current = true;
+    const loginLabel = providerLabel(loginProvider);
 
     const completeGoogleLogin = async () => {
       try {
@@ -246,7 +256,7 @@ export default function LoginSection() {
         }
         restorePushAfterLogin();
 
-        toast.success('구글 계정으로 로그인했어요');
+        toast.success(`${loginLabel} 계정으로 로그인했어요`);
         // 알림 딥링크 등에서 밀려났던 경로가 있으면 그리로 (구글을 거치는 동안 sessionStorage 에 남겨 둔 값)
         router.replace(takeReturnTo(searchParams) ?? ROUTES.STUDENTS_DASHBOARD);
       } catch {
@@ -270,6 +280,21 @@ export default function LoginSection() {
       window.location.href = url;
     } catch {
       toast.error('구글 로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.');
+      setGoogleBusy(false);
+    }
+  };
+
+  // 네이버·카카오 — 구글과 같은 흐름 (apis/social.js). 키가 아직 없으면 서버가 503 { message } 로 알린다
+  const handleSocialLogin = async (provider) => {
+    if (googleBusy || loggingOut) return;
+    setGoogleBusy(true);
+    try {
+      const url = await getSocialLoginUrl(provider);
+      if (!url) throw new Error('authorizeUrl 없음');
+      stashReturnTo(searchParams.get(RETURN_TO_PARAM));
+      window.location.href = url;
+    } catch (err) {
+      toast.error(err?.response?.data?.message ?? `${providerLabel(provider)} 로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.`);
       setGoogleBusy(false);
     }
   };
@@ -305,14 +330,18 @@ export default function LoginSection() {
       // 구글 계정 연결 대기 중이었으면 지금 로그인한 계정에 붙인다.
       // 실패해도 로그인 자체는 성공이므로 흐름을 막지 않고 마이페이지에서 다시 할 수 있다고만 알린다.
       if (pendingGoogleLink) {
+        // 보관 중인 계정이 어느 제공자 것인지는 서버 응답 provider 가 알려 준다 (구글·네이버·카카오 같은 보관함)
+        const pendingProvider = String(pendingGoogleLink.provider ?? 'GOOGLE').toLowerCase();
+        const label = providerLabel(pendingProvider);
         try {
-          const linked = await completeGoogleLink();
+          const linked = pendingProvider === 'google' ? await completeGoogleLink() : await completeSocialLink(pendingProvider);
+          const linkedEmail = linked?.googleEmail || linked?.email;
           toast.success(
-            `구글 계정${linked?.googleEmail ? `(${linked.googleEmail})` : ''}을 연결했어요. 다음부터 구글로 바로 로그인할 수 있어요.`
+            `${label} 계정${linkedEmail ? `(${linkedEmail})` : ''}을 연결했어요. 다음부터 ${label}로 바로 로그인할 수 있어요.`
           );
         } catch (linkErr) {
           toast.error(
-            getErrorMessage(linkErr, '구글 계정 연결에 실패했어요. 마이페이지에서 다시 연결할 수 있어요.')
+            getErrorMessage(linkErr, `${label} 계정 연결에 실패했어요. 마이페이지에서 다시 연결할 수 있어요.`)
           );
         } finally {
           setPendingGoogleLink(null);
@@ -388,6 +417,7 @@ export default function LoginSection() {
             onAccept={acceptGoogleLink}
             onSignup={goSignupWithGoogle}
             onDecline={declineGoogleLink}
+            providerLabel={providerLabel(pendingGoogleLink?.provider)}
           />
           {pendingGoogleLink && !googleDialogOpen && (
             <div
@@ -395,7 +425,7 @@ export default function LoginSection() {
               className="flex items-start justify-between gap-3 rounded-[6px] border border-line bg-surface-2 px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-ink [word-break:keep-all]"
             >
               <p>
-                <span className="font-bold">구글 계정 연결 대기 중</span>
+                <span className="font-bold">{providerLabel(pendingGoogleLink.provider)} 계정 연결 대기 중</span>
                 <br />
                 <span className="text-ink-2">
                   {pendingGoogleLink.emailMatched
@@ -512,6 +542,29 @@ export default function LoginSection() {
               </svg>
               {googleBusy ? '구글로 이동 중…' : '구글로 로그인'}
             </button>
+            {/* 네이버 · 카카오 (PM 2026-10-11) — 각 브랜드 색. 연결한 회원만 들어올 수 있는 건 구글과 같다 */}
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => handleSocialLogin('naver')}
+                disabled={googleBusy || loggingOut}
+                className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[#03C75A] text-[16px] font-medium text-white transition hover:brightness-95 disabled:opacity-60"
+              >
+                <span className="text-[18px] font-extrabold leading-none">N</span>
+                네이버
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSocialLogin('kakao')}
+                disabled={googleBusy || loggingOut}
+                className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[#FEE500] text-[16px] font-medium text-[#191919] transition hover:brightness-95 disabled:opacity-60"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="#191919" d="M12 3C6.48 3 2 6.58 2 11c0 2.83 1.86 5.31 4.66 6.72L5.5 21.5l4.74-2.98c.58.08 1.17.13 1.76.13 5.52 0 10-3.58 10-8S17.52 3 12 3z" />
+                </svg>
+                카카오
+              </button>
+            </div>
           </div>
         </form>
       </div>

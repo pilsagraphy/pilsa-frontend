@@ -20,6 +20,17 @@ const GOOGLE_CALLBACK_MESSAGES = {
     already_linked: { type: 'error', text: '이미 다른 회원이 사용 중인 구글 계정이에요' },
     failed: { type: 'error', text: '구글 계정 연결에 실패했어요. 다시 시도해주세요.' },
   },
+  // 네이버·카카오 계정 연결 (2026-10-11) — /mypage?naver=... | ?kakao=...
+  naver: {
+    linked: { type: 'success', text: '네이버 계정을 연결했어요' },
+    already_linked: { type: 'error', text: '이미 다른 회원이 사용 중인 네이버 계정이에요' },
+    failed: { type: 'error', text: '네이버 계정 연결에 실패했어요. 다시 시도해주세요.' },
+  },
+  kakao: {
+    linked: { type: 'success', text: '카카오 계정을 연결했어요' },
+    already_linked: { type: 'error', text: '이미 다른 회원이 사용 중인 카카오 계정이에요' },
+    failed: { type: 'error', text: '카카오 계정 연결에 실패했어요. 다시 시도해주세요.' },
+  },
   calendar: {
     linked: {
       type: 'success',

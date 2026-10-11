@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 import NotificationToggle from './NotificationToggle';
 import NotificationPreferences from './NotificationPreferences';
 import GoogleIntegrationSection from './GoogleIntegrationSection';
+import SocialAccountsSection from './SocialAccountsSection';
 import WithdrawModal from './WithdrawModal';
 import PasswordChangeModal from './PasswordChangeModal';
 import { canShowPushToggle } from '@/lib/push';
@@ -112,6 +113,11 @@ export default function SettingsContent({ myInfo, onNestedOpenChange }) {
       {/* 3. 구글 연동 — 계정 연결(소셜 로그인) + 캘린더 자동 등록 */}
       <Collapsible title="구글 연동">
         <GoogleIntegrationSection />
+      </Collapsible>
+
+      {/* 3-1. 네이버·카카오 계정 연결 — 소셜 로그인용 (PM 2026-10-11) */}
+      <Collapsible title="네이버 · 카카오 연동">
+        <SocialAccountsSection />
       </Collapsible>
 
       {/* 4. 계정 */}
