@@ -8,10 +8,11 @@ import { cn } from '@/lib/utils';
 import { formatDotDate } from '@/lib/boardDetail';
 
 /**
- * 게시판 상세 하단 "이전 글 / 현재 글 / 다음 글" 네비게이션 (공용)
+ * 게시판 상세 하단 "다음 글 / 현재 글 / 이전 글" 네비게이션 (공용)
  *
  * 피그마 시안 기준:
- * - 맨 위 헤더 줄(게시판 이름 + 목록으로 가는 화살표) + 이전/현재/다음 3줄, 각 줄 56px
+ * - 맨 위 헤더 줄(게시판 이름 + 목록으로 가는 화살표) + 다음/현재/이전 3줄, 각 줄 56px
+ *   (줄 순서는 목록과 같게 위가 최신 — 다음 글(더 새 글)이 위, 이전 글(더 오래된 글)이 아래. PM 2026-10-11)
  * - 각 줄: 라벨 + 카테고리 칩 + 제목 + (오른쪽) 날짜
  * - prevHref / nextHref 가 있으면 그 줄을 클릭해 이동, 없으면 '이전 글이 없습니다'로 비활성
  *
@@ -107,14 +108,14 @@ export default function PostPrevNext({
         </button>
       </div>
 
-      {/* 이전 글 */}
+      {/* 다음 글 (더 새 글) — 목록처럼 위가 최신 */}
       <Row
-        label="이전 글"
-        categoryName={prev?.categoryName}
-        title={prev?.title ?? '이전 글이 없습니다'}
-        date={prev ? formatDotDate(prev.created) : null}
-        href={prevHref}
-        empty={!prev}
+        label="다음 글"
+        categoryName={next?.categoryName}
+        title={next?.title ?? '없습니다'}
+        date={next ? formatDotDate(next.created) : null}
+        href={nextHref}
+        empty={!next}
         borderClass="border-t border-t-line-strong"
       />
 
@@ -127,14 +128,14 @@ export default function PostPrevNext({
         borderClass="border-t border-t-line-strong"
       />
 
-      {/* 다음 글 */}
+      {/* 이전 글 (더 오래된 글) */}
       <Row
-        label="다음 글"
-        categoryName={next?.categoryName}
-        title={next?.title ?? '다음 글이 없습니다'}
-        date={next ? formatDotDate(next.created) : null}
-        href={nextHref}
-        empty={!next}
+        label="이전 글"
+        categoryName={prev?.categoryName}
+        title={prev?.title ?? '없습니다'}
+        date={prev ? formatDotDate(prev.created) : null}
+        href={prevHref}
+        empty={!prev}
         borderClass="border-y border-t-line-strong border-b-ink-3"
       />
     </div>
