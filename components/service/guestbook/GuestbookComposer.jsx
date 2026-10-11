@@ -334,7 +334,9 @@ export default function GuestbookComposer({
               style={{ backgroundColor: `${tape}b3` }}
             />
           )}
-          {p.marks && marksOn && <PaperMarks kind={p.marks} color={inkHex} seed={marksSeed} />}
+          {p.marks && marksOn && (
+            <PaperMarks kind={p.marks} color={inkHex} seed={marksSeed} holesKey={drawings.map((d) => [d.id, d.posX, d.posY, d.widthPct, d.rotation, d.aspect].join(',')).join('|')} />
+          )}
           {/* 글 칸은 한 줄로 시작해 글 양만큼만 늘어난다 — 카드도 글 양만큼만 커지므로 작성 칸이 곧 실제 크기 (얼룩·스티커 자리를 실제 크기에서 고른다, PM 10/11) */}
           <textarea
             ref={textareaRef}
@@ -388,6 +390,7 @@ export default function GuestbookComposer({
                 <img
                   src={d.dataUrl ?? apiUrl(d.imageUrl)}
                   alt=""
+                  data-sticker-img
                   draggable={false}
                   onLoad={(e) => {
                     const img = e.currentTarget;

@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { getErrorMessage } from '@/apis/auth';
-import { deleteGalleryPhoto, getGallery } from '@/apis/gallery';
+import { deleteGalleryPhoto, getGallery, updateMyGalleryPhoto } from '@/apis/gallery';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import AppLoading from '@/components/common/AppLoading';
 import ConfirmModal from '@/components/common/ConfirmModal';
 import AdminPageLink from '@/components/shared/AdminPageLink';
@@ -57,7 +58,7 @@ const toTile = (p) => ({
   ratio: Number(p.ratio) > 0 ? Number(p.ratio) : 1,
 });
 
-function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete }) {
+function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete, onEdit }) {
   return rows.map((row, rowIndex) => {
     const aspect = Math.max(
       MIN_ROW_ASPECT,
@@ -74,6 +75,21 @@ function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete }) {
               gallery={allPhotos}
               index={allPhotos.findIndex((x) => x.photoId === photo.photoId)}
             />
+            {/* 내 사진: 제목·해시태그 고치기 (PM 2026-10-11) — 지우기 왼쪽 */}
+            {photo.isMine && photo.state === 'normal' && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(photo);
+                }}
+                aria-label="사진 정보 고치기"
+                title="제목·해시태그 고치기"
+                className="absolute right-[32px] top-1 z-10 flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/55 text-[12px] leading-none text-white opacity-80 hover:bg-black/75 md:opacity-0 md:group-hover:opacity-100"
+              >
+                ✎
+              </button>
+            )}
             {photo.canManage && photo.state !== 'hidden' && (
               <button
                 type="button"
@@ -199,6 +215,34 @@ const Gallery = () => {
 
   const refresh = (label) => fetchSemester(label ?? meta?.currentSemester).catch(() => {});
 
+  // 내 사진 고치기 — 제목·해시태그만 (학기·올린 사람은 관리자가 활동 사진 관리에서)
+  const [editing, setEditing] = useState(null); // { photo, title, hashtags }
+  const [savingEdit, setSavingEdit] = useState(false);
+  const openEdit = (photo) => setEditing({ photo, title: photo.title ?? '', hashtags: (photo.hashtags ?? []).join(', ') });
+  const saveEdit = async () => {
+    if (!editing) return;
+    if (!editing.title.trim()) {
+      toast.error('제목을 적어 주세요.');
+      return;
+    }
+    if (!editing.hashtags.trim()) {
+      toast.error('해시태그를 하나 이상 적어 주세요.');
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      await updateMyGalleryPhoto(editing.photo.photoId, { title: editing.title.trim(), hashtags: editing.hashtags.trim() });
+      toast.success('고쳤어요.');
+      const label = editing.photo.semesterLabel;
+      setEditing(null);
+      refresh(label);
+    } catch (err) {
+      toast.error(getErrorMessage(err, '고치지 못했어요.'));
+    } finally {
+      setSavingEdit(false);
+    }
+  };
+
   const confirmDelete = async () => {
     const photo = deleting;
     setDeleting(null);
@@ -258,10 +302,10 @@ const Gallery = () => {
               ) : (
                 <>
                   <div className="flex w-full flex-col gap-1 md:hidden">
-                    <GalleryRows rows={mobileRows} activeSrc={activeSrc} onActivate={setActiveSrc} allPhotos={allPhotos} onDelete={setDeleting} />
+                    <GalleryRows rows={mobileRows} activeSrc={activeSrc} onActivate={setActiveSrc} allPhotos={allPhotos} onDelete={setDeleting} onEdit={openEdit} />
                   </div>
                   <div className="hidden w-full flex-col gap-1 md:flex">
-                    <GalleryRows rows={desktopRows} activeSrc={activeSrc} onActivate={setActiveSrc} allPhotos={allPhotos} onDelete={setDeleting} />
+                    <GalleryRows rows={desktopRows} activeSrc={activeSrc} onActivate={setActiveSrc} allPhotos={allPhotos} onDelete={setDeleting} onEdit={openEdit} />
                   </div>
                 </>
               )}
@@ -280,6 +324,8 @@ const Gallery = () => {
         open={uploadOpen}
         onClose={() => setUploadOpen(false)}
         maxFiles={meta?.maxFilesPerUpload ?? 10}
+        semesters={semesters}
+        currentSemester={meta?.currentSemester ?? ''}
         onUploaded={() => {
           // 이번 학기 구간이 새로 생겼을 수 있으니(첫 사진) 학기 목록부터 다시 받고 맨 위로
           loadFromStart()
@@ -287,6 +333,35 @@ const Gallery = () => {
             .catch(() => {});
         }}
       />
+      <Dialog open={Boolean(editing)} onOpenChange={(v) => !v && !savingEdit && setEditing(null)}>
+        <DialogContent hideCloseButton className="max-w-[420px] gap-3 rounded-[8px] border-line p-4">
+          <DialogTitle className="text-[16px] font-semibold text-ink">내 사진 고치기</DialogTitle>
+          <DialogDescription className="text-[12px] text-ink-3">제목과 해시태그만 고칠 수 있어요. 학기는 운영진에게 말해 주세요.</DialogDescription>
+          <input
+            type="text"
+            value={editing?.title ?? ''}
+            maxLength={100}
+            onChange={(e) => setEditing((prev) => ({ ...prev, title: e.target.value }))}
+            placeholder="제목 (필수)"
+            className="h-[36px] w-full rounded-[6px] border border-line bg-surface px-3 text-[13px] text-ink outline-none transition-colors focus:border-ink-3"
+          />
+          <input
+            type="text"
+            value={editing?.hashtags ?? ''}
+            onChange={(e) => setEditing((prev) => ({ ...prev, hashtags: e.target.value }))}
+            placeholder="해시태그 (필수, 쉼표로 구분)"
+            className="h-[36px] w-full rounded-[6px] border border-line bg-surface px-3 text-[13px] text-ink outline-none transition-colors focus:border-ink-3"
+          />
+          <div className="flex justify-end gap-2">
+            <button type="button" onClick={() => setEditing(null)} disabled={savingEdit} className="h-[36px] rounded-[6px] border border-line bg-surface px-4 text-[13px] text-ink-2">
+              취소
+            </button>
+            <button type="button" onClick={saveEdit} disabled={savingEdit} className="h-[36px] rounded-[6px] bg-inverse px-4 text-[13px] text-inverse-fg disabled:opacity-50">
+              {savingEdit ? '고치는 중…' : '고치기'}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
       <ConfirmModal
         open={Boolean(deleting)}
         title={deleting?.isMine ? '내가 올린 사진을 지울까요?' : '이 사진을 숨길까요? (활동 사진 관리에서 복원할 수 있어요)'}
