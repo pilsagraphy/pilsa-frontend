@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { getErrorMessage } from '@/apis/auth';
 import { editGuestbookNote, writeGuestbookNote } from '@/apis/guestbook';
 import useAuthStore from '@/stores/useAuthStore';
@@ -87,6 +88,16 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   }, []);
   const [drawOpen, setDrawOpen] = useState(false);
   const [sending, setSending] = useState(false);
+  // 스티커를 고른 상태에서 스티커·손잡이·조절창 밖을 누르면 편집 완료로 본다 (PM 10/11). 그림판이 열려 있을 땐 그대로 둔다
+  useEffect(() => {
+    if (!selected || drawOpen) return undefined;
+    const onDown = (e) => {
+      if (e.target?.closest?.('[data-sticker], [data-sticker-panel]')) return;
+      setSelected(null);
+    };
+    document.addEventListener('pointerdown', onDown, true);
+    return () => document.removeEventListener('pointerdown', onDown, true);
+  }, [selected, drawOpen]);
   const paperRef = useRef(null);
   const textareaRef = useRef(null);
   const drag = useRef(null);
@@ -232,6 +243,8 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
     }
     setSending(true);
     try {
+      // 로그인 상태면 먼저 세션을 갱신 — 만료된 토큰으로 보내면 익명 글이 되어 나중에 못 고친다 (PM 10/11)
+      if (isLoggedIn) await useAuthStore.getState().fetchRole().catch(() => {});
       const body = {
         displayName: name.trim(),
         content, // 끝의 빈 줄도 그대로 — 스티커 자리를 만들려고 넣은 줄이 저장 뒤 사라지면 카드가 작아진다 (검토 지적 10/11)
@@ -279,9 +292,18 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   return (
     <section className="flex flex-col gap-4">
       {/* 스티커를 고르는 동안 — 종이 밖은 어둡게 해서 붙일 수 없는 곳임을 보여 준다. 어두운 곳을 누르면 선택 해제 */}
-      {sel && <div className="fixed inset-0 z-[60] bg-black/45" onClick={() => setSelected(null)} aria-hidden />}
+      {/* 어둡게는 새로 쓸 때만 — 고치기 모달 안에서는 fixed 가 모달 상자(transform)에 갇혀 반쪽만 어두워졌다. 모달은 자기 막이 있다 (PM 10/11) */}
+      {sel && mode === 'create' && <div className="fixed inset-0 z-[60] bg-black/45" onClick={() => setSelected(null)} aria-hidden />}
 
       <div className={`flex flex-col gap-3 ${sel ? 'relative z-[61]' : ''}`}>
+        {/* 얼룩 켬/끔 — 종이 오른쪽 위에 (PM 10/11 "사진의 위치"), 무지·빈티지에만. 새로 쓸 때는 위 학기 머리줄 쪽으로 끌어올린다 */}
+        {p.marks && (
+          <div className={`flex justify-end ${mode === 'create' ? '-mt-7 -mb-1' : ''}`}>
+            <button type="button" aria-pressed={marksOn} onClick={() => setMarksOn((v) => !v)} className={chip(marksOn)}>
+              {p.marks === 'coffee' ? '커피 자국' : '잉크 자국'} {marksOn ? '켬' : '끔'}
+            </button>
+          </div>
+        )}
         {/* 편지지 — 카드와 같은 폭 */}
         <div
           ref={paperRef}
@@ -398,9 +420,16 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
           </div>
         </div>
 
-        {/* 고른 스티커의 작은 창 — 크기·회전은 도형에서 직접, 여기서는 투명도·순서·떼기만 (PM 10/11) */}
-        {sel && (
-          <div className="mx-auto flex w-full flex-col gap-2 rounded-[6px] border border-line bg-surface px-3 py-2 text-[12px] text-ink-2 shadow-lg" style={{ maxWidth: DESIGN_WIDTH }}>
+        {/* 고른 스티커의 작은 창 — 크기·회전은 도형에서 직접, 여기서는 투명도·순서·스티커 수정·떼기만. 화면 아래에 떠 있는 팝업(포털)이라
+            글 흐름을 밀지 않고, 고치기 모달 안에서도 모달 상자에 갇히지 않는다. 모달의 바깥 클릭 판정은 data-sticker-panel 로 제외 (PM 10/11) */}
+        {sel &&
+          typeof document !== 'undefined' &&
+          createPortal(
+          <div
+            data-sticker-panel
+            className="pointer-events-auto fixed inset-x-3 z-[70] mx-auto flex max-w-[360px] flex-col gap-2 rounded-[10px] border border-line bg-elevated px-3 py-2 text-[12px] text-ink-2 shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
+            style={{ bottom: 'calc(12px + var(--bottom-bar, 0px))' }}
+          >
             <div className="flex items-center justify-between gap-2">
               <span className="font-medium text-ink">스티커 {selIndex + 1}</span>
               <span className="text-[11px] text-[#a3a09a]">
@@ -432,7 +461,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
                 뒤로
               </button>
               <button type="button" onClick={() => setDrawOpen({ editId: sel.id })} className={chip(false)}>
-                그림 수정
+                스티커 수정
               </button>
               <button type="button" onClick={() => removeDrawing(sel.id)} className={`${chip(false)} ml-auto text-danger`}>
                 떼기
@@ -441,8 +470,9 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
             <p className="text-[11px] leading-[1.5] text-[#a3a09a]">
               끌어서 옮기고, 모서리를 끌면 크기, 위의 ↻ 를 끌면 회전해요 (0°·90° 근처는 딱 맞춰져요). 종이 밖으로 나간 부분은 붙인 뒤 잘려 보여요.
             </p>
-          </div>
-        )}
+          </div>,
+          document.body
+          )}
       </div>
 
       {/* 문구 서랍: 글씨체 · 잉크 · 종이 · 정렬 · 스티커 */}
@@ -510,12 +540,6 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               {x.label}
             </button>
           ))}
-          {/* 얼룩 켬/끔 — 무지·빈티지에만 (PM 10/11) */}
-          {p.marks && (
-            <button type="button" aria-pressed={marksOn} onClick={() => setMarksOn((v) => !v)} className={chip(marksOn)}>
-              {p.marks === 'coffee' ? '커피 자국' : '잉크 자국'} {marksOn ? '켬' : '끔'}
-            </button>
-          )}
         </Row>
         <Row label="테이프">
           {TAPES.map((t) => (

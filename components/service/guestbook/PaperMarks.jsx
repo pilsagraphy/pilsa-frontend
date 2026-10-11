@@ -131,7 +131,9 @@ function makeMarks(kind, seed) {
     const want = roll < 0.25 ? 3 : roll < 0.6 ? 2 : roll < 0.9 ? 1 : 0;
     for (let i = 0; i < want; i += 1) {
       for (let tries = 0; tries < 20; tries += 1) {
-        const cand = { ...edgeDeco(r, rand(22, 38)), kind: DECO_KINDS[Math.floor(r() * DECO_KINDS.length)] };
+        const kind = DECO_KINDS[Math.floor(r() * DECO_KINDS.length)];
+        // 잉크병 목 고리는 커피 고리처럼 크고(40~60px) 안쪽까지 들어온다 — 밖에만 두면 원의 1/10 만 보여 고리로 안 보였다 (PM 10/11)
+        const cand = { ...(kind === 'ring' ? edgeRing(r, rand(40, 60)) : edgeDeco(r, rand(22, 38))), kind };
         if (nearSplashBig(cand) || decos.some((o) => !farApart(cand, o, 30))) continue;
         decos.push(cand);
         break;
