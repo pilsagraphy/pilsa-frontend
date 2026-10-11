@@ -230,7 +230,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
 
       {/* 고치기 — 쓰기 칸을 그대로 모달에 (종이 폭은 카드와 같은 DESIGN_WIDTH) */}
       <Dialog open={Boolean(editing)} onOpenChange={(v) => !v && setEditing(null)}>
-        <DialogContent hideCloseButton onInteractOutside={(e) => { if ((e.detail?.originalEvent?.target ?? e.target)?.closest?.('[data-sticker-panel]')) e.preventDefault(); }} className="theme-light max-h-[90dvh] w-[calc(100vw-24px)] max-w-[560px] overflow-x-hidden overflow-y-auto rounded-[8px] border-line p-4 sm:w-full md:p-5">
+        <DialogContent hideCloseButton onInteractOutside={(e) => { if ((e.detail?.originalEvent?.target ?? e.target)?.closest?.('[data-sticker-panel]')) e.preventDefault(); }} className="theme-light max-h-[90dvh] w-[calc(100%-24px)] max-w-[560px] overflow-x-hidden overflow-y-auto rounded-[8px] border-line p-4 sm:w-full md:p-5">
           <DialogTitle className="text-[16px] font-semibold text-ink">방명록 고치기</DialogTitle>
           <DialogDescription className="sr-only">내용·글씨체·잉크·종이·스티커를 고친다</DialogDescription>
           {editing && meta && (
