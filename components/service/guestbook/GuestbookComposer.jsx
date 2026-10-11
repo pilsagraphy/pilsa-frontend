@@ -580,11 +580,15 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   );
 }
 
+// 옵션 한 줄 — 폰(sm 미만)에서는 줄바꿈 없이 한 줄로 두고 넘치는 것은 손가락으로 옆으로 밀어 본다(스크롤바는 숨김, PM 10/11 "미닫이 문처럼").
+// PC 에서는 전처럼 줄바꿈
 function Row({ label, children }) {
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex items-center gap-2">
       <span className="w-[40px] shrink-0 text-[#a3a09a]">{label}</span>
-      {children}
+      <div className="flex min-w-0 flex-1 items-center gap-2 overflow-x-auto py-[3px] [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden [&>*]:shrink-0 sm:flex-wrap sm:overflow-visible">
+        {children}
+      </div>
     </div>
   );
 }
