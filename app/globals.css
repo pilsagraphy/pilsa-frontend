@@ -136,6 +136,13 @@
     color-scheme: dark;
   }
 
+  /* 기본 <select> 의 펼침 목록 — 브라우저가 그리는 목록이 흰 바탕에 다크 글자색(연한 회색)을 써서 항목이 안 보였다
+     (PM 10/11 글쓰기 카테고리). color-scheme 만으로는 안 잡혀 항목 색을 직접 준다 */
+  .dark select option {
+    background-color: rgb(var(--c-elevated));
+    color: rgb(var(--c-ink));
+  }
+
   /* 본문(게시글·일정) 안의 형광펜 — 글쓴이가 고른 연한 배경 위 글자는 다크모드에서도 검정, 진한 배경 위 글자는 늘 밝게.
      클래스는 BoardMarkdown 이 배경색 밝기를 보고 붙인다(lib/markdown.js highlightClass). 글자색을 따로 고른 글은
      inline style 이 이 규칙을 이긴다 (PM 10/11 "연한 배경이면 글자 검정으로") */

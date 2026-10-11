@@ -257,6 +257,11 @@ const Sidebar = () => {
         // 정책 설정은 관리 레벨 3 전용 — 메뉴 자체를 숨긴다 (PM, 10/10). 화면과 API 도 각각 막는다
         ...(adminLevel >= 3 ? [{ name: '정책 설정', path: ROUTES.ADMIN_POLICIES }] : []),
         { name: '알림 설정', path: ROUTES.ADMIN_NOTIFICATION_SETTINGS },
+        // 일정 달력 관리 · 이 주의 문장 · 구글 드라이브는 단일 링크였는데 운영 관리 안으로 (PM 2026-10-11 저녁). 하단 탭(MobileTabBar)과 같은 순서
+        { name: '일정 달력 관리', path: ROUTES.ADMIN_CALENDAR },
+        { name: '이 주의 문장', path: ROUTES.ADMIN_QUOTES },
+        // 동아리 공용 드라이브(외부 링크) — 확인 창 뒤 새 탭. 편집 권한은 구글 드라이브 쪽 공유 설정이 정하는 것이라 앱에서는 열어 주는 것까지만 한다
+        { name: '구글 드라이브', external: ADMIN_DRIVE_URL },
       ],
     },
     // 메뉴 관리 — 사이트 메뉴(소개 · 연혁 · 역대 회장 · 명예의 전당 · 활동 사진 · 방명록)의 내용을 고치는 화면들 (PM 2026-10-11)
@@ -277,15 +282,24 @@ const Sidebar = () => {
   const isBoardActive = pathname.startsWith(ROUTES.STUDENTS_DASHBOARD);
   const isMembersActive = pathname.startsWith(ROUTES.ADMIN_MEMBERS);
   const isCommunityActive = pathname.startsWith(`${ROUTES.ADMIN_HOME}/community`);
-  const isMenusActive = adminMenuConfig.menus.subMenus.some((m) => pathname === m.path);
-  const isOperationsActive = pathname.startsWith(ROUTES.ADMIN_OPERATIONS) && !isMenusActive;
+  const isMenusActive = adminMenuConfig.menus.subMenus.some((m) => isMenuActive({ path: m.path }));
+  // 일정 달력·이 주의 문장은 /admin/operations 밖 경로지만 운영 관리 묶음 소속
+  const isOperationsActive =
+    (pathname.startsWith(ROUTES.ADMIN_OPERATIONS) || pathname.startsWith(ROUTES.ADMIN_CALENDAR) || pathname.startsWith(ROUTES.ADMIN_QUOTES)) && !isMenusActive;
 
-  // 관리자 묶음은 기본적으로 닫혀 있고, 지금 보는 화면이 속한 묶음만 펼친다 (PM 2026-10-11)
+  // 관리자 묶음은 메뉴 관리만 기본 접힘(stores/sidebar.js)이고, 지금 보는 화면이 속한 묶음은 접혀 있어도 펼친다 (PM 2026-10-11)
   const openMenu = useSidebarStore((s) => s.openMenu);
   useEffect(() => {
     const active = isMembersActive ? 'members' : isCommunityActive ? 'community' : isMenusActive ? 'menus' : isOperationsActive ? 'operations' : null;
     if (active) openMenu(active);
   }, [isMembersActive, isCommunityActive, isMenusActive, isOperationsActive, openMenu]);
+
+  // 외부 링크(구글 드라이브) — 확인 창이 사이드바 위에 겹치지 않게 먼저 닫고, 새 탭으로 연다
+  const openExternal = async (url) => {
+    setIsMobileOpen(false);
+    const go = await confirmDialog('필사그래피 구글 드라이브로 이동됩니다.\n이동하시겠습니까?', { confirmText: '이동', cancelText: '취소' });
+    if (go) window.open(url, '_blank', 'noopener,noreferrer');
+  };
 
   // 단일 링크 색상 (선택: grayscale-06 / 미선택: grayscale-03)
   const singleLinkClass = (active) =>
@@ -351,52 +365,26 @@ const Sidebar = () => {
                   </button>
                   {openMenus[key] && (
                     <div className="flex flex-col items-start gap-[15px] mt-3">
-                      {cfg.subMenus.map((menu) => (
-                        <Link key={menu.name} href={menu.path}>
-                          <p
-                            className={`text-[14px] cursor-pointer ${pathname === menu.path ? 'font-bold text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
-                          >
-                            {menu.name}
-                          </p>
-                        </Link>
-                      ))}
+                      {cfg.subMenus.map((menu) =>
+                        menu.external ? (
+                          <button key={menu.name} type="button" className="text-left" onClick={() => openExternal(menu.external)}>
+                            <p className="text-[14px] cursor-pointer text-grayscale-03 hover:text-grayscale-06">{menu.name}</p>
+                          </button>
+                        ) : (
+                          <Link key={menu.name} href={menu.path}>
+                            <p
+                              className={`text-[14px] cursor-pointer ${isMenuActive({ path: menu.path }) ? 'font-bold text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`}
+                            >
+                              {menu.name}
+                            </p>
+                          </Link>
+                        )
+                      )}
                     </div>
                   )}
                 </div>
               );
             })}
-
-            {/* 일정 달력 관리 */}
-            <Link href={ROUTES.ADMIN_CALENDAR}>
-              <p className={singleLinkClass(pathname.startsWith(ROUTES.ADMIN_CALENDAR))}>
-                일정 달력 관리
-              </p>
-            </Link>
-
-            {/* 이 주의 문장 (메인·마이페이지 인사말 옆에 뜨는 문장) */}
-            <Link href={ROUTES.ADMIN_QUOTES}>
-              <p className={singleLinkClass(pathname.startsWith(ROUTES.ADMIN_QUOTES))}>
-                이 주의 문장
-              </p>
-            </Link>
-
-            {/* 동아리 공용 드라이브 (외부 링크) — 새 탭으로 연다.
-                편집 권한은 구글 드라이브 쪽 공유 설정이 정하는 것이라 앱에서는 열어 주는 것까지만 한다 */}
-            <button
-              type="button"
-              className="text-left"
-              onClick={async () => {
-                // 확인 창이 사이드바 위에 겹치지 않게 먼저 닫는다
-                setIsMobileOpen(false);
-                const go = await confirmDialog(
-                  '필사그래피 구글 드라이브로 이동됩니다.\n이동하시겠습니까?',
-                  { confirmText: '이동', cancelText: '취소' }
-                );
-                if (go) window.open(ADMIN_DRIVE_URL, '_blank', 'noopener,noreferrer');
-              }}
-            >
-              <p className={singleLinkClass(false)}>구글 드라이브</p>
-            </button>
 
             {/* ABOUT 필사 링크는 뺐다 (2026-09-20 PM). 아래 '메인 페이지로 이동'이 그 역할을 한다 */}
           </div>

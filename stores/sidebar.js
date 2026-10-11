@@ -9,10 +9,10 @@ const useSidebarStore = create((set) => ({
   openMenus: {
     about: true, // 기본적으로 ABOUT PILSA가 열려있는 상태로 가정
     board: true, // 게시판도 기본 확장
-    // 관리자 묶음은 기본적으로 전부 닫아 둔다 (PM 2026-10-11) — 현재 화면이 속한 묶음만 Sidebar 가 연다
-    members: false,
-    community: false,
-    operations: false, // 운영 관리(모니터링 · 정책 설정 · 알림 설정)
+    // 관리자 묶음은 메뉴 관리만 접어 두고 나머지는 펼쳐 둔다 (PM 2026-10-11 저녁 "메뉴관리를 제외하고는 다 확장") — 현재 화면이 속한 묶음은 Sidebar 가 연다
+    members: true,
+    community: true,
+    operations: true, // 운영 관리(모니터링 · 정책 설정 · 알림 설정 · 일정 달력 관리 · 이 주의 문장 · 구글 드라이브)
     menus: false, // 메뉴 관리(소개 · 연혁 · 조직도 · 명예의 전당 · 활동 사진 · 방명록)
   },
   toggleLogin: () => set((state) => ({ isLoggedIn: !state.isLoggedIn })),
