@@ -9,6 +9,17 @@
 }
 
 @layer base {
+  /* 폰 하단 탭 바(MobileTabBar)가 차지하는 높이. 바가 떠 있는 동안만(html.has-tabbar) 값이 생기고, 바닥에 고정된 UI(글쓰기 버튼 등)와
+     푸터 여백이 이 값만큼 올라가 바에 가려지지 않는다 — 바를 그냥 띄웠더니 글쓰기 버튼이 가려졌다 (PM 2026-10-11 "레이아웃 자체를 격리") */
+  :root {
+    --bottom-bar: 0px;
+  }
+  @media (max-width: 767px) {
+    html.has-tabbar {
+      --bottom-bar: calc(56px + env(safe-area-inset-bottom, 0px));
+    }
+  }
+
   /* 스크롤바 자리를 늘 비워 둔다. 페이지마다 스크롤 유무가 달라 화면 폭이 15px 쯤 바뀌었고,
      가운데 정렬한 헤더 로고가 그때마다 좌우로 밀려 보였다 (2026-09-20 제보). */
   html {

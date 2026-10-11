@@ -52,6 +52,12 @@ export default function MobileTabBar() {
   useEffect(() => {
     ensureBoards();
   }, [isLoggedIn, ensureBoards]);
+  // 바가 떠 있는 동안 html 에 has-tabbar 를 붙인다 → globals.css 의 --bottom-bar 가 바 높이가 되어, 바닥 고정 UI(글쓰기 버튼)·푸터 여백이 그만큼 올라간다.
+  // (auth) 레이아웃처럼 바가 없는 화면에서는 0 이라 아무것도 안 밀린다
+  useEffect(() => {
+    document.documentElement.classList.add('has-tabbar');
+    return () => document.documentElement.classList.remove('has-tabbar');
+  }, []);
   // 이동하면 선택창을 닫는다
   useEffect(() => {
     setOpen(null);
