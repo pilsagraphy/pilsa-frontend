@@ -62,11 +62,12 @@ export default function GuestbookNote({ note, onEdit, onDelete, onRestore, compa
           {/* 테이프 조각 — 작성자가 고른 색(없으면 무채색), 반투명 */}
           <span
             aria-hidden
+            data-paper-tape
             className="absolute -top-[9px] left-1/2 h-[18px] w-[52px] -translate-x-1/2 rotate-[-2deg]"
             style={{ backgroundColor: `${tapeColor(note.tape)}b3` }}
           />
           {/* 얼룩은 저장된 씨앗으로 늘 같은 자리 (씨앗이 없는 옛 글은 글 번호로) */}
-          {paper.marks && note.marksOn !== false && <PaperMarks kind={paper.marks} color={ink} seed={note.marksSeed ?? note.noteId ?? 1} holesKey={String(drawings.length)} />}
+          {paper.marks && note.marksOn !== false && <PaperMarks kind={paper.marks} color={ink} seed={note.marksSeed ?? note.noteId ?? 1} />}
 
           <p className={`${font.className} relative whitespace-pre-wrap break-words antialiased`} style={{ ...textStyle(note.paper, note.font, ink, textAlignOf(note.align)), minHeight: `${LINE_HEIGHT_EM}em` }}>
             {note.content}
@@ -92,7 +93,6 @@ export default function GuestbookNote({ note, onEdit, onDelete, onRestore, compa
               key={d.drawingId}
               src={apiUrl(d.imageUrl)}
               alt=""
-              data-sticker-img
               draggable={false}
               className="pointer-events-none absolute select-none drop-shadow-[1px_1px_0_rgba(0,0,0,0.08)]"
               style={{

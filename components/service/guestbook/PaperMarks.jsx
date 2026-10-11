@@ -200,7 +200,7 @@ function anchorStyle(m) {
   return { top: `${m.along}%`, right: m.near, transform: 'translate(50%, -50%)' };
 }
 
-// holesKey: 스티커가 바뀌면 값이 달라지는 문자열 — 종이 안 [data-sticker-img] 자리를 재서 그 영역엔 자국을 그리지 않는다 (PM 10/11 '자국이 스티커 위로 안 그려지게')
+// holesKey: 바뀌면 다시 재는 값. 종이 안 [data-paper-tape](테이프 조각) 자리를 재서 그 네모에는 자국을 그리지 않는다 (PM 10/11 '스카치테이프 자리에 얼룩 안 보이게'). 스티커 뒤는 그대로 둔다
 export default function PaperMarks({ kind = 'ink', color, seed = 1, holesKey = '' }) {
   const marks = useMemo(() => makeMarks(kind, seed), [kind, seed]);
   const coffee = kind === 'coffee';
@@ -217,8 +217,8 @@ export default function PaperMarks({ kind = 'ink', color, seed = 1, holesKey = '
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
-  // 스티커가 덮는 네모(종이 기준, 축소 전 px)는 clip-path 로 비운다 — 스티커 그림은 바탕이 투명해 자국이 사이로 비쳤다.
-  // 카드는 transform scale 이라 rect 를 clientWidth 비율로 되돌린다. 그림이 늦게 뜨면 높이가 바뀌므로 load 도 잡는다
+  // 테이프가 덮는 네모(종이 기준, 축소 전 px)는 clip-path 로 비운다 — 테이프는 반투명이라 밑의 얼룩이 비쳐 지저분했다.
+  // 카드는 transform scale 이라 rect 를 clientWidth 비율로 되돌린다
   const [holes, setHoles] = useState([]);
   useEffect(() => {
     const el = ref.current;
@@ -227,7 +227,7 @@ export default function PaperMarks({ kind = 'ink', color, seed = 1, holesKey = '
     const update = () => {
       const base = el.getBoundingClientRect();
       const k = base.width > 0 ? el.clientWidth / base.width : 1;
-      const next = [...paper.querySelectorAll('[data-sticker-img]')]
+      const next = [...paper.querySelectorAll('[data-paper-tape]')]
         .map((img) => {
           const r = img.getBoundingClientRect();
           return { x: (r.left - base.left) * k, y: (r.top - base.top) * k, w: r.width * k, h: r.height * k };

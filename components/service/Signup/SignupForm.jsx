@@ -17,6 +17,7 @@ import {
 } from '@/apis/auth';
 import { sendVerifyCode, verifyEmailCode } from '@/apis/mail';
 import { getGooglePendingLink } from '@/apis/google';
+import { providerLabel } from '@/apis/social';
 import {
   Form,
   FormControl,
@@ -350,7 +351,7 @@ function SignupFormInner() {
           role="status"
           className="mb-6 rounded-[6px] border border-line bg-surface-2 px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-ink [word-break:keep-all]"
         >
-          <span className="font-bold">구글 계정 연결 대기 중</span>
+          <span className="font-bold">{providerLabel(googlePending.provider)} 계정 연결 대기 중</span>
           <br />
           <span className="text-ink-2">
             가입을 마치고 로그인하면{' '}
@@ -697,7 +698,7 @@ function SignupFormInner() {
           <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
             입력한 {existingMemberField}로 가입된 회원이 있어요.
             <br />
-            새로 가입하는 대신 그 계정으로 로그인하면 구글 계정{' '}
+            새로 가입하는 대신 그 계정으로 로그인하면 {providerLabel(googlePending?.provider)} 계정{' '}
             <span className="font-medium text-ink">{googlePending?.maskedEmail}</span>이 연결돼요.
           </DialogDescription>
           <DialogFooter className="flex flex-col gap-[8px] sm:flex-col sm:space-x-0">
