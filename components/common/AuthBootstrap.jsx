@@ -26,7 +26,9 @@ export default function AuthBootstrap({ children }) {
     return () => window.removeEventListener('unhandledrejection', onRejection);
   }, []);
 
-  // 자동 로그인 설정된 경우 공개 경로에서도 앱 최초 진입 1회에 한해 refresh 쿠키로 세션을 복원
+  // 공개 경로에서도 앱 최초 진입 1회에 한해 refresh 쿠키로 세션을 복원한다. '자동 로그인' 체크 여부는 서버가 쿠키 수명(세션 쿠키 vs 400일)으로
+  // 이미 반영하므로 여기서 다시 거르지 않는다 — 걸렀더니 체크를 안 한 사람은 /guestbook 을 새로고침하면 로그아웃처럼 보여 내 글의 수정·지우기가
+  // 사라졌다가 보호 경로에 다녀오면 생겼다 (PM 2026-10-11). validate 는 쿠키가 없으면 204 라 콘솔에 401 이 찍히지 않는다
   useEffect(() => {
     if (autoLoginTried.current) return;
     autoLoginTried.current = true;
@@ -39,13 +41,6 @@ export default function AuthBootstrap({ children }) {
     // 로그아웃 진입(/login?logout=1)과의 경합 방지 — 로그아웃 처리 중 세션을 부활시키면 안 된다
     if (new URLSearchParams(window.location.search).get('logout') === '1') return;
 
-    let wantsAutoLogin = false;
-    try {
-      wantsAutoLogin = localStorage.getItem(AUTO_LOGIN_KEY) === '1';
-    } catch {
-      wantsAutoLogin = false;
-    }
-    if (!wantsAutoLogin) return;
 
     const { isLoggedIn } = useAuthStore.getState();
     if (isLoggedIn) return;
