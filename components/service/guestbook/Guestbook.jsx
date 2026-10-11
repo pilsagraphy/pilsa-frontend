@@ -48,6 +48,9 @@ export default function Guestbook({ boardTheme = 'cream' }) {
   // 첫 로드 — 이번 학기 + 학기 목록
   useEffect(() => {
     let alive = true;
+    // 요청을 보낸 시점의 로그인 상태 — 응답이 오기 전에 세션 복원이 끝나면 아래 isLoggedIn effect 는 meta 가 아직 없어 건너뛰고,
+    // 익명으로 받은 목록이 그대로 남아 내 글의 수정·지우기가 안 보였다(새로고침마다). 그때는 응답을 받은 뒤 한 번 더 받는다 (PM 10/11)
+    const loggedInAtRequest = useAuthStore.getState().isLoggedIn;
     getGuestbook()
       .then((res) => {
         if (!alive) return;
@@ -59,6 +62,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
           drawingMaxKb: res.drawingMaxKb,
         });
         setNotesBySemester({ [res.semester]: res.notes });
+        if (useAuthStore.getState().isLoggedIn !== loggedInAtRequest) fetchSemester(res.semester).catch(() => {});
       })
       .catch((err) => {
         if (alive) setError(getErrorMessage(err, '방명록을 불러오지 못했어요.'));
@@ -66,7 +70,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [fetchSemester]);
 
   const semesters = meta?.semesters ?? [];
   const visibleSemesters = semesters.slice(0, visibleCount);
@@ -228,9 +232,10 @@ export default function Guestbook({ boardTheme = 'cream' }) {
 
       <ConfirmModal open={Boolean(deleting)} title="내가 남긴 글을 지울까요?" onConfirm={confirmDelete} onCancel={() => setDeleting(null)} />
 
-      {/* 고치기 — 쓰기 칸을 그대로 모달에 (종이 폭은 카드와 같은 DESIGN_WIDTH) */}
+      {/* 고치기 — 쓰기 칸을 그대로 모달에 (종이 폭은 카드와 같은 DESIGN_WIDTH). 모달 상자는 grid 라 칸 최소 폭을 minmax(0,1fr) 로 눌러야 한다 —
+          안 그러면 옵션 줄(가로 스크롤)의 전체 폭만큼 상자가 커져 폰에서 오른쪽이 잘렸다 (PM 10/11 "모바일에서 짤림") */}
       <Dialog open={Boolean(editing)} onOpenChange={(v) => !v && setEditing(null)}>
-        <DialogContent hideCloseButton onInteractOutside={(e) => { if ((e.detail?.originalEvent?.target ?? e.target)?.closest?.('[data-sticker-panel]')) e.preventDefault(); }} className="theme-light max-h-[90dvh] w-[calc(100%-24px)] max-w-[560px] overflow-x-hidden overflow-y-auto rounded-[8px] border-line p-4 sm:w-full md:p-5">
+        <DialogContent hideCloseButton onInteractOutside={(e) => { if ((e.detail?.originalEvent?.target ?? e.target)?.closest?.('[data-sticker-panel]')) e.preventDefault(); }} className="theme-light max-h-[90dvh] w-[calc(100%-24px)] max-w-[560px] grid-cols-[minmax(0,1fr)] [touch-action:pan-x_pan-y] overflow-x-hidden overflow-y-auto rounded-[8px] border-line p-4 sm:w-full md:p-5">
           <DialogTitle className="text-[16px] font-semibold text-ink">방명록 고치기</DialogTitle>
           <DialogDescription className="sr-only">내용·글씨체·잉크·종이·스티커를 고친다</DialogDescription>
           {editing && meta && (

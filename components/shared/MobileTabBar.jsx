@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import { BookOpenText, Home, LayoutList, LogIn, MessagesSquare, PanelsTopLeft, SlidersHorizontal, Sparkles, UserRound, Users } from 'lucide-react';
 import useAuthStore from '@/stores/useAuthStore';
 import useBoardStore from '@/stores/useBoardStore';
-import { ROUTES } from '@/constants/routes';
+import { ADMIN_DRIVE_URL, ROUTES } from '@/constants/routes';
+import { confirmDialog } from '@/stores/useDialogStore';
 
 // 폰 하단 탭 바 (PM 2026-10-11 "여타 앱처럼 메뉴바가 아래에") — 768px(tablet) 미만에서만 보인다.
 // 회원 영역(PM 지정): 홈 · 게시판 · 활동(일정/사진/방명록) · ABOUT(소개/연혁/브랜드CI/명예의 전당/역대회장) · 마이페이지(비로그인은 로그인).
@@ -80,6 +81,8 @@ const adminTabs = (adminLevel) => [
       { name: '알림 설정', path: ROUTES.ADMIN_NOTIFICATION_SETTINGS },
       { name: '일정 달력 관리', path: ROUTES.ADMIN_CALENDAR },
       { name: '이 주의 문장', path: ROUTES.ADMIN_QUOTES },
+      // 동아리 공용 구글 드라이브 — 사이드바와 같이 확인 창 뒤 새 탭(외부 링크). PM 10/11 "운영에 넣자"
+      { name: '구글 드라이브', external: ADMIN_DRIVE_URL },
     ],
   },
   {
@@ -183,17 +186,32 @@ export default function MobileTabBar() {
           ) : (
             <ul className="max-h-[60dvh] overflow-y-auto pb-2">
               {openTab.items.map((it) => (
-                <li key={it.path}>
-                  <Link
-                    href={it.path}
-                    role="menuitem"
-                    onClick={() => setOpen(null)}
-                    className={`flex h-[46px] items-center px-4 text-[15px] tracking-[-0.02em] active:bg-surface-2 ${
-                      (it.exact ? pathname === it.path : within(pathname, it.path)) ? 'font-semibold text-ink' : 'text-ink-2'
-                    }`}
-                  >
-                    {it.name}
-                  </Link>
+                <li key={it.path ?? it.external}>
+                  {it.external ? (
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={async () => {
+                        setOpen(null);
+                        const go = await confirmDialog('필사그래피 구글 드라이브로 이동됩니다. 이동하시겠습니까?', { confirmText: '이동', cancelText: '취소' });
+                        if (go) window.open(it.external, '_blank', 'noopener,noreferrer');
+                      }}
+                      className="flex h-[46px] w-full items-center px-4 text-left text-[15px] tracking-[-0.02em] text-ink-2 active:bg-surface-2"
+                    >
+                      {it.name}
+                    </button>
+                  ) : (
+                    <Link
+                      href={it.path}
+                      role="menuitem"
+                      onClick={() => setOpen(null)}
+                      className={`flex h-[46px] items-center px-4 text-[15px] tracking-[-0.02em] active:bg-surface-2 ${
+                        (it.exact ? pathname === it.path : within(pathname, it.path)) ? 'font-semibold text-ink' : 'text-ink-2'
+                      }`}
+                    >
+                      {it.name}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

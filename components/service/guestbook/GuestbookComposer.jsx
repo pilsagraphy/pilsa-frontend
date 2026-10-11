@@ -309,7 +309,7 @@ export default function GuestbookComposer({
     `h-[40px] rounded-full px-[14px] text-[14px] transition sm:h-[28px] sm:px-[10px] sm:text-[12px] ${active ? 'bg-inverse text-inverse-fg' : 'bg-surface text-ink-2 ring-1 ring-line hover:bg-surface-2'}`;
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex min-w-0 flex-col gap-4">
       {/* 스티커를 고르는 동안 — 종이 밖은 어둡게 해서 붙일 수 없는 곳임을 보여 준다. 어두운 곳을 누르면 선택 해제 */}
       {/* 어둡게는 새로 쓸 때만 — 고치기 모달 안에서는 fixed 가 모달 상자(transform)에 갇혀 반쪽만 어두워졌다. 모달은 자기 막이 있다 (PM 10/11) */}
       {sel && mode === 'create' && <div className="fixed inset-0 z-[60] bg-black/45" onClick={() => setSelected(null)} aria-hidden />}
