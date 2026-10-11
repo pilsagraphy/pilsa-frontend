@@ -110,11 +110,11 @@ export default function ReasonDialog({
         }}
         // 기타 선택 시 상세 사유 입력란이 늘어나므로, 짧은 화면에서는 모달 내부를 스크롤한다
         className={cn(
-          'max-h-[90vh] gap-[16px] overflow-y-auto rounded-[4px] border-[#212121] p-[25px]',
+          'max-h-[90vh] gap-[16px] overflow-y-auto rounded-[4px] border-ink p-[25px]',
           contentClassName
         )}
       >
-        <DialogTitle className="text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-[#212121]">
+        <DialogTitle className="text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-ink">
           {title}
         </DialogTitle>
 
@@ -124,7 +124,7 @@ export default function ReasonDialog({
 
         {!hideReason && (
           <div className="flex flex-col gap-[4px]">
-            <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+            <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">
               사유
             </span>
             {/* 직접 그린 드롭다운. Radix Select 는 목록을 열 때 뒤의 모달에 aria-hidden 을 붙이는데,
@@ -137,13 +137,13 @@ export default function ReasonDialog({
                 aria-haspopup="listbox"
                 aria-expanded={reasonOpen}
                 className={cn(
-                  'flex h-[52px] w-full items-center justify-between rounded-[4px] border border-[#b9b9b9] bg-white px-3 text-left text-[16px] tracking-[-0.32px] shadow-none',
-                  reason ? 'text-[#454545]' : 'text-[#b9b9b9]',
+                  'flex h-[52px] w-full items-center justify-between rounded-[4px] border border-line-strong bg-surface px-3 text-left text-[16px] tracking-[-0.32px] shadow-none',
+                  reason ? 'text-ink-2' : 'text-ink-4',
                   triggerClassName
                 )}
               >
                 <span className="truncate">{selectedLabel || '선택'}</span>
-                <ChevronDown size={18} className="shrink-0 text-[#919191]" aria-hidden />
+                <ChevronDown size={18} className="shrink-0 text-ink-3" aria-hidden />
               </button>
 
               {reasonOpen && (
@@ -153,7 +153,7 @@ export default function ReasonDialog({
                   ref={listRef}
                   role="listbox"
                   aria-label="사유"
-                  className="mt-[4px] max-h-[240px] w-full overflow-y-auto rounded-[4px] border border-[#dedede] bg-white shadow-[0_4px_16px_rgba(0,0,0,0.1)]"
+                  className="mt-[4px] max-h-[240px] w-full overflow-y-auto rounded-[4px] border border-line bg-surface shadow-[0_4px_16px_rgba(0,0,0,0.1)]"
                 >
                   {REPORT_REASONS.map(({ code, label }) => (
                     <li key={code} role="option" aria-selected={reason === code}>
@@ -165,8 +165,8 @@ export default function ReasonDialog({
                         }}
                         // #183 모바일: 항목 사이 구분선(#B9B9B9)·텍스트 #9E9E9E·행 높이 52px(피그마). 데스크톱(md↑)은 기존 그대로
                         className={cn(
-                          'block w-full border-b border-[#B9B9B9] px-3 py-[13px] text-left text-[16px] text-[#9E9E9E] last:border-b-0 hover:bg-[#dedede] md:border-b-0 md:py-1.5 md:text-[#454545]',
-                          reason === code && 'bg-[#f0f0f0] text-[#212121]'
+                          'block w-full border-b border-line-strong px-3 py-[13px] text-left text-[16px] text-ink-3 last:border-b-0 hover:bg-line md:border-b-0 md:py-1.5 md:text-ink-2',
+                          reason === code && 'bg-surface-2 text-ink'
                         )}
                       >
                         {label}
@@ -186,13 +186,13 @@ export default function ReasonDialog({
             onChange={(e) => setDetail(e.target.value)}
             placeholder={`상세 사유를 ${REPORT_DETAIL_MIN_LENGTH}자 이상 입력하세요`}
             maxLength={REPORT_DETAIL_MAX_LENGTH}
-            className="h-[190px] resize-none rounded-[4px] border-[#b9b9b9] p-[16px] text-[16px] tracking-[-0.32px] shadow-none placeholder:text-[#b9b9b9]"
+            className="h-[190px] resize-none rounded-[4px] border-line-strong p-[16px] text-[16px] tracking-[-0.32px] shadow-none placeholder:text-ink-4"
           />
         )}
         {isEtc && (
           <p
             className={`-mt-[8px] text-[12px] leading-[1.6] tracking-[-0.24px] ${
-              detailTooShort ? 'text-[#e02d2d]' : 'text-[#919191]'
+              detailTooShort ? 'text-danger' : 'text-ink-3'
             }`}
           >
             {detailTooShort
@@ -205,7 +205,7 @@ export default function ReasonDialog({
         {!hideReason && !isEtc && <div aria-hidden className="h-[6px] md:hidden" />}
 
         {error && (
-          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#e02d2d]">{error}</p>
+          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-danger">{error}</p>
         )}
 
         {/* #183 모바일은 버튼 가운데 정렬(피그마), 데스크톱(md↑)은 기존 오른쪽 정렬 유지 */}
@@ -214,7 +214,7 @@ export default function ReasonDialog({
             type="button"
             variant="outline"
             onClick={onClose}
-            className="h-[48px] w-[87px] rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]"
+            className="h-[48px] w-[87px] rounded-[4px] border-line-strong text-[16px] text-ink"
           >
             취소
           </Button>
@@ -222,7 +222,7 @@ export default function ReasonDialog({
             type="button"
             onClick={handleConfirm}
             disabled={!canSubmit}
-            className="h-[48px] w-[87px] rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242]"
+            className="h-[48px] w-[87px] rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse-2"
           >
             {confirmLabel}
           </Button>

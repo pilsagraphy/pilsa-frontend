@@ -18,7 +18,7 @@ import { useEditorState } from '@tiptap/react';
 // hover 색은 마우스가 있는 기기에서만 — 폰은 한 번 누르면 hover 가 남아 꺼진 버튼도 진하게 보였다 (PM, 2026-09-21)
 const buttonClass = (active) =>
   `shrink-0 rounded-[4px] p-[3px] transition-colors disabled:opacity-40 ${
-    active ? 'bg-[#EDEDED] text-[#212121]' : 'text-[#b9b9b9] [@media(hover:hover)]:hover:text-[#212121]'
+    active ? 'bg-surface-3 text-ink' : 'text-ink-4 [@media(hover:hover)]:hover:text-ink'
   }`;
 
 // 본문 편집 툴바.
@@ -117,7 +117,7 @@ function ToolbarPopover({ anchorRef, width = 196, onClose, children }) {
     <div
       data-toolbar-popover
       style={{ position: 'fixed', left: pos.left, top: pos.top, width }}
-      className="z-[80] rounded-[6px] border border-[#DEDEDE] bg-white p-2 shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
+      className="z-[80] rounded-[6px] border border-line bg-surface p-2 shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
       // 편집기 선택 영역이 풀리지 않게 한다
       onMouseDown={(e) => e.preventDefault()}
     >
@@ -142,7 +142,7 @@ function ColorPalette({ colors, current, onPick, onClear }) {
             onClick={() => onPick(color.value)}
             style={{ backgroundColor: color.value }}
             className={`size-[24px] rounded-full border ${
-              sameColor(current, color.value) ? 'border-[#212121] ring-2 ring-[#212121]/20' : 'border-[#DEDEDE]'
+              sameColor(current, color.value) ? 'border-ink ring-2 ring-ink/20' : 'border-line'
             }`}
           />
         ))}
@@ -150,7 +150,7 @@ function ColorPalette({ colors, current, onPick, onClear }) {
       <button
         type="button"
         onClick={onClear}
-        className="mt-2 w-full rounded-[4px] border border-[#DEDEDE] py-1 text-[13px] text-[#454545] hover:bg-[#F5F5F5]"
+        className="mt-2 w-full rounded-[4px] border border-line py-1 text-[13px] text-ink-2 hover:bg-surface-2"
       >
         기본색으로
       </button>
@@ -235,7 +235,7 @@ export default function BoardWriteToolbar({
       <span className="relative flex shrink-0 items-center">
         {popoverButton('heading', headingRef, '제목', Heading, Boolean(active?.headingLevel))}
         {active?.headingLevel && (
-          <span className="pointer-events-none absolute -right-[2px] -top-[2px] text-[10px] font-bold leading-none text-[#212121]">
+          <span className="pointer-events-none absolute -right-[2px] -top-[2px] text-[10px] font-bold leading-none text-ink">
             {active.headingLevel}
           </span>
         )}
@@ -284,12 +284,12 @@ export default function BoardWriteToolbar({
                     closePopover();
                   }}
                   style={{ fontSize: HEADING_PREVIEW_SIZE[level] }}
-                  className={`flex items-center justify-between rounded-[4px] px-2 py-1 text-left font-semibold text-[#212121] hover:bg-[#F5F5F5] ${
-                    selected ? 'bg-[#EDEDED]' : ''
+                  className={`flex items-center justify-between rounded-[4px] px-2 py-1 text-left font-semibold text-ink hover:bg-surface-2 ${
+                    selected ? 'bg-surface-3' : ''
                   }`}
                 >
                   <span>제목 {level}</span>
-                  <span className="text-[11px] font-normal text-[#919191]">H{level}</span>
+                  <span className="text-[11px] font-normal text-ink-3">H{level}</span>
                 </button>
               );
             })}
@@ -299,7 +299,7 @@ export default function BoardWriteToolbar({
                 applyFormat((c) => c.setParagraph());
                 closePopover();
               }}
-              className="mt-1 w-full rounded-[4px] border border-[#DEDEDE] py-1 text-[13px] text-[#454545] hover:bg-[#F5F5F5]"
+              className="mt-1 w-full rounded-[4px] border border-line py-1 text-[13px] text-ink-2 hover:bg-surface-2"
             >
               본문으로
             </button>

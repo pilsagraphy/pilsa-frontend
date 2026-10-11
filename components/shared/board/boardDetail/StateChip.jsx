@@ -8,8 +8,8 @@ export default function StateChip({ label }) {
   if (!label) return null;
 
   return (
-    <span className="shrink-0 whitespace-nowrap rounded-full border border-[#B9B9B9] px-[9px] py-[1px] text-[12px] leading-[1.6] tracking-[-0.24px] text-[#454545]">
-      <span className="text-[#919191]">상태: </span>
+    <span className="shrink-0 whitespace-nowrap rounded-full border border-line-strong px-[9px] py-[1px] text-[12px] leading-[1.6] tracking-[-0.24px] text-ink-2">
+      <span className="text-ink-3">상태: </span>
       {label}
     </span>
   );

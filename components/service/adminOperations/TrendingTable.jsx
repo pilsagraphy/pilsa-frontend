@@ -22,34 +22,34 @@ function reasonOf(r, policy) {
 }
 
 function RankCell({ r, policy }) {
-  if (r.isTrending) return <span className="rounded-full bg-[#212121] px-2 py-[2px] text-[12px] text-white">{r.rankNo}위</span>;
+  if (r.isTrending) return <span className="rounded-full bg-inverse px-2 py-[2px] text-[12px] text-inverse-fg">{r.rankNo}위</span>;
   return (
     <span className="flex flex-col leading-tight">
-      <span className="text-[#919191]">{r.rankNo ?? '-'}번째</span>
-      <span className="text-[11px] text-[#b3261e]">{reasonOf(r, policy)}</span>
+      <span className="text-ink-3">{r.rankNo ?? '-'}번째</span>
+      <span className="text-[11px] text-danger">{reasonOf(r, policy)}</span>
     </span>
   );
 }
 
 function IntervalRow({ r, policy, indent = false }) {
   return (
-    <tr className={r.isTrending ? 'bg-[#FFF8E6]' : ''}>
-      <td className={`whitespace-nowrap px-3 py-2 text-[#5f5f5f] ${indent ? 'pl-8' : ''}`}>{fmtHour(r.statHour)}</td>
+    <tr className={r.isTrending ? 'bg-highlight' : ''}>
+      <td className={`whitespace-nowrap px-3 py-2 text-ink-2 ${indent ? 'pl-8' : ''}`}>{fmtHour(r.statHour)}</td>
       <td className="px-3 py-2">
         <RankCell r={r} policy={policy} />
       </td>
-      <td className="whitespace-nowrap px-3 py-2 text-[#5f5f5f]">{r.boardName}</td>
+      <td className="whitespace-nowrap px-3 py-2 text-ink-2">{r.boardName}</td>
       <td className="max-w-[260px] truncate px-3 py-2">
         {indent ? (
-          <span className="text-[#919191]">〃</span>
+          <span className="text-ink-3">〃</span>
         ) : (
-          <Link href={getAdminPostDetailHref(r.postId, DETAIL_FROM_MONITORING)} className="text-[#212121] hover:underline">
+          <Link href={getAdminPostDetailHref(r.postId, DETAIL_FROM_MONITORING)} className="text-ink hover:underline">
             {r.title ?? `(삭제된 글 #${r.postId})`}
           </Link>
         )}
       </td>
       <td className="px-3 py-2 text-right">{num(r.rawScore)}</td>
-      <td className="px-3 py-2 text-right text-[#919191]">{num(r.baselineScore)}</td>
+      <td className="px-3 py-2 text-right text-ink-3">{num(r.baselineScore)}</td>
       <td className="px-3 py-2 text-right">{r.spikeRatio == null ? '신규' : `×${Number(r.spikeRatio).toFixed(1)}`}</td>
       <td className="px-3 py-2 text-right">{num(r.viewDelta)}</td>
       <td className="px-3 py-2 text-right">{num(r.likeDelta)}</td>
@@ -84,11 +84,11 @@ export default function TrendingTable({ rows = [], isLoading, error, policy = nu
   const [open, setOpen] = useState(() => new Set());
   const groups = useMemo(() => (grouped ? groupByPost(rows) : []), [grouped, rows]);
 
-  if (isLoading) return <p className="py-6 text-center text-[14px] text-[#919191]">불러오는 중...</p>;
-  if (error) return <p className="py-6 text-center text-[14px] text-[#919191]">{error}</p>;
+  if (isLoading) return <p className="py-6 text-center text-[14px] text-ink-3">불러오는 중...</p>;
+  if (error) return <p className="py-6 text-center text-[14px] text-ink-3">{error}</p>;
   if (!rows.length) {
     return (
-      <p className="py-6 text-center text-[14px] text-[#919191]">
+      <p className="py-6 text-center text-[14px] text-ink-3">
         최근 집계 행이 없습니다. 적재 컷(trending_min_delta_score) 미만인 조용한 구간은 행을 만들지 않습니다.
       </p>
     );
@@ -102,9 +102,9 @@ export default function TrendingTable({ rows = [], isLoading, error, policy = nu
     });
 
   return (
-    <div className="overflow-x-auto rounded-[8px] border border-[#EEEEEE]">
+    <div className="overflow-x-auto rounded-[8px] border border-line">
       <table className="w-full min-w-[760px] text-[13px]">
-        <thead className="bg-[#F7F8F9] text-left text-[#5f5f5f]">
+        <thead className="bg-surface-2 text-left text-ink-2">
           <tr>
             <th className="px-3 py-2 font-medium">{grouped ? '최근 구간' : '구간'}</th>
             <th className="px-3 py-2 font-medium">{grouped ? '선정' : '순위'}</th>
@@ -118,14 +118,14 @@ export default function TrendingTable({ rows = [], isLoading, error, policy = nu
             <th className="px-3 py-2 text-right font-medium">댓글+</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#F3F3F3]">
+        <tbody className="divide-y divide-line">
           {grouped
             ? groups.map((g) => <GroupRows key={g.postId} g={g} policy={policy} opened={open.has(g.postId)} onToggle={() => toggle(g.postId)} />)
             : rows.map((r) => <IntervalRow key={`${r.statHour}-${r.postId}`} r={r} policy={policy} />)}
         </tbody>
       </table>
       {policy && (
-        <p className="border-t border-[#F3F3F3] px-3 py-2 text-[11px] text-[#919191]">
+        <p className="border-t border-line px-3 py-2 text-[11px] text-ink-3">
           선정 기준(지금 값): 점수 {policy.minScore} 이상 · 평소 대비 ×{policy.spikeRatio} 이상(평소 기록이 없는 신규 글은 면제) · 구간 안 {policy.topN}위 이내. 셋 다 통과해야 선정.
         </p>
       )}
@@ -136,30 +136,30 @@ export default function TrendingTable({ rows = [], isLoading, error, policy = nu
 function GroupRows({ g, policy, opened, onToggle }) {
   return (
     <>
-      <tr className={g.timesTrending ? 'bg-[#FFF8E6]' : ''}>
-        <td className="whitespace-nowrap px-3 py-2 text-[#5f5f5f]">
-          <button type="button" onClick={onToggle} className="mr-1 text-[#919191]" aria-label={opened ? '접기' : '펼치기'}>
+      <tr className={g.timesTrending ? 'bg-highlight' : ''}>
+        <td className="whitespace-nowrap px-3 py-2 text-ink-2">
+          <button type="button" onClick={onToggle} className="mr-1 text-ink-3" aria-label={opened ? '접기' : '펼치기'}>
             {opened ? '▾' : '▸'}
           </button>
           {fmtHour(g.latest.statHour)}
         </td>
         <td className="px-3 py-2">
           {g.timesTrending ? (
-            <span className="rounded-full bg-[#212121] px-2 py-[2px] text-[12px] text-white">
+            <span className="rounded-full bg-inverse px-2 py-[2px] text-[12px] text-inverse-fg">
               최고 {g.bestRank}위 · {g.timesTrending}회
             </span>
           ) : (
-            <span className="text-[11px] text-[#b3261e]">{reasonOf(g.latest, policy)}</span>
+            <span className="text-[11px] text-danger">{reasonOf(g.latest, policy)}</span>
           )}
         </td>
-        <td className="whitespace-nowrap px-3 py-2 text-[#5f5f5f]">{g.boardName}</td>
+        <td className="whitespace-nowrap px-3 py-2 text-ink-2">{g.boardName}</td>
         <td className="max-w-[260px] truncate px-3 py-2">
-          <Link href={getAdminPostDetailHref(g.postId, DETAIL_FROM_MONITORING)} className="text-[#212121] hover:underline">
+          <Link href={getAdminPostDetailHref(g.postId, DETAIL_FROM_MONITORING)} className="text-ink hover:underline">
             {g.title ?? `(삭제된 글 #${g.postId})`}
           </Link>
         </td>
         <td className="px-3 py-2 text-right">{num(g.maxScore)}</td>
-        <td className="px-3 py-2 text-right text-[#919191]">{g.intervals.length}</td>
+        <td className="px-3 py-2 text-right text-ink-3">{g.intervals.length}</td>
         <td className="px-3 py-2 text-right" />
         <td className="px-3 py-2 text-right">{num(g.views)}</td>
         <td className="px-3 py-2 text-right">{num(g.likes)}</td>

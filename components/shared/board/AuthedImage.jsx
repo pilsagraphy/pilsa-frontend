@@ -59,7 +59,7 @@ export default function AuthedImage({ src, alt = '', width, height, ...rest }) {
 
   if (fileId && failed) {
     return (
-      <span className="inline-block rounded-[4px] bg-[#f5f5f5] px-3 py-2 text-[14px] text-[#919191]">
+      <span className="inline-block rounded-[4px] bg-surface-2 px-3 py-2 text-[14px] text-ink-3">
         이미지를 불러오지 못했습니다{alt ? ` (${alt})` : ''}
       </span>
     );
@@ -69,7 +69,7 @@ export default function AuthedImage({ src, alt = '', width, height, ...rest }) {
   if (fileId && !blobUrl) {
     return (
       <span
-        className="inline-block animate-pulse rounded-[4px] bg-[#f5f5f5]"
+        className="inline-block animate-pulse rounded-[4px] bg-surface-2"
         style={{ width: width ? `${width}px` : '100%', height: height ? `${height}px` : '160px' }}
         aria-label={alt || '이미지 불러오는 중'}
       />

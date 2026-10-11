@@ -28,9 +28,9 @@ export default function ConfirmModal({
     <Dialog open={open} onOpenChange={(next) => !next && onCancel?.()}>
       <DialogContent
         hideCloseButton
-        className="max-w-[271px] gap-[12px] rounded-[4px] border-[#212121] px-[16px] py-[24px] md:max-w-[300px] md:gap-[24px] md:border-[#dedede] md:p-[24px]"
+        className="max-w-[271px] gap-[12px] rounded-[4px] border-ink px-[16px] py-[24px] md:max-w-[300px] md:gap-[24px] md:border-line md:p-[24px]"
       >
-        <DialogTitle className="whitespace-pre-line text-center text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-[#454545] md:text-[#212121]">
+        <DialogTitle className="whitespace-pre-line text-center text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-ink-2 md:text-ink">
           {title}
         </DialogTitle>
 
@@ -38,7 +38,7 @@ export default function ConfirmModal({
           <Button
             type="button"
             onClick={onConfirm}
-            className="h-[48px] w-[87px] rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242]"
+            className="h-[48px] w-[87px] rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse-2"
           >
             {confirmLabel}
           </Button>
@@ -46,7 +46,7 @@ export default function ConfirmModal({
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="h-[48px] w-[87px] rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]"
+            className="h-[48px] w-[87px] rounded-[4px] border-line-strong text-[16px] text-ink"
           >
             {cancelLabel}
           </Button>

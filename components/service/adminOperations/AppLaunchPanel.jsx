@@ -45,28 +45,28 @@ export default function AppLaunchPanel({ date, onDateChange, report, isLoading, 
     <section className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
-          <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121] md:text-[20px]">
+          <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink md:text-[20px]">
             앱 접속 점검
           </h3>
-          <p className="text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">
+          <p className="text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-3">
             설치형 앱(플레이스토어)으로 연 회원만 셉니다. 브라우저로 들어온 것은 &quot;웹&quot;으로 따로 표시합니다.
             {report?.trackingSince && ` 기록 시작 ${report.trackingSince}.`}
           </p>
         </div>
-        <label className="flex items-center gap-2 text-[14px] text-[#212121]">
+        <label className="flex items-center gap-2 text-[14px] text-ink">
           날짜
           <input
             type="date"
             value={date}
             max={new Date().toISOString().slice(0, 10)}
             onChange={(e) => e.target.value && onDateChange(e.target.value)}
-            className="h-[40px] rounded-[6px] border border-[#dedede] px-3 text-[14px] outline-none focus:border-[#919191]"
+            className="h-[40px] rounded-[6px] border border-line px-3 text-[14px] outline-none focus:border-ink-3"
           />
         </label>
       </div>
 
-      {isLoading && <p className="py-6 text-center text-[14px] text-[#919191]">불러오는 중...</p>}
-      {!isLoading && error && <p className="py-6 text-center text-[14px] text-[#919191]">{error}</p>}
+      {isLoading && <p className="py-6 text-center text-[14px] text-ink-3">불러오는 중...</p>}
+      {!isLoading && error && <p className="py-6 text-center text-[14px] text-ink-3">{error}</p>}
 
       {!isLoading && !error && report && (
         <>
@@ -74,13 +74,13 @@ export default function AppLaunchPanel({ date, onDateChange, report, isLoading, 
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[
               { label: '점검 대상', value: report.totalMembers },
-              { label: '앱 열었음', value: report.launchedCount, tone: 'text-[#1a73e8]' },
-              { label: '안 열었음', value: report.notLaunchedCount, tone: 'text-[#d93025]' },
+              { label: '앱 열었음', value: report.launchedCount, tone: 'text-link' },
+              { label: '안 열었음', value: report.notLaunchedCount, tone: 'text-danger' },
               { label: '웹으로만 접속', value: report.webOnlyCount },
             ].map((c) => (
-              <div key={c.label} className="rounded-[8px] border border-[#EEEEEE] px-4 py-3">
-                <p className="text-[12px] text-[#919191]">{c.label}</p>
-                <p className={`text-[24px] font-bold leading-[1.3] ${c.tone ?? 'text-[#212121]'}`}>{c.value}</p>
+              <div key={c.label} className="rounded-[8px] border border-line px-4 py-3">
+                <p className="text-[12px] text-ink-3">{c.label}</p>
+                <p className={`text-[24px] font-bold leading-[1.3] ${c.tone ?? 'text-ink'}`}>{c.value}</p>
               </div>
             ))}
           </div>
@@ -95,7 +95,7 @@ export default function AppLaunchPanel({ date, onDateChange, report, isLoading, 
                     type="button"
                     onClick={() => setFilter(f.key)}
                     className={`h-[32px] rounded-full px-3 text-[13px] transition-colors ${
-                      filter === f.key ? 'bg-[#212121] text-white' : 'bg-[#F3F3F3] text-[#5f5f5f] hover:bg-[#e8e8e8]'
+                      filter === f.key ? 'bg-inverse text-inverse-fg' : 'bg-surface-2 text-ink-2 hover:bg-surface-3'
                     }`}
                   >
                     {f.label}
@@ -108,14 +108,14 @@ export default function AppLaunchPanel({ date, onDateChange, report, isLoading, 
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="이름 검색"
                 aria-label="이름 검색"
-                className="h-[32px] w-[140px] rounded-[6px] border border-[#dedede] px-3 text-[13px] outline-none focus:border-[#919191]"
+                className="h-[32px] w-[140px] rounded-[6px] border border-line px-3 text-[13px] outline-none focus:border-ink-3"
               />
             </div>
             <button
               type="button"
               onClick={copyNames}
               disabled={!notLaunched.length}
-              className="h-[32px] rounded-[6px] border border-[#212121] px-3 text-[13px] text-[#212121] transition-colors hover:bg-[#F6F6F6] disabled:opacity-40"
+              className="h-[32px] rounded-[6px] border border-ink px-3 text-[13px] text-ink transition-colors hover:bg-surface-2 disabled:opacity-40"
             >
               안 연 사람 이름 복사 ({notLaunched.length})
             </button>
@@ -123,23 +123,23 @@ export default function AppLaunchPanel({ date, onDateChange, report, isLoading, 
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             {/* 안 연 사람 */}
-            <div className="rounded-[8px] border border-[#EEEEEE]">
-              <div className="flex items-center justify-between border-b border-[#EEEEEE] px-4 py-2">
-                <span className="text-[14px] font-semibold text-[#d93025]">안 열었음 · {notLaunched.length}명</span>
-                <span className="text-[12px] text-[#919191]">연속 미접속 긴 순</span>
+            <div className="rounded-[8px] border border-line">
+              <div className="flex items-center justify-between border-b border-line px-4 py-2">
+                <span className="text-[14px] font-semibold text-danger">안 열었음 · {notLaunched.length}명</span>
+                <span className="text-[12px] text-ink-3">연속 미접속 긴 순</span>
               </div>
-              <ul className="max-h-[520px] divide-y divide-[#F3F3F3] overflow-y-auto">
+              <ul className="max-h-[520px] divide-y divide-line overflow-y-auto">
                 {notLaunched.length === 0 && (
-                  <li className="px-4 py-6 text-center text-[13px] text-[#919191]">전원 접속했습니다 🎉</li>
+                  <li className="px-4 py-6 text-center text-[13px] text-ink-3">전원 접속했습니다 🎉</li>
                 )}
                 {notLaunched.map((m) => (
                   <li key={m.userId} className="flex items-center gap-3 px-4 py-2 text-[14px]">
-                    <span className="w-[64px] shrink-0 font-medium text-[#212121]">{m.name}</span>
-                    <span className="w-[32px] shrink-0 text-[12px] text-[#919191]">{TYPE_LABEL[m.memberType] ?? ''}</span>
-                    <span className="shrink-0 rounded-full bg-[#FDECEC] px-2 py-[2px] text-[12px] text-[#d93025]">
+                    <span className="w-[64px] shrink-0 font-medium text-ink">{m.name}</span>
+                    <span className="w-[32px] shrink-0 text-[12px] text-ink-3">{TYPE_LABEL[m.memberType] ?? ''}</span>
+                    <span className="shrink-0 rounded-full bg-danger-bg px-2 py-[2px] text-[12px] text-danger">
                       {m.missStreak > 0 ? `${m.missStreak}일째 미접속` : '오늘 미접속'}
                     </span>
-                    <span className="min-w-0 flex-1 truncate text-right text-[12px] text-[#919191]">
+                    <span className="min-w-0 flex-1 truncate text-right text-[12px] text-ink-3">
                       {m.webAccessedAt ? `웹 ${hhmm(m.webAccessedAt)} 접속` : ''}
                       {m.lastLaunchDate ? ` · 마지막 앱 ${md(m.lastLaunchDate)}` : ' · 앱 기록 없음'}
                     </span>
@@ -149,21 +149,21 @@ export default function AppLaunchPanel({ date, onDateChange, report, isLoading, 
             </div>
 
             {/* 연 사람 */}
-            <div className="rounded-[8px] border border-[#EEEEEE]">
-              <div className="flex items-center justify-between border-b border-[#EEEEEE] px-4 py-2">
-                <span className="text-[14px] font-semibold text-[#1a73e8]">앱 열었음 · {launched.length}명</span>
-                <span className="text-[12px] text-[#919191]">처음 연 시각 순</span>
+            <div className="rounded-[8px] border border-line">
+              <div className="flex items-center justify-between border-b border-line px-4 py-2">
+                <span className="text-[14px] font-semibold text-link">앱 열었음 · {launched.length}명</span>
+                <span className="text-[12px] text-ink-3">처음 연 시각 순</span>
               </div>
-              <ul className="max-h-[520px] divide-y divide-[#F3F3F3] overflow-y-auto">
+              <ul className="max-h-[520px] divide-y divide-line overflow-y-auto">
                 {launched.length === 0 && (
-                  <li className="px-4 py-6 text-center text-[13px] text-[#919191]">아직 아무도 앱을 열지 않았습니다</li>
+                  <li className="px-4 py-6 text-center text-[13px] text-ink-3">아직 아무도 앱을 열지 않았습니다</li>
                 )}
                 {launched.map((m) => (
                   <li key={m.userId} className="flex items-center gap-3 px-4 py-2 text-[14px]">
-                    <span className="w-[64px] shrink-0 font-medium text-[#212121]">{m.name}</span>
-                    <span className="w-[32px] shrink-0 text-[12px] text-[#919191]">{TYPE_LABEL[m.memberType] ?? ''}</span>
-                    <span className="text-[12px] text-[#5f5f5f]">{hhmm(m.launchedAt)}</span>
-                    <span className="min-w-0 flex-1 truncate text-right text-[12px] text-[#919191]">
+                    <span className="w-[64px] shrink-0 font-medium text-ink">{m.name}</span>
+                    <span className="w-[32px] shrink-0 text-[12px] text-ink-3">{TYPE_LABEL[m.memberType] ?? ''}</span>
+                    <span className="text-[12px] text-ink-2">{hhmm(m.launchedAt)}</span>
+                    <span className="min-w-0 flex-1 truncate text-right text-[12px] text-ink-3">
                       {m.launchCount > 1 ? `${m.launchCount}회` : ''}
                     </span>
                   </li>

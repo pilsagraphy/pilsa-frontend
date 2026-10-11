@@ -94,14 +94,14 @@ export default function ColorPicker({ value = '#1f1f1f', onConfirm, onCancel, sw
 
   const hueColor = hsvToHex({ h: hsv.h, s: 1, v: 1 });
   return (
-    <div className="flex w-full max-w-[360px] flex-col gap-3 rounded-[8px] border border-[#dedede] bg-white p-3 shadow-lg" onClick={(e) => e.stopPropagation()}>
+    <div className="flex w-full max-w-[360px] flex-col gap-3 rounded-[8px] border border-line bg-surface p-3 shadow-lg" onClick={(e) => e.stopPropagation()}>
       <div className="flex gap-3">
         {/* 채도·명도 네모 */}
         <div
           ref={squareRef}
           role="slider"
           aria-label="채도와 명도"
-          className="relative h-[160px] min-w-0 flex-1 cursor-crosshair touch-none rounded-[4px] border border-black/10"
+          className="relative h-[160px] min-w-0 flex-1 cursor-crosshair touch-none rounded-[4px] border border-line"
           style={{
             backgroundColor: hueColor,
             backgroundImage: 'linear-gradient(to top, #000, rgba(0,0,0,0)), linear-gradient(to right, #fff, rgba(255,255,255,0))',
@@ -122,7 +122,7 @@ export default function ColorPicker({ value = '#1f1f1f', onConfirm, onCancel, sw
           ref={hueRef}
           role="slider"
           aria-label="색상"
-          className="relative h-[160px] w-[16px] shrink-0 cursor-pointer touch-none rounded-[4px] border border-black/10"
+          className="relative h-[160px] w-[16px] shrink-0 cursor-pointer touch-none rounded-[4px] border border-line"
           style={{ background: 'linear-gradient(to bottom, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)' }}
           onPointerDown={down('hue')}
           onPointerMove={move('hue')}
@@ -136,9 +136,9 @@ export default function ColorPicker({ value = '#1f1f1f', onConfirm, onCancel, sw
           />
         </div>
         {/* 새 색 / 현재 색 + HEX */}
-        <div className="flex w-[84px] shrink-0 flex-col items-center gap-1 text-[11px] text-[#6b6b6b]">
+        <div className="flex w-[84px] shrink-0 flex-col items-center gap-1 text-[11px] text-ink-2">
           <span>새 색</span>
-          <div className="w-full overflow-hidden rounded-[4px] border border-black/10">
+          <div className="w-full overflow-hidden rounded-[4px] border border-line">
             <div className="h-[28px]" style={{ backgroundColor: hex }} />
             <div className="h-[28px]" style={{ backgroundColor: value }} />
           </div>
@@ -154,7 +154,7 @@ export default function ColorPicker({ value = '#1f1f1f', onConfirm, onCancel, sw
               onKeyDown={(e) => {
                 if (e.key === 'Enter') applyHex(e.currentTarget.value);
               }}
-              className="h-[26px] w-full min-w-0 rounded-[4px] border border-[#dedede] px-1 font-mono text-[12px] text-[#212121] outline-none focus:border-[#919191]"
+              className="h-[26px] w-full min-w-0 rounded-[4px] border border-line px-1 font-mono text-[12px] text-ink outline-none focus:border-ink-3"
             />
           </label>
         </div>
@@ -168,7 +168,7 @@ export default function ColorPicker({ value = '#1f1f1f', onConfirm, onCancel, sw
               type="button"
               aria-label={c}
               onClick={() => setHsv(hexToHsv(c))}
-              className="h-[18px] w-[18px] rounded-full border border-black/10"
+              className="h-[18px] w-[18px] rounded-full border border-line"
               style={{ backgroundColor: c }}
             />
           ))}
@@ -176,10 +176,10 @@ export default function ColorPicker({ value = '#1f1f1f', onConfirm, onCancel, sw
       )}
 
       <div className="flex justify-end gap-2">
-        <button type="button" onClick={onCancel} className="h-[30px] rounded-[6px] border border-[#dedede] bg-white px-3 text-[12px] text-[#454545]">
+        <button type="button" onClick={onCancel} className="h-[30px] rounded-[6px] border border-line bg-surface px-3 text-[12px] text-ink-2">
           취소
         </button>
-        <button type="button" onClick={() => onConfirm(hex)} className="h-[30px] rounded-[6px] bg-[#212121] px-3 text-[12px] text-white">
+        <button type="button" onClick={() => onConfirm(hex)} className="h-[30px] rounded-[6px] bg-inverse px-3 text-[12px] text-inverse-fg">
           확인
         </button>
       </div>

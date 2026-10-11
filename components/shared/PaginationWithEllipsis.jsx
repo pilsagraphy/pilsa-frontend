@@ -45,8 +45,8 @@ export default function PaginationWithEllipsis({
 
   const navClassName = (disabled) =>
     disabled
-      ? "pointer-events-none bg-transparent text-[#D9D9D9] hover:bg-transparent"
-      : "cursor-pointer bg-transparent text-[#919191] hover:bg-transparent";
+      ? "pointer-events-none bg-transparent text-ink-4 hover:bg-transparent"
+      : "cursor-pointer bg-transparent text-ink-3 hover:bg-transparent";
 
   return (
     <Pagination>
@@ -87,7 +87,7 @@ export default function PaginationWithEllipsis({
               <PaginationLink
                 isActive={isActive}
                 className={`cursor-pointer text-[20px] font-medium ${
-                  isActive ? "text-[#212121]" : "text-[#919191]"
+                  isActive ? "text-ink" : "text-ink-3"
                 }`}
                 onClick={() => onPageChange(page)}
               >

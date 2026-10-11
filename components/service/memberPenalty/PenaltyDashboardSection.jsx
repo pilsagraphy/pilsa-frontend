@@ -196,9 +196,9 @@ export default function PenaltyDashboardSection() {
   );
 
   return (
-    <section className="mx-auto flex w-full max-w-none flex-col gap-[24px] bg-white px-4 py-4 font-['Pretendard',sans-serif] sm:px-6 sm:py-7 md:p-10">
+    <section className="mx-auto flex w-full max-w-none flex-col gap-[24px] bg-surface px-4 py-4 font-['Pretendard',sans-serif] sm:px-6 sm:py-7 md:p-10">
       {/* 화면 정체성. 제목 옆 (i) 는 조치 종류 설명 — 로그의 '조치내용' 이 이 이름들을 쓴다 */}
-      <h2 className="flex items-center gap-[8px] text-[24px] font-medium tracking-[-0.48px] text-[#212121]">
+      <h2 className="flex items-center gap-[8px] text-[24px] font-medium tracking-[-0.48px] text-ink">
         제재 회원 관리
         <ModerationLegend />
       </h2>
@@ -213,7 +213,7 @@ export default function PenaltyDashboardSection() {
             onClick={() => setListCollapsed(false)}
             title="목록 펼치기"
             aria-label="회원 목록 펼치기"
-            className="hidden h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[6px] border border-[#dedede] text-[#454545] hover:bg-[#f6f6f6] xl:flex"
+            className="hidden h-[40px] w-[40px] shrink-0 items-center justify-center rounded-[6px] border border-line text-ink-2 hover:bg-surface-2 xl:flex"
           >
             <PanelLeftOpen size={18} />
           </button>
@@ -228,7 +228,7 @@ export default function PenaltyDashboardSection() {
                 onClick={() => setListCollapsed(true)}
                 title="목록 접기"
                 aria-label="회원 목록 접기"
-                className="hidden size-[24px] place-content-center text-[#919191] hover:text-[#212121] xl:grid"
+                className="hidden size-[24px] place-content-center text-ink-3 hover:text-ink xl:grid"
               >
                 <PanelLeftClose size={18} />
               </button>
@@ -242,18 +242,18 @@ export default function PenaltyDashboardSection() {
           {selectedUser ? (
             <div className="flex flex-col">
               {/* 회원명 (아이디) + 회색 가로선 */}
-              <div className="border-b border-[#b9b9b9] pb-[18px]">
-                <p className="text-[24px] font-medium tracking-[-0.48px] text-[#212121]">
+              <div className="border-b border-line-strong pb-[18px]">
+                <p className="text-[24px] font-medium tracking-[-0.48px] text-ink">
                   {selectedUser.name} ({selectedUser.loginId})
                 </p>
               </div>
 
               {/* 회원 상태 + 회색 가로선 */}
-              <div className="flex items-center justify-between border-b border-[#b9b9b9] py-[12px] pr-[14px]">
-                <span className="text-[14px] font-medium tracking-[-0.28px] text-[#b9b9b9]">
+              <div className="flex items-center justify-between border-b border-line-strong py-[12px] pr-[14px]">
+                <span className="text-[14px] font-medium tracking-[-0.28px] text-ink-4">
                   회원 상태
                 </span>
-                <span className="text-[14px] tracking-[-0.28px] text-[#ae0000]">
+                <span className="text-[14px] tracking-[-0.28px] text-danger">
                   {selectedDetail.isLoading
                     ? '불러오는 중…'
                     : selectedDetail.error
@@ -264,11 +264,11 @@ export default function PenaltyDashboardSection() {
 
               {/* 통계 카드 4개: 로딩 / 에러 / 데이터 있음 처리 */}
               {selectedDetail.isLoading ? (
-                <div className="mt-[24px] flex h-[87px] items-center justify-center text-[14px] tracking-[-0.28px] text-[#919191]">
+                <div className="mt-[24px] flex h-[87px] items-center justify-center text-[14px] tracking-[-0.28px] text-ink-3">
                   불러오는 중…
                 </div>
               ) : selectedDetail.error ? (
-                <div className="mt-[24px] flex h-[87px] items-center justify-center text-[14px] tracking-[-0.28px] text-[#ae0000]">
+                <div className="mt-[24px] flex h-[87px] items-center justify-center text-[14px] tracking-[-0.28px] text-danger">
                   {selectedDetail.error}
                 </div>
               ) : selectedDetail.data ? (
@@ -290,7 +290,7 @@ export default function PenaltyDashboardSection() {
               ) : null}
 
               {/* 길쭉한 회색 박스 안에 신고 게시글 / 신고 댓글 */}
-              <div className="mt-[20px] flex flex-col gap-[20px] rounded-[12px] border border-[#dedede] p-[12px] shadow-[0px_1px_6px_0px_rgba(0,0,0,0.15)] md:mt-[24px] md:gap-[28px] md:rounded-[15px] md:p-[18px] md:shadow-[0px_1px_8.3px_0px_rgba(0,0,0,0.25)]">
+              <div className="mt-[20px] flex flex-col gap-[20px] rounded-[12px] border border-line p-[12px] shadow-[0px_1px_6px_0px_rgba(0,0,0,0.15)] md:mt-[24px] md:gap-[28px] md:rounded-[15px] md:p-[18px] md:shadow-[0px_1px_8.3px_0px_rgba(0,0,0,0.25)]">
                 <ReportSection
                   title="신고·처리 게시글"
                   groups={postGroups}
@@ -306,7 +306,7 @@ export default function PenaltyDashboardSection() {
               </div>
             </div>
           ) : (
-            <div className="flex h-[200px] items-center justify-center text-[#919191]">
+            <div className="flex h-[200px] items-center justify-center text-ink-3">
               {users.isLoading ? '불러오는 중…' : users.error ? users.error : '회원을 선택하세요.'}
             </div>
           )}

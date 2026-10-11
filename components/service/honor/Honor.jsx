@@ -51,14 +51,14 @@ export default function Honor() {
   const normalRankers = sortedDonors.slice(4);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-surface px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
       {/* 타이틀 영역 */}
-      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-[#DEDEDE] pb-6 md:gap-[12px] md:pb-[40px]">
+      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-line pb-6 md:gap-[12px] md:pb-[40px]">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.48px] text-[#212121]">명예의 전당</h2>
+          <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.48px] text-ink">명예의 전당</h2>
           <AdminPageLink href={ROUTES.ADMIN_DONATIONS} label="명예의 전당 관리" />
         </div>
-        <p className="font-['Pretendard',sans-serif] font-normal text-[16px] leading-[1.6] tracking-[-0.32px] text-[#919191]">
+        <p className="font-['Pretendard',sans-serif] font-normal text-[16px] leading-[1.6] tracking-[-0.32px] text-ink-3">
           필사그래피 명예의 전당
         </p>
       </header>
@@ -67,11 +67,11 @@ export default function Honor() {
 
       {!loading && error && (
         <div className="flex flex-col items-center gap-3 py-16">
-          <p className="text-[14px] text-[#919191]">{error}</p>
+          <p className="text-[14px] text-ink-3">{error}</p>
           <button
             type="button"
             onClick={fetchDonations}
-            className="text-[14px] text-[#919191] underline transition-colors hover:text-[#212121]"
+            className="text-[14px] text-ink-3 underline transition-colors hover:text-ink"
           >
             다시 시도
           </button>
@@ -79,7 +79,7 @@ export default function Honor() {
       )}
 
       {!loading && !error && totalCount === 0 && (
-        <p className="py-16 text-center text-[14px] text-[#919191]">
+        <p className="py-16 text-center text-[14px] text-ink-3">
           아직 등록된 후원자가 없습니다.
         </p>
       )}
@@ -87,10 +87,10 @@ export default function Honor() {
       {/* 후원자 — 아래 '홈페이지 개발자'와 같은 급의 제목을 단다 */}
       {!loading && !error && totalCount > 0 && (
         <div className="flex flex-col gap-[4px]">
-          <h3 className="font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121] md:text-[22px]">
+          <h3 className="font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-ink md:text-[22px]">
             후원자
           </h3>
-          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
+          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3">
             필사그래피 운영에 힘을 보태 주신 분들
           </p>
         </div>

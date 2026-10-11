@@ -24,7 +24,7 @@ import PostDetailComments from './PostDetailComments';
 import ModerationNote from '@/components/shared/admin/ModerationNote';
 import ContentRevisions from '@/components/shared/admin/ContentRevisions';
 
-const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] md:py-20 md:text-base';
+const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-ink-3 md:py-20 md:text-base';
 
 // '돌아가기'가 가리킬 곳. 들어온 화면(?from=)으로 되돌린다 — 게시글 관리 / 댓글 관리 / 신고 관리(게시글·댓글) / 제재 회원 관리 / 모니터링.
 // 값이 없거나 모르는 값이면 게시글 관리로.
@@ -78,7 +78,7 @@ export default function PostDetailSection({ postId, from }) {
   const backLink = (
     <Link
       href={back.href}
-      className="inline-flex items-center gap-[4px] text-[15px] tracking-[-0.3px] text-[#919191] transition-colors hover:text-[#212121]"
+      className="inline-flex items-center gap-[4px] text-[15px] tracking-[-0.3px] text-ink-3 transition-colors hover:text-ink"
     >
       <ChevronLeft size={16} strokeWidth={2} aria-hidden />
       {back.label}로 돌아가기
@@ -118,7 +118,7 @@ export default function PostDetailSection({ postId, from }) {
     <section className="mx-auto flex w-full max-w-[920px] flex-col gap-8 px-4 pb-12 pt-4 md:gap-[60px] md:px-0 md:pb-[60px] md:pt-10">
       {/* 게시판 이름이 먼저, 돌아가기는 그 아래 — 제목 위에 두면 어디로 가는 링크인지보다 먼저 눈에 걸린다 */}
       <div className="flex flex-col gap-[8px]">
-        <h1 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] md:text-[24px]">
+        <h1 className="text-[20px] font-semibold tracking-[-0.48px] text-ink md:text-[24px]">
           {post.boardName}
         </h1>
 
@@ -150,7 +150,7 @@ export default function PostDetailSection({ postId, from }) {
           {hasAttachments ? (
             <BoardAttachments attachments={post.attachments} />
           ) : (
-            <div className="h-px w-full bg-[#DEDEDE]" />
+            <div className="h-px w-full bg-line" />
           )}
         </div>
 
@@ -158,10 +158,10 @@ export default function PostDetailSection({ postId, from }) {
           {post.content?.trim() ? (
             <BoardContent content={post.content} />
           ) : (
-            <p className="text-[15px] tracking-[-0.3px] text-[#919191]">본문이 없습니다.</p>
+            <p className="text-[15px] tracking-[-0.3px] text-ink-3">본문이 없습니다.</p>
           )}
 
-          <div className="mt-2 h-px w-full bg-[#DEDEDE] md:mt-[15px]" />
+          <div className="mt-2 h-px w-full bg-line md:mt-[15px]" />
         </div>
       </div>
 

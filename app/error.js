@@ -20,13 +20,13 @@ export default function RouteError({ error, reset }) {
 
   return (
     <div className="mx-auto flex w-full max-w-[520px] flex-col items-center gap-4 px-6 py-24 text-center">
-      <p className="text-[18px] font-semibold tracking-[-0.02em] text-[#212121]">
+      <p className="text-[18px] font-semibold tracking-[-0.02em] text-ink">
         화면을 불러오지 못했어요
       </p>
-      <p className="text-[14px] leading-[1.6] tracking-[-0.02em] text-[#757575]">
+      <p className="text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-3">
         다시 시도해도 같다면 아래 문구를 캡처해 운영진에게 보내주세요.
       </p>
-      <code className="w-full whitespace-pre-wrap break-all rounded-[8px] bg-[#F5F5F5] px-4 py-3 text-left text-[12px] leading-[1.6] text-[#454545]">
+      <code className="w-full whitespace-pre-wrap break-all rounded-[8px] bg-surface-2 px-4 py-3 text-left text-[12px] leading-[1.6] text-ink-2">
         {message}
         {error?.digest ? `\n(digest ${error.digest})` : ''}
       </code>
@@ -34,7 +34,7 @@ export default function RouteError({ error, reset }) {
         <button
           type="button"
           onClick={() => reset()}
-          className="h-[44px] rounded-[4px] bg-[#212121] px-5 text-[15px] text-white transition-colors hover:bg-black"
+          className="h-[44px] rounded-[4px] bg-inverse px-5 text-[15px] text-inverse-fg transition-colors hover:bg-inverse-hover"
         >
           다시 시도
         </button>
@@ -43,7 +43,7 @@ export default function RouteError({ error, reset }) {
           onClick={() => {
             window.location.href = '/';
           }}
-          className="h-[44px] rounded-[4px] border border-[#b9b9b9] bg-white px-5 text-[15px] text-[#212121] transition-colors hover:bg-[#f5f5f5]"
+          className="h-[44px] rounded-[4px] border border-line-strong bg-surface px-5 text-[15px] text-ink transition-colors hover:bg-surface-2"
         >
           처음으로
         </button>

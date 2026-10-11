@@ -48,8 +48,8 @@ function SettingRow({ item, canEdit, onSaved }) {
   return (
     <li className="flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-4">
       <div className="min-w-0 md:w-[46%]">
-        <p className="truncate font-mono text-[13px] text-[#212121]">{item.code}</p>
-        <p className="text-[12px] leading-[1.5] text-[#919191]">{item.description}</p>
+        <p className="truncate font-mono text-[13px] text-ink">{item.code}</p>
+        <p className="text-[12px] leading-[1.5] text-ink-3">{item.description}</p>
       </div>
       <div className="flex min-w-0 flex-1 items-center gap-2">
         <input
@@ -60,15 +60,15 @@ function SettingRow({ item, canEdit, onSaved }) {
           onKeyDown={(e) => {
             if (e.key === 'Enter' && dirty && canEdit) save();
           }}
-          className={`h-[36px] min-w-0 flex-1 rounded-[6px] border px-3 font-mono text-[13px] outline-none transition-colors focus:border-[#919191] disabled:bg-[#F7F8F9] disabled:text-[#919191] ${
-            dirty ? 'border-[#1a73e8]' : 'border-[#dedede]'
+          className={`h-[36px] min-w-0 flex-1 rounded-[6px] border px-3 font-mono text-[13px] outline-none transition-colors focus:border-ink-3 disabled:bg-surface-2 disabled:text-ink-3 ${
+            dirty ? 'border-link' : 'border-line'
           } ${wide ? '' : 'md:max-w-[200px]'}`}
         />
         <button
           type="button"
           onClick={save}
           disabled={!canEdit || !dirty || saving}
-          className="h-[36px] shrink-0 rounded-[6px] bg-[#212121] px-3 text-[13px] text-white transition-opacity disabled:opacity-30"
+          className="h-[36px] shrink-0 rounded-[6px] bg-inverse px-3 text-[13px] text-inverse-fg transition-opacity disabled:opacity-30"
         >
           {saving ? '저장 중' : '저장'}
         </button>
@@ -104,15 +104,15 @@ function BanPolicyRow({ item, canEdit, onSaved }) {
 
   // 폰에서는 세로로 쌓이므로 입력칸을 전체 폭 · 40px 높이로 (좁게 보인다는 테스터 제보, 2026-09-27). PC 는 예전 폭 그대로
   const field =
-    'h-[40px] rounded-[6px] border border-[#dedede] px-3 text-[14px] outline-none focus:border-[#919191] disabled:bg-[#F7F8F9] disabled:text-[#919191] md:h-[36px] md:text-[13px]';
+    'h-[40px] rounded-[6px] border border-line px-3 text-[14px] outline-none focus:border-ink-3 disabled:bg-surface-2 disabled:text-ink-3 md:h-[36px] md:text-[13px]';
   return (
     <li className="flex flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:gap-3">
-      <span className="w-[80px] shrink-0 text-[14px] font-medium text-[#212121]">경고 {item.warningNo}회</span>
+      <span className="w-[80px] shrink-0 text-[14px] font-medium text-ink">경고 {item.warningNo}회</span>
       <select value={banType} disabled={!canEdit} onChange={(e) => setBanType(e.target.value)} className={`${field} w-full md:w-[120px]`}>
         <option value="temporary">기간 정지</option>
         <option value="permanent">영구 차단</option>
       </select>
-      <label className="flex items-center gap-2 text-[13px] text-[#5f5f5f]">
+      <label className="flex items-center gap-2 text-[13px] text-ink-2">
         <input
           type="number"
           min="1"
@@ -135,7 +135,7 @@ function BanPolicyRow({ item, canEdit, onSaved }) {
         type="button"
         onClick={save}
         disabled={!canEdit || !dirty || saving}
-        className="h-[40px] w-full shrink-0 rounded-[6px] bg-[#212121] px-3 text-[14px] text-white transition-opacity disabled:opacity-30 md:h-[36px] md:w-auto md:text-[13px]"
+        className="h-[40px] w-full shrink-0 rounded-[6px] bg-inverse px-3 text-[14px] text-inverse-fg transition-opacity disabled:opacity-30 md:h-[36px] md:w-auto md:text-[13px]"
       >
         {saving ? '저장 중' : '저장'}
       </button>
@@ -191,22 +191,22 @@ export default function PolicySettingsSection() {
     <div className={`${listSectionClass} gap-8`}>
       <div>
         <h2 className={listTitleClass}>정책 설정</h2>
-        <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
+        <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3">
           서버가 실행 중에 읽는 값(policy_settings · ban_policy)입니다. 저장하면 바로 적용됩니다.
         </p>
       </div>
 
-      {isLoading && <p className="py-6 text-center text-[14px] text-[#919191]">불러오는 중...</p>}
+      {isLoading && <p className="py-6 text-center text-[14px] text-ink-3">불러오는 중...</p>}
       {!canEdit && (
-        <p className="py-6 text-center text-[14px] text-[#919191]">정책 설정은 관리 레벨 3 관리자만 볼 수 있습니다.</p>
+        <p className="py-6 text-center text-[14px] text-ink-3">정책 설정은 관리 레벨 3 관리자만 볼 수 있습니다.</p>
       )}
-      {!isLoading && error && <p className="py-6 text-center text-[14px] text-[#919191]">{error}</p>}
+      {!isLoading && error && <p className="py-6 text-center text-[14px] text-ink-3">{error}</p>}
 
       {!isLoading && !error && data && (
         <>
           <section className="flex flex-col gap-3">
-            <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121]">경고 → 정지 단계</h3>
-            <ul className="divide-y divide-[#F3F3F3] rounded-[8px] border border-[#EEEEEE]">
+            <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink">경고 → 정지 단계</h3>
+            <ul className="divide-y divide-line rounded-[8px] border border-line">
               {data.banPolicies.map((b) => (
                 <BanPolicyRow key={b.warningNo} item={b} canEdit={canEdit} onSaved={onBanSaved} />
               ))}
@@ -215,8 +215,8 @@ export default function PolicySettingsSection() {
 
           {grouped.map((g) => (
             <section key={g.key} className="flex flex-col gap-3">
-              <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121]">{g.title}</h3>
-              <ul className="divide-y divide-[#F3F3F3] rounded-[8px] border border-[#EEEEEE]">
+              <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink">{g.title}</h3>
+              <ul className="divide-y divide-line rounded-[8px] border border-line">
                 {g.items.map((s) => (
                   <SettingRow key={s.code} item={s} canEdit={canEdit} onSaved={onSettingSaved} />
                 ))}

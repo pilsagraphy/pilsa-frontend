@@ -29,10 +29,10 @@ export default function RowActionButton({
       className={cn(
         'inline-flex h-[26px] shrink-0 items-center justify-center whitespace-nowrap rounded-[3px] px-[8px] text-[14px] leading-[1.6] tracking-[-0.28px] transition-colors',
         disabled
-          ? 'cursor-not-allowed border border-[#dedede] bg-transparent text-[#b9b9b9]'
+          ? 'cursor-not-allowed border border-line bg-transparent text-ink-4'
           : filled
-            ? 'bg-[#212121] text-white hover:bg-[#424242]'
-            : 'border border-[#212121] text-[#212121] hover:bg-[#f5f5f5]',
+            ? 'bg-inverse text-inverse-fg hover:bg-inverse-2'
+            : 'border border-ink text-ink hover:bg-surface-2',
         className
       )}
     >

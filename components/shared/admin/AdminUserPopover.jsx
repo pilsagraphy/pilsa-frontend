@@ -69,52 +69,52 @@ export default function AdminUserPopover({ userId, name, className = '' }) {
             role="dialog"
             aria-label={`${name} 회원 요약`}
             style={{ position: 'fixed', width: WIDTH, ...pos }}
-            className="z-[70] rounded-[8px] border border-[#dedede] bg-white p-4 text-left shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
+            className="z-[70] rounded-[8px] border border-line bg-surface p-4 text-left shadow-[0_6px_20px_rgba(0,0,0,0.12)]"
             onClick={(event) => event.stopPropagation()}
           >
-            {error && <p className="text-[13px] text-[#919191]">{error}</p>}
-            {!error && !data && <p className="text-[13px] text-[#919191]">불러오는 중...</p>}
+            {error && <p className="text-[13px] text-ink-3">{error}</p>}
+            {!error && !data && <p className="text-[13px] text-ink-3">불러오는 중...</p>}
             {data && (
-              <div className="flex flex-col gap-2 text-[13px] leading-[1.6] tracking-[-0.26px] text-[#454545]">
+              <div className="flex flex-col gap-2 text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-2">
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[15px] font-semibold text-[#212121]">
+                  <span className="text-[15px] font-semibold text-ink">
                     {data.isDeleted ? '탈퇴한 회원' : data.name}
                   </span>
-                  <span className="text-[12px] text-[#919191]">{data.loginId}</span>
+                  <span className="text-[12px] text-ink-3">{data.loginId}</span>
                 </div>
                 <div className="flex flex-wrap gap-1 text-[11px]">
-                  <span className="rounded-full border border-[#dedede] px-2">{MEMBER_TYPE_LABELS[data.memberType] ?? data.memberType}</span>
-                  <span className="rounded-full border border-[#dedede] px-2">{data.adminLevel > 0 ? `관리 Lv.${data.adminLevel}` : '일반회원'}</span>
+                  <span className="rounded-full border border-line px-2">{MEMBER_TYPE_LABELS[data.memberType] ?? data.memberType}</span>
+                  <span className="rounded-full border border-line px-2">{data.adminLevel > 0 ? `관리 Lv.${data.adminLevel}` : '일반회원'}</span>
                   {data.banStatus && data.banStatus !== 'none' && (
-                    <span className="rounded-full bg-[#ae0000] px-2 text-white">{data.banStatus === 'permanent' ? '영구 차단' : '정지'}</span>
+                    <span className="rounded-full bg-danger px-2 text-white">{data.banStatus === 'permanent' ? '영구 차단' : '정지'}</span>
                   )}
                 </div>
                 <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-[2px]">
-                  <dt className="text-[#919191]">가입일</dt>
+                  <dt className="text-ink-3">가입일</dt>
                   <dd className="text-right">{fmt(data.joinedAt)}</dd>
-                  <dt className="text-[#919191]">마지막 접속</dt>
+                  <dt className="text-ink-3">마지막 접속</dt>
                   <dd className="text-right">
                     {daysAgo(data.lastAccessAt) == null ? '-' : daysAgo(data.lastAccessAt) === 0 ? '오늘' : `${daysAgo(data.lastAccessAt)}일 전`}
                   </dd>
-                  <dt className="text-[#919191]">글 · 댓글</dt>
+                  <dt className="text-ink-3">글 · 댓글</dt>
                   <dd className="text-right">
                     {data.postCount} · {data.commentCount}
                   </dd>
-                  <dt className="text-[#919191]">주의 · 경고</dt>
+                  <dt className="text-ink-3">주의 · 경고</dt>
                   <dd className="text-right">
                     {data.cautionPoints}점 · {data.warningCount}회
                   </dd>
                   {/* 연락처 — 운영진이 바로 연락할 수 있게. 푸시 기기 수는 여기선 뺀다 (PM 2026-10-10) */}
-                  <dt className="text-[#919191]">학번</dt>
+                  <dt className="text-ink-3">학번</dt>
                   <dd className="text-right">{data.studentNo || '-'}</dd>
-                  <dt className="text-[#919191]">전화번호</dt>
+                  <dt className="text-ink-3">전화번호</dt>
                   <dd className="text-right">{data.phone || '-'}</dd>
-                  <dt className="text-[#919191]">이메일</dt>
+                  <dt className="text-ink-3">이메일</dt>
                   <dd className="break-all text-right">{data.email || '-'}</dd>
                 </dl>
                 <Link
                   href={ROUTES.ADMIN_MEMBER_DETAIL(userId)}
-                  className="mt-1 block rounded-[4px] bg-[#212121] py-[6px] text-center text-[13px] text-white hover:bg-black"
+                  className="mt-1 block rounded-[4px] bg-inverse py-[6px] text-center text-[13px] text-inverse-fg hover:bg-inverse-hover"
                 >
                   회원 상세 보기
                 </Link>
@@ -137,7 +137,7 @@ export default function AdminUserPopover({ userId, name, className = '' }) {
         }}
         aria-haspopup="dialog"
         aria-expanded={Boolean(pos)}
-        className={`hover:text-[#212121] ${className}`}
+        className={`hover:text-ink ${className}`}
       >
         {name}
       </button>

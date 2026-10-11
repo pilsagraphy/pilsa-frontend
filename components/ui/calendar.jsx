@@ -14,12 +14,12 @@ function SelectWithChevron({ value, onChange, children, ariaLabel }) {
         value={value}
         onChange={onChange}
         aria-label={ariaLabel}
-        className="h-8 cursor-pointer bg-transparent pr-4 text-[14px] font-normal text-neutral-900 appearance-none outline-none sm:h-9 sm:text-[16px]"
+        className="h-8 cursor-pointer bg-transparent pr-4 text-[14px] font-normal text-ink appearance-none outline-none sm:h-9 sm:text-[16px]"
       >
         {children}
       </select>
       <ChevronDown
-        className="pointer-events-none absolute right-0 h-3.5 w-3.5 text-neutral-700"
+        className="pointer-events-none absolute right-0 h-3.5 w-3.5 text-ink-2"
         strokeWidth={1.5}
       />
     </div>
@@ -111,7 +111,7 @@ export function Calendar({
                 width: '4px',
                 height: '4px',
                 borderRadius: '50%',
-                backgroundColor: '#d4d4d4',
+                backgroundColor: 'rgb(var(--c-line))',
               }}
             />
           </td>
@@ -148,20 +148,20 @@ export function Calendar({
           right: -1px;
           bottom: 4px;
           left: -1px;
-          background-color: #f6f6f6;
+          background-color: rgb(var(--c-surface-2));
         }
         /* 고른 일정: 흰 바탕에 검정 테두리 알약 (PM, 10/10 — 회색 채움보다 이쪽). 예전의 진한 채움(#454545)은 오늘 표시로 넘겼다.
            여러 날짜에 걸친 막대는 칸마다 그리므로 위아래 선만 두고, 양 끝 칸에서만 좌우 선을 닫는다 */
         .pilsa-schedule-active::before {
-          background-color: #ffffff;
-          border-top: 1.5px solid #212121;
-          border-bottom: 1.5px solid #212121;
+          background-color: rgb(var(--c-surface));
+          border-top: 1.5px solid rgb(var(--c-ink));
+          border-bottom: 1.5px solid rgb(var(--c-ink));
         }
         .pilsa-schedule-active.pilsa-schedule-start::before {
-          border-left: 1.5px solid #212121;
+          border-left: 1.5px solid rgb(var(--c-ink));
         }
         .pilsa-schedule-active.pilsa-schedule-end::before {
-          border-right: 1.5px solid #212121;
+          border-right: 1.5px solid rgb(var(--c-ink));
         }
         /* 칸마다 따로 그리다 보니 딱 붙여만 두면 두 경계가 각각 안티에일리어싱되어
            날짜 사이에 옅은 세로선이 보인다. 이어지는 쪽만 1px씩 겹치게 해서 이음매를 없앤다.
@@ -205,7 +205,7 @@ export function Calendar({
           bottom: 4px;
           left: 0;
           z-index: 2;
-          border: 1px solid #dedede;
+          border: 1px solid rgb(var(--c-line));
           border-radius: 9999px;
           pointer-events: none;
         }
@@ -215,8 +215,8 @@ export function Calendar({
            막대 칸의 '배경 투명 !important' 보다 뒤에 두어 이 규칙이 이긴다 */
         td[data-today] > button {
           font-weight: 700;
-          background-color: #454545 !important;
-          color: #ffffff !important;
+          background-color: rgb(var(--c-inverse-2)) !important;
+          color: rgb(var(--c-inverse-fg)) !important;
         }
       `}</style>
 
@@ -226,7 +226,7 @@ export function Calendar({
           type="button"
           onClick={goPrev}
           aria-label="이전 달"
-          className="absolute left-0 top-1/2 -translate-y-1/2 p-0.5 text-neutral-900 hover:opacity-70 sm:p-1 min-[960px]:left-[-10px]"
+          className="absolute left-0 top-1/2 -translate-y-1/2 p-0.5 text-ink hover:opacity-70 sm:p-1 min-[960px]:left-[-10px]"
         >
           <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.25} />
         </button>
@@ -252,7 +252,7 @@ export function Calendar({
           <button
             type="button"
             onClick={goToday}
-            className="rounded-[4px] border border-[#dedede] px-[8px] py-[2px] text-[12px] leading-[1.6] text-[#454545] transition-colors hover:bg-[#f6f6f6] sm:text-[13px]"
+            className="rounded-[4px] border border-line px-[8px] py-[2px] text-[12px] leading-[1.6] text-ink-2 transition-colors hover:bg-surface-2 sm:text-[13px]"
           >
             오늘
           </button>
@@ -262,7 +262,7 @@ export function Calendar({
           type="button"
           onClick={goNext}
           aria-label="다음 달"
-          className="absolute right-0 top-1/2 -translate-y-1/2 p-0.5 text-neutral-900 hover:opacity-70 sm:p-1 min-[960px]:right-[-10px]"
+          className="absolute right-0 top-1/2 -translate-y-1/2 p-0.5 text-ink hover:opacity-70 sm:p-1 min-[960px]:right-[-10px]"
         >
           <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" strokeWidth={1.25} />
         </button>
@@ -294,17 +294,17 @@ export function Calendar({
           // weekdays(구 head_row)에는 flex를 주지 않는다. <tr>이 flex가 되면
           // <th>가 table-cell을 잃어 본문 칸과 열이 어긋난다.
           weekday:
-            'w-9 p-0 text-center text-[11px] font-normal text-neutral-400 sm:w-12 sm:text-[14px]',
+            'w-9 p-0 text-center text-[11px] font-normal text-ink-4 sm:w-12 sm:text-[14px]',
           day: 'h-9 w-9 p-0 text-center align-middle bg-transparent sm:h-12 sm:w-12',
           day_button:
             // mx-auto: 칸이 고정 폭보다 넓어질 때(폭에 맞춰 늘어나는 표·날짜 피커) 버튼이 칸 왼쪽에 붙어
             // 날짜가 왼쪽으로 치우쳐 보였다 — flex 블록은 text-center 로 가운데 오지 않는다 (PM, 2026-09-21)
-            'mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-[13px] font-normal text-neutral-900 outline-none hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-12 sm:w-12 sm:text-[16px]',
+            'mx-auto flex h-9 w-9 items-center justify-center rounded-full bg-transparent text-[13px] font-normal text-ink outline-none hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0 sm:h-12 sm:w-12 sm:text-[16px]',
           // 선택한 날짜 표시는 아래 <style>의 td[data-selected]::after로 그린다.
           // 버튼에 테두리를 주면 버튼 크기(48px 정사각)를 따라가 막대보다 높아지기 때문.
           today: 'bg-transparent',
           outside: 'pointer-events-none',
-          disabled: 'text-neutral-300 opacity-50',
+          disabled: 'text-ink-4 opacity-50',
           ...classNames,
         }}
       />

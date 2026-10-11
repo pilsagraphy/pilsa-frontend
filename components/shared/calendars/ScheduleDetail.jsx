@@ -18,7 +18,7 @@ export default function ScheduleDetail({ schedule, fullWidth = false }) {
 
   return (
     <section
-      className={`w-full border-t border-[#DEDEDE] pt-6 md:pt-[30px] ${fullWidth ? '' : CALENDAR_DETAIL_MAX_W}`}
+      className={`w-full border-t border-line pt-6 md:pt-[30px] ${fullWidth ? '' : CALENDAR_DETAIL_MAX_W}`}
     >
       <ScheduleDetailTitle title={schedule.title} />
 

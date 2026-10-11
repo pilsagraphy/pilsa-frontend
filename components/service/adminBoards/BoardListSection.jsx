@@ -268,7 +268,7 @@ export default function BoardListSection({ title = '게시판 관리' }) {
           type="button"
           onClick={handleOpenCreate}
           disabled={isBusy}
-          className={`${actionButtonClass} bg-[#212121] text-white`}
+          className={`${actionButtonClass} bg-inverse text-inverse-fg`}
         >
           새 게시판 생성
         </Button>

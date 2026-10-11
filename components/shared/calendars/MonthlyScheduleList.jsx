@@ -7,7 +7,7 @@ const SCROLLBAR_CLASS = [
   '[&::-webkit-scrollbar]:w-[4px]',
   '[&::-webkit-scrollbar-track]:bg-transparent',
   '[&::-webkit-scrollbar-thumb]:rounded-full',
-  '[&::-webkit-scrollbar-thumb]:bg-[#dedede]',
+  '[&::-webkit-scrollbar-thumb]:bg-line',
 ].join(' ');
 
 // 카드 사이 간격. 아래 visibleCount 높이 계산에 그대로 쓰이므로 클래스와 값을 맞춰 둔다.
@@ -30,7 +30,7 @@ export default function MonthlyScheduleList({
 }) {
   if (isLoading) {
     return (
-      <div className="text-[14px] tracking-[-0.32px] text-[#919191] md:text-[16px]">
+      <div className="text-[14px] tracking-[-0.32px] text-ink-3 md:text-[16px]">
         일정을 불러오는 중입니다.
       </div>
     );
@@ -38,7 +38,7 @@ export default function MonthlyScheduleList({
 
   if (hasError) {
     return (
-      <div className="text-[14px] tracking-[-0.32px] text-[#919191] md:text-[16px]">
+      <div className="text-[14px] tracking-[-0.32px] text-ink-3 md:text-[16px]">
         일정을 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.
       </div>
     );
@@ -46,7 +46,7 @@ export default function MonthlyScheduleList({
 
   if (!schedules || schedules.length === 0) {
     return (
-      <div className="text-[14px] tracking-[-0.32px] text-[#919191] md:text-[16px]">
+      <div className="text-[14px] tracking-[-0.32px] text-ink-3 md:text-[16px]">
         아직 일정이 존재하지 않아요.
       </div>
     );

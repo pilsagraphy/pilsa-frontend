@@ -16,7 +16,7 @@ const LeaderContent = ({ order, name, period, imageSrc, officers = [] }) => {
     // 연혁 페이지가 #year-XXXX 를 받아 그 회장의 재임 시작 연도 줄로 내려간다
     <div className="mx-auto flex w-full max-w-[227px] flex-col items-center gap-3 md:gap-[25px]">
       {/* 순서 레이블: 01, 02 처럼 보일 수 있게 스타일링 */}
-      <span className="whitespace-nowrap text-center font-['Pretendard',sans-serif] text-[18px] font-bold leading-normal tracking-[-0.4px] text-black md:text-[26px]">
+      <span className="whitespace-nowrap text-center font-['Pretendard',sans-serif] text-[18px] font-bold leading-normal tracking-[-0.4px] text-ink md:text-[26px]">
         {order}
       </span>
 
@@ -25,7 +25,7 @@ const LeaderContent = ({ order, name, period, imageSrc, officers = [] }) => {
         href={year ? `${ROUTES.ABOUT_HISTORY}#year-${year}` : ROUTES.ABOUT_HISTORY}
         title={`${year ?? ''}년 연혁 보기`}
         aria-label={`${name} 회장 — ${year ?? ''}년 연혁 보기`}
-        className="relative aspect-[227/280] w-full shrink-0 overflow-hidden bg-[#D9D9D9]"
+        className="relative aspect-[227/280] w-full shrink-0 overflow-hidden bg-line"
       >
         {imageSrc ? (
           <Image
@@ -36,14 +36,14 @@ const LeaderContent = ({ order, name, period, imageSrc, officers = [] }) => {
             sizes="(max-width: 768px) 50vw, 33vw"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center text-sm text-[#919191]">No Image</div>
+          <div className="flex h-full w-full items-center justify-center text-sm text-ink-3">No Image</div>
         )}
       </Link>
 
       {/* 이름 & 재임기간 */}
-      <div className="flex flex-col items-center font-['Pretendard',sans-serif] text-black">
+      <div className="flex flex-col items-center font-['Pretendard',sans-serif] text-ink">
         <span className="text-[17px] font-semibold leading-tight md:text-[24px]">{name}</span>
-        <span className="mt-1 text-[13px] font-medium text-[#454545] md:text-[16px]">{period}</span>
+        <span className="mt-1 text-[13px] font-medium text-ink-2 md:text-[16px]">{period}</span>
       </div>
 
       {/* 재임 중 임원진은 카드에 나열하지 않고 버튼 → 팝업 (임원이 많은 기수는 카드가 한없이 길어진다) */}

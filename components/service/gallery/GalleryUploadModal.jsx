@@ -77,20 +77,20 @@ export default function GalleryUploadModal({ open, onClose, onUploaded, maxFiles
   };
 
   const inputClass =
-    'h-[36px] w-full rounded-[6px] border border-[#dedede] bg-white px-3 text-[13px] text-[#212121] outline-none transition-colors focus:border-[#919191]';
+    'h-[36px] w-full rounded-[6px] border border-line bg-surface px-3 text-[13px] text-ink outline-none transition-colors focus:border-ink-3';
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && !sending && onClose()}>
-      <DialogContent hideCloseButton className="max-w-[420px] gap-3 rounded-[8px] border-[#dedede] p-4">
-        <DialogTitle className="text-[16px] font-semibold text-[#212121]">활동 사진 올리기</DialogTitle>
-        <DialogDescription className="text-[12px] text-[#919191]">
+      <DialogContent hideCloseButton className="max-w-[420px] gap-3 rounded-[8px] border-line p-4">
+        <DialogTitle className="text-[16px] font-semibold text-ink">활동 사진 올리기</DialogTitle>
+        <DialogDescription className="text-[12px] text-ink-3">
           이번 학기 구간에 들어가요. 한 번에 {maxFiles}장까지, 큰 사진은 자동으로 줄여서 올려요. 올린 사진은 본인과 운영진이 지울 수 있어요.
         </DialogDescription>
         <input ref={inputRef} type="file" accept="image/*" multiple onChange={(e) => pick(e.target.files)} className="text-[12px]" />
         {files.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {files.map((f) => (
-              <span key={`${f.name}-${f.size}`} className="rounded-[4px] bg-[#f5f5f5] px-2 py-[2px] text-[11px] text-[#454545]">
+              <span key={`${f.name}-${f.size}`} className="rounded-[4px] bg-surface-2 px-2 py-[2px] text-[11px] text-ink-2">
                 {f.name}
               </span>
             ))}
@@ -99,10 +99,10 @@ export default function GalleryUploadModal({ open, onClose, onUploaded, maxFiles
         <input type="text" value={title} maxLength={100} onChange={(e) => setTitle(e.target.value)} placeholder="제목 (필수, 예: 정기모임)" className={inputClass} />
         <input type="text" value={hashtags} onChange={(e) => setHashtags(e.target.value)} placeholder="해시태그 (필수, 하나 이상 · 쉼표로 구분: 정기모임, 가을)" className={inputClass} />
         <div className="flex justify-end gap-2">
-          <button type="button" onClick={onClose} disabled={sending} className="h-[36px] rounded-[6px] border border-[#dedede] bg-white px-4 text-[13px] text-[#454545]">
+          <button type="button" onClick={onClose} disabled={sending} className="h-[36px] rounded-[6px] border border-line bg-surface px-4 text-[13px] text-ink-2">
             취소
           </button>
-          <button type="button" onClick={submit} disabled={sending || !title.trim() || !hashtags.trim() || files.length === 0} className="h-[36px] rounded-[6px] bg-[#212121] px-4 text-[13px] text-white disabled:opacity-50">
+          <button type="button" onClick={submit} disabled={sending || !title.trim() || !hashtags.trim() || files.length === 0} className="h-[36px] rounded-[6px] bg-inverse px-4 text-[13px] text-inverse-fg disabled:opacity-50">
             {sending ? '올리는 중…' : `올리기${files.length ? ` (${files.length}장)` : ''}`}
           </button>
         </div>

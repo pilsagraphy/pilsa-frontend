@@ -14,13 +14,13 @@ export default function BoardHead({ label, listPath }) {
   if (!isMdUp) {
     return (
       <div className="flex w-full flex-col gap-[10px]">
-        <h1 className="text-[24px] font-bold leading-[29px] text-[#454545]">{label}</h1>
+        <h1 className="text-[24px] font-bold leading-[29px] text-ink-2">{label}</h1>
         <button
           type="button"
           onClick={() => router.push(listPath)}
-          className="flex items-center gap-[2px] text-[#919191]"
+          className="flex items-center gap-[2px] text-ink-3"
         >
-          <ChevronLeft size={20} strokeWidth={1.5} className="text-[#B9B9B9]" aria-hidden />
+          <ChevronLeft size={20} strokeWidth={1.5} className="text-ink-4" aria-hidden />
           <span className="text-[12px] leading-[14px]">목록으로 돌아가기</span>
         </button>
       </div>
@@ -29,13 +29,13 @@ export default function BoardHead({ label, listPath }) {
 
   return (
     <div className="flex w-full flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      <h1 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] lg:mt-[36px] lg:text-[24px]">
+      <h1 className="text-[20px] font-semibold tracking-[-0.48px] text-ink lg:mt-[36px] lg:text-[24px]">
         {label}
       </h1>
 
       <button
         type="button"
-        className="hidden h-[52px] w-[135px] shrink-0 items-center justify-center rounded-[4px] bg-[#212121] text-white lg:flex lg:self-start lg:translate-y-[60px]"
+        className="hidden h-[52px] w-[135px] shrink-0 items-center justify-center rounded-[4px] bg-inverse text-inverse-fg lg:flex lg:self-start lg:translate-y-[60px]"
         onClick={() => router.push(listPath)}
       >
         목록

@@ -12,7 +12,7 @@ import { getErrorMessage } from '@/apis/auth';
 import { ROUTES } from '@/constants/routes';
 import { alertDialog, confirmDialog } from '@/stores/useDialogStore';
 
-const MESSAGE_CLASS = 'py-20 text-center text-[#919191]';
+const MESSAGE_CLASS = 'py-20 text-center text-ink-3';
 
 // 공통게시판 게시글 수정. 글쓰기 폼(BoardWriteForm)을 재사용하고 기존 값으로 채운다.
 export default function Edit({ boardId, postId }) {
@@ -160,7 +160,7 @@ export default function Edit({ boardId, postId }) {
   return (
     <form onSubmit={handleSubmit} className="mx-auto flex max-w-[1000px] flex-col gap-[20px] p-8">
       <div className="flex w-full flex-col gap-[36px]">
-        <h1 className="text-[24px] leading-[1.5] tracking-[-0.48px] font-bold text-black">
+        <h1 className="text-[24px] leading-[1.5] tracking-[-0.48px] font-bold text-ink">
           {board?.boardName ?? ''} 글 수정
         </h1>
 
@@ -172,7 +172,7 @@ export default function Edit({ boardId, postId }) {
         <button
           type="submit"
           disabled={submitting}
-          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] px-2 text-[14px] tracking-[-0.28px] text-white transition-colors hover:bg-black disabled:opacity-60 lg:h-[52px] lg:text-[16px] lg:tracking-[-0.32px]"
+          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] bg-inverse px-2 text-[14px] tracking-[-0.28px] text-inverse-fg transition-colors hover:bg-inverse-hover disabled:opacity-60 lg:h-[52px] lg:text-[16px] lg:tracking-[-0.32px]"
         >
           {submitting ? '수정 중...' : '수정 완료'}
         </button>
@@ -181,7 +181,7 @@ export default function Edit({ boardId, postId }) {
           type="button"
           onClick={handleCancel}
           disabled={submitting}
-          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white px-2 text-[14px] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-gray-50 disabled:opacity-60 lg:h-[52px] lg:text-[16px] lg:tracking-[-0.32px]"
+          className="flex h-[44px] flex-1 cursor-pointer items-center justify-center rounded-[4px] border border-line-strong bg-surface px-2 text-[14px] tracking-[-0.28px] text-ink transition-colors hover:bg-surface-2 disabled:opacity-60 lg:h-[52px] lg:text-[16px] lg:tracking-[-0.32px]"
         >
           취소
         </button>

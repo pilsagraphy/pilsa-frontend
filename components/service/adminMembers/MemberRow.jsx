@@ -28,8 +28,8 @@ function Pill({ filled = false, children }) {
       className={cn(
         'inline-flex items-center rounded-[13px] border px-2 text-[16px] leading-[1.6] tracking-[-0.02em]',
         filled
-          ? 'border-transparent bg-[#454545] text-white'
-          : 'border-[#454545] text-[#454545]'
+          ? 'border-transparent bg-inverse-2 text-inverse-fg'
+          : 'border-ink-2 text-ink-2'
       )}
     >
       {children}
@@ -65,7 +65,7 @@ function EditableText({ label, value, onChange, placeholder = '-' }) {
         onDoubleClick={open}
         title={`${label} 수정 (두 번 클릭)`}
         aria-label={`${label} 수정 (현재 ${value || '없음'})`}
-        className="w-full rounded-[4px] px-1 text-center hover:bg-[#F5F5F5] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+        className="w-full rounded-[4px] px-1 text-center hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
       >
         {value || placeholder}
       </button>
@@ -83,7 +83,7 @@ function EditableText({ label, value, onChange, placeholder = '-' }) {
         if (e.key === 'Enter') commit();
         if (e.key === 'Escape') setIsEditing(false);
       }}
-      className="w-full min-w-0 rounded-[4px] border border-[#212121] bg-white px-2 py-[2px] text-center text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121] outline-none"
+      className="w-full min-w-0 rounded-[4px] border border-ink bg-surface px-2 py-[2px] text-center text-[16px] leading-[1.6] tracking-[-0.02em] text-ink outline-none"
     />
   );
 }
@@ -125,8 +125,8 @@ function EditablePill({ label, value, options, filled = false, onChange }) {
           // 평소 Pill과 같은 모양으로 맞춰 편집 진입 시 튀지 않게 한다. (화살표 아이콘은 숨김)
           'mx-auto h-auto w-fit justify-center rounded-[13px] border px-2 py-0 text-[16px] leading-[1.6] tracking-[-0.02em] shadow-none [&>svg]:hidden',
           filled
-            ? 'border-transparent bg-[#454545] text-white'
-            : 'border-[#454545] text-[#454545]'
+            ? 'border-transparent bg-inverse-2 text-inverse-fg'
+            : 'border-ink-2 text-ink-2'
         )}
       >
         <SelectValue />
@@ -155,7 +155,7 @@ export default function MemberRow({
   const isAdminRole = member.role !== MEMBER_ROLES.GENERAL;
 
   return (
-    <TableRow className="h-[58px] border-b border-[#B9B9B9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
+    <TableRow className="h-[58px] border-b border-line-strong text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-2">
       {/* 1. 선택 체크박스 */}
       <TableCell className="text-center">
         <RowCheckbox
@@ -169,7 +169,7 @@ export default function MemberRow({
              ID 와 Email 은 서버가 수정 대상에서 빼 둔 값이라(로그인 열쇠·본인 확인 수단) 잠가 둔다 */}
       {/* 아이디를 누르면 회원 상세 (PM 2026-10-10). 이름 칸은 두 번 눌러 고치는 칸이라 링크를 아이디에 건다 */}
       <TableCell className="whitespace-nowrap text-center" title="회원 상세 보기">
-        <Link href={ROUTES.ADMIN_MEMBER_DETAIL(member.memberId)} className="underline underline-offset-2 hover:text-[#212121]">
+        <Link href={ROUTES.ADMIN_MEMBER_DETAIL(member.memberId)} className="underline underline-offset-2 hover:text-ink">
           {member.loginId}
         </Link>
       </TableCell>
@@ -225,7 +225,7 @@ export default function MemberRow({
       <TableCell className="whitespace-nowrap text-center">
         <Link
           href={`${ROUTES.ADMIN_POSTS}?keyword=${encodeURIComponent(member.name ?? '')}`}
-          className="underline underline-offset-2 hover:text-[#212121]"
+          className="underline underline-offset-2 hover:text-ink"
         >
           {member.postCount?.toLocaleString() ?? 0}
         </Link>
@@ -233,14 +233,14 @@ export default function MemberRow({
       <TableCell className="whitespace-nowrap text-center">
         <Link
           href={`${ROUTES.ADMIN_COMMENTS}?keyword=${encodeURIComponent(member.name ?? '')}`}
-          className="underline underline-offset-2 hover:text-[#212121]"
+          className="underline underline-offset-2 hover:text-ink"
         >
           {member.commentCount?.toLocaleString() ?? 0}
         </Link>
       </TableCell>
 
       {/* 6. 정지 기간 (없으면 '-') */}
-      <TableCell className="whitespace-nowrap text-center text-[#212121]">
+      <TableCell className="whitespace-nowrap text-center text-ink">
         {member.suspendedPeriod || '-'}
       </TableCell>
 
@@ -251,7 +251,7 @@ export default function MemberRow({
           disabled={!canWithdraw || isAdminRole}
           title={canWithdraw ? undefined : '관리 레벨 3만 사용할 수 있습니다.'}
           onClick={() => onWithdraw?.(member)}
-          className="rounded-[4px] border border-[#B9B9B9] px-3 py-1 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] transition hover:border-[#212121] hover:text-[#212121] disabled:cursor-not-allowed disabled:border-[#E0E0E0] disabled:text-[#C4C4C4]"
+          className="rounded-[4px] border border-line-strong px-3 py-1 text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-2 transition hover:border-ink hover:text-ink disabled:cursor-not-allowed disabled:border-line disabled:text-ink-4"
         >
           탈퇴
         </button>

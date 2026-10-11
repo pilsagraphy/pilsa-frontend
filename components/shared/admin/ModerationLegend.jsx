@@ -13,7 +13,7 @@ export default function ModerationLegend({ className = '' }) {
         {MODERATION_LEGEND.map((kind) => (
           <div key={kind.label}>
             <dt className="font-semibold">{kind.label}</dt>
-            <dd className="text-[#dedede] [word-break:keep-all]">{kind.description}</dd>
+            <dd className="text-ink-4 [word-break:keep-all]">{kind.description}</dd>
           </div>
         ))}
       </dl>

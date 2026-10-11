@@ -50,10 +50,10 @@ export default function DateField({
         aria-label={ariaLabel}
         aria-haspopup="dialog"
         aria-expanded={open}
-        className="flex h-[44px] w-full items-center justify-between gap-[8px] rounded-[4px] border border-[#b9b9b9] bg-white px-3 text-left text-[15px] tracking-[-0.3px] text-[#212121] outline-none focus:border-[#212121]"
+        className="flex h-[44px] w-full items-center justify-between gap-[8px] rounded-[4px] border border-line-strong bg-surface px-3 text-left text-[15px] tracking-[-0.3px] text-ink outline-none focus:border-ink"
       >
-        <span className={value ? '' : 'text-[#b9b9b9]'}>{value || placeholder}</span>
-        <CalendarDays size={18} strokeWidth={1.6} className="shrink-0 text-[#757575]" aria-hidden />
+        <span className={value ? '' : 'text-ink-4'}>{value || placeholder}</span>
+        <CalendarDays size={18} strokeWidth={1.6} className="shrink-0 text-ink-3" aria-hidden />
       </button>
 
       {open && (

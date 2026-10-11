@@ -9,7 +9,7 @@ export default function AdminLayout({ children }) {
     <>
       <ClientToaster />
       {/* 헤더 상단 고정: 스크롤해도 제자리 유지 */}
-      <div className="tablet:sticky tablet:top-0 tablet:z-50 bg-white">
+      <div className="tablet:sticky tablet:top-0 tablet:z-50 bg-surface">
         <Header />
       </div>
 

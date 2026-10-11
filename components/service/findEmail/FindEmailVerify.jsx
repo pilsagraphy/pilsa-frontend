@@ -67,10 +67,10 @@ export default function FindEmailVerify({ onNext }) {
       <div className="flex flex-col gap-[7px] items-start w-full">
         {/* 제목 + 안내 문구 */}
         <div className="flex flex-col gap-[6px] w-full">
-          <h1 className="font-semibold text-[24px] text-black tracking-[-0.48px] leading-[1.5]">
+          <h1 className="font-semibold text-[24px] text-ink tracking-[-0.48px] leading-[1.5]">
             이메일 찾기
           </h1>
-          <p className="text-[#b9b9b9] text-[16px] tracking-[-0.32px] leading-[1.6]">
+          <p className="text-ink-4 text-[16px] tracking-[-0.32px] leading-[1.6]">
             가입 시 등록한 학번과 이름을 입력해주세요.
           </p>
         </div>
@@ -79,7 +79,7 @@ export default function FindEmailVerify({ onNext }) {
         <div className="flex flex-col gap-[6px] items-start w-full">
           <label
             htmlFor="findEmail-studentId"
-            className="text-[#212121] text-[16px] tracking-[-0.32px] leading-[1.6]"
+            className="text-ink text-[16px] tracking-[-0.32px] leading-[1.6]"
           >
             학번
           </label>
@@ -97,7 +97,7 @@ export default function FindEmailVerify({ onNext }) {
 
           <label
             htmlFor="findEmail-name"
-            className="text-[#212121] text-[16px] tracking-[-0.32px] leading-[1.6]"
+            className="text-ink text-[16px] tracking-[-0.32px] leading-[1.6]"
           >
             이름
           </label>
@@ -116,7 +116,7 @@ export default function FindEmailVerify({ onNext }) {
       <Button
         type="submit"
         disabled={loading}
-        className="h-[52px] w-full bg-[#212121] hover:bg-[#424242] text-white text-[16px] transition-colors"
+        className="h-[52px] w-full bg-inverse hover:bg-inverse-2 text-inverse-fg text-[16px] transition-colors"
       >
         {loading ? '처리 중...' : '인증'}
       </Button>

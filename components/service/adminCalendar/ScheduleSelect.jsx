@@ -8,7 +8,7 @@ const SCROLLBAR_CLASS = [
   '[&::-webkit-scrollbar]:w-[3px]',
   '[&::-webkit-scrollbar-track]:bg-transparent',
   '[&::-webkit-scrollbar-thumb]:rounded-[1.5px]',
-  '[&::-webkit-scrollbar-thumb]:bg-[#d9d9d9]',
+  '[&::-webkit-scrollbar-thumb]:bg-line',
 ].join(' ');
 
 // 시안이 두 가지다.
@@ -19,17 +19,17 @@ const PANEL_STYLE = {
     panel: 'rounded-[4px]',
     list: 'max-h-[240px]',
     option:
-      'flex h-[40px] w-full items-center border border-[#dedede] px-[16px] text-left text-[16px] leading-[1.6] tracking-[-0.32px] text-[#454545] first:rounded-t-[4px] last:rounded-b-[4px] [&:not(:first-child)]:border-t-0',
+      'flex h-[40px] w-full items-center border border-line px-[16px] text-left text-[16px] leading-[1.6] tracking-[-0.32px] text-ink-2 first:rounded-t-[4px] last:rounded-b-[4px] [&:not(:first-child)]:border-t-0',
     optionSelected: 'bg-[#eee]',
-    optionIdle: 'bg-white hover:bg-[#f6f6f6]',
+    optionIdle: 'bg-surface hover:bg-surface-2',
   },
   compact: {
-    panel: 'rounded-[4px] border border-[#b9b9b9] p-[4px] ps-[7px]',
+    panel: 'rounded-[4px] border border-line-strong p-[4px] ps-[7px]',
     list: 'max-h-[216px]',
     option:
-      'flex h-[36px] w-full items-center border-b border-[#dedede] px-[10px] text-left text-[16px] leading-[1.6] tracking-[-0.32px] text-[#919191]',
+      'flex h-[36px] w-full items-center border-b border-line px-[10px] text-left text-[16px] leading-[1.6] tracking-[-0.32px] text-ink-3',
     optionSelected: 'bg-[#eee]',
-    optionIdle: 'hover:bg-[#f6f6f6]',
+    optionIdle: 'hover:bg-surface-2',
   },
 };
 
@@ -92,17 +92,17 @@ export default function ScheduleSelect({
         aria-expanded={isOpen}
         aria-label={ariaLabel}
         className={[
-          'flex h-[40px] w-full items-center justify-between rounded-[6px] border border-[#dedede] bg-white text-left text-[16px] leading-[1.6] tracking-[-0.32px] text-[#212121] transition-colors',
+          'flex h-[40px] w-full items-center justify-between rounded-[6px] border border-line bg-surface text-left text-[16px] leading-[1.6] tracking-[-0.32px] text-ink transition-colors',
           variant === 'field' ? 'px-[16px]' : 'ps-[12px] pe-[8px]',
-          disabled ? 'cursor-not-allowed bg-[#f6f6f6] text-[#b9b9b9]' : 'hover:border-[#919191]',
+          disabled ? 'cursor-not-allowed bg-surface-2 text-ink-4' : 'hover:border-ink-3',
         ].join(' ')}
       >
         {/* 값이 없으면(선택지를 못 받아 잠긴 경우) 빈 회색 박스만 남으므로 이유를 적어 둔다. */}
-        <span className={`truncate ${value ? '' : 'text-[#b9b9b9]'}`}>{value || placeholder}</span>
+        <span className={`truncate ${value ? '' : 'text-ink-4'}`}>{value || placeholder}</span>
         <ChevronDown
           aria-hidden="true"
           strokeWidth={1.5}
-          className={`ms-[4px] size-4 shrink-0 ${disabled ? 'text-[#b9b9b9]' : 'text-[#212121]'}`}
+          className={`ms-[4px] size-4 shrink-0 ${disabled ? 'text-ink-4' : 'text-ink'}`}
         />
       </button>
 
@@ -110,7 +110,7 @@ export default function ScheduleSelect({
         <div
           role="listbox"
           aria-label={ariaLabel}
-          className={`absolute left-0 top-[44px] z-40 w-full bg-white shadow-[0_4px_12px_rgba(0,0,0,0.08)] ${style.panel}`}
+          className={`absolute left-0 top-[44px] z-40 w-full bg-surface shadow-[0_4px_12px_rgba(0,0,0,0.08)] ${style.panel}`}
         >
           <div className={`overflow-y-auto ${style.list} ${SCROLLBAR_CLASS}`}>
             {options.map((option) => (

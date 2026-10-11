@@ -26,13 +26,13 @@ const TYPE_LABELS = {
 // 중요 글·일정 알림은 댓글과 다르게 보인다 (PM, 2026-09-21): 라벨 색 + 아이콘 + 줄 배경 + 왼쪽 띠
 const TYPE_STYLES = {
   PINNED_POST: {
-    label: 'text-[#E53935]',
-    row: 'bg-[#FFF6F6] border-l-[3px] border-l-[#E53935]',
+    label: 'text-alert',
+    row: 'bg-danger-bg border-l-[3px] border-l-alert',
     Icon: Megaphone,
   },
   EVENT: {
-    label: 'text-[#1E88E5]',
-    row: 'bg-[#F3F8FF] border-l-[3px] border-l-[#1E88E5]',
+    label: 'text-link',
+    row: 'bg-[#F3F8FF] border-l-[3px] border-l-link',
     Icon: CalendarDays,
   },
 };
@@ -212,24 +212,24 @@ export default function NotificationBell() {
         type="button"
         aria-label="알림함 열기"
         onClick={togglePanel}
-        className="relative grid size-10 place-items-center rounded-full transition hover:bg-[#F5F5F5]"
+        className="relative grid size-10 place-items-center rounded-full transition hover:bg-surface-2"
       >
-        <Bell size={22} className="text-[#212121]" />
+        <Bell size={22} className="text-ink" />
         {unreadCount > 0 && (
-          <span className="absolute right-1 top-1 grid min-w-[16px] place-items-center rounded-full bg-[#E53935] px-1 text-[10px] font-bold leading-[16px] text-white">
+          <span className="absolute right-1 top-1 grid min-w-[16px] place-items-center rounded-full bg-alert px-1 text-[10px] font-bold leading-[16px] text-white">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
       {open && (
-        <div className="absolute right-[-8px] top-[44px] z-[70] w-[280px] max-w-[calc(100vw-20px)] overflow-hidden rounded-[12px] border border-black/10 bg-white shadow-[0_8px_30px_rgba(0,0,0,0.12)] md:right-[-16px] md:top-[48px] md:w-[320px] lg:right-[-80px]">
-          <div className="flex items-center justify-between border-b border-[#EEEEEE] px-4 py-3">
-            <h3 className="text-[15px] font-semibold text-black">알림</h3>
+        <div className="absolute right-[-8px] top-[44px] z-[70] w-[280px] max-w-[calc(100vw-20px)] overflow-hidden rounded-[12px] border border-line bg-surface shadow-[0_8px_30px_rgba(0,0,0,0.12)] md:right-[-16px] md:top-[48px] md:w-[320px] lg:right-[-80px]">
+          <div className="flex items-center justify-between border-b border-line px-4 py-3">
+            <h3 className="text-[15px] font-semibold text-ink">알림</h3>
             <button
               type="button"
               onClick={handleReadAll}
-              className="text-[13px] text-[#919191] transition hover:text-[#212121]"
+              className="text-[13px] text-ink-3 transition hover:text-ink"
             >
               모두 읽음
             </button>
@@ -237,9 +237,9 @@ export default function NotificationBell() {
 
           <div className="max-h-[360px] overflow-y-auto">
             {loading ? (
-              <p className="py-10 text-center text-[13px] text-[#919191]">불러오는 중...</p>
+              <p className="py-10 text-center text-[13px] text-ink-3">불러오는 중...</p>
             ) : items.length === 0 ? (
-              <p className="py-10 text-center text-[13px] text-[#919191]">새 알림이 없습니다.</p>
+              <p className="py-10 text-center text-[13px] text-ink-3">새 알림이 없습니다.</p>
             ) : (
               items.map((item) => {
                 const style = TYPE_STYLES[item.type];
@@ -249,32 +249,32 @@ export default function NotificationBell() {
                   key={item.toastId}
                   type="button"
                   onClick={() => handleItemClick(item)}
-                  className={`group flex w-full items-start gap-2 border-b border-[#F5F5F5] px-4 py-3 text-left transition hover:bg-[#FAFAFA] ${
+                  className={`group flex w-full items-start gap-2 border-b border-line px-4 py-3 text-left transition hover:bg-surface-2 ${
                     style?.row ?? ''
                   } ${item.isRead ? 'opacity-60' : ''}`}
                 >
                   {TypeIcon && (
-                    <span className={`mt-[2px] grid size-[28px] shrink-0 place-items-center rounded-full bg-white ${style.label}`}>
+                    <span className={`mt-[2px] grid size-[28px] shrink-0 place-items-center rounded-full bg-surface ${style.label}`}>
                       <TypeIcon size={16} strokeWidth={2} aria-hidden />
                     </span>
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
                       {!item.isRead && (
-                        <span className="size-1.5 shrink-0 rounded-full bg-[#E53935]" />
+                        <span className="size-1.5 shrink-0 rounded-full bg-alert" />
                       )}
-                      <span className={`text-[12px] font-semibold ${style?.label ?? 'text-[#757575]'}`}>
+                      <span className={`text-[12px] font-semibold ${style?.label ?? 'text-ink-3'}`}>
                         {TYPE_LABELS[item.type] ?? '알림'}
                       </span>
-                      <span className="ml-auto shrink-0 text-[11px] text-[#B9B9B9]">
+                      <span className="ml-auto shrink-0 text-[11px] text-ink-4">
                         {formatCreatedAt(item.createdAt)}
                       </span>
                     </div>
-                    <p className="mt-0.5 truncate text-[13px] font-medium text-[#212121]">
+                    <p className="mt-0.5 truncate text-[13px] font-medium text-ink">
                       {item.title}
                     </p>
                     {item.message && (
-                      <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.5] text-[#757575]">{item.message}</p>
+                      <p className="mt-0.5 line-clamp-2 text-[12px] leading-[1.5] text-ink-3">{item.message}</p>
                     )}
                   </div>
                   <span
@@ -282,7 +282,7 @@ export default function NotificationBell() {
                     tabIndex={-1}
                     aria-label="알림 삭제"
                     onClick={(event) => handleDelete(event, item)}
-                    className="mt-0.5 hidden shrink-0 rounded p-0.5 text-[#B9B9B9] transition hover:text-[#212121] group-hover:block"
+                    className="mt-0.5 hidden shrink-0 rounded p-0.5 text-ink-4 transition hover:text-ink group-hover:block"
                   >
                     <X size={14} />
                   </span>

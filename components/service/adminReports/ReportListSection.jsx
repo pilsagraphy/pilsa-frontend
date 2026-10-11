@@ -442,7 +442,7 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
               onClick={() => openBulkConfirm(REPORT_ACTION_RESTORE)}
               className={cn(
                 actionButtonClass,
-                'w-auto flex-1 border-[#212121] text-[#212121] lg:w-[120px] lg:flex-none'
+                'w-auto flex-1 border-ink text-ink lg:w-[120px] lg:flex-none'
               )}
             >
               선택 복원
@@ -453,7 +453,7 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
               onClick={() => openBulkConfirm(REPORT_ACTION_DELETE)}
               className={cn(
                 actionButtonClass,
-                'w-auto flex-1 bg-[#212121] text-white lg:w-[120px] lg:flex-none'
+                'w-auto flex-1 bg-inverse text-inverse-fg lg:w-[120px] lg:flex-none'
               )}
             >
               선택 삭제
@@ -510,7 +510,7 @@ export default function ReportListSection({ title = '신고 관리', initialTab 
                 key={link.href}
                 href={link.href}
                 onClick={handleAlertClose}
-                className="text-[14px] text-[#1a73e8] underline underline-offset-4 hover:text-[#0b57d0]"
+                className="text-[14px] text-link underline underline-offset-4 hover:text-[#0b57d0]"
               >
                 {link.label} ↗
               </Link>

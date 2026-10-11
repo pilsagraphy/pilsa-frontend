@@ -81,10 +81,10 @@ export default function NotificationToggle() {
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0">
-        <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.02em] text-[#212121]">
+        <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
           이 기기에서 알림 받기
         </p>
-        <p className="mt-0.5 text-[12px] leading-[1.5] tracking-[-0.02em] text-[#919191]">
+        <p className="mt-0.5 text-[12px] leading-[1.5] tracking-[-0.02em] text-ink-3">
           새 댓글·답글이 달리면 알려드려요
         </p>
       </div>
@@ -97,11 +97,11 @@ export default function NotificationToggle() {
         disabled={loading || busy}
         onClick={handleToggle}
         className={`relative h-[26px] w-[46px] shrink-0 rounded-full transition-colors duration-200 disabled:opacity-50 ${
-          on ? 'bg-[#212121]' : 'bg-[#D6D6D6]'
+          on ? 'bg-inverse' : 'bg-line'
         }`}
       >
         <span
-          className={`absolute left-[3px] top-[3px] size-5 rounded-full bg-white shadow transition-transform duration-200 ${
+          className={`absolute left-[3px] top-[3px] size-5 rounded-full bg-surface shadow transition-transform duration-200 ${
             on ? 'translate-x-[20px]' : 'translate-x-0'
           }`}
         />

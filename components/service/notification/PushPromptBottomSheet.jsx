@@ -161,23 +161,23 @@ export default function PushPromptBottomSheet() {
     return (
       <>
         <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px]" onClick={close} />
-        <div className="fixed inset-x-0 bottom-0 z-[90] mx-auto max-w-[480px] rounded-t-[20px] bg-white px-6 pb-8 pt-5 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
-          <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-[#E0E0E0]" />
+        <div className="fixed inset-x-0 bottom-0 z-[90] mx-auto max-w-[480px] rounded-t-[20px] bg-surface px-6 pb-8 pt-5 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
+          <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-surface-3" />
 
           <div className="flex flex-col items-center gap-3 text-center">
-            <span className="grid size-14 place-items-center rounded-full bg-[#F5F5F5]">
-              <BellRing size={28} className="text-[#212121]" />
+            <span className="grid size-14 place-items-center rounded-full bg-surface-2">
+              <BellRing size={28} className="text-ink" />
             </span>
-            <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-black">
+            <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink">
               알림이 꺼져 있어요
             </h3>
-            <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#757575] [word-break:keep-all]">
+            <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3 [word-break:keep-all]">
               휴대폰 설정에서 Pilsagraphy 앱의 알림이 꺼져 있어
               <br />새 댓글·답글 알림을 받을 수 없어요.
             </p>
           </div>
 
-          <ol className="mt-5 list-decimal space-y-1.5 pl-5 text-left text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545] [word-break:keep-all]">
+          <ol className="mt-5 list-decimal space-y-1.5 pl-5 text-left text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
             <li>
               홈 화면의 앱 아이콘을 길게 눌러 <b>앱 정보</b>
             </li>
@@ -187,7 +187,7 @@ export default function PushPromptBottomSheet() {
             <li>앱을 완전히 닫았다가 다시 열기 (바로 반영되지 않으면 휴대폰을 껐다 켜기)</li>
           </ol>
           {/* 갤럭시에서 가장 흔한 원인 — "Chrome에서 실행 중" 알림이 거슬려 Chrome 알림을 통째로 끄면 우리 알림도 같이 막힌다 (2026-09-24) */}
-          <p className="mt-3 rounded-[6px] bg-[#F5F5F5] px-3 py-2 text-left text-[13px] leading-[1.6] tracking-[-0.26px] text-[#454545] [word-break:keep-all]">
+          <p className="mt-3 rounded-[6px] bg-surface-2 px-3 py-2 text-left text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-2 [word-break:keep-all]">
             휴대폰 설정에서 <b>Chrome 알림</b>을 끄면 이 앱의 알림도 함께 막혀요. &ldquo;Chrome에서 실행 중&rdquo; 알림이 거슬리면 끄지 말고 옆으로 밀어 지워 주세요.
           </p>
 
@@ -195,7 +195,7 @@ export default function PushPromptBottomSheet() {
             <button
               type="button"
               onClick={close}
-              className="h-[52px] w-full rounded-[8px] bg-[#212121] text-[16px] font-semibold text-white transition hover:bg-black"
+              className="h-[52px] w-full rounded-[8px] bg-inverse text-[16px] font-semibold text-inverse-fg transition hover:bg-inverse-hover"
             >
               확인
             </button>
@@ -211,17 +211,17 @@ export default function PushPromptBottomSheet() {
       <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px]" onClick={recordLater} />
 
       {/* 바텀시트 */}
-      <div className="fixed inset-x-0 bottom-0 z-[90] mx-auto max-w-[480px] rounded-t-[20px] bg-white px-6 pb-8 pt-5 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
-        <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-[#E0E0E0]" />
+      <div className="fixed inset-x-0 bottom-0 z-[90] mx-auto max-w-[480px] rounded-t-[20px] bg-surface px-6 pb-8 pt-5 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
+        <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-surface-3" />
 
         <div className="flex flex-col items-center gap-3 text-center">
-          <span className="grid size-14 place-items-center rounded-full bg-[#F5F5F5]">
-            <BellRing size={28} className="text-[#212121]" />
+          <span className="grid size-14 place-items-center rounded-full bg-surface-2">
+            <BellRing size={28} className="text-ink" />
           </span>
-          <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-black">
+          <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink">
             {mode === 'reenable' ? '알림이 꺼져 있어요' : '새 댓글·답글 알림을 받아보세요'}
           </h3>
-          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#757575] [word-break:keep-all]">
+          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3 [word-break:keep-all]">
             {mode === 'reenable' ? (
               <>
                 켜 뒀던 이 기기의 알림이 꺼져 있어요. 폰이나 브라우저가 알림을 정리했을 때 생기는 일이에요.
@@ -241,14 +241,14 @@ export default function PushPromptBottomSheet() {
             type="button"
             disabled={enabling}
             onClick={handleEnable}
-            className="h-[52px] w-full rounded-[8px] bg-[#212121] text-[16px] font-semibold text-white transition hover:bg-black disabled:opacity-60"
+            className="h-[52px] w-full rounded-[8px] bg-inverse text-[16px] font-semibold text-inverse-fg transition hover:bg-inverse-hover disabled:opacity-60"
           >
             {enabling ? '설정 중...' : '알림 켜기'}
           </button>
           <button
             type="button"
             onClick={recordLater}
-            className="h-[44px] w-full rounded-[8px] text-[15px] font-medium text-[#919191] transition hover:text-[#454545]"
+            className="h-[44px] w-full rounded-[8px] text-[15px] font-medium text-ink-3 transition hover:text-ink-2"
           >
             나중에
           </button>

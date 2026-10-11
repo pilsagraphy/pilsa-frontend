@@ -26,14 +26,14 @@ export default function MyPageIntro() {
   return (
     <div className="flex w-full items-center">
       <div className="flex min-w-0 flex-col gap-[4px]">
-        <h2 className="text-[18px] font-bold leading-[1.5] tracking-[-0.02em] text-black md:text-[20px]">
+        <h2 className="text-[18px] font-bold leading-[1.5] tracking-[-0.02em] text-ink md:text-[20px]">
           {userName}님, 안녕하세요! :)
         </h2>
-        <p className="text-[14px] font-normal leading-[1.6] tracking-[-0.02em] text-[#212121] md:text-[15px]">
+        <p className="text-[14px] font-normal leading-[1.6] tracking-[-0.02em] text-ink md:text-[15px]">
           {quote ? '오늘도 이 주의 문장과 함께 좋은 하루 보내세요' : '오늘도 좋은 하루 보내세요 !'}
         </p>
         {quote && (
-          <p className="break-words text-[13px] leading-[1.6] tracking-[-0.02em] text-[#B9B9B9] md:text-[14px]">
+          <p className="break-words text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-4 md:text-[14px]">
             &quot;{quote}&quot;
           </p>
         )}

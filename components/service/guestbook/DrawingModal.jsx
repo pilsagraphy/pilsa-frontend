@@ -158,21 +158,21 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
 
   const toolBtn = (active) =>
     `flex h-[32px] min-w-[32px] items-center justify-center rounded-[6px] border px-2 text-[12px] transition ${
-      active ? 'border-[#212121] bg-[#212121] text-white' : 'border-[#dedede] bg-white text-[#454545] hover:bg-[#f5f5f5]'
+      active ? 'border-ink bg-inverse text-inverse-fg' : 'border-line bg-surface text-ink-2 hover:bg-surface-2'
     }`;
   const rowLabel = 'w-[40px] shrink-0 text-[12px] text-[#a3a09a]';
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent hideCloseButton className="max-h-[92dvh] max-w-[380px] gap-3 overflow-y-auto rounded-[8px] border-[#dedede] p-4">
-        <DialogTitle className="text-[16px] font-semibold text-[#212121]">스티커 그리기</DialogTitle>
-        <DialogDescription className="text-[12px] text-[#919191]">
+      <DialogContent hideCloseButton className="max-h-[92dvh] max-w-[380px] gap-3 overflow-y-auto rounded-[8px] border-line p-4">
+        <DialogTitle className="text-[16px] font-semibold text-ink">스티커 그리기</DialogTitle>
+        <DialogDescription className="text-[12px] text-ink-3">
           투명한 정사각형 종이에 그려요. 그린 모양 그대로(정사각형) 방명록에 붙이고, 붙인 뒤 끌어서 옮기거나 모서리로 크기, 손잡이로 회전을 바꿀 수 있어요.
         </DialogDescription>
 
         {/* 캔버스 — 투명이 보이도록 체크무늬 바탕 */}
         <div
-          className="mx-auto w-full overflow-hidden rounded-[6px] border border-[#dedede]"
+          className="mx-auto w-full overflow-hidden rounded-[6px] border border-line"
           style={{
             maxWidth: SIZE,
             backgroundImage:
@@ -204,7 +204,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
                 setColor(c);
                 setEraser(false);
               }}
-              className={`h-[22px] w-[22px] rounded-full border-2 ${!eraser && color === c ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-black/10'}`}
+              className={`h-[22px] w-[22px] rounded-full border-2 ${!eraser && color === c ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-line'}`}
               style={{ backgroundColor: c }}
             />
           ))}
@@ -213,7 +213,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
             title="직접 고르기"
             aria-label="색 직접 고르기"
             onClick={() => setPickerOpen((v) => !v)}
-            className="flex h-[22px] w-[22px] items-center justify-center rounded-full border border-dashed border-[#919191] text-[14px] leading-none text-[#919191]"
+            className="flex h-[22px] w-[22px] items-center justify-center rounded-full border border-dashed border-ink-3 text-[14px] leading-none text-ink-3"
           >
             +
           </button>
@@ -257,7 +257,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200 }) {
           </button>
         </div>
 
-        <div className="flex justify-end gap-2 border-t border-[#ededed] pt-3">
+        <div className="flex justify-end gap-2 border-t border-line pt-3">
           <button type="button" onClick={onClose} className={toolBtn(false)}>
             취소
           </button>

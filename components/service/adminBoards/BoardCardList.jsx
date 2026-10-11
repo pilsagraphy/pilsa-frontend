@@ -27,14 +27,14 @@ export default function BoardCardList({
 
   if (emptyMessage) {
     return (
-      <p className="border-b border-[#B9B9B9] py-10 text-center text-[14px] text-[#919191]">
+      <p className="border-b border-line-strong py-10 text-center text-[14px] text-ink-3">
         {emptyMessage}
       </p>
     );
   }
 
   const buttonClass =
-    'rounded-[4px] border border-[#b9b9b9] px-3 py-[5px] text-[13px] leading-[1.6] text-[#454545] disabled:border-[#E0E0E0] disabled:text-[#C4C4C4]';
+    'rounded-[4px] border border-line-strong px-3 py-[5px] text-[13px] leading-[1.6] text-ink-2 disabled:border-line disabled:text-ink-4';
 
   return (
     <div ref={drag.listRef} className="flex flex-col">
@@ -49,18 +49,18 @@ export default function BoardCardList({
           <div
             key={board.boardId}
             data-drag-item
-            className={`relative border-b border-[#B9B9B9] px-1 py-[14px] transition-opacity ${
+            className={`relative border-b border-line-strong px-1 py-[14px] transition-opacity ${
               lifted ? 'opacity-40' : ''
-            } ${lineAbove ? 'border-t-2 border-t-[#212121]' : ''} ${
-              lineBelow ? '!border-b-2 !border-b-[#212121]' : ''
+            } ${lineAbove ? 'border-t-2 border-t-ink' : ''} ${
+              lineBelow ? '!border-b-2 !border-b-ink' : ''
             }`}
           >
             <div className="flex items-start gap-[10px]">
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[16px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121]">
+                <p className="truncate text-[16px] font-semibold leading-[1.5] tracking-[-0.02em] text-ink">
                   {board.boardName}
                 </p>
-                <p className="mt-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#757575]">
+                <p className="mt-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-3">
                   글 {board.postCount?.toLocaleString() ?? 0}개 · 열람{' '}
                   {getReadScopeLabel(board.readScope)} · 작성 {getWriteLevelLabel(board.writeLevel)}
                 </p>
@@ -73,8 +73,8 @@ export default function BoardCardList({
                 title="꾹 눌러서 순서 바꾸기"
                 disabled={disabled}
                 {...drag.handleProps(index)}
-                className={`grid size-8 shrink-0 touch-none select-none place-items-center rounded-[4px] text-[#B9B9B9] ${
-                  lifted ? 'bg-[#F0F0F0] text-[#212121]' : 'active:bg-[#F5F5F5]'
+                className={`grid size-8 shrink-0 touch-none select-none place-items-center rounded-[4px] text-ink-4 ${
+                  lifted ? 'bg-surface-2 text-ink' : 'active:bg-surface-2'
                 }`}
               >
                 <GripVertical size={18} />
@@ -104,7 +104,7 @@ export default function BoardCardList({
                 disabled={disabled || board.boardName === '공지사항'}
                 title={board.boardName === '공지사항' ? '공지사항 게시판은 삭제할 수 없어요' : undefined}
                 onClick={() => onDelete?.(board)}
-                className="ml-auto rounded-[4px] border border-[#212121] bg-[#212121] px-3 py-[5px] text-[13px] leading-[1.6] text-white disabled:border-[#E0E0E0] disabled:bg-[#E0E0E0]"
+                className="ml-auto rounded-[4px] border border-ink bg-inverse px-3 py-[5px] text-[13px] leading-[1.6] text-inverse-fg disabled:border-line disabled:bg-surface-3"
               >
                 삭제
               </button>

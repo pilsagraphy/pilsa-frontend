@@ -28,17 +28,17 @@ export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, on
     <Dialog open={open} onOpenChange={(next) => !next && onDecline?.()}>
       <DialogContent
         hideCloseButton
-        className="max-w-[380px] gap-[20px] rounded-[4px] border-[#dedede] p-[24px]"
+        className="max-w-[380px] gap-[20px] rounded-[4px] border-line p-[24px]"
       >
-        <DialogTitle className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121]">
+        <DialogTitle className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink">
           {emailMatched ? '이미 가입된 계정이에요' : '가입된 회원을 찾지 못했어요'}
         </DialogTitle>
 
-        <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-[#454545] [word-break:keep-all]">
+        <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
           {emailMatched ? (
             <>
-              구글 계정 <span className="font-medium text-[#212121]">{maskedEmail}</span>과 같은 이메일로
-              가입된 회원(아이디 <span className="font-medium text-[#212121]">{maskedLoginId}</span>)이 있어요.
+              구글 계정 <span className="font-medium text-ink">{maskedEmail}</span>과 같은 이메일로
+              가입된 회원(아이디 <span className="font-medium text-ink">{maskedLoginId}</span>)이 있어요.
               <br />
               이 구글 계정을 그 회원 계정에 연결할까요?
               <br />
@@ -47,7 +47,7 @@ export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, on
             </>
           ) : (
             <>
-              구글 계정 <span className="font-medium text-[#212121]">{maskedEmail}</span>로 가입된 회원이
+              구글 계정 <span className="font-medium text-ink">{maskedEmail}</span>로 가입된 회원이
               없어요.
               <br />
               회원가입을 진행할까요? 가입을 마치고 로그인하면 이 구글 계정이 자동으로 연결돼요.
@@ -62,7 +62,7 @@ export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, on
             <Button
               type="button"
               onClick={onAccept}
-              className="h-[48px] w-full rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242]"
+              className="h-[48px] w-full rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse-2"
             >
               로그인해서 연결하기
             </Button>
@@ -71,7 +71,7 @@ export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, on
               <Button
                 type="button"
                 onClick={onSignup}
-                className="h-[48px] w-full rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242]"
+                className="h-[48px] w-full rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse-2"
               >
                 회원가입하기
               </Button>
@@ -79,7 +79,7 @@ export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, on
                 type="button"
                 variant="outline"
                 onClick={onAccept}
-                className="h-[48px] w-full rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]"
+                className="h-[48px] w-full rounded-[4px] border-line-strong text-[16px] text-ink"
               >
                 이미 회원이에요, 로그인할게요
               </Button>
@@ -88,7 +88,7 @@ export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, on
           <button
             type="button"
             onClick={onDecline}
-            className="h-[40px] w-full text-[14px] text-[#919191] transition-colors hover:text-[#454545]"
+            className="h-[40px] w-full text-[14px] text-ink-3 transition-colors hover:text-ink-2"
           >
             연결하지 않을게요
           </button>

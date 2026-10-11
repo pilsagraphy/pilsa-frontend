@@ -57,15 +57,15 @@ function EditorImageView({ node, selected, editor, getPos, deleteNode }) {
   };
 
   const controlClass =
-    'flex size-[30px] items-center justify-center rounded-full bg-white/95 text-[#212121] shadow-[0_2px_8px_rgba(0,0,0,0.18)] disabled:opacity-30';
+    'flex size-[30px] items-center justify-center rounded-full bg-surface/95 text-ink shadow-[0_2px_8px_rgba(0,0,0,0.18)] disabled:opacity-30';
 
   return (
     <NodeViewWrapper className="my-3" data-drag-handle>
       {uploading ? (
-        <span className="inline-block h-[120px] w-full max-w-[320px] animate-pulse rounded-[4px] bg-[#f5f5f5]" />
+        <span className="inline-block h-[120px] w-full max-w-[320px] animate-pulse rounded-[4px] bg-surface-2" />
       ) : (
         <span
-          className={`relative inline-block rounded-[4px] ${selected ? 'ring-2 ring-[#212121]/40' : ''}`}
+          className={`relative inline-block rounded-[4px] ${selected ? 'ring-2 ring-ink/40' : ''}`}
           // 폰에서 꾹 눌러도 브라우저의 이미지 메뉴가 뜨지 않게 (편집 중에는 옮기는 게 목적이다)
           onContextMenu={(e) => e.preventDefault()}
         >
@@ -367,12 +367,12 @@ export default function BoardRichEditor({
   return (
     <div className="flex w-full flex-col">
       {allowUpload && (
-        <div className="flex items-center justify-end border-b border-[#DEDEDE] px-2 py-1">
+        <div className="flex items-center justify-end border-b border-line px-2 py-1">
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading || !editor}
-            className="flex items-center gap-1 px-2 py-1 text-[14px] text-[#919191] transition-colors hover:text-[#212121] disabled:opacity-60"
+            className="flex items-center gap-1 px-2 py-1 text-[14px] text-ink-3 transition-colors hover:text-ink disabled:opacity-60"
           >
             <ImagePlus size={16} strokeWidth={1.5} aria-hidden />
             {uploading ? '올리는 중...' : '본문 이미지'}

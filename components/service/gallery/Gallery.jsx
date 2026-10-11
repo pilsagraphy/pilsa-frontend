@@ -89,7 +89,7 @@ function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete }) {
               </button>
             )}
             {photo.state === 'hidden' && (
-              <span className="pointer-events-none absolute left-1 top-1 z-10 rounded-[2px] bg-[#454545] px-1 text-[10px] text-white">숨김</span>
+              <span className="pointer-events-none absolute left-1 top-1 z-10 rounded-[2px] bg-inverse-2 px-1 text-[10px] text-inverse-fg">숨김</span>
             )}
           </div>
         ))}
@@ -212,17 +212,17 @@ const Gallery = () => {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
-      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-[#DEDEDE] pb-6 md:gap-[12px] md:pb-[40px]">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-surface px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
+      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-line pb-6 md:gap-[12px] md:pb-[40px]">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="font-semibold text-[20px] leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]">활동 사진</h2>
+          <h2 className="font-semibold text-[20px] leading-[1.5] tracking-[-0.02em] text-ink md:text-[24px]">활동 사진</h2>
           <div className="flex flex-wrap items-center gap-2">
             <SemesterJump semesters={semesters} value={activeSemester} onJump={jump} />
             {isLoggedIn && meta && (
               <button
                 type="button"
                 onClick={() => setUploadOpen(true)}
-                className="h-[34px] shrink-0 rounded-[6px] bg-[#212121] px-3 text-[13px] text-white transition-colors hover:bg-black"
+                className="h-[34px] shrink-0 rounded-[6px] bg-inverse px-3 text-[13px] text-inverse-fg transition-colors hover:bg-inverse-hover"
               >
                 + 사진 올리기
               </button>
@@ -230,13 +230,13 @@ const Gallery = () => {
             <AdminPageLink href={ROUTES.ADMIN_GALLERY} label="사진 관리" />
           </div>
         </div>
-        <p className="text-[14px] leading-[1.6] tracking-[-0.02em] text-[#919191] md:text-[16px]">
+        <p className="text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-3 md:text-[16px]">
           우리가 함께한 모든 순간들{isLoggedIn ? ' — 로그인한 회원은 누구나 사진을 올릴 수 있어요' : ''}
         </p>
       </header>
 
       {!meta && !error && <AppLoading />}
-      {error && <p className="py-10 text-center text-[14px] text-[#919191]">{error}</p>}
+      {error && <p className="py-10 text-center text-[14px] text-ink-3">{error}</p>}
 
       {meta &&
         visibleSemesters.map((label) => {
@@ -246,10 +246,10 @@ const Gallery = () => {
           const desktopRows = buildRows(photos, ROW_TARGETS_DESKTOP);
           return (
             <section key={label} id={semesterAnchorId(label)} className="flex scroll-mt-[72px] flex-col gap-3">
-              <h3 className="flex items-baseline gap-2 text-[16px] font-semibold tracking-[-0.02em] text-[#212121] md:text-[18px]">
+              <h3 className="flex items-baseline gap-2 text-[16px] font-semibold tracking-[-0.02em] text-ink md:text-[18px]">
                 {label}
-                {isCurrent && <span className="rounded-full bg-[#212121] px-2 py-[1px] text-[10px] font-medium text-white">이번 학기</span>}
-                <span className="text-[12px] font-normal text-[#919191]">{photos.length}장</span>
+                {isCurrent && <span className="rounded-full bg-inverse px-2 py-[1px] text-[10px] font-medium text-inverse-fg">이번 학기</span>}
+                <span className="text-[12px] font-normal text-ink-3">{photos.length}장</span>
               </h3>
               {photos.length === 0 ? (
                 <p className="py-6 text-center text-[13px] text-[#a3a09a]">
@@ -271,9 +271,9 @@ const Gallery = () => {
 
       <div ref={sentinelRef} className="h-px" aria-hidden />
       {meta && visibleCount < semesters.length ? (
-        <p className="text-center text-[12px] text-[#b9b9b9]">{loadingMore ? '지난 학기를 불러오는 중...' : '아래로 내리면 지난 학기 사진이 더 나와요'}</p>
+        <p className="text-center text-[12px] text-ink-4">{loadingMore ? '지난 학기를 불러오는 중...' : '아래로 내리면 지난 학기 사진이 더 나와요'}</p>
       ) : (
-        meta && semesters.length > 1 && <p className="text-center text-[12px] text-[#b9b9b9]">마지막 학기까지 다 봤어요</p>
+        meta && semesters.length > 1 && <p className="text-center text-[12px] text-ink-4">마지막 학기까지 다 봤어요</p>
       )}
 
       <GalleryUploadModal

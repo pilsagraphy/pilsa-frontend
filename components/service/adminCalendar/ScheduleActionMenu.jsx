@@ -78,7 +78,7 @@ export default function ScheduleActionMenu({ isSelected = false, onEdit, onDelet
         <EllipsisVertical
           aria-hidden="true"
           strokeWidth={1.4}
-          className={['size-[18px]', isSelected ? 'text-white' : 'text-[#919191]'].join(' ')}
+          className={['size-[18px]', isSelected ? 'text-white' : 'text-ink-3'].join(' ')}
         />
       </button>
 
@@ -87,7 +87,7 @@ export default function ScheduleActionMenu({ isSelected = false, onEdit, onDelet
           ref={menuRef}
           role="menu"
           style={{ top: position.top, left: position.left, width: menuWidth }}
-          className="fixed z-50 overflow-hidden rounded-[4px] border border-[#dedede] bg-white py-[4px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
+          className="fixed z-50 overflow-hidden rounded-[4px] border border-line bg-surface py-[4px] shadow-[0_4px_12px_rgba(0,0,0,0.08)]"
         >
           {(
             items ?? [
@@ -100,7 +100,7 @@ export default function ScheduleActionMenu({ isSelected = false, onEdit, onDelet
               type="button"
               role="menuitem"
               onClick={() => runAction(item.onSelect)}
-              className="block w-full px-[14px] py-[8px] text-left text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6]"
+              className="block w-full px-[14px] py-[8px] text-left text-[14px] leading-[1.6] tracking-[-0.28px] text-ink transition-colors hover:bg-surface-2"
             >
               {item.label}
             </button>

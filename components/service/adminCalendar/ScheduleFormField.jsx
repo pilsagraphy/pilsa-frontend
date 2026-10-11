@@ -9,7 +9,7 @@ export function ScheduleFormRow({ label, htmlFor, children, labelExtra = null, l
       <div className={`flex items-center justify-between md:block md:w-[92px] md:shrink-0 md:max-w-none ${labelRowClassName}`}>
         <label
           htmlFor={htmlFor}
-          className="text-[14px] leading-[1.6] tracking-[-0.32px] text-[#919191] md:pt-[8px] md:text-[16px]"
+          className="text-[14px] leading-[1.6] tracking-[-0.32px] text-ink-3 md:pt-[8px] md:text-[16px]"
         >
           {label}
         </label>
@@ -21,4 +21,4 @@ export function ScheduleFormRow({ label, htmlFor, children, labelExtra = null, l
 }
 
 export const FIELD_CLASS =
-  'h-[40px] w-full rounded-[6px] border border-[#dedede] bg-white px-[16px] text-[14px] leading-[1.6] tracking-[-0.32px] text-[#212121] outline-none transition-colors placeholder:text-[#b9b9b9] focus:border-[#919191] md:text-[16px]';
+  'h-[40px] w-full rounded-[6px] border border-line bg-surface px-[16px] text-[14px] leading-[1.6] tracking-[-0.32px] text-ink outline-none transition-colors placeholder:text-ink-4 focus:border-ink-3 md:text-[16px]';

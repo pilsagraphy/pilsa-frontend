@@ -21,7 +21,7 @@ export default function MyPageStats() {
   // 실패 시: 최소한 이유를 보여준다 (숫자 자리에 '-' 만 남기지 않도록)
   if (error) {
     return (
-      <div className="flex w-full items-center justify-center bg-white py-[20px] text-[13px] text-[#919191]">
+      <div className="flex w-full items-center justify-center bg-surface py-[20px] text-[13px] text-ink-3">
         {error}
       </div>
     );
@@ -30,7 +30,7 @@ export default function MyPageStats() {
   const isReady = Boolean(summary) && !isLoading;
 
   return (
-    <div className="flex w-full items-stretch bg-white py-[9px]">
+    <div className="flex w-full items-stretch bg-surface py-[9px]">
       {STAT_META.map((stat, index) => {
         const Icon = stat.icon;
         // 아직 안 불러왔으면 '-', 불러왔으면 해당 숫자(없으면 0)
@@ -39,16 +39,16 @@ export default function MyPageStats() {
           <div
             key={stat.key}
             className={`flex flex-1 flex-col items-center justify-center gap-[8px] px-2 py-[6px] ${
-              index !== 0 ? 'border-l border-[#B9B9B9]' : ''
+              index !== 0 ? 'border-l border-line-strong' : ''
             }`}
           >
             <div className="flex items-center gap-[8px]">
-              <Icon size={16} className="text-[#212121]" strokeWidth={2} />
-              <span className="text-[13px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#212121] md:text-[14px]">
+              <Icon size={16} className="text-ink" strokeWidth={2} />
+              <span className="text-[13px] font-semibold leading-[1.6] tracking-[-0.02em] text-ink md:text-[14px]">
                 {stat.label}
               </span>
             </div>
-            <span className="text-[22px] font-bold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]">
+            <span className="text-[22px] font-bold leading-[1.5] tracking-[-0.02em] text-ink md:text-[24px]">
               {count === null ? '-' : count}
             </span>
           </div>

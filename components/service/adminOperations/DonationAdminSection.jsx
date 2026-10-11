@@ -12,11 +12,11 @@ import { toast } from '@/lib/toast';
 
 // 메뉴 관리 > 명예의 전당 관리 (PM 2026-10-11) — 후원 행 등록·수정·사진·삭제. 후원자는 회원 중에서 이름으로 찾아 고른다.
 const inputClass =
-  'h-[34px] w-full min-w-0 rounded-[6px] border border-[#dedede] bg-white px-3 text-[13px] text-[#212121] outline-none transition-colors focus:border-[#919191]';
+  'h-[34px] w-full min-w-0 rounded-[6px] border border-line bg-surface px-3 text-[13px] text-ink outline-none transition-colors focus:border-ink-3';
 const smallBtn =
-  'h-[30px] shrink-0 rounded-[4px] border border-[#dedede] bg-white px-3 text-[12px] text-[#454545] hover:bg-[#f5f5f5] disabled:opacity-30';
-const primaryBtn = 'h-[30px] shrink-0 rounded-[4px] bg-[#212121] px-3 text-[12px] text-white disabled:opacity-30';
-const labelClass = 'text-[11px] text-[#919191]';
+  'h-[30px] shrink-0 rounded-[4px] border border-line bg-surface px-3 text-[12px] text-ink-2 hover:bg-surface-2 disabled:opacity-30';
+const primaryBtn = 'h-[30px] shrink-0 rounded-[4px] bg-inverse px-3 text-[12px] text-inverse-fg disabled:opacity-30';
+const labelClass = 'text-[11px] text-ink-3';
 const won = (v) => `${Number(v ?? 0).toLocaleString('ko-KR')}원`;
 const toLocalInput = (iso) => (iso ? String(iso).slice(0, 16) : '');
 
@@ -53,7 +53,7 @@ export default function DonationAdminSection() {
   return (
     <section className={listSectionClass}>
       <h1 className={listTitleClass}>명예의 전당 관리</h1>
-      <p className="mb-5 text-[13px] leading-[1.6] text-[#919191]">후원자는 회원 중에서 고릅니다. 익명이면 화면에 「익명후원자」로 나갑니다. 사진은 올리면 바로 공개됩니다.</p>
+      <p className="mb-5 text-[13px] leading-[1.6] text-ink-3">후원자는 회원 중에서 고릅니다. 익명이면 화면에 「익명후원자」로 나갑니다. 사진은 올리면 바로 공개됩니다.</p>
       {/* 불러오기에 실패하면 등록 버튼도 숨긴다 (검토 지적 10/11) */}
       {!adding && !error && (
         <button type="button" onClick={() => setAdding(true)} className={`${primaryBtn} mb-4 self-start`}>
@@ -71,7 +71,7 @@ export default function DonationAdminSection() {
       )}
       {error && (
         <div className="flex flex-col items-center gap-3 py-6">
-          <p className="text-[13px] text-[#919191]">{error}</p>
+          <p className="text-[13px] text-ink-3">{error}</p>
           <button type="button" className={smallBtn} onClick={load}>
             다시 불러오기
           </button>
@@ -84,7 +84,7 @@ export default function DonationAdminSection() {
           {rows?.map((d) => (
             <DonationForm key={d.donationId} donation={d} onSaved={load} onDelete={() => setConfirm(d)} />
           ))}
-          {rows?.length === 0 && <p className="py-6 text-center text-[13px] text-[#919191]">등록된 후원이 없습니다.</p>}
+          {rows?.length === 0 && <p className="py-6 text-center text-[13px] text-ink-3">등록된 후원이 없습니다.</p>}
         </div>
       )}
       <ConfirmModal open={Boolean(confirm)} title={`'${confirm?.displayName ?? ''}' 후원을 삭제할까요?`} onConfirm={remove} onCancel={() => setConfirm(null)} />
@@ -137,7 +137,7 @@ function MemberPicker({ value, onPick }) {
                 onPick(m);
                 setResults([]);
               }}
-              className="h-[26px] rounded-full bg-[#F5F5F5] px-2 text-[12px] text-[#454545] hover:bg-[#EDEDED]"
+              className="h-[26px] rounded-full bg-surface-2 px-2 text-[12px] text-ink-2 hover:bg-surface-3"
             >
               {m.name} ({m.loginId})
             </button>
@@ -209,22 +209,22 @@ function DonationForm({ donation = null, onSaved, onCancel, onDelete }) {
   };
 
   return (
-    <div className="flex flex-col gap-3 rounded-[10px] border border-[#dedede] bg-white p-4 md:flex-row md:items-start">
+    <div className="flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-4 md:flex-row md:items-start">
       {!isNew && (
         <div className="flex shrink-0 flex-col items-center gap-2">
-          <div className="h-[96px] w-[96px] overflow-hidden rounded-full bg-[#D9D9D9]">
+          <div className="h-[96px] w-[96px] overflow-hidden rounded-full bg-line">
             {donation.photoUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={`${apiUrl(donation.photoUrl)}?v=${encodeURIComponent(donation.photoUrl)}`} alt="" className="h-full w-full object-cover" />
             ) : (
-              <div className="flex h-full w-full items-center justify-center text-[11px] text-[#919191]">사진 없음</div>
+              <div className="flex h-full w-full items-center justify-center text-[11px] text-ink-3">사진 없음</div>
             )}
           </div>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => upload(e.target.files?.[0])} />
           <button type="button" className={smallBtn} disabled={saving} onClick={() => fileRef.current?.click()}>
             사진 바꾸기
           </button>
-          <span className="text-[12px] font-semibold text-[#212121]">{won(donation.amount)}</span>
+          <span className="text-[12px] font-semibold text-ink">{won(donation.amount)}</span>
         </div>
       )}
       <div className="flex min-w-0 flex-1 flex-col gap-2">
@@ -256,8 +256,8 @@ function DonationForm({ donation = null, onSaved, onCancel, onDelete }) {
             <span className={labelClass}>학과 (선택)</span>
             <input type="text" value={major} maxLength={50} onChange={(e) => setMajor(e.target.value)} className={inputClass} />
           </label>
-          <label className="flex items-center gap-2 self-end text-[12px] text-[#454545]">
-            <input type="checkbox" checked={isAnonymous} onChange={(e) => setIsAnonymous(e.target.checked)} className="accent-[#212121]" />
+          <label className="flex items-center gap-2 self-end text-[12px] text-ink-2">
+            <input type="checkbox" checked={isAnonymous} onChange={(e) => setIsAnonymous(e.target.checked)} className="accent-ink" />
             익명 후원 (화면에 「익명후원자」)
           </label>
         </div>
@@ -272,7 +272,7 @@ function DonationForm({ donation = null, onSaved, onCancel, onDelete }) {
             </button>
           )}
           {!isNew && onDelete && (
-            <button type="button" className={`${smallBtn} mr-auto text-[#b3261e]`} onClick={onDelete}>
+            <button type="button" className={`${smallBtn} mr-auto text-danger`} onClick={onDelete}>
               삭제
             </button>
           )}

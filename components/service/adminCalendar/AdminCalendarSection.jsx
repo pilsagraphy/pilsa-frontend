@@ -264,7 +264,7 @@ export default function AdminCalendarSection() {
     <button
       type="button"
       onClick={() => setFormTarget({ mode: 'create', date: selectedDate })}
-      className="flex h-[28px] shrink-0 items-center gap-[4px] rounded-[4px] border border-[#454545] bg-white pe-[10px] ps-[8px] text-[12px] leading-[1.6] tracking-[-0.24px] text-[#454545] transition-colors hover:bg-[#f6f6f6]"
+      className="flex h-[28px] shrink-0 items-center gap-[4px] rounded-[4px] border border-ink-2 bg-surface pe-[10px] ps-[8px] text-[12px] leading-[1.6] tracking-[-0.24px] text-ink-2 transition-colors hover:bg-surface-2"
     >
       <Plus aria-hidden="true" strokeWidth={1.8} className="size-[12px]" />
       일정 추가
@@ -299,7 +299,7 @@ export default function AdminCalendarSection() {
   );
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col bg-surface px-4 py-4 sm:px-6 sm:py-7 md:p-10">
       <CalendarSection
         showSubscribe={false}
         refreshKey={refreshSignal.key}

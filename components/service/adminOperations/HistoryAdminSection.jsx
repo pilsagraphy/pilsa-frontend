@@ -12,13 +12,13 @@ import { toast } from '@/lib/toast';
 // 메뉴 관리 > 연혁 관리 (PM 2026-10-11) — 연도별 항목(글 · 바로가기 · 영상 · 링크 · 사진)을 고치고 순서를 바꾼다.
 // 영상은 서버 public/videos 의 mp4 경로를 적는다(파일 업로드는 용량 때문에 서버 담당). 사진은 여기서 올리면 주소가 들어간다.
 const inputClass =
-  'h-[34px] w-full min-w-0 rounded-[6px] border border-[#dedede] bg-white px-3 text-[13px] text-[#212121] outline-none transition-colors focus:border-[#919191]';
+  'h-[34px] w-full min-w-0 rounded-[6px] border border-line bg-surface px-3 text-[13px] text-ink outline-none transition-colors focus:border-ink-3';
 const textareaClass =
-  'min-h-[64px] w-full resize-y rounded-[6px] border border-[#dedede] bg-white px-3 py-2 text-[13px] leading-[1.6] text-[#212121] outline-none transition-colors focus:border-[#919191]';
+  'min-h-[64px] w-full resize-y rounded-[6px] border border-line bg-surface px-3 py-2 text-[13px] leading-[1.6] text-ink outline-none transition-colors focus:border-ink-3';
 const smallBtn =
-  'h-[30px] shrink-0 rounded-[4px] border border-[#dedede] bg-white px-3 text-[12px] text-[#454545] hover:bg-[#f5f5f5] disabled:opacity-30';
-const primaryBtn = 'h-[30px] shrink-0 rounded-[4px] bg-[#212121] px-3 text-[12px] text-white disabled:opacity-30';
-const labelClass = 'text-[11px] text-[#919191]';
+  'h-[30px] shrink-0 rounded-[4px] border border-line bg-surface px-3 text-[12px] text-ink-2 hover:bg-surface-2 disabled:opacity-30';
+const primaryBtn = 'h-[30px] shrink-0 rounded-[4px] bg-inverse px-3 text-[12px] text-inverse-fg disabled:opacity-30';
+const labelClass = 'text-[11px] text-ink-3';
 
 export default function HistoryAdminSection() {
   const [items, setItems] = useState(null);
@@ -95,7 +95,7 @@ export default function HistoryAdminSection() {
   return (
     <section className={listSectionClass}>
       <h1 className={listTitleClass}>연혁 관리</h1>
-      <p className="mb-5 text-[13px] leading-[1.6] text-[#919191]">
+      <p className="mb-5 text-[13px] leading-[1.6] text-ink-3">
         연혁 페이지의 연도별 항목입니다. 바로가기 주소를 넣으면 글 자체가 링크가 되고, 영상·사진은 글 아래 16:9 상자에 나옵니다.
       </p>
       {/* 불러오기에 실패하면 추가 칸을 숨긴다 — 목록 없이 추가하면 순서값이 꼬인다 (검토 지적 10/11) */}
@@ -109,7 +109,7 @@ export default function HistoryAdminSection() {
       )}
       {error && (
         <div className="flex flex-col items-center gap-3 py-6">
-          <p className="text-[13px] text-[#919191]">{error}</p>
+          <p className="text-[13px] text-ink-3">{error}</p>
           <button type="button" className={smallBtn} onClick={load}>
             다시 불러오기
           </button>
@@ -123,7 +123,7 @@ export default function HistoryAdminSection() {
             const rows = items.filter((i) => i.year === year);
             return (
               <div key={year} className="flex flex-col gap-3">
-                <h2 className="text-[18px] font-semibold text-[#212121]">{year}</h2>
+                <h2 className="text-[18px] font-semibold text-ink">{year}</h2>
                 {rows.map((item, idx) => (
                   <ItemCard
                     key={item.itemId}
@@ -200,9 +200,9 @@ function ItemCard({ item, first, last, busy, onMove, onDelete, onSaved }) {
   };
 
   return (
-    <div className="flex flex-col gap-2 rounded-[10px] border border-[#dedede] bg-white p-4">
+    <div className="flex flex-col gap-2 rounded-[10px] border border-line bg-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <label className="flex items-center gap-1 text-[11px] text-[#919191]">
+        <label className="flex items-center gap-1 text-[11px] text-ink-3">
           연도
           <input type="number" value={form.year} onChange={(e) => set('year', e.target.value)} className={`${inputClass} w-[90px]`} />
         </label>
@@ -213,7 +213,7 @@ function ItemCard({ item, first, last, busy, onMove, onDelete, onSaved }) {
           <button type="button" className={smallBtn} disabled={busy || last} onClick={() => onMove(1)}>
             ↓
           </button>
-          <button type="button" className={`${smallBtn} text-[#b3261e]`} disabled={busy} onClick={onDelete}>
+          <button type="button" className={`${smallBtn} text-danger`} disabled={busy} onClick={onDelete}>
             삭제
           </button>
         </span>
@@ -239,9 +239,9 @@ function ItemCard({ item, first, last, busy, onMove, onDelete, onSaved }) {
       </div>
 
       {/* 사진 */}
-      <div className="flex flex-col gap-2 rounded-[6px] border border-dashed border-[#dedede] p-3">
+      <div className="flex flex-col gap-2 rounded-[6px] border border-dashed border-line p-3">
         <div className="flex items-center gap-2">
-          <span className="text-[12px] font-medium text-[#212121]">사진</span>
+          <span className="text-[12px] font-medium text-ink">사진</span>
           <span className={labelClass}>16:9 상자에 가로로 나란히. 세로 사진이면 「넓게」를 끄고, 작아 보이면 확대 배율을 준다</span>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => upload(e.target.files?.[0])} />
           <button type="button" className={`${smallBtn} ml-auto`} disabled={saving} onClick={() => fileRef.current?.click()}>
@@ -251,10 +251,10 @@ function ItemCard({ item, first, last, busy, onMove, onDelete, onSaved }) {
         {form.images.map((im, i) => (
           <div key={`${im.src}-${i}`} className="flex flex-wrap items-center gap-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={historyImageSrc(im.src)} alt="" className="h-[48px] w-[72px] rounded-[4px] bg-[#f3f3f3] object-cover" />
+            <img src={historyImageSrc(im.src)} alt="" className="h-[48px] w-[72px] rounded-[4px] bg-surface-2 object-cover" />
             <input type="text" value={im.alt ?? ''} onChange={(e) => setImage(i, { alt: e.target.value })} placeholder="설명(alt)" className={`${inputClass} flex-1`} />
-            <label className="flex items-center gap-1 text-[12px] text-[#454545]">
-              <input type="checkbox" checked={Boolean(im.wide)} onChange={(e) => setImage(i, { wide: e.target.checked })} className="accent-[#212121]" />
+            <label className="flex items-center gap-1 text-[12px] text-ink-2">
+              <input type="checkbox" checked={Boolean(im.wide)} onChange={(e) => setImage(i, { wide: e.target.checked })} className="accent-ink" />
               넓게
             </label>
             <input type="number" step="0.1" min="0.5" max="3" value={im.zoom ?? ''} onChange={(e) => setImage(i, { zoom: e.target.value })} placeholder="확대" className={`${inputClass} w-[80px]`} />

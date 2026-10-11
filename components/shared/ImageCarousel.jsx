@@ -33,7 +33,7 @@ export default function ImageCarousel({ images = [], className = '' }) {
   };
 
   const navButtonClass =
-    'absolute top-1/2 z-10 hidden size-[36px] -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-[#212121] shadow-[0_2px_8px_rgba(0,0,0,0.18)] transition hover:bg-white md:flex';
+    'absolute top-1/2 z-10 hidden size-[36px] -translate-y-1/2 items-center justify-center rounded-full bg-surface/90 text-ink shadow-[0_2px_8px_rgba(0,0,0,0.18)] transition hover:bg-surface md:flex';
 
   return (
     <div className={`relative w-full ${className}`}>
@@ -54,7 +54,7 @@ export default function ImageCarousel({ images = [], className = '' }) {
               src={image.src}
               alt={image.alt ?? ''}
               loading={i === 0 ? 'eager' : 'lazy'}
-              className="max-h-[420px] w-auto max-w-full cursor-zoom-in rounded-[6px] border border-[#EDEDED] object-contain"
+              className="max-h-[420px] w-auto max-w-full cursor-zoom-in rounded-[6px] border border-line object-contain"
             />
           </button>
         ))}
@@ -72,7 +72,7 @@ export default function ImageCarousel({ images = [], className = '' }) {
             {images.map((_, i) => (
               <span
                 key={i}
-                className={`size-[6px] rounded-full transition-colors ${i === index ? 'bg-[#212121]' : 'bg-[#DEDEDE]'}`}
+                className={`size-[6px] rounded-full transition-colors ${i === index ? 'bg-inverse' : 'bg-line'}`}
               />
             ))}
           </div>

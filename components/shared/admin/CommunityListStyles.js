@@ -3,14 +3,14 @@
 
 // 페이지 전체를 감싸는 섹션 래퍼. 폭 제한이 없다 — 신고 관리처럼 본문을 꽉 채운다 (PM, 2026-09-20)
 export const listSectionClass =
-  'mx-auto flex w-full max-w-none flex-col bg-white px-4 py-4 sm:px-6 sm:py-7 md:p-10';
+  'mx-auto flex w-full max-w-none flex-col bg-surface px-4 py-4 sm:px-6 sm:py-7 md:p-10';
 
 // 페이지 제목 (예: 게시글 관리)
 export const listTitleClass =
-  "my-[15px] font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[24px]";
+  "my-[15px] font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.02em] text-ink md:text-[24px]";
 
 // 제목 아래 '목록' 라벨
-export const listSubtitleClass = 'text-[18px] leading-[1.6] tracking-[-0.36px] text-[#212121]';
+export const listSubtitleClass = 'text-[18px] leading-[1.6] tracking-[-0.36px] text-ink';
 
 // 오른쪽 위 액션 버튼 두 개 (예: 선택 블라인드 · 선택 삭제)
 //
@@ -24,4 +24,4 @@ export const actionButtonClass =
 
 // 목록 표의 체크박스 (헤더 · 행 공용)
 export const checkboxClass =
-  'size-5 md:size-6 rounded-[4px] border-[#919191] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]';
+  'size-5 md:size-6 rounded-[4px] border-ink-3 data-[state=checked]:border-ink data-[state=checked]:bg-inverse';

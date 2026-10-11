@@ -306,7 +306,7 @@ export default function CalendarSection({
           setAddTarget(schedule);
         }}
         className={`grid size-6 place-items-center rounded-full transition ${
-          isSelected ? 'text-white hover:bg-white/20' : 'text-[#919191] hover:bg-black/5 hover:text-[#212121]'
+          isSelected ? 'text-white hover:bg-white/20' : 'text-ink-3 hover:bg-black/5 hover:text-ink'
         }`}
       >
         {/* 팀이 만든 원래 모양(+)을 그대로 쓴다 (PM, 2026-09-21) */}
@@ -335,12 +335,12 @@ export default function CalendarSection({
         {titleHref ? (
           <Link
             href={titleHref}
-            className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] hover:underline underline-offset-4 sm:text-[24px]"
+            className="text-[20px] font-semibold tracking-[-0.48px] text-ink hover:underline underline-offset-4 sm:text-[24px]"
           >
             <h2>일정 달력</h2>
           </Link>
         ) : (
-          <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-[#212121] sm:text-[24px]">
+          <h2 className="text-[20px] font-semibold tracking-[-0.48px] text-ink sm:text-[24px]">
             일정 달력
           </h2>
         )}
@@ -354,7 +354,7 @@ export default function CalendarSection({
       {/* 960px 미만에서는 달력 위 · 월별 일정 아래로 쌓는다. 옆에 세우면 폰 실폭에서 목록이 100px 남짓이라 못 쓴다.
           달력 상자 폭은 칸 폭 × 7 에 맞춘다 (36×7=252, sm 48×7=336) — 어긋나면 날짜 원이 칸 밖으로 삐져나온다. */}
       <div className="flex w-full flex-col items-center gap-4 sm:gap-5 min-[960px]:flex-row min-[960px]:items-start min-[960px]:justify-between min-[960px]:gap-[29px]">
-        <div className="w-[252px] shrink-0 bg-white p-0 sm:w-[336px] min-[960px]:w-[443px] min-[960px]:p-[24px]">
+        <div className="w-[252px] shrink-0 bg-surface p-0 sm:w-[336px] min-[960px]:w-[443px] min-[960px]:p-[24px]">
           <Calendar
             mode="single"
             month={currentMonth}
@@ -375,12 +375,12 @@ export default function CalendarSection({
           {/* 오늘 일정 — 달력 바로 아래에서 "오늘 뭐 있나" 를 한눈에 (테스터 가성연 요청, 10/10). 이번 달을 보고 있을 때만 */}
           {!isLoading && !hasFetchError && isSameMonth(currentMonth, new Date()) && (
             <div className={`flex flex-col gap-[6px] ${scrollableScheduleList ? 'pe-[10px]' : ''}`}>
-              <p className="text-[14px] tracking-[-0.32px] text-[#212121] md:text-[16px]">오늘 일정</p>
+              <p className="text-[14px] tracking-[-0.32px] text-ink md:text-[16px]">오늘 일정</p>
               {(() => {
                 const todaySchedules = schedules.filter((schedule) => isDateIncludedInSchedule(new Date(), schedule));
                 if (!todaySchedules.length) {
                   return (
-                    <p className="rounded-[8px] bg-[#f6f6f6] px-[14px] py-[10px] text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">
+                    <p className="rounded-[8px] bg-surface-2 px-[14px] py-[10px] text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-3">
                       오늘은 일정이 없어요
                     </p>
                   );
@@ -392,12 +392,12 @@ export default function CalendarSection({
                         <button
                           type="button"
                           onClick={() => handleSelectSchedule(schedule)}
-                          className="flex w-full items-center justify-between gap-3 rounded-[8px] border border-[#212121] bg-white px-[14px] py-[10px] text-left transition-colors hover:bg-[#f6f6f6]"
+                          className="flex w-full items-center justify-between gap-3 rounded-[8px] border border-ink bg-surface px-[14px] py-[10px] text-left transition-colors hover:bg-surface-2"
                         >
-                          <span className="min-w-0 truncate text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121]">
+                          <span className="min-w-0 truncate text-[14px] leading-[1.6] tracking-[-0.28px] text-ink">
                             {schedule.title}
                           </span>
-                          <span className="shrink-0 text-[12px] tracking-[-0.24px] text-[#919191]">
+                          <span className="shrink-0 text-[12px] tracking-[-0.24px] text-ink-3">
                             {schedule.startTime ? `${schedule.startTime}${schedule.endTime ? ` ~ ${schedule.endTime}` : ''}` : '종일'}
                           </span>
                         </button>
@@ -414,7 +414,7 @@ export default function CalendarSection({
               scrollableScheduleList ? 'pe-[10px]' : ''
             }`}
           >
-            <p className="text-[14px] tracking-[-0.32px] text-[#212121] md:text-[16px]">
+            <p className="text-[14px] tracking-[-0.32px] text-ink md:text-[16px]">
               월별 일정
             </p>
             {scheduleListAction}
@@ -422,7 +422,7 @@ export default function CalendarSection({
             {!scheduleListAction && isAdmin && (
               <Link
                 href={`${ROUTES.ADMIN_CALENDAR}?action=create${selectedDate ? `&date=${format(selectedDate, 'yyyy-MM-dd')}` : ''}`}
-                className="flex h-[28px] shrink-0 items-center gap-[4px] rounded-[4px] border border-[#454545] bg-white pe-[10px] ps-[8px] text-[12px] leading-[1.6] tracking-[-0.24px] text-[#454545] transition-colors hover:bg-[#f6f6f6]"
+                className="flex h-[28px] shrink-0 items-center gap-[4px] rounded-[4px] border border-ink-2 bg-surface pe-[10px] ps-[8px] text-[12px] leading-[1.6] tracking-[-0.24px] text-ink-2 transition-colors hover:bg-surface-2"
               >
                 <Plus aria-hidden="true" strokeWidth={1.8} className="size-[12px]" />
                 일정 등록

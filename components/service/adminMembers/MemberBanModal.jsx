@@ -53,16 +53,16 @@ export default function MemberBanModal({
     >
       {/* 위아래 진한 선은 표 바깥에 둔다.
           TableBody가 마지막 행의 아래선을 지워주므로, 마지막 행 밑에는 이 진한 선만 남는다. */}
-      <div className="border-b border-t border-[#454545]">
+      <div className="border-b border-t border-ink-2">
         {/* table-fixed가 아니라 내용에 맞춰 열이 늘어나는 기본(auto) 레이아웃이다.
             앞 열은 시안 너비를 최소값으로만 잡아두고, 길어지면 그만큼 넓어진다. */}
         <Table>
           <TableHeader>
-            <TableRow className="h-[32px] border-b border-[#454545] hover:bg-transparent">
-              <TableHead className="min-w-[56px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
+            <TableRow className="h-[32px] border-b border-ink-2 hover:bg-transparent">
+              <TableHead className="min-w-[56px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-ink-3">
                 번호
               </TableHead>
-              <TableHead className="min-w-[200px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
+              <TableHead className="min-w-[200px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-ink-3">
                 대상 회원
               </TableHead>
             </TableRow>
@@ -72,14 +72,14 @@ export default function MemberBanModal({
             {members.map((member, index) => (
               <TableRow
                 key={member.memberId}
-                className="h-[40px] border-b border-[#b9b9b9] hover:bg-transparent"
+                className="h-[40px] border-b border-line-strong hover:bg-transparent"
               >
-                <TableCell className="px-0 pl-[18px] text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+                <TableCell className="px-0 pl-[18px] text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">
                   {index + 1}
                 </TableCell>
                 {/* 회원 정보가 길어져도 모달을 넘지 않도록 안쪽 span으로 상한을 걸고 말줄임한다.
                     auto 레이아웃에서는 td의 max-width가 먹지 않는다. */}
-                <TableCell className="pl-0 pr-[16px] text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
+                <TableCell className="pl-0 pr-[16px] text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2">
                   <span className="block max-w-[280px] truncate">
                     {formatMemberLabel({
                       loginId: member.loginId,

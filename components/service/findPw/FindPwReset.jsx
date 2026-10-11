@@ -99,13 +99,13 @@ export default function FindPwReset({ loginId, onNext }) {
   return (
     <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-5 items-end w-full">
       <div className="flex flex-col gap-5 items-start w-full">
-        <h1 className="font-semibold text-[24px] text-[#454545] tracking-[-0.48px] leading-[1.5]">
+        <h1 className="font-semibold text-[24px] text-ink-2 tracking-[-0.48px] leading-[1.5]">
           비밀번호를 재설정해주세요
         </h1>
 
         <div className="flex flex-col gap-3 w-full">
           <div className="flex flex-col gap-3 w-full">
-            <p className="text-[#454545] text-[16px] tracking-[-0.32px] leading-[1.6]">
+            <p className="text-ink-2 text-[16px] tracking-[-0.32px] leading-[1.6]">
               신규 비밀번호
             </p>
             <div className="flex flex-col gap-[6px] w-full">
@@ -117,12 +117,12 @@ export default function FindPwReset({ loginId, onNext }) {
                 disabled={loading}
                 className={`h-[52px] text-[16px] ${
                   errors.newPassword
-                    ? 'border-[#f44336] text-[#f44336] focus-visible:ring-0 focus-visible:border-[#f44336]'
+                    ? 'border-alert text-alert focus-visible:ring-0 focus-visible:border-alert'
                     : ''
                 }`}
               />
               {errors.newPassword && (
-                <p className="text-[#f44336] text-[12px] tracking-[-0.24px] leading-[1.4]">
+                <p className="text-alert text-[12px] tracking-[-0.24px] leading-[1.4]">
                   {errors.newPassword}
                 </p>
               )}
@@ -130,7 +130,7 @@ export default function FindPwReset({ loginId, onNext }) {
           </div>
 
           <div className="flex flex-col gap-3 w-full">
-            <p className="text-[#454545] text-[16px] tracking-[-0.32px] leading-[1.6]">
+            <p className="text-ink-2 text-[16px] tracking-[-0.32px] leading-[1.6]">
               비밀번호 재입력
             </p>
             <div className="flex flex-col gap-[6px] w-full">
@@ -142,12 +142,12 @@ export default function FindPwReset({ loginId, onNext }) {
                 disabled={loading}
                 className={`h-[52px] text-[16px] ${
                   errors.confirmPassword
-                    ? 'border-[#f44336] text-[#f44336] focus-visible:ring-0 focus-visible:border-[#f44336]'
+                    ? 'border-alert text-alert focus-visible:ring-0 focus-visible:border-alert'
                     : ''
                 }`}
               />
               {errors.confirmPassword && (
-                <p className="text-[#f44336] text-[12px] tracking-[-0.24px] leading-[1.4]">
+                <p className="text-alert text-[12px] tracking-[-0.24px] leading-[1.4]">
                   {errors.confirmPassword}
                 </p>
               )}
@@ -159,7 +159,7 @@ export default function FindPwReset({ loginId, onNext }) {
       <Button
         type="submit"
         disabled={loading}
-        className="h-[52px] w-full bg-[#212121] hover:bg-[#424242] text-white text-[16px] transition-colors"
+        className="h-[52px] w-full bg-inverse hover:bg-inverse-2 text-inverse-fg text-[16px] transition-colors"
       >
         {loading ? '처리 중...' : '비밀번호 재설정'}
       </Button>

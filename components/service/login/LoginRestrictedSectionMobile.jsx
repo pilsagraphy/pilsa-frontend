@@ -12,19 +12,19 @@ export default function LoginRestrictedSectionMobile({
 
   return (
     <section className="mx-auto flex w-full max-w-[600px] flex-col items-center gap-[20px] px-[40px] py-[80px] text-center [word-break:keep-all]">
-      <h2 className="text-[24px] font-semibold leading-[1.5] tracking-[-0.48px] text-[#212121]">
+      <h2 className="text-[24px] font-semibold leading-[1.5] tracking-[-0.48px] text-ink">
         로그인이 제한된 계정입니다
       </h2>
-      <p className="whitespace-pre-line text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-[#212121]">
+      <p className="whitespace-pre-line text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-ink">
         {reason}
       </p>
-      <p className="text-[16px] font-semibold leading-[1.6] tracking-[-0.32px] text-[#212121]">
+      <p className="text-[16px] font-semibold leading-[1.6] tracking-[-0.32px] text-ink">
         {unlockAt} 부터 다시 로그인 할 수 있습니다.
       </p>
 
       <Button
         type="button"
-        className="h-[52px] w-full rounded-[4px] bg-[#212121] text-[16px] font-normal tracking-[-0.32px] text-white hover:bg-[#212121]/90"
+        className="h-[52px] w-full rounded-[4px] bg-inverse text-[16px] font-normal tracking-[-0.32px] text-inverse-fg hover:bg-inverse/90"
         onClick={() => router.push(BASE_PATH)}
       >
         홈으로 돌아가기

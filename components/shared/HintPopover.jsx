@@ -97,12 +97,12 @@ export default function HintPopover({ label = '설명', children, className = ''
               bottom: pos.bottom,
               width: pos.width,
             }}
-            className="z-[80] rounded-[6px] bg-[#212121] px-3 py-2 text-[12px] font-normal leading-[1.6] tracking-[-0.02em] text-white shadow-[0_6px_20px_rgba(0,0,0,0.18)]"
+            className="z-[80] rounded-[6px] bg-inverse px-3 py-2 text-[12px] font-normal leading-[1.6] tracking-[-0.02em] text-inverse-fg shadow-[0_6px_20px_rgba(0,0,0,0.18)]"
           >
             <span
               aria-hidden
               style={{ left: pos.arrowLeft }}
-              className={`absolute size-[8px] -translate-x-1/2 rotate-45 bg-[#212121] ${
+              className={`absolute size-[8px] -translate-x-1/2 rotate-45 bg-inverse ${
                 pos.placeAbove ? '-bottom-[4px]' : '-top-[4px]'
               }`}
             />
@@ -126,7 +126,7 @@ export default function HintPopover({ label = '설명', children, className = ''
         onMouseLeave={() => canHover() && close()}
         onFocus={() => canHover() && open()}
         onBlur={() => canHover() && close()}
-        className={`grid size-5 place-items-center rounded-full text-[#B9B9B9] transition hover:bg-[#F5F5F5] hover:text-[#757575] ${className}`}
+        className={`grid size-5 place-items-center rounded-full text-ink-4 transition hover:bg-surface-2 hover:text-ink-3 ${className}`}
       >
         <Info size={16} strokeWidth={1.5} />
       </button>

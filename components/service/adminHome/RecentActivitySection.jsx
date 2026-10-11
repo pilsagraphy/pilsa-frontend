@@ -15,7 +15,7 @@ function ActivityHeader({ title, onViewAll }) {
       <button
         type="button"
         onClick={onViewAll}
-        className="text-left text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121] hover:underline underline-offset-4"
+        className="text-left text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-ink hover:underline underline-offset-4"
       >
         <h3>{title}</h3>
       </button>
@@ -25,7 +25,7 @@ function ActivityHeader({ title, onViewAll }) {
         onClick={onViewAll}
         aria-label={`${title} 전체보기`}
         title="전체보기"
-        className="flex h-[24px] cursor-pointer items-center justify-center rounded-sm px-[2px] text-[#212121] transition hover:bg-[#F6F6F6]"
+        className="flex h-[24px] cursor-pointer items-center justify-center rounded-sm px-[2px] text-ink transition hover:bg-surface-2"
       >
         <svg width="50" height="10" viewBox="0 0 50 10" fill="none" aria-hidden="true">
           <path
@@ -44,7 +44,7 @@ function ActivityHeader({ title, onViewAll }) {
 // 목록 자리 상태 문구 (로딩/에러/데이터 없음) — 한 행 높이를 유지해 테두리가 무너지지 않게 한다
 function ActivityMessage({ children }) {
   return (
-    <div className="flex h-[44px] items-center justify-center border-b border-[#B9B9B9] text-[16px] leading-[1.6] tracking-[-0.32px] text-[#919191]">
+    <div className="flex h-[44px] items-center justify-center border-b border-line-strong text-[16px] leading-[1.6] tracking-[-0.32px] text-ink-3">
       {children}
     </div>
   );
@@ -55,7 +55,7 @@ function RecentReports({ reports, isLoading, error, onViewAll }) {
   return (
     <div className="flex w-full flex-col lg:flex-1 lg:basis-0">
       <ActivityHeader title="최근 신고" onViewAll={onViewAll} />
-      <div className="mt-[7px] flex flex-col border-t border-[#B9B9B9]">
+      <div className="mt-[7px] flex flex-col border-t border-line-strong">
         {isLoading ? (
           <ActivityMessage>불러오는 중...</ActivityMessage>
         ) : error ? (
@@ -66,18 +66,18 @@ function RecentReports({ reports, isLoading, error, onViewAll }) {
           reports.map((report) => (
             <div
               key={`${report.targetType}-${report.targetId}`}
-              className="flex h-[44px] items-center gap-[12px] border-b border-[#B9B9B9] pr-[8px]"
+              className="flex h-[44px] items-center gap-[12px] border-b border-line-strong pr-[8px]"
             >
-              <span className="flex-shrink-0 rounded-[11px] border border-[#AE0000] px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-[#AE0000]">
+              <span className="flex-shrink-0 rounded-[11px] border border-danger px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-danger">
                 신고
               </span>
-              <span className="flex-shrink-0 text-[16px] leading-[1.6] tracking-[-0.32px] text-[#212121]">
+              <span className="flex-shrink-0 text-[16px] leading-[1.6] tracking-[-0.32px] text-ink">
                 [{report.boardName}]
               </span>
-              <span className="min-w-0 flex-1 truncate text-[16px] leading-[1.6] tracking-[-0.32px] text-[#212121]">
+              <span className="min-w-0 flex-1 truncate text-[16px] leading-[1.6] tracking-[-0.32px] text-ink">
                 &ldquo;{report.preview}&rdquo;
               </span>
-              <span className="flex-shrink-0 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
+              <span className="flex-shrink-0 text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3">
                 {formatDotDate(report.createdAt)}
               </span>
             </div>
@@ -93,7 +93,7 @@ function RecentMembers({ members, isLoading, error, onViewAll }) {
   return (
     <div className="flex w-full flex-col lg:flex-1 lg:basis-0">
       <ActivityHeader title="최근 가입 회원" onViewAll={onViewAll} />
-      <div className="mt-[7px] flex flex-col border-t border-[#B9B9B9]">
+      <div className="mt-[7px] flex flex-col border-t border-line-strong">
         {isLoading ? (
           <ActivityMessage>불러오는 중...</ActivityMessage>
         ) : error ? (
@@ -104,33 +104,33 @@ function RecentMembers({ members, isLoading, error, onViewAll }) {
           members.map((member) => (
             <div
               key={member.userId}
-              className="flex h-[44px] items-center border-b border-[#B9B9B9] pl-[10px] pr-[8px]"
+              className="flex h-[44px] items-center border-b border-line-strong pl-[10px] pr-[8px]"
             >
               {/* 폭이 모자라면 줄을 바꾸지 않고 말줄임한다 — '재학/생' 처럼 글자가 끊기면 못 읽는다.
                   신분과 날짜는 그대로 두고 아이디·이름이 줄어든다 */}
-              <span className="shrink-0 whitespace-nowrap text-[15px] font-semibold leading-[1.6] tracking-[-0.3px] text-[#212121] md:text-[16px]">
+              <span className="shrink-0 whitespace-nowrap text-[15px] font-semibold leading-[1.6] tracking-[-0.3px] text-ink md:text-[16px]">
                 {MEMBER_TYPE_LABELS[member.memberType] ?? member.memberType}
               </span>
 
-              <span className="mx-[8px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9] md:mx-[10px]" />
+              <span className="mx-[8px] h-[15px] w-px flex-shrink-0 bg-line-strong md:mx-[10px]" />
 
               <span
                 title={member.loginId}
-                className="min-w-0 max-w-[38%] truncate text-[15px] leading-[1.6] tracking-[-0.3px] text-[#212121] md:text-[16px]"
+                className="min-w-0 max-w-[38%] truncate text-[15px] leading-[1.6] tracking-[-0.3px] text-ink md:text-[16px]"
               >
                 {member.loginId}
               </span>
 
-              <span className="mx-[8px] h-[15px] w-px flex-shrink-0 bg-[#B9B9B9] md:mx-[10px]" />
+              <span className="mx-[8px] h-[15px] w-px flex-shrink-0 bg-line-strong md:mx-[10px]" />
 
               <span
                 title={member.name}
-                className="min-w-0 flex-1 truncate text-[15px] leading-[1.6] tracking-[-0.3px] text-[#212121] md:text-[16px]"
+                className="min-w-0 flex-1 truncate text-[15px] leading-[1.6] tracking-[-0.3px] text-ink md:text-[16px]"
               >
                 {member.name}
               </span>
 
-              <span className="ml-[8px] shrink-0 whitespace-nowrap text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191] md:ml-auto md:text-[14px]">
+              <span className="ml-[8px] shrink-0 whitespace-nowrap text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-3 md:ml-auto md:text-[14px]">
                 {formatDotDate(member.joinedAt)} 가입
               </span>
             </div>

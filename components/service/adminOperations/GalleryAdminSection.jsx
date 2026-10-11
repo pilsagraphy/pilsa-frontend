@@ -13,12 +13,12 @@ import { toast } from '@/lib/toast';
 const STATE_LABEL = { normal: '보임', hidden: '숨김' };
 const chipClass = (active) =>
   `h-[32px] shrink-0 rounded-full px-3 text-[13px] font-medium tracking-[-0.26px] transition ${
-    active ? 'bg-[#212121] text-white' : 'bg-[#F5F5F5] text-[#454545] hover:bg-[#EDEDED]'
+    active ? 'bg-inverse text-inverse-fg' : 'bg-surface-2 text-ink-2 hover:bg-surface-3'
   }`;
 const smallBtn =
-  'h-[28px] shrink-0 rounded-[4px] border border-[#dedede] bg-white px-2 text-[12px] text-[#454545] hover:bg-[#f5f5f5] disabled:opacity-30';
+  'h-[28px] shrink-0 rounded-[4px] border border-line bg-surface px-2 text-[12px] text-ink-2 hover:bg-surface-2 disabled:opacity-30';
 const inputClass =
-  'h-[30px] min-w-0 w-full rounded-[4px] border border-[#dedede] bg-white px-2 text-[12px] text-[#212121] outline-none transition-colors focus:border-[#919191]';
+  'h-[30px] min-w-0 w-full rounded-[4px] border border-line bg-surface px-2 text-[12px] text-ink outline-none transition-colors focus:border-ink-3';
 const src = (url) => (url?.startsWith('/api/') ? apiUrl(url) : url);
 
 export default function GalleryAdminSection() {
@@ -83,7 +83,7 @@ export default function GalleryAdminSection() {
         <AppLoading />
       ) : error ? (
         <div className="flex flex-col items-center gap-3 py-10">
-          <p className="text-[14px] text-[#919191]">{error}</p>
+          <p className="text-[14px] text-ink-3">{error}</p>
           <button type="button" className={smallBtn} onClick={() => load(semester)}>
             다시 불러오기
           </button>
@@ -98,7 +98,7 @@ export default function GalleryAdminSection() {
             ))}
           </div>
           {photos.length === 0 ? (
-            <p className="py-8 text-center text-[13px] text-[#919191]">이 학기에는 사진이 없습니다.</p>
+            <p className="py-8 text-center text-[13px] text-ink-3">이 학기에는 사진이 없습니다.</p>
           ) : (
             <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {photos.map((p) => (
@@ -126,12 +126,12 @@ function PhotoCard({ photo, busy, onToggle, onSave }) {
   const canSave = dirty && title.trim() && hashtags.trim();
 
   return (
-    <li className={`flex flex-col gap-2 rounded-[8px] border border-[#ededed] p-2 ${photo.state === 'normal' ? '' : 'opacity-60'}`}>
-      <div className="relative w-full overflow-hidden rounded-[6px] bg-[#f3f3f3]" style={{ aspectRatio: String(photo.ratio || 1) }}>
+    <li className={`flex flex-col gap-2 rounded-[8px] border border-line p-2 ${photo.state === 'normal' ? '' : 'opacity-60'}`}>
+      <div className="relative w-full overflow-hidden rounded-[6px] bg-surface-2" style={{ aspectRatio: String(photo.ratio || 1) }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src(photo.imageUrl)} alt={photo.title ?? ''} loading="lazy" className="h-full w-full object-cover" />
       </div>
-      <div className="flex items-center justify-between gap-2 text-[11px] text-[#919191]">
+      <div className="flex items-center justify-between gap-2 text-[11px] text-ink-3">
         <span className="min-w-0 truncate">
           #{photo.photoId} · {STATE_LABEL[photo.state] ?? photo.state}
           {uploader ? ` · ${uploader}` : ''}

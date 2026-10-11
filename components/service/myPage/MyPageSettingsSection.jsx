@@ -28,12 +28,12 @@ export default function MyPageSettingsSection() {
     <section className="mx-auto flex w-full max-w-[520px] flex-col gap-4 px-4 py-4 sm:px-6 sm:py-7">
       <Link
         href={ROUTES.MY_PAGE}
-        className="inline-flex items-center gap-[4px] text-[14px] tracking-[-0.28px] text-[#919191] hover:text-[#212121]"
+        className="inline-flex items-center gap-[4px] text-[14px] tracking-[-0.28px] text-ink-3 hover:text-ink"
       >
         <ChevronLeft size={16} strokeWidth={2} aria-hidden />
         마이페이지로 돌아가기
       </Link>
-      <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-black">설정</h2>
+      <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-ink">설정</h2>
       <SettingsContent myInfo={myInfo} />
     </section>
   );

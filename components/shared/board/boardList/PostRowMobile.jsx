@@ -25,7 +25,7 @@ export default function PostRowMobile({ post, boardId, listQuery = '', allowComm
   return (
     <div
       onClick={handleClick}
-      className="flex cursor-pointer flex-col gap-[6px] border-t border-[#DEDEDE] pb-2 pt-3 transition-colors active:bg-[#F6F6F6]"
+      className="flex cursor-pointer flex-col gap-[6px] border-t border-line pb-2 pt-3 transition-colors active:bg-surface-2"
     >
       {/* 윗줄: 칩 + 제목 */}
       <div className="flex items-center gap-[10px] px-5">
@@ -33,21 +33,21 @@ export default function PostRowMobile({ post, boardId, listQuery = '', allowComm
         {/* 제목 + 클립을 한 묶음으로: 묶음이 남은 폭을 다 쓰되 그 안에서 제목만 줄어들어, 클립 자리를 먼저 확보한 뒤
             제목이 말줄임된다. 글쓴이는 왼쪽 여백(16px)을 고정으로 두어 말줄임표와 붙지 않는다 (PM, 2026-09-24) */}
         <span className="flex min-w-0 flex-1 items-center gap-[6px]">
-          <span className="min-w-0 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-[#454545]">
+          <span className="min-w-0 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-ink-2">
             {post.title}
           </span>
-          {post.hasAttachment && <Paperclip size={16} className="shrink-0 text-[#919191]" />}
+          {post.hasAttachment && <Paperclip size={16} className="shrink-0 text-ink-3" />}
         </span>
         {/* 글쓴이는 줄의 오른쪽 끝에 (제목이 짧아도 끝에 붙는다) */}
         {post.authorName && (
-          <span className="max-w-[112px] shrink-0 truncate pl-[16px] text-[13px] leading-[1.6] text-[#919191]">
+          <span className="max-w-[112px] shrink-0 truncate pl-[16px] text-[13px] leading-[1.6] text-ink-3">
             {post.authorName}
           </span>
         )}
       </div>
 
       {/* 아랫줄: 조회수 · 좋아요 · 작성일 */}
-      <div className="flex items-center gap-3 px-6 text-[13px] leading-[1.6] text-[#919191]">
+      <div className="flex items-center gap-3 px-6 text-[13px] leading-[1.6] text-ink-3">
         <span className="inline-flex items-center gap-1">
           <Eye size={18} strokeWidth={1.5} />
           {post.viewCount?.toLocaleString() ?? 0}

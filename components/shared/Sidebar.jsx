@@ -291,7 +291,7 @@ const Sidebar = () => {
   const singleLinkClass = (active) =>
     `text-[16px] font-bold ${active ? 'text-grayscale-06' : 'text-grayscale-03 hover:text-grayscale-06'}`;
   // 로그인/마이페이지/관리자 이동 등 하단 영역 공통 스타일
-  const bottomItemClass = 'text-[16px] font-bold text-[#212121] hover:underline';
+  const bottomItemClass = 'text-[16px] font-bold text-ink hover:underline';
 
   return (
     <>
@@ -308,7 +308,7 @@ const Sidebar = () => {
         onClick={closeOnLinkClick}
         // 왼쪽으로 쓸어 닫기는 위 document 리스너가 화면 전체에서 처리한다
         className={`
-          fixed top-0 left-0 h-[100dvh] overflow-y-auto overscroll-contain bg-white z-[60] flex flex-col border-r border-gray-100
+          fixed top-0 left-0 h-[100dvh] overflow-y-auto overscroll-contain bg-surface z-[60] flex flex-col border-r border-line
           w-[210px] pl-9 py-6 tablet:w-[240px] tablet:pl-[80px] tablet:py-10
           transition-transform duration-300 ease-in-out
           tablet:h-full tablet:overflow-visible
@@ -321,7 +321,7 @@ const Sidebar = () => {
           onClick={() => setIsMobileOpen(false)}
           className="absolute top-3 right-3 tablet:hidden p-2"
         >
-          <X size={20} className="text-[#919191]" />
+          <X size={20} className="text-ink-3" />
         </button>
 
         {isAdminArea ? (

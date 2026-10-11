@@ -31,8 +31,8 @@ export default function AddSingleEventDialog({ schedule, open, onClose }) {
   if (!schedule) return null;
 
   const primaryBtn =
-    'h-[48px] w-full rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242]';
-  const outlineBtn = 'h-[48px] w-full rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]';
+    'h-[48px] w-full rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse-2';
+  const outlineBtn = 'h-[48px] w-full rounded-[4px] border-line-strong text-[16px] text-ink';
 
   const openGoogle = () => {
     window.open(googleCalendarUrl(schedule), '_blank', 'noopener,noreferrer');
@@ -72,13 +72,13 @@ export default function AddSingleEventDialog({ schedule, open, onClose }) {
     <Dialog open={open} onOpenChange={(next) => !next && onClose?.()}>
       <DialogContent
         hideCloseButton
-        className="max-w-[380px] gap-[20px] rounded-[4px] border-[#dedede] p-[24px]"
+        className="max-w-[380px] gap-[20px] rounded-[4px] border-line p-[24px]"
       >
-        <DialogTitle className="flex items-center justify-center gap-2 text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121] [word-break:keep-all]">
+        <DialogTitle className="flex items-center justify-center gap-2 text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink [word-break:keep-all]">
           <CalendarPlus size={18} aria-hidden />이 일정만 담기
         </DialogTitle>
-        <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-[#454545] [word-break:keep-all]">
-          <strong className="font-semibold text-[#212121]">{schedule.title}</strong> 일정을 내
+        <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
+          <strong className="font-semibold text-ink">{schedule.title}</strong> 일정을 내
           캘린더에 넣어요. 한 번만 담는 것이라 동아리가 나중에 일정을 바꿔도 따라 바뀌지 않아요.
           계속 따라오게 하려면 위의 [내 캘린더에 구독]을 써주세요.
         </DialogDescription>

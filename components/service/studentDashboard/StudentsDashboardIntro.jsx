@@ -79,7 +79,7 @@ export default function StudentsDashboardIntro() {
              사진이 가로로 긴 띠(1608x320)라 object-cover 로 가운데를 잘라 쓴다 —
              폰에서는 높이를 줄여 첫 화면이 사진으로만 채워지지 않게 한다.
              priority: 첫 화면 맨 위라 늦게 뜨면 글이 한 번 밀려 내려간다 */}
-      <div className="relative mb-5 h-[120px] w-full overflow-hidden rounded-[4px] bg-[#DEDEDE] md:mb-[40px] md:h-[200px]">
+      <div className="relative mb-5 h-[120px] w-full overflow-hidden rounded-[4px] bg-line md:mb-[40px] md:h-[200px]">
         <Image
           src="/images/main-banner.webp"
           alt=""
@@ -94,11 +94,11 @@ export default function StudentsDashboardIntro() {
       <div className="flex w-full flex-col gap-2 lg:flex-row lg:items-end lg:justify-between lg:gap-8 lg:pb-[40px]">
         {/* 왼쪽: 인사말 */}
         <div className="flex min-w-0 flex-col gap-[6px]">
-          <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[20px]">
+          <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.02em] text-ink md:text-[20px]">
             {userName}님, 안녕하세요! :)
           </h2>
           {greetingSubText && (
-            <p className="text-[14px] font-normal leading-[1.6] tracking-[-0.02em] text-[#212121] md:text-[15px]">
+            <p className="text-[14px] font-normal leading-[1.6] tracking-[-0.02em] text-ink md:text-[15px]">
               {greetingSubText}
             </p>
           )}
@@ -108,10 +108,10 @@ export default function StudentsDashboardIntro() {
             문장만 덩그러니 두면 무엇인지 알기 어려워 안내 한 줄을 위에 붙인다 */}
         {quote && (
           <div className="flex min-w-0 flex-col gap-[2px] lg:pb-[4px] lg:text-right">
-            <p className="text-[12px] font-medium tracking-[-0.02em] text-[#919191] md:text-[13px]">
+            <p className="text-[12px] font-medium tracking-[-0.02em] text-ink-3 md:text-[13px]">
               오늘도 이 주의 문장과 함께 좋은 하루 보내세요
             </p>
-            <p className="max-w-full break-words text-[13px] font-normal tracking-[-0.02em] text-[#B9B9B9] md:text-[14px]">
+            <p className="max-w-full break-words text-[13px] font-normal tracking-[-0.02em] text-ink-4 md:text-[14px]">
               &quot;{quote}&quot;
             </p>
           </div>

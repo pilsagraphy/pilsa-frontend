@@ -75,7 +75,7 @@ export default function GuestbookNote({ note, onEdit, onDelete, onRestore, compa
           <div className="relative mt-2 flex items-end justify-between gap-2">
             <span className="text-[11px] tracking-[-0.02em] text-[#a3a09a]">
               {fmtDate(note.createdAt)}
-              {hidden && <span className="ml-1 rounded-[2px] bg-[#454545] px-1 text-[10px] text-white">숨김</span>}
+              {hidden && <span className="ml-1 rounded-[2px] bg-inverse-2 px-1 text-[10px] text-inverse-fg">숨김</span>}
             </span>
             <span className={`${font.className} border-b border-transparent text-[18px]`} style={{ color: ink }}>
               — {note.displayName}
@@ -109,19 +109,19 @@ export default function GuestbookNote({ note, onEdit, onDelete, onRestore, compa
         <div className="mt-1 flex justify-end gap-3 text-[12px] text-[#a3a09a]">
           {hidden ? (
             onRestore && (
-              <button type="button" onClick={() => onRestore(note)} className="underline-offset-2 hover:text-[#454545] hover:underline">
+              <button type="button" onClick={() => onRestore(note)} className="underline-offset-2 hover:text-ink-2 hover:underline">
                 복원
               </button>
             )
           ) : (
             <>
               {onEdit && (
-                <button type="button" onClick={() => onEdit(note)} className="underline-offset-2 hover:text-[#454545] hover:underline">
+                <button type="button" onClick={() => onEdit(note)} className="underline-offset-2 hover:text-ink-2 hover:underline">
                   수정
                 </button>
               )}
               {onDelete && (
-                <button type="button" onClick={() => onDelete(note)} className="underline-offset-2 hover:text-[#454545] hover:underline">
+                <button type="button" onClick={() => onDelete(note)} className="underline-offset-2 hover:text-ink-2 hover:underline">
                   지우기
                 </button>
               )}

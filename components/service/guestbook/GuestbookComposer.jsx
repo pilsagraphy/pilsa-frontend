@@ -264,7 +264,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
   const selIndex = drawings.findIndex((d) => d.id === selected);
   const isCustomTape = !TAPES.some((t) => t.key === tape);
   const chip = (active) =>
-    `h-[28px] rounded-full px-[10px] text-[12px] transition ${active ? 'bg-[#212121] text-white' : 'bg-white text-[#454545] ring-1 ring-[#dedede] hover:bg-[#f5f5f5]'}`;
+    `h-[28px] rounded-full px-[10px] text-[12px] transition ${active ? 'bg-inverse text-inverse-fg' : 'bg-surface text-ink-2 ring-1 ring-line hover:bg-surface-2'}`;
 
   return (
     <section className="flex flex-col gap-4">
@@ -360,7 +360,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
                   onPointerUp={onStickerUp}
                   onPointerCancel={onStickerUp}
                   className={`block w-full cursor-move select-none touch-none drop-shadow-[1px_1px_0_rgba(0,0,0,0.08)] ${
-                    isSel ? 'outline outline-1 outline-dashed outline-[#212121]' : ''
+                    isSel ? 'outline outline-1 outline-dashed outline-ink' : ''
                   }`}
                   style={{ opacity: d.opacity }}
                 />
@@ -375,11 +375,11 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
                         onPointerMove={onHandleMove}
                         onPointerUp={onHandleUp}
                         onPointerCancel={onHandleUp}
-                        className={`absolute h-[14px] w-[14px] touch-none rounded-[2px] border border-[#212121] bg-white shadow-sm ${c.className}`}
+                        className={`absolute h-[14px] w-[14px] touch-none rounded-[2px] border border-ink bg-surface shadow-sm ${c.className}`}
                         style={{ cursor: c.cursor }}
                       />
                     ))}
-                    <span aria-hidden className="absolute left-1/2 top-[-22px] h-[22px] w-px -translate-x-1/2 bg-[#212121]/60" />
+                    <span aria-hidden className="absolute left-1/2 top-[-22px] h-[22px] w-px -translate-x-1/2 bg-inverse/60" />
                     <span
                       role="presentation"
                       title="끌어서 회전"
@@ -387,7 +387,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
                       onPointerMove={onHandleMove}
                       onPointerUp={onHandleUp}
                       onPointerCancel={onHandleUp}
-                      className="absolute left-1/2 top-[-38px] flex h-[18px] w-[18px] -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded-full border border-[#212121] bg-white text-[11px] leading-none text-[#212121] shadow-sm active:cursor-grabbing"
+                      className="absolute left-1/2 top-[-38px] flex h-[18px] w-[18px] -translate-x-1/2 cursor-grab touch-none items-center justify-center rounded-full border border-ink bg-surface text-[11px] leading-none text-ink shadow-sm active:cursor-grabbing"
                     >
                       ↻
                     </span>
@@ -400,9 +400,9 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
 
         {/* 고른 스티커의 작은 창 — 크기·회전은 도형에서 직접, 여기서는 투명도·순서·떼기만 (PM 10/11) */}
         {sel && (
-          <div className="mx-auto flex w-full flex-col gap-2 rounded-[6px] border border-[#dedede] bg-white px-3 py-2 text-[12px] text-[#454545] shadow-lg" style={{ maxWidth: DESIGN_WIDTH }}>
+          <div className="mx-auto flex w-full flex-col gap-2 rounded-[6px] border border-line bg-surface px-3 py-2 text-[12px] text-ink-2 shadow-lg" style={{ maxWidth: DESIGN_WIDTH }}>
             <div className="flex items-center justify-between gap-2">
-              <span className="font-medium text-[#212121]">스티커 {selIndex + 1}</span>
+              <span className="font-medium text-ink">스티커 {selIndex + 1}</span>
               <span className="text-[11px] text-[#a3a09a]">
                 {Math.round(sel.widthPct)}% · {sel.rotation}°
               </span>
@@ -419,7 +419,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
                 step={5}
                 value={Math.round(sel.opacity * 100)}
                 onChange={(e) => patch(sel.id, { opacity: Number(e.target.value) / 100 })}
-                className="min-w-0 flex-1 accent-[#212121]"
+                className="min-w-0 flex-1 accent-ink"
               />
               <span className="w-[36px] shrink-0 text-right tabular-nums">{Math.round(sel.opacity * 100)}%</span>
             </label>
@@ -431,7 +431,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               <button type="button" disabled={selIndex <= 0} onClick={() => reorder(sel.id, -1)} className={`${chip(false)} disabled:opacity-40`}>
                 뒤로
               </button>
-              <button type="button" onClick={() => removeDrawing(sel.id)} className={`${chip(false)} ml-auto text-[#b3261e]`}>
+              <button type="button" onClick={() => removeDrawing(sel.id)} className={`${chip(false)} ml-auto text-danger`}>
                 떼기
               </button>
             </div>
@@ -441,7 +441,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
       </div>
 
       {/* 문구 서랍: 글씨체 · 잉크 · 종이 · 정렬 · 스티커 */}
-      <div className="flex flex-col gap-3 rounded-[6px] border border-dashed border-[#cfcbc1] bg-white/60 p-3 text-[12px] text-[#6b6b6b]">
+      <div className="flex flex-col gap-3 rounded-[6px] border border-dashed border-[#cfcbc1] bg-surface/60 p-3 text-[12px] text-ink-2">
         <Row label="글씨체">
           {FONTS.map((x) => (
             <button key={x.key} type="button" onClick={() => setFont(x.key)} className={`${chip(font === x.key)} ${x.className} text-[15px]`}>
@@ -458,7 +458,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               aria-label={i.label}
               aria-pressed={ink === i.key}
               onClick={() => setInk(i.key)}
-              className={`h-[22px] w-[22px] rounded-full border-2 ${ink === i.key ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-white'}`}
+              className={`h-[22px] w-[22px] rounded-full border-2 ${ink === i.key ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-white'}`}
               style={{ backgroundColor: i.color }}
             />
           ))}
@@ -469,7 +469,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
             aria-label="잉크 색 직접 고르기"
             onClick={() => setInkPickerOpen((v) => !v)}
             className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border text-[14px] leading-none ${
-              isHex(ink) ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-dashed border-[#919191] text-[#919191]'
+              isHex(ink) ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-dashed border-ink-3 text-ink-3'
             }`}
             style={isHex(ink) ? { backgroundColor: ink, color: '#fff' } : undefined}
           >
@@ -499,7 +499,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
                 setPaper(x.key);
                 setMarksSeed(newMarksSeed());
               }}
-              className={`h-[26px] rounded-[4px] border px-[8px] text-[11px] ${paper === x.key ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-[#d4d1c8]'}`}
+              className={`h-[26px] rounded-[4px] border px-[8px] text-[11px] ${paper === x.key ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-[#d4d1c8]'}`}
               style={paperStyle(x.key)}
             >
               {x.label}
@@ -515,7 +515,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               aria-label={`테이프 ${t.label}`}
               aria-pressed={tape === t.key}
               onClick={() => setTape(t.key)}
-              className={`h-[14px] w-[34px] rotate-[-2deg] border ${tape === t.key ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-black/10'}`}
+              className={`h-[14px] w-[34px] rotate-[-2deg] border ${tape === t.key ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-line'}`}
               style={{ backgroundColor: t.key }}
             />
           ))}
@@ -525,7 +525,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
             aria-label="테이프 색 직접 고르기"
             onClick={() => setTapePickerOpen((v) => !v)}
             className={`flex h-[22px] w-[22px] items-center justify-center rounded-full border text-[14px] leading-none ${
-              isCustomTape ? 'border-[#212121] ring-1 ring-[#212121] ring-offset-1' : 'border-dashed border-[#919191] text-[#919191]'
+              isCustomTape ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-dashed border-ink-3 text-ink-3'
             }`}
             style={isCustomTape ? { backgroundColor: tape, color: '#454545' } : undefined}
           >
@@ -568,7 +568,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
           </span>
           <span className="flex shrink-0 gap-2">
             {onCancel && (
-              <button type="button" onClick={onCancel} className="h-[38px] rounded-[4px] border border-[#dedede] bg-white px-4 text-[14px] text-[#454545]">
+              <button type="button" onClick={onCancel} className="h-[38px] rounded-[4px] border border-line bg-surface px-4 text-[14px] text-ink-2">
                 취소
               </button>
             )}
@@ -576,7 +576,7 @@ export default function GuestbookComposer({ mode = 'create', initial = null, max
               type="button"
               onClick={submit}
               disabled={sending}
-              className="h-[38px] rounded-[4px] bg-[#212121] px-5 text-[14px] text-white transition-colors hover:bg-black disabled:opacity-50"
+              className="h-[38px] rounded-[4px] bg-inverse px-5 text-[14px] text-inverse-fg transition-colors hover:bg-inverse-hover disabled:opacity-50"
             >
               {sending ? (mode === 'edit' ? '고치는 중' : '붙이는 중') : mode === 'edit' ? '고치기' : '남기기'}
             </button>

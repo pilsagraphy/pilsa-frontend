@@ -27,7 +27,7 @@ function BoardList({ boardId, title, posts = [], loading = false, emptyText, cla
         {/* 제목도 게시판으로 가는 링크 — 오른쪽 화살표만으로는 누를 데가 작았다 (PM, 2026-09-21) */}
         <Link
           href={ROUTES.BOARD(boardId)}
-          className="font-['Pretendard',sans-serif] text-[20px] font-semibold tracking-[-0.02em] leading-[1.5] text-[#212121] hover:underline underline-offset-4"
+          className="font-['Pretendard',sans-serif] text-[20px] font-semibold tracking-[-0.02em] leading-[1.5] text-ink hover:underline underline-offset-4"
         >
           <h3>{title}</h3>
         </Link>
@@ -36,7 +36,7 @@ function BoardList({ boardId, title, posts = [], loading = false, emptyText, cla
         <Link
           href={ROUTES.BOARD(boardId)}
           aria-label={`${title} 전체보기`}
-          className="flex h-[24px] shrink-0 items-center justify-center rounded-sm px-[2px] text-[#212121] transition hover:bg-[#F6F6F6] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#212121]"
+          className="flex h-[24px] shrink-0 items-center justify-center rounded-sm px-[2px] text-ink transition hover:bg-surface-2 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
         >
           {/* 글 하단 '목록' 버튼(PostPrevNext)과 같은 선 화살표 — 화살표 모양을 사이트 안에서 하나로 */}
           <svg width="50" height="10" viewBox="0 0 50 10" fill="none" aria-hidden="true">
@@ -51,13 +51,13 @@ function BoardList({ boardId, title, posts = [], loading = false, emptyText, cla
         </Link>
       </div>
 
-      <div className="flex flex-col w-full border-t border-[#B9B9B9]">
+      <div className="flex flex-col w-full border-t border-line-strong">
         {loading ? (
-          <div className="flex items-center justify-center h-[56px] border-b border-[#B9B9B9] text-[14px] text-[#919191]">
+          <div className="flex items-center justify-center h-[56px] border-b border-line-strong text-[14px] text-ink-3">
             불러오는 중입니다.
           </div>
         ) : posts.length === 0 ? (
-          <div className="flex items-center justify-center h-[56px] border-b border-[#B9B9B9] text-[14px] text-[#919191]">
+          <div className="flex items-center justify-center h-[56px] border-b border-line-strong text-[14px] text-ink-3">
             {emptyText}
           </div>
         ) : (
@@ -65,14 +65,14 @@ function BoardList({ boardId, title, posts = [], loading = false, emptyText, cla
             <Link
               key={post.postId}
               href={ROUTES.BOARD_POST(boardId, post.postId)}
-              className="flex items-center h-[56px] border-b border-[#B9B9B9] hover:bg-[#F6F6F6] transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#212121]"
+              className="flex items-center h-[56px] border-b border-line-strong hover:bg-surface-2 transition focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
             >
               <div className="w-[80px] flex justify-center items-center flex-shrink-0">
                 {pinned ? (
                   // 목록·상세와 같은 알약 배지 (pinned 변형은 폰에서 모서리가 각져 여기서는 쓰지 않는다)
                   <CategoryBadge>중요</CategoryBadge>
                 ) : (
-                  <span className="text-[16px] font-normal leading-[1.6] tracking-[-0.02em] text-[#454545]">
+                  <span className="text-[16px] font-normal leading-[1.6] tracking-[-0.02em] text-ink-2">
                     {number}
                   </span>
                 )}
@@ -83,7 +83,7 @@ function BoardList({ boardId, title, posts = [], loading = false, emptyText, cla
                 {!pinned && post.categoryName && (
                   <CategoryBadge>{post.categoryName}</CategoryBadge>
                 )}
-                <p className="text-[16px] font-normal leading-[1.6] tracking-[-0.02em] text-[#454545] truncate">
+                <p className="text-[16px] font-normal leading-[1.6] tracking-[-0.02em] text-ink-2 truncate">
                   {post.title}
                 </p>
               </div>
@@ -165,11 +165,11 @@ export default function StudentsDashboardGroup() {
   if (boardsError) {
     return (
       <div className="mt-[20px] flex w-full flex-col items-center gap-3 py-16">
-        <span className="text-[14px] text-[#919191]">{boardsError}</span>
+        <span className="text-[14px] text-ink-3">{boardsError}</span>
         <button
           type="button"
           onClick={ensureBoards}
-          className="text-[14px] text-[#919191] underline transition-colors hover:text-[#212121]"
+          className="text-[14px] text-ink-3 underline transition-colors hover:text-ink"
         >
           다시 시도
         </button>
@@ -179,7 +179,7 @@ export default function StudentsDashboardGroup() {
 
   if (boards == null || boardsLoading) {
     return (
-      <div className="mt-[20px] py-16 text-center text-[14px] text-[#919191]">
+      <div className="mt-[20px] py-16 text-center text-[14px] text-ink-3">
         불러오는 중입니다.
       </div>
     );
@@ -187,7 +187,7 @@ export default function StudentsDashboardGroup() {
 
   if (list.length === 0) {
     return (
-      <div className="mt-[20px] py-16 text-center text-[14px] text-[#919191]">
+      <div className="mt-[20px] py-16 text-center text-[14px] text-ink-3">
         열람 가능한 게시판이 없습니다.
       </div>
     );

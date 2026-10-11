@@ -12,10 +12,10 @@ export default function SearchInput({ value, onChange, placeholder = '검색어�
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="min-w-0 !text-[16px] leading-[1.6] tracking-[-0.02em] text-[#9E9E9E]"
+        className="min-w-0 !text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-3"
       />
       <InputGroupButton size="icon-sm">
-        <Search className="text-[#212121]" />
+        <Search className="text-ink" />
       </InputGroupButton>
     </InputGroup>
   );

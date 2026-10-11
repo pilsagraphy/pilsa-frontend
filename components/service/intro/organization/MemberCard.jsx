@@ -1,9 +1,9 @@
 export default function MemberCard({ leader, members }) {
   return (
-    <div className="border border-dashed border-[#919191] flex flex-col px-7 py-5 gap-y-[10px] w-max text-center">
+    <div className="border border-dashed border-ink-3 flex flex-col px-7 py-5 gap-y-[10px] w-max text-center">
       {/* 팀장 — 없는 팀(팀장 미정)은 줄 자체를 비운다 */}
       {leader && (
-        <p className="text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#212121]">
+        <p className="text-[16px] font-semibold leading-[1.6] tracking-[-0.02em] text-ink">
           {leader}
         </p>
       )}
@@ -12,7 +12,7 @@ export default function MemberCard({ leader, members }) {
       {members.map((member, idx) => (
         <p
           key={idx}
-          className="text-[14px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#919191]"
+          className="text-[14px] font-semibold leading-[1.6] tracking-[-0.02em] text-ink-3"
         >
           {member}
         </p>

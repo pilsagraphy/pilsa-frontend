@@ -90,27 +90,27 @@ export default function NotificationSettingsSection() {
     <div className={`${listSectionClass} gap-6`}>
       <div>
         <h2 className={listTitleClass}>알림 설정</h2>
-        <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
+        <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3">
           어떤 일이 생겼을 때 회원에게 알림(알림함 + 푸시)을 보낼지 정합니다. 끄면 그 유형은 저장도 발송도 하지 않습니다.
           {!canEdit && ' 변경은 관리 레벨 3 관리자만 할 수 있어 지금은 읽기 전용입니다.'}
         </p>
       </div>
 
-      {isLoading && <p className="py-6 text-center text-[14px] text-[#919191]">불러오는 중...</p>}
-      {!isLoading && error && <p className="py-6 text-center text-[14px] text-[#919191]">{error}</p>}
+      {isLoading && <p className="py-6 text-center text-[14px] text-ink-3">불러오는 중...</p>}
+      {!isLoading && error && <p className="py-6 text-center text-[14px] text-ink-3">{error}</p>}
 
       {!isLoading && !error && values && (
-        <ul className="divide-y divide-[#F3F3F3] rounded-[8px] border border-[#EEEEEE]">
+        <ul className="divide-y divide-line rounded-[8px] border border-line">
           {SWITCHES.map((s) => {
             const on = values[s.code] == null ? true : values[s.code] !== '0';
             const missing = values[s.code] == null;
             return (
               <li key={s.code} className="flex items-center gap-4 px-4 py-4">
                 <div className="min-w-0 flex-1">
-                  <p className="text-[15px] font-medium text-[#212121]">{s.title}</p>
-                  <p className="text-[12px] leading-[1.6] text-[#919191]">{s.detail}</p>
+                  <p className="text-[15px] font-medium text-ink">{s.title}</p>
+                  <p className="text-[12px] leading-[1.6] text-ink-3">{s.detail}</p>
                   {missing && (
-                    <p className="text-[12px] text-[#d93025]">설정 행이 없어 기본값(보냄)으로 동작합니다. DB 에 {s.code} 를 넣어 주세요.</p>
+                    <p className="text-[12px] text-danger">설정 행이 없어 기본값(보냄)으로 동작합니다. DB 에 {s.code} 를 넣어 주세요.</p>
                   )}
                 </div>
                 <button
@@ -121,11 +121,11 @@ export default function NotificationSettingsSection() {
                   disabled={!canEdit || missing || busy === s.code}
                   onClick={() => toggle(s.code)}
                   className={`relative h-[28px] w-[50px] shrink-0 rounded-full transition-colors disabled:opacity-40 ${
-                    on ? 'bg-[#212121]' : 'bg-[#dedede]'
+                    on ? 'bg-inverse' : 'bg-line'
                   }`}
                 >
                   <span
-                    className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-all ${
+                    className={`absolute top-[3px] size-[22px] rounded-full bg-surface shadow transition-all ${
                       on ? 'left-[25px]' : 'left-[3px]'
                     }`}
                   />

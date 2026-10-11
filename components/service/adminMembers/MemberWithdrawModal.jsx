@@ -17,18 +17,18 @@ export default function MemberWithdrawModal({ member, error, onConfirm, onCancel
     <Dialog open={Boolean(member)} onOpenChange={(next) => !next && onCancel?.()}>
       <DialogContent
         hideCloseButton
-        className="max-w-[320px] gap-[16px] rounded-[4px] border-[#dedede] p-[24px]"
+        className="max-w-[320px] gap-[16px] rounded-[4px] border-line p-[24px]"
       >
-        <DialogTitle className="text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.32px] text-[#212121] [word-break:keep-all]">
+        <DialogTitle className="text-center text-[16px] font-semibold leading-[1.6] tracking-[-0.32px] text-ink [word-break:keep-all]">
           {member?.loginId} 회원을 강제 탈퇴시킬까요?
         </DialogTitle>
 
-        <DialogDescription className="text-center text-[14px] leading-[1.6] tracking-[-0.28px] text-[#757575] [word-break:keep-all]">
+        <DialogDescription className="text-center text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3 [word-break:keep-all]">
           개인정보가 즉시 파기되며 되돌릴 수 없습니다.
         </DialogDescription>
 
         {error && (
-          <p className="text-center text-[14px] leading-[1.6] tracking-[-0.28px] text-[#e02d2d]">
+          <p className="text-center text-[14px] leading-[1.6] tracking-[-0.28px] text-danger">
             {error}
           </p>
         )}
@@ -37,7 +37,7 @@ export default function MemberWithdrawModal({ member, error, onConfirm, onCancel
           <Button
             type="button"
             onClick={onConfirm}
-            className="h-[48px] w-[95px] rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242]"
+            className="h-[48px] w-[95px] rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse-2"
           >
             탈퇴 처리
           </Button>
@@ -45,7 +45,7 @@ export default function MemberWithdrawModal({ member, error, onConfirm, onCancel
             type="button"
             variant="outline"
             onClick={onCancel}
-            className="h-[48px] w-[87px] rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]"
+            className="h-[48px] w-[87px] rounded-[4px] border-line-strong text-[16px] text-ink"
           >
             취소
           </Button>

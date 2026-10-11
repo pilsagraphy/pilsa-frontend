@@ -99,7 +99,7 @@ export default function MyPageBoard() {
   return (
     <div className="flex w-full flex-col gap-[30px]">
       {/* 탭 */}
-      <div className="relative flex w-[calc(100%+15px)] items-end gap-[24px] border-b border-[#BDBDBD]">
+      <div className="relative flex w-[calc(100%+15px)] items-end gap-[24px] border-b border-line-strong">
         {TABS.map((tab) => {
           const isActive = activeTab === tab.key;
           return (
@@ -112,13 +112,13 @@ export default function MyPageBoard() {
               }}
               className={`relative -mb-px pb-[8px] text-[16px] leading-[1.6] tracking-[-0.02em] transition-colors ${
                 isActive
-                  ? 'font-bold text-[#212121]'
-                  : 'font-normal text-[#212121] hover:text-black'
+                  ? 'font-bold text-ink'
+                  : 'font-normal text-ink hover:text-ink'
               }`}
             >
               {tab.label}
               {isActive && (
-                <span className="absolute -bottom-px left-0 h-[2px] w-full bg-[#212121]" />
+                <span className="absolute -bottom-px left-0 h-[2px] w-full bg-inverse" />
               )}
             </button>
           );
@@ -161,13 +161,13 @@ export default function MyPageBoard() {
       </div>
 
       {/* 폰: 게시판 목록과 같은 카드 줄. 좁은 화면에서 표를 쓰면 열이 잘려 제목만 남는다 */}
-      <div className="flex flex-col border-b border-[#B9B9B9] xl:hidden">
+      <div className="flex flex-col border-b border-line-strong xl:hidden">
         {isLoading ? (
-          <p className="py-8 text-center text-[14px] text-[#919191]">불러오는 중...</p>
+          <p className="py-8 text-center text-[14px] text-ink-3">불러오는 중...</p>
         ) : error ? (
-          <p className="py-8 text-center text-[14px] text-[#919191]">{error}</p>
+          <p className="py-8 text-center text-[14px] text-ink-3">{error}</p>
         ) : items.length === 0 ? (
-          <p className="py-8 text-center text-[14px] text-[#919191]">
+          <p className="py-8 text-center text-[14px] text-ink-3">
             {isComments ? '작성한 댓글이 없습니다.' : '게시글이 없습니다.'}
           </p>
         ) : (
@@ -175,30 +175,30 @@ export default function MyPageBoard() {
             <div
               key={isComments ? row.commentId : row.postId}
               onClick={() => goToRow(row)}
-              className="flex cursor-pointer flex-col gap-[6px] border-t border-[#DEDEDE] pb-2 pt-3 transition-colors active:bg-[#F6F6F6]"
+              className="flex cursor-pointer flex-col gap-[6px] border-t border-line pb-2 pt-3 transition-colors active:bg-surface-2"
             >
               {/* 윗줄: 게시판 + 제목 */}
               <div className="flex items-center gap-[10px] px-1">
                 {row.categoryName && <CategoryBadge>{row.categoryName}</CategoryBadge>}
                 {/* 제목 + 클립 묶음 — 게시판 폰 목록(PostRowMobile)과 같은 규칙: 클립 자리를 먼저 확보하고 제목만 말줄임 */}
                 <span className="flex min-w-0 flex-1 items-center gap-[6px]">
-                  <span className="min-w-0 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-[#454545]">
+                  <span className="min-w-0 truncate text-[16px] font-medium leading-[1.6] tracking-[-0.04em] text-ink-2">
                     {isComments ? row.postTitle : row.title}
                   </span>
                   {!isComments && row.hasAttachment && (
-                    <Paperclip size={16} className="shrink-0 text-[#919191]" />
+                    <Paperclip size={16} className="shrink-0 text-ink-3" />
                   )}
                 </span>
                 {/* 글쓴이는 줄의 오른쪽 끝에 — 게시판 목록과 같은 자리 */}
                 {!isComments && row.authorName && (
-                  <span className="max-w-[112px] shrink-0 truncate pl-[16px] text-[13px] leading-[1.6] text-[#919191]">
+                  <span className="max-w-[112px] shrink-0 truncate pl-[16px] text-[13px] leading-[1.6] text-ink-3">
                     {row.authorName}
                   </span>
                 )}
               </div>
 
               {/* 아랫줄: 댓글이면 내용, 글이면 좋아요·조회수 + 작성일 */}
-              <div className="flex items-center gap-3 px-2 text-[13px] leading-[1.6] text-[#919191]">
+              <div className="flex items-center gap-3 px-2 text-[13px] leading-[1.6] text-ink-3">
                 {isComments ? (
                   <span className="min-w-0 flex-1 truncate">{row.content}</span>
                 ) : (
@@ -228,49 +228,49 @@ export default function MyPageBoard() {
 
       {/* PC: 표 (마지막 행 아래 줄까지 표시) */}
       {/* 표는 xl(1280) 부터 — 그 아래에서는 폰과 같은 카드 (PM). 옆의 내 정보 패널 때문에 표는 제목이 두 글자만 남았다 */}
-      <div className="hidden overflow-x-auto border-b border-[#B9B9B9] xl:block">
+      <div className="hidden overflow-x-auto border-b border-line-strong xl:block">
         <Table className="w-full table-fixed">
           <TableHeader>
-            <TableRow className="h-12 border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#424242] md:text-[16px]">
-              <TableHead className="w-[56px] text-center text-[#424242]">번호</TableHead>
-              <TableHead className="w-auto text-left text-[#424242]">제목</TableHead>
+            <TableRow className="h-12 border-b border-line-strong text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-2 md:text-[16px]">
+              <TableHead className="w-[56px] text-center text-ink-2">번호</TableHead>
+              <TableHead className="w-auto text-left text-ink-2">제목</TableHead>
               {isComments ? (
-                <TableHead className="hidden w-[40%] text-left text-[#424242] xl:table-cell">
+                <TableHead className="hidden w-[40%] text-left text-ink-2 xl:table-cell">
                   내용
                 </TableHead>
               ) : (
                 <>
                   {/* 게시판 목록 표와 같은 순서: 댓글 → 좋아요 → 조회수 (PM, 2026-09-21) */}
-                  <TableHead className="hidden w-[72px] text-center text-[#424242] xl:table-cell">
+                  <TableHead className="hidden w-[72px] text-center text-ink-2 xl:table-cell">
                     댓글
                   </TableHead>
-                  <TableHead className="hidden w-[72px] text-center text-[#424242] xl:table-cell">
+                  <TableHead className="hidden w-[72px] text-center text-ink-2 xl:table-cell">
                     좋아요
                   </TableHead>
-                  <TableHead className="hidden w-[72px] text-center text-[#424242] xl:table-cell">
+                  <TableHead className="hidden w-[72px] text-center text-ink-2 xl:table-cell">
                     조회수
                   </TableHead>
                 </>
               )}
-              <TableHead className="w-[104px] text-center text-[#424242]">작성일</TableHead>
+              <TableHead className="w-[104px] text-center text-ink-2">작성일</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
             {isLoading ? (
-              <TableRow className="h-14 text-[14px] text-[#454545] md:text-[16px]">
+              <TableRow className="h-14 text-[14px] text-ink-2 md:text-[16px]">
                 <TableCell colSpan={colSpan} className="text-center text-muted-foreground">
                   불러오는 중...
                 </TableCell>
               </TableRow>
             ) : error ? (
-              <TableRow className="h-14 text-[14px] text-[#454545] md:text-[16px]">
+              <TableRow className="h-14 text-[14px] text-ink-2 md:text-[16px]">
                 <TableCell colSpan={colSpan} className="text-center text-muted-foreground">
                   {error}
                 </TableCell>
               </TableRow>
             ) : items.length === 0 ? (
-              <TableRow className="h-14 text-[14px] text-[#454545] md:text-[16px]">
+              <TableRow className="h-14 text-[14px] text-ink-2 md:text-[16px]">
                 <TableCell colSpan={colSpan} className="text-center text-muted-foreground">
                   {isComments ? '작성한 댓글이 없습니다.' : '게시글이 없습니다.'}
                 </TableCell>
@@ -283,35 +283,35 @@ export default function MyPageBoard() {
                   <TableRow
                     key={isComments ? row.commentId : row.postId}
                     onClick={() => goToRow(row)}
-                    className="h-[50px] cursor-pointer border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] transition-colors hover:bg-[#FAFAFA] md:text-[16px]"
+                    className="h-[50px] cursor-pointer border-b border-line-strong text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-2 transition-colors hover:bg-surface-2 md:text-[16px]"
                   >
                     <TableCell className="text-center">{no}</TableCell>
                     <TableCell className="max-w-0 text-left">
                       <div className="flex min-w-0 items-center gap-2">
                         <span className="min-w-0 truncate">{title}</span>
                         {!isComments && row.hasAttachment && (
-                          <Paperclip size={16} className="shrink-0 text-[#919191]" />
+                          <Paperclip size={16} className="shrink-0 text-ink-3" />
                         )}
                       </div>
                     </TableCell>
                     {isComments ? (
-                      <TableCell className="hidden max-w-0 truncate text-left text-[#424242] xl:table-cell">
+                      <TableCell className="hidden max-w-0 truncate text-left text-ink-2 xl:table-cell">
                         {row.content}
                       </TableCell>
                     ) : (
                       <>
-                        <TableCell className="hidden text-center text-[#424242] xl:table-cell">
+                        <TableCell className="hidden text-center text-ink-2 xl:table-cell">
                           {row.commentCount ?? 0}
                         </TableCell>
-                        <TableCell className="hidden text-center text-[#424242] xl:table-cell">
+                        <TableCell className="hidden text-center text-ink-2 xl:table-cell">
                           {row.likeCount}
                         </TableCell>
-                        <TableCell className="hidden text-center text-[#424242] xl:table-cell">
+                        <TableCell className="hidden text-center text-ink-2 xl:table-cell">
                           {row.viewCount}
                         </TableCell>
                       </>
                     )}
-                    <TableCell className="text-center text-[#424242]">
+                    <TableCell className="text-center text-ink-2">
                       {formatDotDate(row.created)}
                     </TableCell>
                   </TableRow>

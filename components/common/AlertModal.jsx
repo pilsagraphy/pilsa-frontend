@@ -31,7 +31,7 @@ export default function AlertModal({
           데스크톱(md↑)은 기존 스타일 그대로 */}
       <DialogContent
         hideCloseButton
-        className="max-w-[362px] gap-[12px] rounded-[4px] border-[#212121] px-[16px] py-[24px] md:max-w-[340px] md:gap-[20px] md:border-[#dedede] md:p-[24px]"
+        className="max-w-[362px] gap-[12px] rounded-[4px] border-ink px-[16px] py-[24px] md:max-w-[340px] md:gap-[20px] md:border-line md:p-[24px]"
       >
         {/* 모바일: 제목+본문을 한 덩어리로 묶어 min-height 로 피그마 높이를 맞춘다.
             데스크톱: md:contents 로 래퍼가 사라져 기존(제목·본문이 그리드 자식) 그대로. */}
@@ -39,12 +39,12 @@ export default function AlertModal({
           className="flex w-full flex-col justify-center gap-[12px] md:contents"
           style={mobileBodyMinHeight ? { minHeight: `${mobileBodyMinHeight}px` } : undefined}
         >
-          <DialogTitle className="text-center text-[16px] font-bold leading-[1.6] tracking-[-0.32px] text-[#454545] md:font-semibold md:text-[#212121]">
+          <DialogTitle className="text-center text-[16px] font-bold leading-[1.6] tracking-[-0.32px] text-ink-2 md:font-semibold md:text-ink">
             {title}
           </DialogTitle>
 
           {description && (
-            <DialogDescription className="whitespace-pre-line text-center text-[16px] leading-[1.6] tracking-[-0.32px] text-[#454545] md:text-[14px] md:tracking-[-0.28px]">
+            <DialogDescription className="whitespace-pre-line text-center text-[16px] leading-[1.6] tracking-[-0.32px] text-ink-2 md:text-[14px] md:tracking-[-0.28px]">
               {description}
             </DialogDescription>
           )}
@@ -55,7 +55,7 @@ export default function AlertModal({
           <Button
             type="button"
             onClick={onClose}
-            className="h-[48px] w-[87px] rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242]"
+            className="h-[48px] w-[87px] rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse-2"
           >
             {closeText}
           </Button>

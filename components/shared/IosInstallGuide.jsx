@@ -52,17 +52,17 @@ export default function IosInstallGuide() {
       <div className="fixed inset-0 z-[80] bg-black/40 backdrop-blur-[2px]" onClick={dismiss} />
 
       {/* 바텀시트 — 알림 유도 바텀시트(PushPromptBottomSheet)와 같은 틀 */}
-      <div className="fixed inset-x-0 bottom-0 z-[90] mx-auto max-w-[480px] rounded-t-[20px] bg-white px-6 pb-8 pt-5 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
-        <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-[#E0E0E0]" />
+      <div className="fixed inset-x-0 bottom-0 z-[90] mx-auto max-w-[480px] rounded-t-[20px] bg-surface px-6 pb-8 pt-5 shadow-[0_-8px_30px_rgba(0,0,0,0.15)]">
+        <div className="mx-auto mb-5 h-1 w-10 rounded-full bg-surface-3" />
 
         <div className="flex flex-col items-center gap-3 text-center">
-          <span className="grid size-14 place-items-center rounded-full bg-[#F5F5F5]">
-            <Smartphone size={28} className="text-[#212121]" />
+          <span className="grid size-14 place-items-center rounded-full bg-surface-2">
+            <Smartphone size={28} className="text-ink" />
           </span>
-          <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-black">
+          <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink">
             Pilsagraphy 앱으로 설치하기
           </h3>
-          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#757575] [word-break:keep-all]">
+          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3 [word-break:keep-all]">
             아이폰은 앱스토어 대신 <b>홈 화면에 추가</b>로 설치해요.
             <br />
             설치한 앱에서 로그인하면 새 댓글·답글 알림도 받을 수 있어요.
@@ -76,10 +76,10 @@ export default function IosInstallGuide() {
           </p>
         )}
 
-        <ol className="mt-5 list-decimal space-y-1.5 pl-5 text-left text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545] [word-break:keep-all]">
+        <ol className="mt-5 list-decimal space-y-1.5 pl-5 text-left text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
           <li>
             화면 아래(또는 위)의 공유 버튼{' '}
-            <Share size={15} className="inline-block align-[-2px] text-[#212121]" aria-label="공유" /> 을 누르고
+            <Share size={15} className="inline-block align-[-2px] text-ink" aria-label="공유" /> 을 누르고
           </li>
           <li>
             <b>홈 화면에 추가</b>를 선택한 뒤
@@ -88,7 +88,7 @@ export default function IosInstallGuide() {
             오른쪽 위 <b>추가</b> — 홈 화면에 생긴 Pilsagraphy 아이콘으로 열면 끝!
           </li>
         </ol>
-        <p className="mt-3 text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
+        <p className="mt-3 text-[12px] leading-[1.6] tracking-[-0.24px] text-ink-3">
           알림은 iOS 16.4 이상에서 받을 수 있어요.
         </p>
 
@@ -96,7 +96,7 @@ export default function IosInstallGuide() {
           <button
             type="button"
             onClick={dismiss}
-            className="h-[52px] w-full rounded-[8px] bg-[#212121] text-[16px] font-semibold text-white transition hover:bg-black"
+            className="h-[52px] w-full rounded-[8px] bg-inverse text-[16px] font-semibold text-inverse-fg transition hover:bg-inverse-hover"
           >
             확인
           </button>

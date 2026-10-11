@@ -17,7 +17,7 @@ import BoardComments from './BoardComments';
 import PostPrevNext from '@/components/shared/board/PostPrevNext';
 import AppLoading from '@/components/common/AppLoading';
 
-const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-[#919191] lg:py-20 lg:text-base';
+const MESSAGE_CLASS = 'px-4 py-12 text-center text-sm text-ink-3 lg:py-20 lg:text-base';
 
 // 공통게시판 게시글 상세.
 // boardId 로 게시판 정책(플래그)을, postId 로 글을 조회한다. 댓글은 별도 API(BoardComments)로 조회.
@@ -65,10 +65,10 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
     const isGone = errorStatus === 404 || errorStatus === 403 || errorStatus === 410;
     return (
       <div className="mx-auto flex w-full max-w-[920px] flex-col items-center gap-4 px-4 py-16 text-center md:py-24">
-        <p className="text-[16px] leading-[1.6] tracking-[-0.32px] text-[#454545]">
+        <p className="text-[16px] leading-[1.6] tracking-[-0.32px] text-ink-2">
           {isGone ? error || '존재하지 않는 게시글입니다.' : '게시글을 불러오지 못했어요.'}
         </p>
-        <p className="text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">
+        <p className="text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-3">
           {isGone
             ? '작성자가 지웠거나 운영진이 조치한 글은 더 볼 수 없어요.'
             : '네트워크가 잠시 불안정했을 수 있어요. 다시 시도해 주세요.'}
@@ -78,7 +78,7 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
             <button
               type="button"
               onClick={fetchDetail}
-              className="h-[44px] rounded-[4px] bg-[#212121] px-6 text-[15px] text-white hover:bg-black"
+              className="h-[44px] rounded-[4px] bg-inverse px-6 text-[15px] text-inverse-fg hover:bg-inverse-hover"
             >
               다시 시도
             </button>
@@ -86,7 +86,7 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
           <button
             type="button"
             onClick={() => router.push(listPath)}
-            className="h-[44px] rounded-[4px] border border-[#b9b9b9] px-6 text-[15px] text-[#212121] hover:bg-[#f6f6f6]"
+            className="h-[44px] rounded-[4px] border border-line-strong px-6 text-[15px] text-ink hover:bg-surface-2"
           >
             목록으로
           </button>
@@ -110,7 +110,7 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
   const listButton = (
     <button
       type="button"
-      className="h-11 min-w-0 max-w-[120px] flex-1 rounded-[4px] bg-[#212121] text-[15px] text-white"
+      className="h-11 min-w-0 max-w-[120px] flex-1 rounded-[4px] bg-inverse text-[15px] text-inverse-fg"
       onClick={() => router.push(listPath)}
     >
       목록
@@ -143,7 +143,7 @@ export default function BoardDetailView({ boardId, postId, sort = 'created', lis
           <BoardContent content={post.content} />
 
           {/* 본문 아래 여백은 본문 위쪽(글 정보 ↔ 본문) 간격과 같은 값으로 맞춘다 */}
-          <div className="mt-2 h-px w-full bg-[#DEDEDE] lg:mt-[15px]" />
+          <div className="mt-2 h-px w-full bg-line lg:mt-[15px]" />
 
           {/* 구분선 ↔ 좋아요·수정 버튼 간격도 본문 여백과 같은 값으로 맞춘다 */}
           <div className="mt-2 lg:mt-[15px]">
