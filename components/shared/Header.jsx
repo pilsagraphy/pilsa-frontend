@@ -1,6 +1,6 @@
 'use client';
 
-import { UserRound } from 'lucide-react';
+import { LogOut, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { Zen_Dots } from 'next/font/google';
@@ -31,9 +31,11 @@ export default function Header() {
       <div className="flex h-full items-center px-3 tablet:mx-auto tablet:grid tablet:w-full tablet:max-w-[1180px] tablet:grid-cols-[auto_1fr_auto] tablet:px-6 lg:px-10">
         {/* 왼쪽: 폰에서만 사이드바 여는 버튼. PC 는 사이드바가 늘 보여서 자리만 남긴다.
             태블릿 이상에서만 좌우 칸 폭을 같게 둔다 — 그래야 가운데 로고가 화면 정중앙에 선다 */}
-        {/* 폰의 사이드바 여는 햄버거는 뺐다 — 하단 탭 바가 메뉴를 맡는다 (PM 2026-10-11 "모바일에선 사이드바 안 튀어 나오게").
-            대신 오른쪽 종(size-10)과 같은 폭의 빈 칸을 두어 로고가 화면 정중앙에 선다 (PM "로고가 모바일 화면의 가운데에") */}
-        <div className="w-10 shrink-0 tablet:w-24" />
+        {/* 왼쪽: 알림 종 (PM 2026-10-11 "알림함은 왼편으로"). 햄버거는 뺐다 — 하단 탭 바가 메뉴를 맡는다.
+            종은 로그인 때만 그려지므로 비로그인에서도 폭(w-10)은 남겨 로고가 정중앙에 선다 */}
+        <div className="flex w-10 shrink-0 items-center tablet:w-24">
+          <NotificationBell />
+        </div>
 
         {/* 가운데 로고. clamp 로 폰에서는 작게, PC 에서는 크게.
             폰에서도 햄버거와 종 사이 남는 폭의 정가운데에 둔다 — flex-1 이 그 폭이고 text-center 가 그 가운데다 */}
@@ -55,9 +57,14 @@ export default function Header() {
           </Link>
         </h1>
 
-        {/* 오른쪽: 알림 종(로그인 시에만 그려진다) + 프로필. 왼쪽과 폭을 맞춰 로고가 정중앙에 선다 */}
-        <div className="flex shrink-0 items-center justify-end tablet:w-24 tablet:gap-1">
-          <NotificationBell />
+        {/* 오른쪽: 폰은 로그아웃 버튼(PM 2026-10-11 "로고의 오른편에 로그아웃"), PC 는 프로필. 왼쪽과 폭을 맞춰 로고가 정중앙에 선다.
+            로그아웃은 사이드바와 같은 경로(/login?logout=1) — LoginSection 이 알림 기기 해제까지 처리한다 */}
+        <div className="flex w-10 shrink-0 items-center justify-end tablet:w-24 tablet:gap-1">
+          {isLoggedIn && (
+            <Link href={`${ROUTES.LOGIN}?logout=1`} aria-label="로그아웃" className={`${iconButton} tablet:hidden`}>
+              <LogOut size={22} />
+            </Link>
+          )}
           <Link
             href={isLoggedIn ? ROUTES.MY_PAGE : loginUrlWithReturnTo(currentPathForReturn())}
             aria-label={isLoggedIn ? '마이페이지' : '로그인'}
