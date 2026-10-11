@@ -27,9 +27,9 @@ const SETTING_LABEL = { COMMENT: '댓글', REPLY: '답글', PINNED_POST: '중요
 
 function Card({ title, children, aside = null }) {
   return (
-    <section className="flex flex-col gap-3 rounded-[8px] border border-[#EEEEEE] p-4">
+    <section className="flex flex-col gap-3 rounded-[8px] border border-line p-4">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-[15px] font-semibold tracking-[-0.3px] text-[#212121]">{title}</h3>
+        <h3 className="text-[15px] font-semibold tracking-[-0.3px] text-ink">{title}</h3>
         {aside}
       </div>
       {children}
@@ -40,8 +40,8 @@ function Card({ title, children, aside = null }) {
 function Row({ label, children }) {
   return (
     <div className="flex items-start justify-between gap-4 text-[14px] leading-[1.6] tracking-[-0.28px]">
-      <span className="shrink-0 text-[#919191]">{label}</span>
-      <span className="min-w-0 text-right text-[#212121] [word-break:keep-all]">{children}</span>
+      <span className="shrink-0 text-ink-3">{label}</span>
+      <span className="min-w-0 text-right text-ink [word-break:keep-all]">{children}</span>
     </div>
   );
 }
@@ -65,7 +65,8 @@ function DailyStrip({ rows = [], max = 1, title }) {
         {days.map((d) => {
           const v = byDate.get(d.key) ?? 0;
           const level = v === 0 ? 0 : Math.min(4, Math.ceil((v / Math.max(1, max)) * 4));
-          const bg = ['#f3f3f3', '#d9d9d9', '#b9b9b9', '#757575', '#212121'][level];
+          // 토큰 기반 5단계 — 다크모드에서도 바탕 위에 보인다
+          const bg = ['rgb(var(--c-surface-2))', 'rgb(var(--c-ink) / 0.18)', 'rgb(var(--c-ink) / 0.35)', 'rgb(var(--c-ink) / 0.62)', 'rgb(var(--c-ink))'][level];
           return (
             <span
               key={d.key}
@@ -76,7 +77,7 @@ function DailyStrip({ rows = [], max = 1, title }) {
           );
         })}
       </div>
-      <div className="flex justify-between text-[11px] text-[#919191]">
+      <div className="flex justify-between text-[11px] text-ink-3">
         <span>{days[0].label}</span>
         <span>오늘</span>
       </div>
@@ -113,31 +114,31 @@ export default function MemberDetailSection({ userId }) {
     <div className={`${listSectionClass} gap-4`}>
       <Link
         href={ROUTES.ADMIN_MEMBER_LIST}
-        className="inline-flex items-center gap-[4px] text-[14px] tracking-[-0.28px] text-[#919191] hover:text-[#212121]"
+        className="inline-flex items-center gap-[4px] text-[14px] tracking-[-0.28px] text-ink-3 hover:text-ink"
       >
         <ChevronLeft size={16} strokeWidth={2} aria-hidden />
         회원 목록으로 돌아가기
       </Link>
 
-      {error && <p className="py-10 text-center text-[14px] text-[#919191]">{error}</p>}
-      {!error && !data && <p className="py-10 text-center text-[14px] text-[#919191]">불러오는 중...</p>}
+      {error && <p className="py-10 text-center text-[14px] text-ink-3">{error}</p>}
+      {!error && !data && <p className="py-10 text-center text-[14px] text-ink-3">불러오는 중...</p>}
 
       {data && (
         <>
           <div className="flex flex-wrap items-end justify-between gap-2">
             <h2 className={`${listTitleClass} !my-0`}>
-              {data.isDeleted ? '탈퇴한 회원' : data.name} <span className="text-[16px] font-normal text-[#919191]">({data.loginId})</span>
+              {data.isDeleted ? '탈퇴한 회원' : data.name} <span className="text-[16px] font-normal text-ink-3">({data.loginId})</span>
             </h2>
             <div className="flex flex-wrap gap-2 text-[13px]">
-              <span className="rounded-full border border-[#dedede] px-3 py-[2px] text-[#454545]">
+              <span className="rounded-full border border-line px-3 py-[2px] text-ink-2">
                 {MEMBER_TYPE_LABELS[data.memberType] ?? data.memberType}
               </span>
-              <span className="rounded-full border border-[#dedede] px-3 py-[2px] text-[#454545]">
+              <span className="rounded-full border border-line px-3 py-[2px] text-ink-2">
                 {data.adminLevel > 0 ? `관리 Lv.${data.adminLevel}` : '일반회원'}
               </span>
               <span
                 className={`rounded-full px-3 py-[2px] ${
-                  data.banStatus && data.banStatus !== 'none' ? 'bg-[#ae0000] text-white' : 'border border-[#dedede] text-[#454545]'
+                  data.banStatus && data.banStatus !== 'none' ? 'bg-danger text-white' : 'border border-line text-ink-2'
                 }`}
               >
                 {BAN_LABEL[data.banStatus] ?? data.banStatus ?? '제재 없음'}
@@ -163,7 +164,7 @@ export default function MemberDetailSection({ userId }) {
             <Card
               title="활동"
               aside={
-                <Link href={`${ROUTES.ADMIN_MEMBER_PENALTY}?userId=${data.userId}`} className="text-[13px] text-[#919191] underline underline-offset-2 hover:text-[#212121]">
+                <Link href={`${ROUTES.ADMIN_MEMBER_PENALTY}?userId=${data.userId}`} className="text-[13px] text-ink-3 underline underline-offset-2 hover:text-ink">
                   제재 회원 관리
                 </Link>
               }
@@ -186,7 +187,7 @@ export default function MemberDetailSection({ userId }) {
 
             <Card title="알림">
               <Row label="푸시 수신 기기">
-                {data.deviceCount > 0 ? `${data.deviceCount}대` : <span className="text-[#ae0000]">없음 (푸시를 받을 수 없음)</span>}
+                {data.deviceCount > 0 ? `${data.deviceCount}대` : <span className="text-danger">없음 (푸시를 받을 수 없음)</span>}
               </Row>
               <Row label="받는 알림">
                 {Object.entries(data.notificationSettings ?? {})
@@ -210,7 +211,7 @@ export default function MemberDetailSection({ userId }) {
             <Card
               title="접속 (최근 30일)"
               aside={
-                <span className="text-[13px] text-[#919191]">
+                <span className="text-[13px] text-ink-3">
                   {data.accessDays30}일 접속
                   {lastAccessDays != null && ` · 마지막 ${lastAccessDays === 0 ? '오늘' : `${lastAccessDays}일 전`}`}
                 </span>
@@ -222,11 +223,11 @@ export default function MemberDetailSection({ userId }) {
 
             <Card
               title="앱 실행 (최근 30일)"
-              aside={<span className="text-[13px] text-[#919191]">{data.appLaunchDays30}일 실행</span>}
+              aside={<span className="text-[13px] text-ink-3">{data.appLaunchDays30}일 실행</span>}
             >
               <DailyStrip rows={data.appLaunchDaily} max={launchMax} title="실행" />
               <Row label="마지막 앱 실행">
-                {data.lastAppLaunchAt ? fmtDateTime(data.lastAppLaunchAt) : <span className="text-[#919191]">기록 없음 (웹으로만 접속)</span>}
+                {data.lastAppLaunchAt ? fmtDateTime(data.lastAppLaunchAt) : <span className="text-ink-3">기록 없음 (웹으로만 접속)</span>}
               </Row>
             </Card>
           </div>

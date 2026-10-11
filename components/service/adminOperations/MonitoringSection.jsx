@@ -43,8 +43,8 @@ function Block({ title, hint, right, children }) {
     <section className="flex flex-col gap-3">
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div>
-          <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121] md:text-[20px]">{title}</h3>
-          {hint && <p className="text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">{hint}</p>}
+          <h3 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink md:text-[20px]">{title}</h3>
+          {hint && <p className="text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-3">{hint}</p>}
         </div>
         {right}
       </div>
@@ -70,28 +70,28 @@ const useFetch = (loader, deps) => {
 };
 
 const Status = ({ state, children }) => {
-  if (state.isLoading) return <p className="py-6 text-center text-[14px] text-[#919191]">불러오는 중...</p>;
-  if (state.error) return <p className="py-6 text-center text-[14px] text-[#919191]">{state.error}</p>;
+  if (state.isLoading) return <p className="py-6 text-center text-[14px] text-ink-3">불러오는 중...</p>;
+  if (state.error) return <p className="py-6 text-center text-[14px] text-ink-3">{state.error}</p>;
   return children;
 };
 
 function Card({ label, value, sub }) {
   return (
-    <div className="flex flex-col gap-1 rounded-[8px] border border-[#EEEEEE] bg-white px-4 py-3">
-      <span className="text-[12px] text-[#919191]">{label}</span>
-      <span className="text-[22px] font-semibold leading-none tracking-[-0.02em] text-[#212121]">{value}</span>
-      {sub && <span className="text-[11px] text-[#b9b9b9]">{sub}</span>}
+    <div className="flex flex-col gap-1 rounded-[8px] border border-line bg-surface px-4 py-3">
+      <span className="text-[12px] text-ink-3">{label}</span>
+      <span className="text-[22px] font-semibold leading-none tracking-[-0.02em] text-ink">{value}</span>
+      {sub && <span className="text-[11px] text-ink-4">{sub}</span>}
     </div>
   );
 }
 
 // 회원 목록 표 (미접속 · 푸시 미등록 · 활동 상위 공용)
 function MemberTable({ rows, columns, empty }) {
-  if (!rows?.length) return <p className="py-6 text-center text-[14px] text-[#919191]">{empty}</p>;
+  if (!rows?.length) return <p className="py-6 text-center text-[14px] text-ink-3">{empty}</p>;
   return (
-    <div className="overflow-x-auto rounded-[8px] border border-[#EEEEEE]">
+    <div className="overflow-x-auto rounded-[8px] border border-line">
       <table className="w-full min-w-[560px] text-[13px]">
-        <thead className="bg-[#F7F8F9] text-left text-[#5f5f5f]">
+        <thead className="bg-surface-2 text-left text-ink-2">
           <tr>
             {columns.map((c) => (
               <th key={c.key} className={`px-3 py-2 font-medium ${c.right ? 'text-right' : ''}`}>
@@ -100,11 +100,11 @@ function MemberTable({ rows, columns, empty }) {
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-[#F3F3F3]">
+        <tbody className="divide-y divide-line">
           {rows.map((m, i) => (
             <tr key={m.userId}>
               {columns.map((c) => (
-                <td key={c.key} className={`px-3 py-2 ${c.right ? 'text-right' : ''} ${c.muted ? 'text-[#919191]' : ''}`}>
+                <td key={c.key} className={`px-3 py-2 ${c.right ? 'text-right' : ''} ${c.muted ? 'text-ink-3' : ''}`}>
                   {c.render ? c.render(m, i) : m[c.key]}
                 </td>
               ))}
@@ -117,9 +117,9 @@ function MemberTable({ rows, columns, empty }) {
 }
 
 const nameCell = (m) => (
-  <Link href={ROUTES.ADMIN_MEMBER_DETAIL(m.userId)} className="text-[#212121] hover:underline">
+  <Link href={ROUTES.ADMIN_MEMBER_DETAIL(m.userId)} className="text-ink hover:underline">
     {m.name}
-    {m.adminLevel > 0 && <span className="ml-1 text-[11px] text-[#919191]">관리</span>}
+    {m.adminLevel > 0 && <span className="ml-1 text-[11px] text-ink-3">관리</span>}
   </Link>
 );
 
@@ -155,7 +155,7 @@ export default function MonitoringSection() {
 
   const pill = (active) =>
     `h-[30px] rounded-full px-3 text-[13px] transition-colors ${
-      active ? 'bg-[#212121] text-white' : 'bg-[#F3F3F3] text-[#5f5f5f] hover:bg-[#e8e8e8]'
+      active ? 'bg-inverse text-inverse-fg' : 'bg-surface-2 text-ink-2 hover:bg-surface-3'
     }`;
   const dayPills = (value, set, options) => (
     <div className="flex flex-wrap gap-1">
@@ -171,7 +171,7 @@ export default function MonitoringSection() {
     <div className={`${listSectionClass} gap-10`}>
       <div>
         <h2 className={listTitleClass}>모니터링</h2>
-        <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
+        <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3">
           앱 접속 점검과 접속 · 가입 · 게시판 · 급상승 통계입니다. 접속 통계는 인증된 요청이 있던 시간대를 1로 세므로 브라우저 · 앱 구분이 없고,
           앱 접속 점검만 앱으로 연 경우를 따로 셉니다.
         </p>
@@ -199,8 +199,8 @@ export default function MonitoringSection() {
             labels={dailyRows.map((r) => r.date)}
             formatLabel={mdLabel}
             series={[
-              { name: '접속 회원', color: '#212121', values: dailyRows.map((r) => r.activeUsers) },
-              { name: '앱으로 연 회원', color: '#1a73e8', values: dailyRows.map((r) => r.appLaunches) },
+              { name: '접속 회원', color: 'rgb(var(--c-ink))', values: dailyRows.map((r) => r.activeUsers) },
+              { name: '앱으로 연 회원', color: 'rgb(var(--c-link))', values: dailyRows.map((r) => r.appLaunches) },
             ]}
           />
         </Status>
@@ -212,7 +212,7 @@ export default function MonitoringSection() {
             labels={hourlyRows.map((r) => String(r.hour))}
             formatLabel={(h) => `${h}시`}
             height={180}
-            series={[{ name: '접속 회원', color: '#212121', values: hourlyRows.map((r) => r.count) }]}
+            series={[{ name: '접속 회원', color: 'rgb(var(--c-ink))', values: hourlyRows.map((r) => r.count) }]}
           />
         </Status>
       </Block>
@@ -224,8 +224,8 @@ export default function MonitoringSection() {
             formatLabel={mdLabel}
             height={180}
             series={[
-              { name: '재학생', color: '#212121', values: signupRows.map((r) => r.studentCount) },
-              { name: '졸업생', color: '#919191', values: signupRows.map((r) => r.alumniCount) },
+              { name: '재학생', color: 'rgb(var(--c-ink))', values: signupRows.map((r) => r.studentCount) },
+              { name: '졸업생', color: 'rgb(var(--c-ink-3))', values: signupRows.map((r) => r.alumniCount) },
             ]}
           />
         </Status>
@@ -236,9 +236,9 @@ export default function MonitoringSection() {
         <Status state={boards}>
           {boards.data && (
             <div className="flex flex-col gap-3">
-              <div className="overflow-x-auto rounded-[8px] border border-[#EEEEEE]">
+              <div className="overflow-x-auto rounded-[8px] border border-line">
                 <table className="w-full min-w-[420px] text-[13px]">
-                  <thead className="bg-[#F7F8F9] text-left text-[#5f5f5f]">
+                  <thead className="bg-surface-2 text-left text-ink-2">
                     <tr>
                       <th className="px-3 py-2 font-medium">게시판</th>
                       <th className="px-3 py-2 text-right font-medium">글</th>
@@ -246,7 +246,7 @@ export default function MonitoringSection() {
                       <th className="px-3 py-2 text-right font-medium">좋아요</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#F3F3F3]">
+                  <tbody className="divide-y divide-line">
                     {boards.data.boards.map((b) => (
                       <tr key={b.boardId}>
                         <td className="px-3 py-2">{b.boardName}</td>
@@ -263,8 +263,8 @@ export default function MonitoringSection() {
                 formatLabel={mdLabel}
                 height={180}
                 series={[
-                  { name: '글', color: '#212121', values: boards.data.daily.map((r) => r.posts) },
-                  { name: '댓글', color: '#1a73e8', values: boards.data.daily.map((r) => r.comments) },
+                  { name: '글', color: 'rgb(var(--c-ink))', values: boards.data.daily.map((r) => r.posts) },
+                  { name: '댓글', color: 'rgb(var(--c-link))', values: boards.data.daily.map((r) => r.comments) },
                 ]}
               />
             </div>

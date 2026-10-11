@@ -26,8 +26,8 @@ export default function FindIdSuccess({ userId = 'pilsa1234' }) {
 
           {/* 아이디 표시 필드 + 복사 버튼 */}
           <div className="relative w-full">
-            <div className="bg-[#f5f5f5] h-[52px] rounded-[4px] flex items-center px-[16px] pr-[52px] border border-[#dedede]">
-              <span className="text-[#212121] text-[16px] tracking-[-0.32px] leading-[1.6]">
+            <div className="bg-surface-2 h-[52px] rounded-[4px] flex items-center px-[16px] pr-[52px] border border-line">
+              <span className="text-ink text-[16px] tracking-[-0.32px] leading-[1.6]">
                 {userId}
               </span>
             </div>
@@ -36,7 +36,7 @@ export default function FindIdSuccess({ userId = 'pilsa1234' }) {
               onClick={handleCopy}
               type="button"
               aria-label="아이디 복사"
-              className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[#9e9e9e] hover:text-[#212121] transition-colors"
+              className="absolute right-[16px] top-1/2 -translate-y-1/2 text-ink-3 hover:text-ink transition-colors"
             >
               <Copy size={20} />
             </button>
@@ -48,14 +48,14 @@ export default function FindIdSuccess({ userId = 'pilsa1234' }) {
       <div className="flex flex-col gap-3 w-full">
         <Button
           onClick={() => router.push('/login')}
-          className="h-[52px] w-full bg-[#212121] hover:bg-[#424242] text-white text-[16px] transition-colors"
+          className="h-[52px] w-full bg-inverse hover:bg-inverse-2 text-inverse-fg text-[16px] transition-colors"
         >
           로그인 하러가기
         </Button>
         <Button
           onClick={() => router.push('/findPw')}
           variant="outline"
-          className="h-[52px] w-full border-[#b9b9b9] text-[#212121] text-[16px] transition-colors hover:bg-gray-50"
+          className="h-[52px] w-full border-line-strong text-ink text-[16px] transition-colors hover:bg-surface-2"
         >
           비밀번호 찾기
         </Button>

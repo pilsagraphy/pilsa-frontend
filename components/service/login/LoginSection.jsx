@@ -48,11 +48,11 @@ function LoginCheckbox({ checked, onChange, label }) {
       />
       <span
         aria-hidden
-        className="grid size-[20px] place-content-center rounded-[4px] border border-[#dedede] bg-white text-white transition-colors peer-checked:border-[#212121] peer-checked:bg-[#212121] peer-focus-visible:ring-2 peer-focus-visible:ring-[#212121]/40"
+        className="grid size-[20px] place-content-center rounded-[4px] border border-line bg-surface text-inverse-fg transition-colors peer-checked:border-ink peer-checked:bg-inverse peer-focus-visible:ring-2 peer-focus-visible:ring-ink/40"
       >
         {checked && <Check className="size-3.5" strokeWidth={3} />}
       </span>
-      <span className="text-[14px] tracking-[-0.28px] text-[#454545]">{label}</span>
+      <span className="text-[14px] tracking-[-0.28px] text-ink-2">{label}</span>
     </label>
   );
 }
@@ -63,21 +63,21 @@ function LoginCheckbox({ checked, onChange, label }) {
 function AccountFindLinks({ className = '' }) {
   const router = useRouter();
   const itemClass =
-    'rounded-[2px] transition-colors hover:text-[#212121] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#212121]/30';
+    'rounded-[2px] transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink/30';
 
   return (
     <nav
       aria-label="계정 찾기"
-      className={`items-center gap-2.5 text-[13px] tracking-[-0.26px] text-[#919191] ${className}`}
+      className={`items-center gap-2.5 text-[13px] tracking-[-0.26px] text-ink-3 ${className}`}
     >
       <button type="button" className={itemClass} onClick={() => router.push(ROUTES.FIND_EMAIL)}>
         이메일 찾기
       </button>
-      <span className="h-[10px] w-px shrink-0 bg-[#dedede]" aria-hidden />
+      <span className="h-[10px] w-px shrink-0 bg-line" aria-hidden />
       <button type="button" className={itemClass} onClick={() => router.push(ROUTES.FIND_ID)}>
         아이디 찾기
       </button>
-      <span className="h-[10px] w-px shrink-0 bg-[#dedede]" aria-hidden />
+      <span className="h-[10px] w-px shrink-0 bg-line" aria-hidden />
       <button type="button" className={itemClass} onClick={() => router.push(ROUTES.FIND_PW)}>
         비밀번호 재설정
       </button>
@@ -378,7 +378,7 @@ export default function LoginSection() {
 
   return (
     <section className="mx-auto w-full max-w-[616px]">
-      <div className="rounded-[6px] bg-white p-6">
+      <div className="rounded-[6px] bg-surface p-6">
         <form onSubmit={handleLogin} className="flex flex-col gap-5">
           {/* 구글 계정 연결 — [구글로 로그인] 했는데 연결된 회원이 없어 돌아온 경우.
               막 돌아온 순간엔 모달로 묻고(연결할까요 / 회원가입할까요), 연결하기로 했으면 배너만 남긴다 */}
@@ -392,23 +392,23 @@ export default function LoginSection() {
           {pendingGoogleLink && !googleDialogOpen && (
             <div
               role="status"
-              className="flex items-start justify-between gap-3 rounded-[6px] border border-[#dedede] bg-[#f8f8f8] px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] [word-break:keep-all]"
+              className="flex items-start justify-between gap-3 rounded-[6px] border border-line bg-surface-2 px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-ink [word-break:keep-all]"
             >
               <p>
                 <span className="font-bold">구글 계정 연결 대기 중</span>
                 <br />
-                <span className="text-[#454545]">
+                <span className="text-ink-2">
                   {pendingGoogleLink.emailMatched
                     ? `아이디 ${pendingGoogleLink.maskedLoginId} 로 로그인하면 `
                     : '아이디·비밀번호로 로그인하면 '}
-                  <span className="font-medium text-[#212121]">{pendingGoogleLink.maskedEmail}</span>{' '}
+                  <span className="font-medium text-ink">{pendingGoogleLink.maskedEmail}</span>{' '}
                   계정이 연결돼요.
                 </span>
               </p>
               <button
                 type="button"
                 onClick={declineGoogleLink}
-                className="shrink-0 text-[13px] text-[#919191] underline-offset-2 hover:underline"
+                className="shrink-0 text-[13px] text-ink-3 underline-offset-2 hover:underline"
               >
                 연결 취소
               </button>
@@ -417,7 +417,7 @@ export default function LoginSection() {
 
           {/* 제목 줄: 왼쪽 '로그인' / 오른쪽 계정 찾기 */}
           <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
-            <h2 className="text-[24px] font-semibold tracking-[-0.48px] text-black">로그인</h2>
+            <h2 className="text-[24px] font-semibold tracking-[-0.48px] text-ink">로그인</h2>
             <AccountFindLinks className="flex" />
           </div>
 
@@ -425,7 +425,7 @@ export default function LoginSection() {
           <div className="flex flex-col gap-3">
             <Input
               required
-              className="h-[52px] rounded-[4px] border-[#dedede] text-[16px] placeholder:text-[#9e9e9e]"
+              className="h-[52px] rounded-[4px] border-line text-[16px] placeholder:text-ink-3"
               placeholder="아이디를 입력하세요."
               value={loginId}
               onChange={(e) => setLoginId(e.target.value)}
@@ -433,7 +433,7 @@ export default function LoginSection() {
             <Input
               required
               type="password"
-              className="h-[52px] rounded-[4px] border-[#dedede] text-[16px] placeholder:text-[#9e9e9e]"
+              className="h-[52px] rounded-[4px] border-line text-[16px] placeholder:text-ink-3"
               placeholder="비밀번호를 입력하세요."
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -451,7 +451,7 @@ export default function LoginSection() {
             <Button
               type="submit"
               disabled={loggingOut}
-              className="h-[52px] w-full rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#212121]/90 disabled:opacity-60"
+              className="h-[52px] w-full rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse/90 disabled:opacity-60"
             >
               {loggingOut ? '로그아웃 처리 중...' : '로그인'}
             </Button>
@@ -459,7 +459,7 @@ export default function LoginSection() {
             <Button
               type="button"
               variant="outline"
-              className="h-[52px] w-full rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]"
+              className="h-[52px] w-full rounded-[4px] border-line-strong text-[16px] text-ink"
               onClick={() => router.push(ROUTES.SIGNUP)}
             >
               회원가입
@@ -469,7 +469,7 @@ export default function LoginSection() {
           {/* 아이디·비밀번호가 틀렸을 때 띄우는 안내.
               구글 계정을 연결해 둔 사람은 비밀번호를 몰라도 아래 [구글로 로그인]으로 들어올 수 있다 */}
           {showGoogleHint && (
-            <p className="rounded-[4px] bg-[#F5F5F5] px-4 py-3 text-[13px] leading-[1.6] tracking-[-0.02em] text-[#757575]">
+            <p className="rounded-[4px] bg-surface-2 px-4 py-3 text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-3">
               구글 계정을 연결해 두셨다면 아래 <strong className="font-semibold">구글로 로그인</strong>으로
               바로 들어올 수 있어요. 연결한 적이 없다면 위 <strong className="font-semibold">비밀번호 재설정</strong>을
               이용해 주세요.
@@ -481,16 +481,16 @@ export default function LoginSection() {
               GOOGLE_NOT_LINKED 로 돌아오고 위 useEffect 가 안내 토스트를 띄운다. */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-3">
-              <span className="h-px flex-1 bg-[#e5e5e5]" />
-              <span className="text-[14px] text-[#9e9e9e]">간편로그인</span>
-              <span className="h-px flex-1 bg-[#e5e5e5]" />
+              <span className="h-px flex-1 bg-surface-3" />
+              <span className="text-[14px] text-ink-3">간편로그인</span>
+              <span className="h-px flex-1 bg-surface-3" />
             </div>
 
             <button
               type="button"
               onClick={handleGoogleLogin}
               disabled={googleBusy || loggingOut}
-              className="flex h-[52px] w-full items-center justify-center gap-3 rounded-[4px] border border-[#dedede] bg-white text-[16px] font-medium text-[#3c4043] transition hover:bg-[#f8f9fa] disabled:opacity-60"
+              className="flex h-[52px] w-full items-center justify-center gap-3 rounded-[4px] border border-line bg-surface text-[16px] font-medium text-ink-2 transition hover:bg-surface-2 disabled:opacity-60"
             >
               <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
                 <path

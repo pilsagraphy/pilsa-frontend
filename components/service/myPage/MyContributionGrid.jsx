@@ -13,7 +13,8 @@ const WEEKS_DESKTOP = 16; // 16주 = 112일 (API 도 이만큼 받는다)
 const WEEKS_MOBILE = 8;
 const DAYS = WEEKS_DESKTOP * 7;
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
-const SHADES = ['#efefef', '#d4d4d4', '#a3a3a3', '#5c5c5c', '#212121'];
+// 잔디 5단계 — 토큰 기반이라 다크모드에서도 바탕 위에 보인다 (라이트에서는 예전 #efefef·#d4d4d4·#a3a3a3·#5c5c5c·#212121 과 거의 같다)
+const SHADES = ['rgb(var(--c-surface-3))', 'rgb(var(--c-ink) / 0.2)', 'rgb(var(--c-ink) / 0.42)', 'rgb(var(--c-ink) / 0.7)', 'rgb(var(--c-ink))'];
 
 const ymd = (d) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -80,12 +81,12 @@ function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
     <div className="flex min-w-0 flex-1 flex-col gap-2">
       {/* 숫자 요약 — 큰 숫자 하나, 옆에 작은 설명 */}
       <p className="flex items-baseline gap-[6px] leading-none">
-        <span className="text-[18px] font-semibold tracking-[-0.02em] text-[#212121] md:text-[20px]">
+        <span className="text-[18px] font-semibold tracking-[-0.02em] text-ink md:text-[20px]">
           {total}
-          <span className="ml-[1px] text-[12px] font-normal text-[#919191]">{unit}</span>
+          <span className="ml-[1px] text-[12px] font-normal text-ink-3">{unit}</span>
         </span>
         {/* '100개 · 15일' 이 뭔지 모르겠다는 말(PM 10/10 밤) — 기간과 뜻을 적는다: 최근 N주 합계, 그중 활동한 날 수 */}
-        <span className="text-[11px] tracking-[-0.02em] text-[#919191]">
+        <span className="text-[11px] tracking-[-0.02em] text-ink-3">
           {caption} · 최근 {weekCount}주 · 활동한 날 {activeDays}일
         </span>
       </p>
@@ -102,7 +103,7 @@ function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
           {/* 첫 행: 월 라벨 (요일 라벨 열은 비움) */}
           {labelCol > 0 && <span />}
           {weeks.map((week, wi) => (
-            <span key={`m-${week[0].key}`} className="overflow-visible whitespace-nowrap text-[9px] leading-[14px] text-[#919191]">
+            <span key={`m-${week[0].key}`} className="overflow-visible whitespace-nowrap text-[9px] leading-[14px] text-ink-3">
               {monthLabels[wi]}
             </span>
           ))}
@@ -110,7 +111,7 @@ function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
           {Array.from({ length: 7 }, (_, dow) => (
             <div key={DOW[dow]} className="contents">
               {labelCol > 0 && (
-                <span className="self-center pr-1 text-right text-[9px] leading-none text-[#b9b9b9]">{dow % 2 === 1 ? DOW[dow] : ''}</span>
+                <span className="self-center pr-1 text-right text-[9px] leading-none text-ink-4">{dow % 2 === 1 ? DOW[dow] : ''}</span>
               )}
               {weeks.map((week) => {
                 const cell = week.find((c) => c.date.getDay() === dow);
@@ -123,7 +124,7 @@ function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
                     {...(interactive ? { type: 'button', onMouseEnter: (e) => show(e, cell, v), onFocus: (e) => show(e, cell, v) } : {})}
                     key={cell.key}
                     aria-label={`${cell.key} ${v}${unit}`}
-                    className={`aspect-square w-full outline-none ring-[#212121] focus-visible:ring-1 ${compact ? 'rounded-[3px]' : 'rounded-[2px]'}`}
+                    className={`aspect-square w-full outline-none ring-ink focus-visible:ring-1 ${compact ? 'rounded-[3px]' : 'rounded-[2px]'}`}
                     style={{ backgroundColor: SHADES[level] }}
                   />
                 );
@@ -134,7 +135,7 @@ function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
         {hover && (
           <span
             role="tooltip"
-            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-[4px] bg-[#212121] px-2 py-[2px] text-[11px] text-white shadow"
+            className="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full whitespace-nowrap rounded-[4px] bg-inverse px-2 py-[2px] text-[11px] text-inverse-fg shadow"
             style={{ left: hover.x, top: hover.y - 6 }}
           >
             {hover.key} · {hover.v}
@@ -144,7 +145,7 @@ function Grid({ caption, rows, unit, weekCount, compact, interactive }) {
       </div>
 
       {/* 범례 */}
-      <p className="flex items-center justify-end gap-[3px] text-[10px] leading-none text-[#b9b9b9]">
+      <p className="flex items-center justify-end gap-[3px] text-[10px] leading-none text-ink-4">
         <span className="mr-[2px]">적음</span>
         {SHADES.map((c) => (
           <span key={c} className="h-[9px] w-[9px] rounded-[2px]" style={{ backgroundColor: c }} />
@@ -181,7 +182,7 @@ export default function MyContributionGrid({ compact = false }) {
       className={
         compact
           ? 'flex flex-col gap-3'
-          : 'flex flex-col gap-3 rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px]'
+          : 'flex flex-col gap-3 rounded-[10px] border border-line bg-surface px-[17px] py-[16px]'
       }
     >
       {/* 폰에서도 두 격자를 한 줄에 — 대신 8주만 보여 칸이 손가락 크기에 가깝게 (PM 10/10) */}

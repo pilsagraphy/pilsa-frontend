@@ -15,10 +15,10 @@ import { toast } from '@/lib/toast';
 const STATE_LABEL = { normal: '보임', hidden: '숨김', deleted: '작성자 삭제' };
 const chipClass = (active) =>
   `h-[32px] shrink-0 rounded-full px-3 text-[13px] font-medium tracking-[-0.26px] transition ${
-    active ? 'bg-[#212121] text-white' : 'bg-[#F5F5F5] text-[#454545] hover:bg-[#EDEDED]'
+    active ? 'bg-inverse text-inverse-fg' : 'bg-surface-2 text-ink-2 hover:bg-surface-3'
   }`;
 const smallBtn =
-  'h-[28px] shrink-0 rounded-[4px] border border-[#dedede] bg-white px-2 text-[12px] text-[#454545] hover:bg-[#f5f5f5] disabled:opacity-30';
+  'h-[28px] shrink-0 rounded-[4px] border border-line bg-surface px-2 text-[12px] text-ink-2 hover:bg-surface-2 disabled:opacity-30';
 
 export default function GuestbookAdminSection() {
   const [semester, setSemester] = useState(null);
@@ -68,7 +68,7 @@ export default function GuestbookAdminSection() {
       {loading ? (
         <AppLoading />
       ) : error ? (
-        <p className="py-10 text-center text-[14px] text-[#919191]">{error}</p>
+        <p className="py-10 text-center text-[14px] text-ink-3">{error}</p>
       ) : (
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-2">
@@ -79,13 +79,13 @@ export default function GuestbookAdminSection() {
             ))}
           </div>
           {notes.length === 0 ? (
-            <p className="py-8 text-center text-[13px] text-[#919191]">이 학기에는 글이 없습니다.</p>
+            <p className="py-8 text-center text-[13px] text-ink-3">이 학기에는 글이 없습니다.</p>
           ) : (
             <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {notes.map((note) => (
                 <li key={note.noteId} className={`flex flex-col gap-2 ${note.state === 'normal' ? '' : 'opacity-60'}`}>
                   <GuestbookNote note={{ ...note, canManage: false, state: 'normal' }} compact />
-                  <div className="flex items-center justify-between gap-2 px-1 text-[12px] text-[#919191]">
+                  <div className="flex items-center justify-between gap-2 px-1 text-[12px] text-ink-3">
                     <span>
                       #{note.noteId} · {STATE_LABEL[note.state] ?? note.state}
                       {note.userId != null ? ` · ${note.authorName ?? '회원'} (${note.authorLoginId ?? note.userId})` : ' · 비로그인'}

@@ -28,18 +28,18 @@ export default function FindEmailSuccess({ email }) {
       <div className="flex flex-col gap-[50px] items-start w-full">
         {/* 제목 + 안내 문구 */}
         <div className="flex flex-col gap-[6px] w-full">
-          <h1 className="font-semibold text-[24px] text-black tracking-[-0.48px] leading-[1.5]">
+          <h1 className="font-semibold text-[24px] text-ink tracking-[-0.48px] leading-[1.5]">
             이메일 찾기
           </h1>
-          <p className="text-[#b9b9b9] text-[16px] tracking-[-0.32px] leading-[1.6]">
+          <p className="text-ink-4 text-[16px] tracking-[-0.32px] leading-[1.6]">
             회원님의 가입 이메일은 아래와 같습니다.
           </p>
         </div>
 
         {/* 조회된 이메일 표시 (시안대로 #dedede 채움, 테두리 없음) + 복사 버튼 */}
         <div className="relative w-full">
-          <div className="bg-[#dedede] h-[52px] rounded-[4px] flex items-center px-[16px] pr-[52px]">
-            <span className="truncate text-[#212121] text-[16px] tracking-[-0.32px] leading-[1.6]">
+          <div className="bg-line h-[52px] rounded-[4px] flex items-center px-[16px] pr-[52px]">
+            <span className="truncate text-ink text-[16px] tracking-[-0.32px] leading-[1.6]">
               {email}
             </span>
           </div>
@@ -47,7 +47,7 @@ export default function FindEmailSuccess({ email }) {
             type="button"
             onClick={handleCopy}
             aria-label="이메일 복사"
-            className="absolute right-[16px] top-1/2 -translate-y-1/2 text-[#454545] transition-colors hover:text-[#212121]"
+            className="absolute right-[16px] top-1/2 -translate-y-1/2 text-ink-2 transition-colors hover:text-ink"
           >
             <Copy size={20} aria-hidden />
           </button>
@@ -58,14 +58,14 @@ export default function FindEmailSuccess({ email }) {
       <div className="flex flex-col gap-5 w-full">
         <Button
           onClick={() => router.push(ROUTES.LOGIN)}
-          className="h-[52px] w-full bg-[#212121] hover:bg-[#424242] text-white text-[16px] transition-colors"
+          className="h-[52px] w-full bg-inverse hover:bg-inverse-2 text-inverse-fg text-[16px] transition-colors"
         >
           로그인 하러가기
         </Button>
         <Button
           onClick={() => router.push(ROUTES.FIND_PW)}
           variant="outline"
-          className="h-[52px] w-full border-[#212121] text-[#212121] text-[16px] transition-colors hover:bg-gray-50"
+          className="h-[52px] w-full border-ink text-ink text-[16px] transition-colors hover:bg-surface-2"
         >
           비밀번호 찾기
         </Button>

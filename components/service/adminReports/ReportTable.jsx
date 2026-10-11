@@ -78,7 +78,7 @@ export default function ReportTable({
   return (
     <>
       {/* 폰: 카드 목록 */}
-      <div className="border-t border-[#212121] xl:hidden">
+      <div className="border-t border-ink xl:hidden">
         {!emptyMessage && (
           <AdminSelectAllBar
             checked={allSelected}
@@ -100,13 +100,13 @@ export default function ReportTable({
       </div>
 
       {/* 태블릿 이상: 기존 표 */}
-      <div className="hidden overflow-x-auto border-t border-[#212121] xl:block">
+      <div className="hidden overflow-x-auto border-t border-ink xl:block">
       {/* 열이 8개라 좁은 화면에서는 가로 스크롤로 처리한다.
           table-fixed로 둬야 위에서 잡은 열 너비가 그대로 지켜지고,
           미리보기 내용이 길어도 행 높이(58px)가 늘어나지 않는다. */}
       <Table className="w-full min-w-[915px] table-fixed">
         <TableHeader>
-          <TableRow className="h-[46px] border-b border-[#919191] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
+          <TableRow className="h-[46px] border-b border-ink-3 text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-3">
             <TableHead className={`w-[5%] text-center ${cellPaddingClass}`}>
               <SelectAllCheckbox
                 checked={allSelected}
@@ -118,7 +118,7 @@ export default function ReportTable({
             {COLUMNS.map((column) => (
               <TableHead
                 key={column.key}
-                className={`${column.width} ${cellPaddingClass} whitespace-nowrap text-center text-[#919191]`}
+                className={`${column.width} ${cellPaddingClass} whitespace-nowrap text-center text-ink-3`}
               >
                 {column.label}
               </TableHead>
@@ -128,7 +128,7 @@ export default function ReportTable({
 
         <TableBody>
           {emptyMessage ? (
-            <TableRow className="h-[58px] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
+            <TableRow className="h-[58px] text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-2">
               <TableCell colSpan={COLUMN_COUNT} className="text-center text-muted-foreground">
                 {emptyMessage}
               </TableCell>

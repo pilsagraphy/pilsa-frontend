@@ -32,18 +32,18 @@ const splitNames = (s) =>
 const joinNames = (arr) => (arr ?? []).join(', ');
 
 const inputClass =
-  'h-[36px] min-w-0 rounded-[6px] border border-[#dedede] bg-white px-3 text-[13px] text-[#212121] outline-none transition-colors focus:border-[#919191] disabled:bg-[#F7F8F9]';
+  'h-[36px] min-w-0 rounded-[6px] border border-line bg-surface px-3 text-[13px] text-ink outline-none transition-colors focus:border-ink-3 disabled:bg-surface-2';
 const chipClass = (active) =>
   `h-[32px] shrink-0 rounded-full px-3 text-[13px] font-medium tracking-[-0.26px] transition ${
-    active ? 'bg-[#212121] text-white' : 'bg-[#F5F5F5] text-[#454545] hover:bg-[#EDEDED]'
+    active ? 'bg-inverse text-inverse-fg' : 'bg-surface-2 text-ink-2 hover:bg-surface-3'
   }`;
 const smallBtn =
-  'h-[28px] shrink-0 rounded-[4px] border border-[#dedede] bg-white px-2 text-[12px] text-[#454545] hover:bg-[#f5f5f5] disabled:opacity-30';
-const primaryBtn = 'h-[36px] shrink-0 rounded-[6px] bg-[#212121] px-4 text-[13px] text-white transition-opacity disabled:opacity-30';
-const ghostBtn = 'h-[36px] shrink-0 rounded-[6px] border border-[#dedede] bg-white px-4 text-[13px] text-[#454545] hover:bg-[#f5f5f5] disabled:opacity-30';
-const dangerBtn = 'h-[36px] shrink-0 rounded-[6px] border border-[#dedede] bg-white px-4 text-[13px] text-[#b3261e] hover:bg-[#fff5f5] disabled:opacity-30';
-const labelClass = 'text-[12px] text-[#919191]';
-const boxClass = 'flex flex-col gap-3 rounded-[10px] border border-[#dedede] bg-white p-4';
+  'h-[28px] shrink-0 rounded-[4px] border border-line bg-surface px-2 text-[12px] text-ink-2 hover:bg-surface-2 disabled:opacity-30';
+const primaryBtn = 'h-[36px] shrink-0 rounded-[6px] bg-inverse px-4 text-[13px] text-inverse-fg transition-opacity disabled:opacity-30';
+const ghostBtn = 'h-[36px] shrink-0 rounded-[6px] border border-line bg-surface px-4 text-[13px] text-ink-2 hover:bg-surface-2 disabled:opacity-30';
+const dangerBtn = 'h-[36px] shrink-0 rounded-[6px] border border-line bg-surface px-4 text-[13px] text-danger hover:bg-danger-bg disabled:opacity-30';
+const labelClass = 'text-[12px] text-ink-3';
+const boxClass = 'flex flex-col gap-3 rounded-[10px] border border-line bg-surface p-4';
 
 export default function OrganizationEditorSection() {
   const { data, loading, error, reload } = useOrganization();
@@ -76,8 +76,8 @@ export default function OrganizationEditorSection() {
   return (
     <section className={listSectionClass}>
       <h1 className={listTitleClass}>조직도 편집</h1>
-      <p className="mb-5 text-[13px] leading-[1.6] text-[#919191]">
-        소개 페이지의 조직도는 <b className="font-medium text-[#454545]">가장 최근 기수의 가장 최근 학기</b>
+      <p className="mb-5 text-[13px] leading-[1.6] text-ink-3">
+        소개 페이지의 조직도는 <b className="font-medium text-ink-2">가장 최근 기수의 가장 최근 학기</b>
         {data?.currentTerm ? ` (지금은 ${data.currentTerm})` : ''}를, 역대 회장 페이지는 기수 전부를 보여 줍니다. 이름이 여러 명이면 쉼표로
         적고, 적은 순서대로 화면에 나옵니다.
       </p>
@@ -85,7 +85,7 @@ export default function OrganizationEditorSection() {
       {loading ? (
         <AppLoading />
       ) : error ? (
-        <p className="py-10 text-center text-[14px] text-[#919191]">{error}</p>
+        <p className="py-10 text-center text-[14px] text-ink-3">{error}</p>
       ) : (
         <div className="flex flex-col gap-5">
           {/* 기수 고르기 */}
@@ -186,7 +186,7 @@ export default function OrganizationEditorSection() {
                   }}
                 />
               ) : (
-                <p className="text-[13px] text-[#919191]">학기가 없습니다. 「+ 학기 추가」로 시작하세요.</p>
+                <p className="text-[13px] text-ink-3">학기가 없습니다. 「+ 학기 추가」로 시작하세요.</p>
               )}
             </>
           )}
@@ -261,12 +261,12 @@ function PresidentForm({ president, isNew, nextSeqNo, onSaved, onDeleted }) {
     <div className={`${boxClass} md:flex-row md:items-start md:gap-5`}>
       {/* 사진 — 역대 회장 카드와 같은 비율 */}
       <div className="flex shrink-0 flex-col items-center gap-2">
-        <div className="relative aspect-[227/280] w-[110px] overflow-hidden bg-[#D9D9D9]">
+        <div className="relative aspect-[227/280] w-[110px] overflow-hidden bg-line">
           {photo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={`${photo}${photo.startsWith('/images/') ? '' : `?v=${encodeURIComponent(president?.photoUrl ?? '')}`}`} alt="" className="h-full w-full object-cover" />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-[11px] text-[#919191]">사진 없음</div>
+            <div className="flex h-full w-full items-center justify-center text-[11px] text-ink-3">사진 없음</div>
           )}
         </div>
         {!isNew && (
@@ -308,7 +308,7 @@ function PresidentForm({ president, isNew, nextSeqNo, onSaved, onDeleted }) {
             </button>
           )}
           {!isNew && president?.officers?.length > 0 && (
-            <span className="text-[12px] text-[#919191]">학기 {president.officers.length}개</span>
+            <span className="text-[12px] text-ink-3">학기 {president.officers.length}개</span>
           )}
         </div>
       </div>
@@ -469,9 +469,9 @@ function TermEditor({ president, term, isDraft, onSaved, onDiscardDraft, onDelet
           </>
         ) : (
           <>
-            <h2 className="text-[16px] font-semibold text-[#212121]">
+            <h2 className="text-[16px] font-semibold text-ink">
               {president.order} {president.name} · {term.term}
-              {isDraft && <span className="ml-2 text-[12px] font-normal text-[#919191]">저장 전</span>}
+              {isDraft && <span className="ml-2 text-[12px] font-normal text-ink-3">저장 전</span>}
             </h2>
             {!isDraft && (
               <button type="button" className={smallBtn} onClick={() => setRenaming(true)}>
@@ -513,7 +513,7 @@ function TermEditor({ president, term, isDraft, onSaved, onDiscardDraft, onDelet
       {/* 팀 */}
       <Group title="팀" hint="팀장이 없으면 비워 두면 됩니다" onAdd={() => setTeams([...teams, { title: '', leader: '', members: '' }])} addLabel="+ 팀 추가">
         {teams.map((t, i) => (
-          <div key={i} className="flex flex-col gap-2 rounded-[6px] border border-[#ededed] p-3">
+          <div key={i} className="flex flex-col gap-2 rounded-[6px] border border-line p-3">
             <div className="flex flex-wrap items-center gap-2 md:flex-nowrap">
               <input
                 type="text"
@@ -547,7 +547,7 @@ function TermEditor({ president, term, isDraft, onSaved, onDiscardDraft, onDelet
         <input type="text" value={advisors} onChange={(e) => setAdvisors(e.target.value)} placeholder="자문 (여러 명이면 쉼표, 없으면 비움)" className={inputClass} />
       </Group>
 
-      <div className="flex flex-wrap items-center gap-2 border-t border-[#ededed] pt-3">
+      <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
         <button type="button" className={primaryBtn} disabled={saving} onClick={save}>
           {saving ? '저장 중' : isDraft ? '학기 만들고 저장' : '명단 저장'}
         </button>
@@ -576,8 +576,8 @@ function Group({ title, hint, onAdd, addLabel, children }) {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <span className="text-[14px] font-medium text-[#212121]">{title}</span>
-        {hint && <span className="text-[12px] text-[#919191]">{hint}</span>}
+        <span className="text-[14px] font-medium text-ink">{title}</span>
+        {hint && <span className="text-[12px] text-ink-3">{hint}</span>}
         {onAdd && (
           <button type="button" className={`${smallBtn} ml-auto`} onClick={onAdd}>
             {addLabel}

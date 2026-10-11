@@ -11,7 +11,7 @@ export default function MembersLayout({ children }) {
       {/* 웹앱(standalone) 첫 로그인 시 알림 유도 팝업창 */}
       <PushPromptBottomSheet />
       {/* 헤더 상단 고정: 스크롤해도 제자리 유지 */}
-      <div className="tablet:sticky tablet:top-0 tablet:z-50 bg-white">
+      <div className="tablet:sticky tablet:top-0 tablet:z-50 bg-surface">
         <Header />
       </div>
 

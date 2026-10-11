@@ -47,7 +47,7 @@ function RoleBadge({ role }) {
   return (
     <span
       className={`inline-flex items-center whitespace-nowrap rounded-full border px-[8px] py-[1px] text-[12px] leading-[1.6] tracking-[-0.24px] ${
-        lead ? 'border-[#212121] bg-[#212121] text-white' : 'border-[#B9B9B9] text-[#454545]'
+        lead ? 'border-ink bg-inverse text-inverse-fg' : 'border-line-strong text-ink-2'
       }`}
     >
       {role}
@@ -60,9 +60,9 @@ function MemberCard({ member }) {
   const roles = [...member.roles].sort((a, b) => Number(isLead(b)) - Number(isLead(a)));
 
   return (
-    <div className="flex flex-col gap-[8px] rounded-[10px] border border-[#E5E5E5] bg-white px-[16px] py-[14px]">
+    <div className="flex flex-col gap-[8px] rounded-[10px] border border-line bg-surface px-[16px] py-[14px]">
       <div className="flex items-center justify-between gap-[8px]">
-        <span className="shrink-0 text-[16px] font-semibold leading-[1.5] tracking-[-0.32px] text-[#212121]">
+        <span className="shrink-0 text-[16px] font-semibold leading-[1.5] tracking-[-0.32px] text-ink">
           {member.name}
         </span>
         <div className="flex flex-wrap justify-end gap-[4px]">
@@ -73,13 +73,13 @@ function MemberCard({ member }) {
       </div>
 
       {member.works.length > 0 && (
-        <ul className="flex flex-col gap-[3px] border-t border-[#F0F0F0] pt-[8px]">
+        <ul className="flex flex-col gap-[3px] border-t border-line pt-[8px]">
           {member.works.map((work) => (
             <li
               key={work}
-              className="flex gap-[6px] text-[13px] leading-[1.6] tracking-[-0.26px] text-[#757575] [word-break:keep-all]"
+              className="flex gap-[6px] text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-3 [word-break:keep-all]"
             >
-              <span aria-hidden className="shrink-0 text-[#B9B9B9]">
+              <span aria-hidden className="shrink-0 text-ink-4">
                 ·
               </span>
               <span>{work}</span>
@@ -101,15 +101,15 @@ export default function DeveloperCredits() {
   const members = useMemo(() => sortMembers(current.members), [current]);
 
   return (
-    <section className="flex flex-col gap-[20px] border-t-[1.5px] border-[#212121] pt-[32px]">
+    <section className="flex flex-col gap-[20px] border-t-[1.5px] border-ink pt-[32px]">
       <div className="flex flex-wrap items-end justify-between gap-[10px]">
         <div className="flex flex-col gap-[4px]">
-          <h3 className="font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121] md:text-[22px]">
+          <h3 className="font-['Pretendard',sans-serif] text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-ink md:text-[22px]">
             홈페이지 개발자{' '}
             {/* 명단이 아직 다 안 채워졌다 — 완성되면 이 표시를 뗀다 (PM, 2026-09-24) */}
-            <span className="text-[15px] font-normal text-[#919191] md:text-[16px]">(작성 중)</span>
+            <span className="text-[15px] font-normal text-ink-3 md:text-[16px]">(작성 중)</span>
           </h3>
-          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]">
+          <p className="text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3">
             이 홈페이지를 만든 필사그래피 제작단 · {current.label} {current.period}
           </p>
         </div>
@@ -127,12 +127,12 @@ export default function DeveloperCredits() {
                 onClick={() => setGeneration(g.generation)}
                 className={`rounded-full px-[14px] py-[5px] text-[14px] leading-[1.6] tracking-[-0.28px] transition-colors ${
                   active
-                    ? 'bg-[#212121] text-white'
-                    : 'border border-[#B9B9B9] text-[#454545] hover:bg-[#F5F5F5]'
+                    ? 'bg-inverse text-inverse-fg'
+                    : 'border border-line-strong text-ink-2 hover:bg-surface-2'
                 }`}
               >
                 {g.label}
-                <span className={`ml-[6px] text-[12px] ${active ? 'text-[#B9B9B9]' : 'text-[#919191]'}`}>
+                <span className={`ml-[6px] text-[12px] ${active ? 'text-ink-4' : 'text-ink-3'}`}>
                   {g.members.length}명
                 </span>
               </button>

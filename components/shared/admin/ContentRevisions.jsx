@@ -30,7 +30,7 @@ export default function ContentRevisions({ revisions = [], compact = false }) {
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         aria-expanded={open}
-        className="inline-flex items-center gap-[4px] text-[13px] leading-[1.6] tracking-[-0.26px] text-[#757575] underline underline-offset-2 hover:text-[#212121]"
+        className="inline-flex items-center gap-[4px] text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-3 underline underline-offset-2 hover:text-ink"
       >
         이전 본문 {list.length}건
         {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
@@ -41,21 +41,21 @@ export default function ContentRevisions({ revisions = [], compact = false }) {
           {ordered.map((rev) => (
             <li
               key={rev.revisionId}
-              className="rounded-[6px] border border-[#E5E5E5] bg-[#FAFAFA] px-[12px] py-[8px]"
+              className="rounded-[6px] border border-line bg-surface-2 px-[12px] py-[8px]"
             >
-              <div className="flex flex-wrap items-center gap-x-[8px] gap-y-[2px] text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
-                <span className="rounded-full border border-[#B9B9B9] px-[7px] text-[#454545]">
+              <div className="flex flex-wrap items-center gap-x-[8px] gap-y-[2px] text-[12px] leading-[1.6] tracking-[-0.24px] text-ink-3">
+                <span className="rounded-full border border-line-strong px-[7px] text-ink-2">
                   {TRIGGER_LABEL[rev.triggerType] ?? rev.triggerType}
                 </span>
                 <span>{rev.savedByName ?? (rev.triggerType === 'moderation' ? '자동' : '(탈퇴)')}</span>
                 <span>{formatSlashDateTime(rev.createdAt)}</span>
               </div>
               {rev.title && (
-                <p className="mt-[4px] text-[14px] font-semibold leading-[1.5] tracking-[-0.28px] text-[#212121]">
+                <p className="mt-[4px] text-[14px] font-semibold leading-[1.5] tracking-[-0.28px] text-ink">
                   {rev.title}
                 </p>
               )}
-              <p className="mt-[4px] whitespace-pre-line break-words text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
+              <p className="mt-[4px] whitespace-pre-line break-words text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2">
                 {rev.content}
               </p>
             </li>

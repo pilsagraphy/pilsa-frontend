@@ -340,7 +340,7 @@ function SignupFormInner() {
       <Toaster richColors position="top-center" />
 
       <div className="mb-8">
-        <span className="inline-block rounded-[4px] bg-[#f0f0f0] px-4 py-2 text-[14px] text-[#212121]">
+        <span className="inline-block rounded-[4px] bg-surface-2 px-4 py-2 text-[14px] text-ink">
           {roleParam === 'STUDENTS' ? '재학생' : '졸업생'}
         </span>
       </div>
@@ -348,13 +348,13 @@ function SignupFormInner() {
       {googlePending && (
         <div
           role="status"
-          className="mb-6 rounded-[6px] border border-[#dedede] bg-[#f8f8f8] px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] [word-break:keep-all]"
+          className="mb-6 rounded-[6px] border border-line bg-surface-2 px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-ink [word-break:keep-all]"
         >
           <span className="font-bold">구글 계정 연결 대기 중</span>
           <br />
-          <span className="text-[#454545]">
+          <span className="text-ink-2">
             가입을 마치고 로그인하면{' '}
-            <span className="font-medium text-[#212121]">{googlePending.maskedEmail}</span> 계정이 자동으로
+            <span className="font-medium text-ink">{googlePending.maskedEmail}</span> 계정이 자동으로
             연결돼요.
           </span>
         </div>
@@ -362,7 +362,7 @@ function SignupFormInner() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-[20px]">
-          <p className="text-[24px] font-semibold text-[#212121]">회원가입</p>
+          <p className="text-[24px] font-semibold text-ink">회원가입</p>
 
           <FormField
             control={form.control}
@@ -407,7 +407,7 @@ function SignupFormInner() {
                       const value = e.target.value.replace(/[^0-9]/g, '');
                       field.onChange(value);
                     }}
-                    className="h-[52px] placeholder:text-[#9e9e9e]"
+                    className="h-[52px] placeholder:text-ink-3"
                   />
                 </FormControl>
                 <FormMessage />
@@ -445,7 +445,7 @@ function SignupFormInner() {
                 )}
               />
 
-              <span className="text-[#919191]">@</span>
+              <span className="text-ink-3">@</span>
 
               {emailDomain === 'custom' ? (
                 <FormField
@@ -502,7 +502,7 @@ function SignupFormInner() {
                 type="button"
                 onClick={handleEmailSend}
                 disabled={isSendingEmailCode}
-                className="h-[52px] min-w-[120px] bg-[#212121]"
+                className="h-[52px] min-w-[120px] bg-inverse"
               >
                 {isSendingEmailCode ? '발송중...' : isEmailSent ? '재발송' : '인증번호 발송'}
               </Button>
@@ -536,7 +536,7 @@ function SignupFormInner() {
                 type="button"
                 onClick={handleEmailVerify}
                 disabled={!isEmailSent || isEmailVerified || isVerifyingEmailCode}
-                className="h-[52px] min-w-[100px] bg-[#212121]"
+                className="h-[52px] min-w-[100px] bg-inverse"
               >
                 {isVerifyingEmailCode ? '확인중...' : isEmailVerified ? '인증완료' : '인증확인'}
               </Button>
@@ -564,7 +564,7 @@ function SignupFormInner() {
                       }
                       field.onChange(formatted);
                     }}
-                    className="h-[52px] placeholder:text-[#9e9e9e]"
+                    className="h-[52px] placeholder:text-ink-3"
                   />
                 </FormControl>
                 <FormMessage />
@@ -600,7 +600,7 @@ function SignupFormInner() {
                 type="button"
                 onClick={handleDuplicateCheck}
                 disabled={isCheckingLoginId || isDuplicateChecked}
-                className="h-[52px] w-[150px] bg-[#212121]"
+                className="h-[52px] w-[150px] bg-inverse"
               >
                 {isCheckingLoginId
                   ? '확인중...'
@@ -638,7 +638,7 @@ function SignupFormInner() {
                       <span
                         key={rule.label}
                         className={`text-[12px] transition-colors ${
-                          isValid ? 'text-blue-600 font-medium' : 'text-[#9e9e9e]'
+                          isValid ? 'text-link font-medium' : 'text-ink-3'
                         }`}
                       >
                         ● {rule.label}
@@ -674,7 +674,7 @@ function SignupFormInner() {
           <Button
             type="submit"
             disabled={isRegistering}
-            className="mt-4 h-[52px] w-full bg-[#212121] text-white transition-all hover:bg-[#333]"
+            className="mt-4 h-[52px] w-full bg-inverse text-inverse-fg transition-all hover:bg-[#333]"
           >
             {isRegistering ? '가입 중...' : '가입하기'}
           </Button>
@@ -689,22 +689,22 @@ function SignupFormInner() {
       >
         <DialogContent
           hideCloseButton
-          className="max-w-[380px] gap-[20px] rounded-[4px] border-[#dedede] p-[24px]"
+          className="max-w-[380px] gap-[20px] rounded-[4px] border-line p-[24px]"
         >
-          <DialogTitle className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121]">
+          <DialogTitle className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink">
             이미 가입된 회원이에요
           </DialogTitle>
-          <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-[#454545] [word-break:keep-all]">
+          <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
             입력한 {existingMemberField}로 가입된 회원이 있어요.
             <br />
             새로 가입하는 대신 그 계정으로 로그인하면 구글 계정{' '}
-            <span className="font-medium text-[#212121]">{googlePending?.maskedEmail}</span>이 연결돼요.
+            <span className="font-medium text-ink">{googlePending?.maskedEmail}</span>이 연결돼요.
           </DialogDescription>
           <DialogFooter className="flex flex-col gap-[8px] sm:flex-col sm:space-x-0">
             <Button
               type="button"
               onClick={() => router.push(`${ROUTES.LOGIN}?googleLink=login`)}
-              className="h-[48px] w-full rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242]"
+              className="h-[48px] w-full rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse-2"
             >
               로그인해서 연결하기
             </Button>
@@ -712,7 +712,7 @@ function SignupFormInner() {
               type="button"
               variant="outline"
               onClick={() => setExistingMemberField(null)}
-              className="h-[48px] w-full rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]"
+              className="h-[48px] w-full rounded-[4px] border-line-strong text-[16px] text-ink"
             >
               닫기
             </Button>

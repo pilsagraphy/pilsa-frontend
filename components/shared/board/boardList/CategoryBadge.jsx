@@ -25,8 +25,8 @@ export default function CategoryBadge({ children, variant = 'default' }) {
         'inline-flex shrink-0 items-center tracking-[-0.02em]',
         SHAPE[variant] ?? SHAPE.default,
         isEmphasizedCategory(children)
-          ? 'bg-[#212121] text-white'
-          : 'border border-[#919191] text-[#212121]'
+          ? 'bg-inverse text-inverse-fg'
+          : 'border border-ink-3 text-ink'
       )}
     >
       {children}

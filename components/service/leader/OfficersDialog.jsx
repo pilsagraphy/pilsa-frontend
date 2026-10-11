@@ -19,7 +19,7 @@ export default function OfficersDialog({ order, name, officers = [] }) {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-full border border-[#DEDEDE] px-3 py-1 text-[12px] font-medium tracking-[-0.24px] text-[#454545] transition hover:border-[#212121] hover:text-[#212121] md:text-[13px]"
+        className="rounded-full border border-line px-3 py-1 text-[12px] font-medium tracking-[-0.24px] text-ink-2 transition hover:border-ink hover:text-ink md:text-[13px]"
       >
         임원진 보기
       </button>
@@ -27,9 +27,9 @@ export default function OfficersDialog({ order, name, officers = [] }) {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent
           hideCloseButton
-          className="max-h-[85dvh] max-w-[362px] gap-[16px] overflow-y-auto rounded-[4px] border-[#DEDEDE] px-[20px] py-[24px] md:max-w-[520px]"
+          className="max-h-[85dvh] max-w-[362px] gap-[16px] overflow-y-auto rounded-[4px] border-line px-[20px] py-[24px] md:max-w-[520px]"
         >
-          <DialogTitle className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121]">
+          <DialogTitle className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink">
             {order} {name} · 임원진
           </DialogTitle>
           <DialogDescription className="sr-only">재임 중 학기별 임원진 명단</DialogDescription>
@@ -46,7 +46,7 @@ export default function OfficersDialog({ order, name, officers = [] }) {
                   aria-selected={active}
                   onClick={() => setTermIndex(index)}
                   className={`rounded-full px-3 py-1 text-[13px] font-medium tracking-[-0.26px] transition ${
-                    active ? 'bg-[#212121] text-white' : 'bg-[#F5F5F5] text-[#454545] hover:bg-[#EDEDED]'
+                    active ? 'bg-inverse text-inverse-fg' : 'bg-surface-2 text-ink-2 hover:bg-surface-3'
                   }`}
                 >
                   {term}
@@ -87,7 +87,7 @@ export default function OfficersDialog({ order, name, officers = [] }) {
             <Button
               type="button"
               onClick={() => setOpen(false)}
-              className="h-[44px] w-[87px] rounded-[4px] bg-[#212121] text-[15px] text-white hover:bg-[#424242]"
+              className="h-[44px] w-[87px] rounded-[4px] bg-inverse text-[15px] text-inverse-fg hover:bg-inverse-2"
             >
               닫기
             </Button>
@@ -103,11 +103,11 @@ export default function OfficersDialog({ order, name, officers = [] }) {
 function Group({ title, rows = [] }) {
   return (
     <div className="grid grid-cols-[84px_1fr] gap-x-3 gap-y-[2px] text-[14px] leading-[1.6] tracking-[-0.28px]">
-      <span className="font-medium text-[#212121]">{title}</span>
-      <div className="flex flex-col text-[#454545]">
+      <span className="font-medium text-ink">{title}</span>
+      <div className="flex flex-col text-ink-2">
         {rows.map(({ label, names = [] }, index) => (
           <span key={label ?? index}>
-            {label && <span className="mr-1 text-[#919191]">{label}</span>}
+            {label && <span className="mr-1 text-ink-3">{label}</span>}
             {names.join(' · ')}
           </span>
         ))}

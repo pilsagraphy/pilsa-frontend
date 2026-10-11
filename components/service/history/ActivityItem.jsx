@@ -17,7 +17,7 @@ const ActivityItem = ({ activity }) => {
   return (
     <div className="flex items-start gap-5">
       {/* 회색 점: div로 간단히 처리 */}
-      <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-[#DEDEDE]" />
+      <span className="mt-2.5 size-1.5 shrink-0 rounded-full bg-line" />
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         {href ? (
           // 글 자체가 바로가기인 항목 (예: 서포터즈 활동 인스타그램 릴스). 새 창
@@ -25,12 +25,12 @@ const ActivityItem = ({ activity }) => {
             href={href}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-fit whitespace-pre-wrap text-[16px] leading-[1.6] tracking-tight text-[#212121] underline decoration-[#b9b9b9] underline-offset-4 transition-colors hover:decoration-[#212121]"
+            className="w-fit whitespace-pre-wrap text-[16px] leading-[1.6] tracking-tight text-ink underline decoration-ink-4 underline-offset-4 transition-colors hover:decoration-ink"
           >
             {text} ↗
           </a>
         ) : (
-          <p className="whitespace-pre-wrap text-[16px] leading-[1.6] tracking-tight text-[#212121]">
+          <p className="whitespace-pre-wrap text-[16px] leading-[1.6] tracking-tight text-ink">
             {text}
           </p>
         )}
@@ -44,7 +44,7 @@ const ActivityItem = ({ activity }) => {
             playsInline
             controls
             preload="metadata"
-            className="w-full max-w-[640px] rounded-[8px] bg-black"
+            className="w-full max-w-[640px] rounded-[8px] bg-inverse"
           />
         )}
         {link && (
@@ -53,7 +53,7 @@ const ActivityItem = ({ activity }) => {
             href={link.href}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-fit text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191] underline underline-offset-4 transition-colors hover:text-[#212121]"
+            className="w-fit text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3 underline underline-offset-4 transition-colors hover:text-ink"
           >
             {link.label} ↗
           </a>
@@ -71,7 +71,7 @@ const ActivityItem = ({ activity }) => {
                 type="button"
                 onClick={() => openLightbox(images.map((item) => ({ src: item.src, alt: item.alt ?? text })), index)}
                 aria-label={`${image.alt ?? text} 크게 보기`}
-                className={`relative h-full shrink-0 cursor-zoom-in overflow-hidden rounded-[8px] bg-[#f5f5f5] ${
+                className={`relative h-full shrink-0 cursor-zoom-in overflow-hidden rounded-[8px] bg-surface-2 ${
                   image.wide ? 'w-full' : 'aspect-[745/1059]'
                 }`}
               >

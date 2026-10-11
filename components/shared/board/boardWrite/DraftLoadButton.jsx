@@ -118,7 +118,7 @@ export default function DraftLoadButton({ boardId, disabled = false }) {
         onClick={handleOpen}
         disabled={disabled}
         aria-label={`임시저장한 글 ${drafts.length}개 불러오기`}
-        className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-[#212121] px-[16px] transition-colors hover:bg-black disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex h-[52px] w-full cursor-pointer items-center justify-center rounded-[4px] bg-inverse px-[16px] transition-colors hover:bg-inverse-hover disabled:cursor-not-allowed disabled:opacity-60"
       >
         {/* 시안은 '저장'·'|'·개수 사이를 gap 이 아니라 공백의 자간(6.4px)으로 벌린다.
             폭이 135px 로 고정이라 글자 간격까지 시안 값을 그대로 쓴다. */}

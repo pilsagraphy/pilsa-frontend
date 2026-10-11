@@ -9,10 +9,10 @@ import { formatDraftDate } from '@/lib/draft';
 
 // 체크박스 색은 시안 지정값을 쓴다 — 기본 #FFFFFF / 호버 #919191 / 선택 #212121.
 const CHECKBOX_CLASS = [
-  'h-[24px] w-[24px] shrink-0 rounded-[2px] border-[#919191] bg-white shadow-none',
-  'hover:border-[#919191] hover:bg-[#919191]',
-  'data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121] data-[state=checked]:text-white',
-  'focus-visible:ring-2 focus-visible:ring-[#212121]',
+  'h-[24px] w-[24px] shrink-0 rounded-[2px] border-ink-3 bg-surface shadow-none',
+  'hover:border-ink-3 hover:bg-ink-3',
+  'data-[state=checked]:border-ink data-[state=checked]:bg-inverse data-[state=checked]:text-inverse-fg',
+  'focus-visible:ring-2 focus-visible:ring-ink',
 ].join(' ');
 
 // 임시저장 글 불러오기 모달.
@@ -57,21 +57,21 @@ export default function DraftLoadModal({
       <DialogContent
         hideCloseButton
         overlayClassName="bg-black/30"
-        className="flex max-w-[362px] flex-col items-center gap-[12px] rounded-[4px] border-[#212121] px-[16px] py-[20px]"
+        className="flex max-w-[362px] flex-col items-center gap-[12px] rounded-[4px] border-ink px-[16px] py-[20px]"
       >
-        <DialogTitle className="text-[16px] font-semibold leading-[19px] tracking-tight text-[#454545]">
+        <DialogTitle className="text-[16px] font-semibold leading-[19px] tracking-tight text-ink-2">
           임시저장 글 불러오기
         </DialogTitle>
 
         <div className="flex w-full flex-col">
           {emptyMessage ? (
-            <div className="py-6 text-center text-[14px] text-[#919191]">{emptyMessage}</div>
+            <div className="py-6 text-center text-[14px] text-ink-3">{emptyMessage}</div>
           ) : (
             drafts.map((draft, index) => (
               <label
                 key={draft.draftId}
                 className={`flex min-h-[52px] w-full cursor-pointer items-center justify-between gap-[10px] px-[10px] ${
-                  index > 0 ? 'border-t border-[#B9B9B9]' : ''
+                  index > 0 ? 'border-t border-line-strong' : ''
                 }`}
               >
                 <span className="flex min-w-0 flex-1 items-center gap-[10px]">
@@ -82,12 +82,12 @@ export default function DraftLoadModal({
                     aria-label={`${draft.title || '제목 없음'} 임시저장 글 선택`}
                   />
 
-                  <span className="min-w-0 truncate text-[16px] leading-[19px] text-[#454545]">
+                  <span className="min-w-0 truncate text-[16px] leading-[19px] text-ink-2">
                     {draft.title || '(제목 없음)'}
                   </span>
                 </span>
 
-                <span className="shrink-0 text-[14px] leading-[17px] text-[#919191]">
+                <span className="shrink-0 text-[14px] leading-[17px] text-ink-3">
                   {formatDraftDate(draft.updatedAt)}
                 </span>
 
@@ -113,7 +113,7 @@ export default function DraftLoadModal({
           <button
             type="button"
             onClick={onCancel}
-            className="h-[48px] w-[87px] cursor-pointer rounded-[4px] border border-[#b9b9b9] bg-white text-[16px] text-[#212121]"
+            className="h-[48px] w-[87px] cursor-pointer rounded-[4px] border border-line-strong bg-surface text-[16px] text-ink"
           >
             취소
           </button>
@@ -122,7 +122,7 @@ export default function DraftLoadModal({
             type="button"
             disabled={!selectedId}
             onClick={() => onSelect?.(selectedId)}
-            className="h-[48px] w-[87px] cursor-pointer rounded-[4px] bg-[#212121] text-[16px] text-white transition-colors hover:bg-[#424242] disabled:cursor-not-allowed disabled:opacity-60"
+            className="h-[48px] w-[87px] cursor-pointer rounded-[4px] bg-inverse text-[16px] text-inverse-fg transition-colors hover:bg-inverse-2 disabled:cursor-not-allowed disabled:opacity-60"
           >
             선택
           </button>

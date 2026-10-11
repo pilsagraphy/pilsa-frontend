@@ -151,11 +151,11 @@ export default function ScheduleDatePicker({ start, end, triggerRef, onConfirm, 
         //   너비는 화면을 채우지 않고 달력 격자(7칸 × 36px)에 맞춘다 — 화면 폭대로 벌리면 칸만 듬성듬성 넓어져
         //   "너무 크다"는 제보(2026-10-05). 세로가 모자라면(가로 모드·키보드) 안에서 스크롤.
         // sm(640~767): 48px 칸에 맞춘 376px. md 이상: 버튼 아래 오른쪽 정렬 (원래 자리)
-        className="fixed left-1/2 top-1/2 z-50 max-h-[calc(100dvh-24px)] w-[280px] max-w-[calc(100vw-24px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[6px] border border-[#dedede] bg-white p-[12px] shadow-[0_4px_16px_rgba(0,0,0,0.1)] sm:w-[376px] sm:p-[16px] md:absolute md:left-auto md:end-0 md:top-[48px] md:z-40 md:max-h-none md:w-[392px] md:translate-x-0 md:translate-y-0"
+        className="fixed left-1/2 top-1/2 z-50 max-h-[calc(100dvh-24px)] w-[280px] max-w-[calc(100vw-24px)] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-[6px] border border-line bg-surface p-[12px] shadow-[0_4px_16px_rgba(0,0,0,0.1)] sm:w-[376px] sm:p-[16px] md:absolute md:left-auto md:end-0 md:top-[48px] md:z-40 md:max-h-none md:w-[392px] md:translate-x-0 md:translate-y-0"
       >
       {/* '오늘' 버튼은 달력 머리줄(Calendar)의 것 하나만 쓴다 — 여기에도 두니 둘이 나란히 보였다 (PM, 10/10) */}
       <div className="mb-[8px] flex items-center justify-between gap-2">
-        <p className="min-w-0 truncate text-[13px] leading-[1.6] tracking-[-0.26px] text-[#454545]">
+        <p className="min-w-0 truncate text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-2">
           {single ? '날짜를 누르면 바로 담깁니다' : rangeLabel}
         </p>
       </div>
@@ -175,14 +175,14 @@ export default function ScheduleDatePicker({ start, end, triggerRef, onConfirm, 
         <button
           type="button"
           onClick={onClose}
-          className="h-[40px] w-[80px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6]"
+          className="h-[40px] w-[80px] rounded-[4px] border border-line-strong bg-surface text-[14px] leading-[1.6] tracking-[-0.28px] text-ink transition-colors hover:bg-surface-2"
         >
           취소
         </button>
         <button
           type="button"
           onClick={handleConfirm}
-          className="h-[40px] w-[80px] rounded-[4px] bg-[#212121] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242]"
+          className="h-[40px] w-[80px] rounded-[4px] bg-inverse text-[14px] leading-[1.6] tracking-[-0.28px] text-inverse-fg transition-colors hover:bg-inverse-2"
         >
           확인
         </button>

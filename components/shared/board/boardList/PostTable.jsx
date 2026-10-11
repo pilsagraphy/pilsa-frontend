@@ -44,7 +44,7 @@ export default function PostTable({
         {message ? (
           <div
             suppressHydrationWarning
-            className="border-t border-[#DEDEDE] py-8 text-center text-[14px] text-muted-foreground"
+            className="border-t border-line py-8 text-center text-[14px] text-muted-foreground"
           >
             {message}
           </div>
@@ -64,10 +64,10 @@ export default function PostTable({
   }
 
   return (
-    <div className="overflow-x-auto border-t border-[#212121]">
+    <div className="overflow-x-auto border-t border-ink">
       <Table className="w-full min-w-0 table-fixed lg:min-w-[600px]">
         <TableHeader>
-          <TableRow className="h-12 border-b border-[#B9B9B9] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#919191] lg:h-14 lg:text-[16px]">
+          <TableRow className="h-12 border-b border-line-strong text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-3 lg:h-14 lg:text-[16px]">
             <TableHead
               className={cn(
                 'text-center lg:w-20',
@@ -90,7 +90,7 @@ export default function PostTable({
 
         <TableBody>
           {loading ? (
-            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] lg:h-14 lg:text-[16px]">
+            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-2 lg:h-14 lg:text-[16px]">
               <TableCell
                 colSpan={colSpan}
                 suppressHydrationWarning
@@ -100,7 +100,7 @@ export default function PostTable({
               </TableCell>
             </TableRow>
           ) : errorMessage ? (
-            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] lg:h-14 lg:text-[16px]">
+            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-2 lg:h-14 lg:text-[16px]">
               <TableCell
                 colSpan={colSpan}
                 suppressHydrationWarning
@@ -110,7 +110,7 @@ export default function PostTable({
               </TableCell>
             </TableRow>
           ) : !posts?.length ? (
-            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] lg:h-14 lg:text-[16px]">
+            <TableRow className="h-12 text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-2 lg:h-14 lg:text-[16px]">
               <TableCell
                 colSpan={colSpan}
                 suppressHydrationWarning

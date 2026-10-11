@@ -49,19 +49,19 @@ export default function ManagerDashboardSection() {
   }, [fetchStats, fetchRecentReports, fetchRecentMembers, reset]);
 
   return (
-    <section className="mx-auto flex w-full max-w-[1016px] flex-col gap-[24px] bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[30px] md:p-10">
+    <section className="mx-auto flex w-full max-w-[1016px] flex-col gap-[24px] bg-surface px-4 py-4 sm:px-6 sm:py-7 md:gap-[30px] md:p-10">
       {/* 영역 1: 인사말 */}
       <div className="flex w-full flex-col">
         {/* 글자 크기·자간·줄 간격은 메인 인사말(StudentsDashboardIntro)과 같은 값이다 */}
         <div className="flex flex-col gap-[6px] pb-[20px] md:pb-[24px]">
-          <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121] md:text-[20px]">
+          <h2 className="text-[18px] font-semibold leading-[1.5] tracking-[-0.02em] text-ink md:text-[20px]">
             {adminName}님, 안녕하세요 :)
           </h2>
-          <p className="text-[14px] font-normal leading-[1.6] tracking-[-0.02em] text-[#919191] md:text-[15px]">
+          <p className="text-[14px] font-normal leading-[1.6] tracking-[-0.02em] text-ink-3 md:text-[15px]">
             오늘도 큰 사고 없이 무탈한 하루 되세요!
           </p>
         </div>
-        <div className="w-full border-b border-[#DEDEDE]" />
+        <div className="w-full border-b border-line" />
       </div>
 
       {/* 영역 2: 통계 카드 */}
@@ -71,7 +71,7 @@ export default function ManagerDashboardSection() {
       <Schedule renderDetail={renderNoDetail} />
 
       {/* 영역 4: 최근 신고 / 최근 가입 회원 */}
-      <div className="w-full border-b border-[#DEDEDE]" />
+      <div className="w-full border-b border-line" />
       <RecentActivitySection
         reports={recentReports}
         isReportsLoading={isReportsLoading}
@@ -82,7 +82,7 @@ export default function ManagerDashboardSection() {
       />
 
       {/* 영역 5: 운영 정책 요약 — 조치 전에 훑어보는 용도 */}
-      <div className="w-full border-b border-[#DEDEDE]" />
+      <div className="w-full border-b border-line" />
       <PolicySummarySection />
     </section>
   );

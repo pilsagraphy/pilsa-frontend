@@ -23,7 +23,7 @@ export default function FindPwSuccess() {
           // 클릭 시 로그인 페이지('/login')로 이동
           onClick={() => router.push('/login')}
           // 디자인 시스템에 맞춘 버튼 스타일 (검은색 배경, 흰색 글자, 높이 52px)
-          className="h-[52px] w-full bg-[#212121] hover:bg-[#424242] text-white text-[16px] transition-colors"
+          className="h-[52px] w-full bg-inverse hover:bg-inverse-2 text-inverse-fg text-[16px] transition-colors"
         >
           로그인 하러가기
         </Button>

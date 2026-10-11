@@ -33,7 +33,7 @@ export default function ReportRow({
   const deletable = isDeletable(report);
 
   return (
-    <TableRow className="h-[58px] border-b border-[#b9b9b9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
+    <TableRow className="h-[58px] border-b border-line-strong text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-2">
       {/* 1. 선택 체크박스 */}
       <TableCell className="px-[4px] text-center">
         <RowCheckbox
@@ -52,7 +52,7 @@ export default function ReportRow({
           <Link
             href={targetHref}
             title={report.preview}
-            className="block truncate underline decoration-solid underline-offset-2 hover:text-[#212121]"
+            className="block truncate underline decoration-solid underline-offset-2 hover:text-ink"
           >
             {preview}
           </Link>
@@ -79,19 +79,19 @@ export default function ReportRow({
       <TableCell className="px-[4px] text-center" title={report.reasonLabel}>
         {/* 유형 — 관리자 직접 블라인드 · 관리자 직접 삭제 · 신고 누적 자동 블라인드는 회원 신고와 구분해 보여 준다 (PM, 2026-09-27) */}
         {getReportKindLabel(report) && (
-          <span className="mb-[2px] inline-block rounded-full bg-[#F3F3F3] px-[8px] py-[1px] text-[11px] text-[#5f5f5f]">
+          <span className="mb-[2px] inline-block rounded-full bg-surface-2 px-[8px] py-[1px] text-[11px] text-ink-2">
             {getReportKindLabel(report)}
           </span>
         )}
         <span className="block truncate">
           {report.reasonLabel}
           {report.reportCount > 1 && (
-            <span className="text-[#919191]"> ({report.reportCount})</span>
+            <span className="text-ink-3"> ({report.reportCount})</span>
           )}
         </span>
         {/* 신고자 이름 — 운영진에게는 숨기지 않는다 (2026-09-20 PM) */}
         {report.reporterNames && (
-          <span className="block truncate text-[12px] text-[#919191]" title={report.reporterNames}>
+          <span className="block truncate text-[12px] text-ink-3" title={report.reporterNames}>
             신고자: {report.reporterNames}
           </span>
         )}

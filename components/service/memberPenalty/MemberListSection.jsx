@@ -55,7 +55,7 @@ export default function MemberListSection({ selectedId, onSelect, collapseButton
     <div className="flex w-full flex-col gap-[16px] font-['Pretendard',sans-serif] xl:w-[270px] xl:shrink-0">
       {/* '목록' + 우측 접기 · 초기화 버튼(돋보기와 같은 열, 같은 색) */}
       <div className="flex items-center justify-between">
-        <h3 className="text-[18px] tracking-[-0.36px] text-[#212121]">목록</h3>
+        <h3 className="text-[18px] tracking-[-0.36px] text-ink">목록</h3>
         {/* 새로고침 버튼은 뺐다 — 목록은 화면이 열릴 때 받고, 검색은 즉시 반영이라 누를 일이 없었다 */}
         <div className="flex items-center gap-[4px]">{collapseButton}</div>
       </div>
@@ -72,20 +72,20 @@ export default function MemberListSection({ selectedId, onSelect, collapseButton
             if (e.key === 'Enter') e.preventDefault(); // 엔터로도 검색어를 초기화하지 않고 유지
           }}
           placeholder={focused ? '' : 'ID / 이름 검색'}
-          className="!text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121] placeholder:text-[#9E9E9E]"
+          className="!text-[16px] leading-[1.6] tracking-[-0.02em] text-ink placeholder:text-ink-3"
         />
         {keyword && (
           <button
             type="button"
             onClick={clearKeyword}
             aria-label="검색어 지우기"
-            className="mr-[2px] grid size-[18px] shrink-0 place-content-center rounded-full bg-[#c4c4c4]"
+            className="mr-[2px] grid size-[18px] shrink-0 place-content-center rounded-full bg-line-strong"
           >
             <X size={12} strokeWidth={2.5} className="text-white" />
           </button>
         )}
         <InputGroupButton size="icon-sm" aria-label="검색">
-          <Search className="text-[#212121]" />
+          <Search className="text-ink" />
         </InputGroupButton>
       </InputGroup>
 
@@ -94,22 +94,22 @@ export default function MemberListSection({ selectedId, onSelect, collapseButton
       <div className="mp-scroll-y max-h-[300px] min-h-[92px] overflow-x-hidden overflow-y-auto pr-[6px] xl:h-[720px] xl:max-h-none">
         {isLoading ? (
           // 1) 로딩 중
-          <div className="flex h-full items-center justify-center text-[16px] tracking-[-0.32px] text-[#919191]">
+          <div className="flex h-full items-center justify-center text-[16px] tracking-[-0.32px] text-ink-3">
             불러오는 중…
           </div>
         ) : error ? (
           // 2) 에러 (스토어가 넣어준 한국어 문장을 그대로 보여준다)
-          <div className="flex h-full items-center justify-center px-[6px] text-center text-[16px] tracking-[-0.32px] text-[#ae0000]">
+          <div className="flex h-full items-center justify-center px-[6px] text-center text-[16px] tracking-[-0.32px] text-danger">
             {error}
           </div>
         ) : members.length === 0 ? (
           // 3) 데이터 없음
-          <div className="flex h-full items-center justify-center text-[16px] tracking-[-0.32px] text-[#919191]">
+          <div className="flex h-full items-center justify-center text-[16px] tracking-[-0.32px] text-ink-3">
             제재 회원이 없습니다.
           </div>
         ) : visibleMembers.length === 0 ? (
           // 3-1) 데이터는 있지만 검색 결과가 없음
-          <div className="flex h-full items-center justify-center text-[16px] tracking-[-0.32px] text-[#919191]">
+          <div className="flex h-full items-center justify-center text-[16px] tracking-[-0.32px] text-ink-3">
             검색 결과가 없습니다.
           </div>
         ) : (

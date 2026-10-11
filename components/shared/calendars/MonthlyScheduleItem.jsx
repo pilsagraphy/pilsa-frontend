@@ -45,19 +45,19 @@ export default function MonthlyScheduleItem({
         aria-expanded={isSelected}
         className={[
           'flex h-[62px] w-full items-center justify-between gap-4 rounded-[5px] px-[16px] text-left transition md:h-[89px] md:px-[20px]',
-          isSelected ? 'bg-[#454545]' : 'bg-[#f6f6f6] hover:bg-[#ededed]',
+          isSelected ? 'bg-inverse-2' : 'bg-surface-2 hover:bg-surface-3',
         ].join(' ')}
       >
         <span className="flex min-w-0 flex-col gap-[2px]">
           <span
             className={[
               'truncate text-[14px] leading-[1.6] tracking-[-0.28px]',
-              isSelected ? 'text-white' : 'text-[#212121]',
+              isSelected ? 'text-white' : 'text-ink',
             ].join(' ')}
           >
             {schedule.title}
           </span>
-          <span className="truncate text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
+          <span className="truncate text-[12px] leading-[1.6] tracking-[-0.24px] text-ink-3">
             {formatDateRange(schedule.startDate, schedule.endDate)}
           </span>
         </span>
@@ -71,7 +71,7 @@ export default function MonthlyScheduleItem({
           <Plus
             aria-hidden="true"
             strokeWidth={1.4}
-            className={['size-6 shrink-0', isSelected ? 'text-white' : 'text-[#919191]'].join(' ')}
+            className={['size-6 shrink-0', isSelected ? 'text-white' : 'text-ink-3'].join(' ')}
           />
         )}
       </button>

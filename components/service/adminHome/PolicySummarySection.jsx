@@ -28,7 +28,7 @@ const banText = (policy) => {
 function PolicyGroup({ title, rows }) {
   return (
     <div className="flex flex-col">
-      <h4 className="mb-[6px] text-[14px] font-semibold leading-[1.5] tracking-[-0.28px] text-[#212121]">
+      <h4 className="mb-[6px] text-[14px] font-semibold leading-[1.5] tracking-[-0.28px] text-ink">
         {title}
       </h4>
       <ul className="flex flex-col gap-[4px]">
@@ -37,8 +37,8 @@ function PolicyGroup({ title, rows }) {
             key={condition}
             className="flex items-baseline justify-between gap-3 text-[14px] leading-[1.6] tracking-[-0.28px]"
           >
-            <span className="min-w-0 text-[#757575]">{condition}</span>
-            <span className="shrink-0 whitespace-nowrap font-medium text-[#212121]">{result}</span>
+            <span className="min-w-0 text-ink-3">{condition}</span>
+            <span className="shrink-0 whitespace-nowrap font-medium text-ink">{result}</span>
           </li>
         ))}
       </ul>
@@ -95,23 +95,23 @@ export default function PolicySummarySection() {
         {/* 제목을 누르면 운영 관리 > 정책 설정으로 — 여기서 본 값을 바로 고치러 갈 수 있게 (PM, 2026-09-26) */}
         <Link
           href={ROUTES.ADMIN_POLICIES}
-          className="group inline-flex items-center gap-[6px] text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-[#212121]"
+          className="group inline-flex items-center gap-[6px] text-[20px] font-semibold leading-[1.5] tracking-[-0.4px] text-ink"
           aria-label="운영 정책 — 정책 설정으로 이동"
         >
           <h3>운영 정책</h3>
-          <span className="text-[14px] font-normal text-[#919191] transition-colors group-hover:text-[#212121]">수정 ↗</span>
+          <span className="text-[14px] font-normal text-ink-3 transition-colors group-hover:text-ink">수정 ↗</span>
         </Link>
-        <span className="text-[13px] leading-[1.6] tracking-[-0.26px] text-[#B9B9B9]">
+        <span className="text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-4">
           서버 설정값 기준
         </span>
       </div>
 
       {error ? (
-        <p className="border-t border-[#B9B9B9] py-[16px] text-center text-[14px] text-[#919191]">
+        <p className="border-t border-line-strong py-[16px] text-center text-[14px] text-ink-3">
           {error}
         </p>
       ) : (
-        <div className="grid grid-cols-1 gap-[20px] border-t border-[#B9B9B9] pt-[16px] md:grid-cols-3 md:gap-[28px]">
+        <div className="grid grid-cols-1 gap-[20px] border-t border-line-strong pt-[16px] md:grid-cols-3 md:gap-[28px]">
           <PolicyGroup title="신고" rows={reportRows} />
           <PolicyGroup title="제재 (주의 → 경고 → 정지)" rows={penaltyRows} />
           <PolicyGroup title="탈퇴 · 재가입" rows={withdrawRows} />

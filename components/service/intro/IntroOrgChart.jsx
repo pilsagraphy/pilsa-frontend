@@ -22,15 +22,15 @@ export default function IntroOrgChart() {
 
   return (
     <div className="flex flex-col gap-5 w-full">
-      <h3 className="text-[18px] font-semibold leading-[1.6] tracking-[-0.02em] text-[#212121]">
+      <h3 className="text-[18px] font-semibold leading-[1.6] tracking-[-0.02em] text-ink">
         조직도
-        {current && <span className="ml-[6px] text-[14px] font-medium text-[#919191]">{current.term}</span>}
+        {current && <span className="ml-[6px] text-[14px] font-medium text-ink-3">{current.term}</span>}
       </h3>
       <div className="flex justify-start">
         {loading ? (
           <AppLoading />
         ) : error || !current ? (
-          <p className="text-[14px] text-[#919191]">{error ?? '등록된 조직도가 없습니다.'}</p>
+          <p className="text-[14px] text-ink-3">{error ?? '등록된 조직도가 없습니다.'}</p>
         ) : (
           <OrganizationChart chairman={chairman} teams={teams} />
         )}

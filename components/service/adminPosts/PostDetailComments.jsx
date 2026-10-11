@@ -49,16 +49,16 @@ export default function PostDetailComments({ comments = [], focusedAnchor = null
 
   return (
     <section className="flex w-full flex-col gap-4 md:gap-[20px]">
-      <h2 className="text-[18px] font-semibold tracking-[-0.36px] text-[#212121] md:text-[20px]">
+      <h2 className="text-[18px] font-semibold tracking-[-0.36px] text-ink md:text-[20px]">
         댓글 {list.length.toLocaleString()}
       </h2>
 
       {list.length === 0 ? (
-        <p className="border-t border-[#dedede] py-[24px] text-center text-[15px] tracking-[-0.3px] text-[#919191]">
+        <p className="border-t border-line py-[24px] text-center text-[15px] tracking-[-0.3px] text-ink-3">
           댓글이 없습니다.
         </p>
       ) : (
-        <div className="flex w-full flex-col border-t border-[#dedede]">
+        <div className="flex w-full flex-col border-t border-line">
           {ordered.map(({ comment, depth }) => {
             const anchorId = getCommentAnchorId(comment.commentId);
             const isReply = depth > 0;
@@ -69,9 +69,9 @@ export default function PostDetailComments({ comments = [], focusedAnchor = null
                 // scroll-mt 는 강조된 댓글이 화면 맨 위에 붙지 않게 띄워준다.
                 id={anchorId}
                 key={comment.commentId}
-                className={`flex w-full scroll-mt-[100px] gap-[8px] border-b border-[#dedede] py-4 pr-[8px] transition-colors md:py-5 ${
-                  isReply ? 'bg-[#FAFAFA] pl-[20px] md:pl-[36px]' : 'pl-[8px]'
-                } ${focusedAnchor === anchorId ? '!bg-[#f0f0f0]' : ''}`}
+                className={`flex w-full scroll-mt-[100px] gap-[8px] border-b border-line py-4 pr-[8px] transition-colors md:py-5 ${
+                  isReply ? 'bg-surface-2 pl-[20px] md:pl-[36px]' : 'pl-[8px]'
+                } ${focusedAnchor === anchorId ? '!bg-surface-2' : ''}`}
               >
                 {/* 답글 표식 — 사용자 화면(BoardComments)과 같은 꺾인 화살표 */}
                 {isReply && (
@@ -79,7 +79,7 @@ export default function PostDetailComments({ comments = [], focusedAnchor = null
                     size={18}
                     strokeWidth={1.6}
                     aria-label="답글"
-                    className="mt-[4px] shrink-0 text-[#919191]"
+                    className="mt-[4px] shrink-0 text-ink-3"
                   />
                 )}
 
@@ -87,7 +87,7 @@ export default function PostDetailComments({ comments = [], focusedAnchor = null
                   {/* 익명 댓글도 관리자에게는 실작성자가 보인다 (서버가 마스킹하지 않는다).
                       비밀 댓글은 자물쇠로만 알린다 — 조치 판단은 내용으로 하니 내용은 그대로 보여 준다 */}
                   <div className="flex flex-wrap items-center gap-x-[6px] gap-y-[4px]">
-                    <span className="text-[16px] leading-[26px] tracking-[-0.32px] text-[#454545]">
+                    <span className="text-[16px] leading-[26px] tracking-[-0.32px] text-ink-2">
                       {comment.authorName}
                     </span>
                     {comment.isPrivate && (
@@ -95,20 +95,20 @@ export default function PostDetailComments({ comments = [], focusedAnchor = null
                         size={13}
                         strokeWidth={1.8}
                         aria-label="비밀 댓글"
-                        className="shrink-0 text-[#757575]"
+                        className="shrink-0 text-ink-3"
                       />
                     )}
                     <StateChip label={getCommentStateLabel(comment.state)} />
                   </div>
 
-                  <p className="whitespace-pre-line break-words text-[16px] leading-[26px] tracking-[-0.32px] text-[#454545]">
+                  <p className="whitespace-pre-line break-words text-[16px] leading-[26px] tracking-[-0.32px] text-ink-2">
                     {comment.content}
                   </p>
 
                   <ModerationNote state={comment.state} moderation={comment.moderation} />
                   <ContentRevisions revisions={comment.revisions} compact />
 
-                  <span className="text-[14px] leading-[22px] tracking-[-0.28px] text-[#919191]">
+                  <span className="text-[14px] leading-[22px] tracking-[-0.28px] text-ink-3">
                     {formatSlashDateTime(comment.updated ?? comment.created)}
                   </span>
                 </div>

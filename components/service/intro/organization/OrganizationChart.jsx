@@ -20,14 +20,14 @@ export default function OrganizationChart({ chairman, teams = [] }) {
           />
 
           {/* T자형 중앙 세로선 */}
-          {teams.length > 0 && <div className="w-px h-16 border-l border-dashed border-[#919191]"></div>}
+          {teams.length > 0 && <div className="w-px h-16 border-l border-dashed border-ink-3"></div>}
 
           {/* 하위 팀 레이아웃 (T자 가로선 + 팀 섹션) */}
           {teams.length > 0 && (
             <div className="relative w-full flex justify-between">
               {/* T자 가로 막대 */}
               <div
-                className="absolute top-0 border-t border-dashed border-[#919191]"
+                className="absolute top-0 border-t border-dashed border-ink-3"
                 style={{
                   left: `${horizontalBarGap}%`,
                   right: `${horizontalBarGap}%`,
@@ -38,7 +38,7 @@ export default function OrganizationChart({ chairman, teams = [] }) {
               {teams.map((team, index) => (
                 <div key={`${team.title}-${index}`} className="flex flex-col items-center flex-1">
                   {/* 세로선 */}
-                  <div className="w-px h-12 border-l border-dashed border-[#919191]" />
+                  <div className="w-px h-12 border-l border-dashed border-ink-3" />
                   <div>
                     <TeamSection
                       title={team.title}

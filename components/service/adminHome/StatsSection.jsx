@@ -17,7 +17,7 @@ const STAT_ITEMS = [
 function StatsMessage({ children }) {
   return (
     <div className="flex w-full items-center justify-center py-[10px]">
-      <span className="font-['Pretendard',sans-serif] text-[16px] leading-[1.6] tracking-[-0.32px] text-[#919191]">
+      <span className="font-['Pretendard',sans-serif] text-[16px] leading-[1.6] tracking-[-0.32px] text-ink-3">
         {children}
       </span>
     </div>
@@ -39,19 +39,19 @@ export default function StatsSection({ stats, isLoading, error }) {
         <React.Fragment key={stat.label}>
           <div
             className={`flex justify-center sm:flex-1 ${
-              index % 2 === 0 ? 'border-r border-[#DEDEDE] sm:border-r-0' : ''
+              index % 2 === 0 ? 'border-r border-line sm:border-r-0' : ''
             }`}
           >
             <Link
               href={stat.href}
               aria-label={`${stat.label} 관리로 이동`}
-              className="flex w-full justify-center rounded-[6px] transition hover:bg-[#F6F6F6]"
+              className="flex w-full justify-center rounded-[6px] transition hover:bg-surface-2"
             >
               <StatCard value={stat.value} label={stat.label} />
             </Link>
           </div>
           {index < items.length - 1 && (
-            <div className="hidden w-px flex-shrink-0 self-stretch bg-[#919191] sm:block" />
+            <div className="hidden w-px flex-shrink-0 self-stretch bg-ink-3 sm:block" />
           )}
         </React.Fragment>
       ))}

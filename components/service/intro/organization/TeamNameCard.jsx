@@ -1,7 +1,7 @@
 export default function TeamNameCard({ title, teamType = "teams" }) {
   const styles = {
-    chairman: "bg-[#212121] text-[#FFFFFF]",
-    teams: "bg-[#DEDEDE] text-[#212121]",
+    chairman: "bg-inverse text-[#FFFFFF]",
+    teams: "bg-line text-ink",
   };
 
   return (

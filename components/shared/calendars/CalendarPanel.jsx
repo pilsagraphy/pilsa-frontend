@@ -14,7 +14,7 @@ export default function CalendarPanel({ selectedDate, onChangeDate, className = 
   };
 
   return (
-    <div className={`w-full rounded-[8px] border border-[#DEDEDE] bg-white p-[16px] ${className}`}>
+    <div className={`w-full rounded-[8px] border border-line bg-surface p-[16px] ${className}`}>
       <Calendar mode="single" selected={date} onSelect={handleSelect} className="w-full" />
     </div>
   );

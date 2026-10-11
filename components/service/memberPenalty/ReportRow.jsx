@@ -18,18 +18,18 @@ function EventLine({ line }) {
   const shown = open || !long ? detail : `${detail.replace(/\s+/g, ' ').slice(0, DETAIL_PREVIEW)}…`;
 
   return (
-    <div className="text-[#454545] [word-break:keep-all]">
-      <span className="text-[#919191]">{line.label} : </span>
-      <span className="text-[#212121]">{line.value}</span>
+    <div className="text-ink-2 [word-break:keep-all]">
+      <span className="text-ink-3">{line.label} : </span>
+      <span className="text-ink">{line.value}</span>
       {detail && (
-        <span className="whitespace-pre-wrap break-words text-[12px] leading-[1.6] text-[#757575]">
+        <span className="whitespace-pre-wrap break-words text-[12px] leading-[1.6] text-ink-3">
           {' '}
           ({shown})
           {long && (
             <button
               type="button"
               onClick={() => setOpen((prev) => !prev)}
-              className="ml-[4px] underline underline-offset-2 hover:text-[#212121]"
+              className="ml-[4px] underline underline-offset-2 hover:text-ink"
             >
               {open ? '접기' : '더 보기'}
             </button>
@@ -40,7 +40,7 @@ function EventLine({ line }) {
   );
 }
 
-const linkClass = 'underline decoration-solid underline-offset-2 hover:text-[#212121]';
+const linkClass = 'underline decoration-solid underline-offset-2 hover:text-ink';
 
 // 신고·조치 로그 한 묶음 = 글/댓글 하나. 번호는 묶음 단위, 그 안의 사건은 진행순번 1, 2 … 로 나눈다 (PM 요청).
 // 묶음 머리 행에 작성 위치 · 제목 · 링크(원문 / 신고 관리) · 현재 상태를 두고, 아래에 사건을 시간순으로 늘어놓는다.
@@ -55,7 +55,7 @@ export default function ReportRow({ group, number }) {
           원문
         </Link>
       ) : (
-        <span className="text-[#919191]">-</span>
+        <span className="text-ink-3">-</span>
       )}
       {group.reportsLink && (
         <Link href={group.reportsLink} className={linkClass}>
@@ -68,28 +68,28 @@ export default function ReportRow({ group, number }) {
   return (
     <>
       {/* 폰: 카드 한 장. 8열을 그대로 욱여넣으면 글자가 한 자씩 끊긴다 */}
-      <div className="flex flex-col gap-[6px] border-b border-[#dedede] px-[6px] py-[10px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-[#454545] md:hidden">
+      <div className="flex flex-col gap-[6px] border-b border-line px-[6px] py-[10px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-ink-2 md:hidden">
         <div className="flex items-center justify-between gap-2">
-          <span className="min-w-0 truncate font-medium text-[#212121]" title={group.targetTitle}>
+          <span className="min-w-0 truncate font-medium text-ink" title={group.targetTitle}>
             {number}. {group.board}
             {group.targetTitle ? ` · ${group.targetTitle}` : ''}
           </span>
           <span className="flex shrink-0 items-center gap-[10px] pr-[6px]">
-            <span className="text-[#919191]">{group.stateLabel}</span>
+            <span className="text-ink-3">{group.stateLabel}</span>
             {links}
           </span>
         </div>
         <ol className="flex flex-col gap-[6px]">
           {group.events.map((event) => (
             <li key={event.key} className="flex gap-[6px]">
-              <span className="shrink-0 text-[#919191]">
+              <span className="shrink-0 text-ink-3">
                 {number}-{event.sub}
               </span>
               <div className="flex min-w-0 flex-1 flex-col gap-[1px]">
                 {event.lines.map((line) => (
                   <EventLine key={line.label} line={line} />
                 ))}
-                <span className="text-[12px] text-[#919191]">
+                <span className="text-[12px] text-ink-3">
                   {event.status} · {event.date} {event.time}
                 </span>
               </div>
@@ -99,14 +99,14 @@ export default function ReportRow({ group, number }) {
       </div>
 
       {/* 태블릿 이상: 8열 그리드. 머리 행 + 사건 행. 내역이 여러 줄이라 높이를 고정하지 않는다 */}
-      <div className="hidden border-b border-[#dedede] py-[6px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-[#454545] md:block">
+      <div className="hidden border-b border-line py-[6px] font-['Pretendard',sans-serif] text-[13px] tracking-[-0.26px] text-ink-2 md:block">
         <div className={`${REPORT_GRID} min-h-[28px] items-center`}>
-          <div className="text-center font-medium text-[#212121]">{number}</div>
+          <div className="text-center font-medium text-ink">{number}</div>
           <div />
           <div className="truncate text-center" title={group.board}>
             {group.board}
           </div>
-          <div className="min-w-0 truncate pr-[4px] text-left text-[#212121]" title={group.targetTitle}>
+          <div className="min-w-0 truncate pr-[4px] text-left text-ink" title={group.targetTitle}>
             {group.targetTitle ?? ''}
           </div>
           <div className="flex flex-col items-center gap-[2px] text-center">{links}</div>
@@ -117,7 +117,7 @@ export default function ReportRow({ group, number }) {
         {group.events.map((event) => (
           <div key={event.key} className={`${REPORT_GRID} py-[3px]`}>
             <div />
-            <div className="text-center text-[#919191]">
+            <div className="text-center text-ink-3">
               {number}-{event.sub}
             </div>
             <div />
@@ -127,9 +127,9 @@ export default function ReportRow({ group, number }) {
               ))}
             </div>
             <div />
-            <div className="text-center text-[#919191]">{event.status}</div>
-            <div className="text-center text-[#919191]">{event.date}</div>
-            <div className="text-center text-[#919191]">{event.time}</div>
+            <div className="text-center text-ink-3">{event.status}</div>
+            <div className="text-center text-ink-3">{event.date}</div>
+            <div className="text-center text-ink-3">{event.time}</div>
           </div>
         ))}
       </div>

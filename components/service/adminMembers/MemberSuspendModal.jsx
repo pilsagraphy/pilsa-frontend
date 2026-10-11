@@ -37,7 +37,7 @@ const pad2 = (value) => String(value).padStart(2, '0');
 
 // 정지 종료일 드롭다운 공통 스타일 (디자인 시안: 높이 52 · 회색 테두리 · placeholder #9e9e9e)
 const dateTriggerClass =
-  'h-[52px] rounded-[4px] border-[#b9b9b9] px-[16px] text-[16px] tracking-[-0.32px] text-[#454545] shadow-none data-[placeholder]:text-[#9e9e9e]';
+  'h-[52px] rounded-[4px] border-line-strong px-[16px] text-[16px] tracking-[-0.32px] text-ink-2 shadow-none data-[placeholder]:text-ink-3';
 
 /**
  * 관리자 - 선택한 회원을 정지할 때 뜨는 모달
@@ -132,10 +132,10 @@ export default function MemberSuspendModal({
       {/* 대상 회원 */}
       {targetUserText && (
         <div className="flex flex-col gap-[4px]">
-          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">
             대상 회원
           </span>
-          <span className="break-all text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
+          <span className="break-all text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2">
             {targetUserText}
           </span>
         </div>
@@ -143,7 +143,7 @@ export default function MemberSuspendModal({
 
       {/* 기간(정지 종료일) — 년 / 월 / 일 + 까지 */}
       <div className="flex flex-col gap-[4px]">
-        <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">기간</span>
+        <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">기간</span>
         <div className="flex flex-wrap items-center gap-[8px]">
           <Select value={year} onValueChange={handleYearChange}>
             <SelectTrigger className={`w-[117px] ${dateTriggerClass}`} aria-label="정지 종료 연도">
@@ -184,7 +184,7 @@ export default function MemberSuspendModal({
             </SelectContent>
           </Select>
 
-          <span className="text-[16px] tracking-[-0.32px] text-[#b9b9b9]">까지</span>
+          <span className="text-[16px] tracking-[-0.32px] text-ink-4">까지</span>
         </div>
       </div>
     </ReasonDialog>

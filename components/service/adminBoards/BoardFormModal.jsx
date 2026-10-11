@@ -53,7 +53,7 @@ function FormSelect({ label, value, options, onChange }) {
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger
         aria-label={label}
-        className="h-[40px] w-full justify-between rounded-[4px] border-[#b9b9b9] px-[10px] text-[14px] tracking-[-0.28px] text-[#454545] shadow-none data-[placeholder]:text-[#b9b9b9] [&>svg]:size-5 [&>svg]:opacity-100"
+        className="h-[40px] w-full justify-between rounded-[4px] border-line-strong px-[10px] text-[14px] tracking-[-0.28px] text-ink-2 shadow-none data-[placeholder]:text-ink-4 [&>svg]:size-5 [&>svg]:opacity-100"
       >
         <SelectValue placeholder="선택" />
       </SelectTrigger>
@@ -62,7 +62,7 @@ function FormSelect({ label, value, options, onChange }) {
           <SelectItem
             key={option.value}
             value={option.value}
-            className="text-[14px] text-[#454545]"
+            className="text-[14px] text-ink-2"
           >
             {option.label}
           </SelectItem>
@@ -149,9 +149,9 @@ export default function BoardFormModal({
         // 고치러 들어온 사람이 이름부터 바꾸는 일은 드물다 — 자동 포커스를 끈다
         onOpenAutoFocus={(event) => event.preventDefault()}
         hideCloseButton
-        className="max-h-[90vh] max-w-[346px] gap-[20px] overflow-y-auto rounded-[4px] border-[#dedede] p-[25px]"
+        className="max-h-[90vh] max-w-[346px] gap-[20px] overflow-y-auto rounded-[4px] border-line p-[25px]"
       >
-        <DialogTitle className="text-[16px] font-semibold leading-[1.6] tracking-[-0.32px] text-[#212121]">
+        <DialogTitle className="text-[16px] font-semibold leading-[1.6] tracking-[-0.32px] text-ink">
           {isEdit ? '게시판 수정' : '게시판 생성'}
         </DialogTitle>
 
@@ -163,7 +163,7 @@ export default function BoardFormModal({
         <div className="flex flex-col gap-[4px]">
           <label
             htmlFor="board-form-name"
-            className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]"
+            className="text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3"
           >
             게시판 이름
           </label>
@@ -172,14 +172,14 @@ export default function BoardFormModal({
             value={boardName}
             onChange={(e) => setBoardName(e.target.value)}
             placeholder="게시판 이름을 입력하세요."
-            className="h-[52px] rounded-[4px] border-[#b9b9b9] text-[16px] tracking-[-0.32px] shadow-none placeholder:text-[#b9b9b9]"
+            className="h-[52px] rounded-[4px] border-line-strong text-[16px] tracking-[-0.32px] shadow-none placeholder:text-ink-4"
           />
         </div>
 
         {/* 열람·작성 권한은 짝이라 한 줄에 나란히 — 세로로 쌓으면 모달이 길어지기만 한다 */}
         <div className="flex gap-3">
         <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">
             열람 권한
           </span>
           <FormSelect
@@ -191,7 +191,7 @@ export default function BoardFormModal({
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col gap-[4px]">
-          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">
             작성 권한
           </span>
           <FormSelect
@@ -204,26 +204,26 @@ export default function BoardFormModal({
         </div>
 
         <div className="flex flex-col gap-[4px]">
-          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">
             사용 기능
           </span>
-          <div className="rounded-[4px] border border-[#b9b9b9]">
+          <div className="rounded-[4px] border border-line-strong">
             {BOARD_FEATURE_FIELDS.map(({ key, label, hint }, index) => (
               <label
                 key={key}
                 className={`flex cursor-pointer items-start gap-[10px] px-[14px] py-[12px] ${
-                  index > 0 ? 'border-t border-[#EEEEEE]' : ''
+                  index > 0 ? 'border-t border-line' : ''
                 }`}
               >
                 <input
                   type="checkbox"
                   checked={flags[key]}
                   onChange={(e) => setFlags((prev) => ({ ...prev, [key]: e.target.checked }))}
-                  className="mt-[2px] size-[18px] shrink-0 cursor-pointer rounded-[2px] border border-[#919191] accent-[#212121]"
+                  className="mt-[2px] size-[18px] shrink-0 cursor-pointer rounded-[2px] border border-ink-3 accent-ink"
                 />
                 <span className="min-w-0">
-                  <span className="block text-[14px] tracking-[-0.28px] text-[#212121]">{label}</span>
-                  <span className="mt-[2px] block text-[12px] leading-[1.5] tracking-[-0.24px] text-[#919191]">
+                  <span className="block text-[14px] tracking-[-0.28px] text-ink">{label}</span>
+                  <span className="mt-[2px] block text-[12px] leading-[1.5] tracking-[-0.24px] text-ink-3">
                     {hint}
                   </span>
                 </span>
@@ -237,7 +237,7 @@ export default function BoardFormModal({
         {errorMessage && (
           <p
             role="alert"
-            className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#f44336]"
+            className="text-[12px] leading-[1.4] tracking-[-0.24px] text-alert"
           >
             {errorMessage}
           </p>
@@ -248,7 +248,7 @@ export default function BoardFormModal({
             type="button"
             variant="outline"
             onClick={onClose}
-            className="h-[48px] w-[87px] rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]"
+            className="h-[48px] w-[87px] rounded-[4px] border-line-strong text-[16px] text-ink"
           >
             취소
           </Button>
@@ -256,7 +256,7 @@ export default function BoardFormModal({
             type="button"
             onClick={handleConfirm}
             disabled={!canSubmit}
-            className="h-[48px] w-[87px] rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242]"
+            className="h-[48px] w-[87px] rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse-2"
           >
             확인
           </Button>

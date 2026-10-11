@@ -9,7 +9,7 @@ export default function ChairmanSection({ title, leader, members }) {
 
       <div className="absolute left-full top-1/2 -translate-y-1/2 flex items-center min-w-[200px]">
         {/* 가로 연결선 */}
-        <div className="flex-1 border-t border-dashed border-[#919191]" />
+        <div className="flex-1 border-t border-dashed border-ink-3" />
         {/* 멤버 카드 */}
         <MemberCard leader={leader} members={members} />
       </div>

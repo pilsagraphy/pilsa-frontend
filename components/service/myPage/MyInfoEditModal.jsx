@@ -21,7 +21,7 @@ export default function MyInfoEditModal({ open, onOpenChange, myInfo }) {
         aria-describedby={undefined}
       >
         <DialogHeader className="text-left">
-          <DialogTitle className="text-[18px] tracking-[-0.02em] text-black">설정</DialogTitle>
+          <DialogTitle className="text-[18px] tracking-[-0.02em] text-ink">설정</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
@@ -32,7 +32,7 @@ export default function MyInfoEditModal({ open, onOpenChange, myInfo }) {
           <Button
             type="button"
             onClick={() => onOpenChange(false)}
-            className="h-[40px] rounded-[6px] bg-[#212121] px-6 text-[14px] font-semibold text-white hover:bg-black"
+            className="h-[40px] rounded-[6px] bg-inverse px-6 text-[14px] font-semibold text-inverse-fg hover:bg-inverse-hover"
           >
             닫기
           </Button>

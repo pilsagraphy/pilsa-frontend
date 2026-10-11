@@ -52,14 +52,14 @@ export default function History() {
   }, [years]);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-surface px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
       {/* 타이틀 및 서브타이틀 영역 */}
-      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-[#DEDEDE] pb-6 md:gap-[12px] md:pb-[40px]">
+      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-line pb-6 md:gap-[12px] md:pb-[40px]">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="font-['Pretendard'] text-[24px] font-semibold leading-[1.5] tracking-[-0.48px] text-[#212121]">연혁</h2>
+          <h2 className="font-['Pretendard'] text-[24px] font-semibold leading-[1.5] tracking-[-0.48px] text-ink">연혁</h2>
           <AdminPageLink href={ROUTES.ADMIN_HISTORY} label="연혁 관리" />
         </div>
-        <p className="font-['Pretendard'] text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-[#919191]">
+        <p className="font-['Pretendard'] text-[16px] font-normal leading-[1.6] tracking-[-0.32px] text-ink-3">
           필사그래피 연도별 주요 활동
         </p>
       </header>
@@ -67,7 +67,7 @@ export default function History() {
       {/* 리스트 렌더링 영역 */}
       <div className="flex w-full flex-col">
         {years == null && !error && <AppLoading />}
-        {error && <p className="text-[14px] text-[#919191]">{error}</p>}
+        {error && <p className="text-[14px] text-ink-3">{error}</p>}
         {years?.map((data, index) => (
           <HistoryRow key={data.year} year={data.year} activities={data.activities} isFirst={index === 0} focused={focusYear === data.year} />
         ))}

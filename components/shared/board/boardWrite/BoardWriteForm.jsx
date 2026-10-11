@@ -98,7 +98,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
             key={`exist-${file.attachmentId}`}
             type="button"
             onClick={() => toggleDeleteAttachment(file.attachmentId)}
-            className={`flex h-[27px] items-center gap-[8px] rounded-full bg-[#DEDEDE] px-[12px] text-[13px] text-[#212121] ${
+            className={`flex h-[27px] items-center gap-[8px] rounded-full bg-line px-[12px] text-[13px] text-ink ${
               marked ? 'line-through opacity-50' : ''
             }`}
           >
@@ -114,7 +114,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
             key={`new-${file?.name}-${index}`}
             type="button"
             onClick={() => removeFileAt(index)}
-            className="flex h-[27px] items-center gap-[8px] rounded-full bg-[#DEDEDE] px-[12px] text-[13px] text-[#212121]"
+            className="flex h-[27px] items-center gap-[8px] rounded-full bg-line px-[12px] text-[13px] text-ink"
           >
             <span className="max-w-[180px] truncate">{file?.name}</span>
             <X size={10} strokeWidth={2} className="shrink-0" />
@@ -131,27 +131,27 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
       <div className="flex w-full flex-col gap-[16px]">
         {/* 제목 */}
         <div className="flex flex-col gap-[8px]">
-          <label className="text-[14px] tracking-[-0.28px] text-[#454545]">제목</label>
+          <label className="text-[14px] tracking-[-0.28px] text-ink-2">제목</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder="제목을 입력하세요."
             required
-            className="h-[40px] w-full rounded-[4px] border border-[#b9b9b9] bg-white px-[14px] text-[14px] tracking-[-0.28px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-black"
+            className="h-[40px] w-full rounded-[4px] border border-line-strong bg-surface px-[14px] text-[14px] tracking-[-0.28px] text-ink outline-none placeholder:text-ink-3 focus:border-ink"
           />
         </div>
 
         {/* 카테고리 + 저장 버튼 */}
         {showCategory && (
           <div className="flex flex-col gap-[8px]">
-            <label className="text-[14px] tracking-[-0.28px] text-[#454545]">카테고리</label>
+            <label className="text-[14px] tracking-[-0.28px] text-ink-2">카테고리</label>
             <div className="flex items-center gap-[8px]">
-              <div className="relative flex h-[40px] flex-1 items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+              <div className="relative flex h-[40px] flex-1 items-center rounded-[4px] border border-line-strong bg-surface focus-within:border-ink">
                 <select
                   value={categoryId}
                   onChange={(e) => setCategoryId(e.target.value)}
-                  className="h-full w-full cursor-pointer appearance-none bg-transparent px-[14px] text-[14px] tracking-[-0.28px] text-[#212121] outline-none"
+                  className="h-full w-full cursor-pointer appearance-none bg-transparent px-[14px] text-[14px] tracking-[-0.28px] text-ink outline-none"
                 >
                   <option value="">카테고리</option>
                   {categories.map((category) => (
@@ -161,10 +161,9 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
                   ))}
                 </select>
                 <ChevronDown
-                  className="pointer-events-none absolute right-[12px]"
+                  className="pointer-events-none absolute right-[12px] text-ink"
                   size={15}
                   strokeWidth={2}
-                  color="#212121"
                 />
               </div>
               {/* 임시저장 불러오기 — PC 와 같은 버튼을 쓴다.
@@ -185,16 +184,16 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
               type="checkbox"
               checked={notifyPinned}
               onChange={(e) => setNotifyPinned(e.target.checked)}
-              className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+              className="h-[16px] w-[16px] cursor-pointer accent-ink"
             />
-            <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
+            <span className="text-[14px] tracking-[-0.28px] text-ink">
               {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
             </span>
           </label>
         )}
 
         {/* 툴바 (라벨 없는 42px 박스). 본문이 자라도 서식 버튼이 보이게 화면 위에 붙어 따라온다 */}
-        <div className="sticky top-0 z-30 flex h-[42px] w-full items-center rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+        <div className="sticky top-0 z-30 flex h-[42px] w-full items-center rounded-[4px] border border-line-strong bg-surface focus-within:border-ink">
           <BoardWriteToolbar
             editor={editor}
             files={files}
@@ -206,7 +205,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
         {attachmentChips}
 
         {/* 본문 (라벨 없는 박스) — 최소 높이만 두고 내용만큼 자란다 */}
-        <div className="relative flex min-h-[360px] w-full items-stretch rounded-[4px] border border-[#b9b9b9] bg-white focus-within:border-black">
+        <div className="relative flex min-h-[360px] w-full items-stretch rounded-[4px] border border-line-strong bg-surface focus-within:border-ink">
           <BoardRichEditor
             boardId={boardId}
             value={content}
@@ -224,9 +223,9 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
                 type="checkbox"
                 checked={isAnonymous}
                 onChange={(e) => setIsAnonymous(e.target.checked)}
-                className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+                className="h-[16px] w-[16px] cursor-pointer accent-ink"
               />
-              <span className="text-[14px] tracking-[-0.28px] text-[#212121]">익명으로 게시</span>
+              <span className="text-[14px] tracking-[-0.28px] text-ink">익명으로 게시</span>
             </label>
           </div>
         )}
@@ -250,7 +249,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
 
       {/* 툴바·카테고리는 모바일에서도 한 줄 — 세로로 쌓으면 폼이 화면 두 장 길이가 된다.
           본문이 자라도 서식 버튼이 보이게 이 줄은 화면 위에 붙어 따라온다 */}
-      <div className="sticky top-0 z-30 flex w-full flex-row gap-[12px] bg-white pb-[4px]">
+      <div className="sticky top-0 z-30 flex w-full flex-row gap-[12px] bg-surface pb-[4px]">
         <BoardWriteBox label="툴바">
           <BoardWriteToolbar
             editor={editor}
@@ -267,7 +266,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
-              className="w-full h-full px-[16px] bg-transparent text-[16px] text-[#212121] tracking-[-0.32px] outline-none appearance-none cursor-pointer relative z-10"
+              className="w-full h-full px-[16px] bg-transparent text-[16px] text-ink tracking-[-0.32px] outline-none appearance-none cursor-pointer relative z-10"
             >
               <option value="">카테고리를 선택하세요</option>
 
@@ -279,10 +278,9 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
             </select>
 
             <ChevronDown
-              className="absolute right-[16px] pointer-events-none"
+              className="absolute right-[16px] pointer-events-none text-ink"
               size={15}
               strokeWidth={2}
-              color="#212121"
             />
           </BoardWriteBox>
         )}
@@ -302,14 +300,14 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
           여기서 '삭제' 표시한 것만 deleteAttachmentIds 로 전송된다. */}
       {allowAttachment && existingAttachments.length > 0 && (
         <div className="flex flex-col gap-[6px] px-[4px]">
-          <span className="text-[14px] tracking-[-0.28px] text-[#919191]">기존 첨부파일</span>
+          <span className="text-[14px] tracking-[-0.28px] text-ink-3">기존 첨부파일</span>
           {existingAttachments.map((file) => {
             const marked = deleteAttachmentIds.includes(file.attachmentId);
             return (
               <div key={file.attachmentId} className="flex items-center gap-[8px]">
                 <span
                   className={`min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] ${
-                    marked ? 'text-[#b9b9b9] line-through' : 'text-[#454545]'
+                    marked ? 'text-ink-4 line-through' : 'text-ink-2'
                   }`}
                 >
                   {file.originName}
@@ -317,7 +315,7 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
                 <button
                   type="button"
                   onClick={() => toggleDeleteAttachment(file.attachmentId)}
-                  className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121]"
+                  className="shrink-0 text-[14px] tracking-[-0.28px] text-ink-3 underline transition-colors hover:text-ink"
                 >
                   {marked ? '복원' : '삭제'}
                 </button>
@@ -335,17 +333,17 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
           어긋나면 방금 뺀 것이 남거나 남겨둔 것이 지워진다. */}
       {allowAttachment && draftAttachments.length > 0 && (
         <div className="flex flex-col gap-[6px] px-[4px]">
-          <span className="text-[14px] tracking-[-0.28px] text-[#919191]">임시저장 첨부파일</span>
+          <span className="text-[14px] tracking-[-0.28px] text-ink-3">임시저장 첨부파일</span>
           {draftAttachments.map((file) => (
             <div key={file.attachmentId} className="flex items-center gap-[8px]">
-              <span className="min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] text-[#454545]">
+              <span className="min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] text-ink-2">
                 {file.originName}
               </span>
               <button
                 type="button"
                 onClick={() => removeDraftAttachment(file.attachmentId)}
                 disabled={busy}
-                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[#919191]"
+                className="shrink-0 text-[14px] tracking-[-0.28px] text-ink-3 underline transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-ink-3"
               >
                 제거
               </button>
@@ -361,14 +359,14 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
         <div className="flex flex-col gap-[6px] px-[4px]">
           {files.map((file, index) => (
             <div key={`${file?.name}-${index}`} className="flex items-center gap-[8px]">
-              <span className="min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] text-[#666666]">
+              <span className="min-w-0 flex-1 truncate text-[14px] tracking-[-0.28px] text-ink-3">
                 {file?.name}
               </span>
               <button
                 type="button"
                 onClick={() => removeFileAt(index)}
                 disabled={busy}
-                className="shrink-0 text-[14px] tracking-[-0.28px] text-[#919191] underline transition-colors hover:text-[#212121] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-[#919191]"
+                className="shrink-0 text-[14px] tracking-[-0.28px] text-ink-3 underline transition-colors hover:text-ink disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:text-ink-3"
               >
                 제거
               </button>
@@ -395,9 +393,9 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
               type="checkbox"
               checked={notifyPinned}
               onChange={(e) => setNotifyPinned(e.target.checked)}
-              className="h-[16px] w-[16px] cursor-pointer accent-[#212121]"
+              className="h-[16px] w-[16px] cursor-pointer accent-ink"
             />
-            <span className="text-[14px] tracking-[-0.28px] text-[#212121]">
+            <span className="text-[14px] tracking-[-0.28px] text-ink">
               {isEdit ? '(수정) 알림 보내기' : '회원에게 알림 보내기'}
             </span>
           </label>
@@ -411,9 +409,9 @@ export default function BoardWriteForm({ boardId, board, enableDraft = false, bu
               type="checkbox"
               checked={isAnonymous}
               onChange={(e) => setIsAnonymous(e.target.checked)}
-              className="w-[16px] h-[16px] cursor-pointer accent-[#212121]"
+              className="w-[16px] h-[16px] cursor-pointer accent-ink"
             />
-            <span className="text-[14px] text-[#212121] tracking-[-0.28px]">익명으로 게시</span>
+            <span className="text-[14px] text-ink tracking-[-0.28px]">익명으로 게시</span>
           </label>
         </div>
       )}

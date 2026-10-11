@@ -29,23 +29,23 @@ export default function MyInfoCard() {
   };
 
   return (
-    <div className="flex h-full w-full flex-col rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px] lg:h-auto lg:shrink-0">
-      <h3 className="-mx-[12px] border-b border-[#BDBDBD] px-[12px] pb-[12px] text-[16px] font-bold leading-[1.5] tracking-[-0.02em] text-black">
+    <div className="flex h-full w-full flex-col rounded-[10px] border border-line bg-surface px-[17px] py-[16px] lg:h-auto lg:shrink-0">
+      <h3 className="-mx-[12px] border-b border-line-strong px-[12px] pb-[12px] text-[16px] font-bold leading-[1.5] tracking-[-0.02em] text-ink">
         내 정보
       </h3>
 
       <dl className="mb-[8px] mt-[4px] flex flex-col">
-        <div className="-mx-[12px] flex items-center justify-between border-b border-[#BDBDBD] px-[12px] py-[14px]">
-          <dt className="pl-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
+        <div className="-mx-[12px] flex items-center justify-between border-b border-line-strong px-[12px] py-[14px]">
+          <dt className="pl-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-2">
             아이디
           </dt>
-          <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-black">{loginId}</dd>
+          <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-ink">{loginId}</dd>
         </div>
         <div className="flex items-center justify-between py-[14px]">
-          <dt className="pl-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
+          <dt className="pl-[4px] text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-2">
             가입일
           </dt>
-          <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-black">{joinedAt}</dd>
+          <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-ink">{joinedAt}</dd>
         </div>
       </dl>
 
@@ -53,7 +53,7 @@ export default function MyInfoCard() {
       <button
         type="button"
         onClick={openSettings}
-        className="mt-auto flex h-[38px] w-full shrink-0 items-center justify-center rounded-[4px] bg-[#212121] px-4 text-[16px] leading-[1.6] tracking-[-0.02em] text-white transition hover:bg-black"
+        className="mt-auto flex h-[38px] w-full shrink-0 items-center justify-center rounded-[4px] bg-inverse px-4 text-[16px] leading-[1.6] tracking-[-0.02em] text-inverse-fg transition hover:bg-inverse-hover"
       >
         설정
       </button>

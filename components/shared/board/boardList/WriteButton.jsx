@@ -3,8 +3,8 @@ import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/constants/routes';
 
 const baseClass = 'w-[200px] h-[52px] text-[16px] border';
-const enabledClass = `${baseClass} bg-[#212121] text-white`;
-const disabledClass = `${baseClass} bg-[#DEDEDE] text-[#919191] cursor-not-allowed hover:bg-[#DEDEDE]`;
+const enabledClass = `${baseClass} bg-inverse text-inverse-fg`;
+const disabledClass = `${baseClass} bg-line text-ink-3 cursor-not-allowed hover:bg-line`;
 
 // 글쓰기 권한(canWrite)이 없으면 버튼을 비활성 상태로 보여준다.
 // canWrite 는 서버가 게시판의 write_level 과 로그인 사용자의 adminLevel 을 비교해 내려주는 값이다.

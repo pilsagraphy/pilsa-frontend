@@ -38,10 +38,10 @@ export default function ReportModal({
     >
       {targetUserText && (
         <div className="flex flex-col gap-[4px]">
-          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">
             대상 회원
           </span>
-          <span className="break-all text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
+          <span className="break-all text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2">
             {targetUserText}
           </span>
         </div>
@@ -49,10 +49,10 @@ export default function ReportModal({
 
       {targetContent && (
         <div className="flex flex-col gap-[4px]">
-          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+          <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">
             대상 게시글
           </span>
-          <span className="line-clamp-2 break-words text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
+          <span className="line-clamp-2 break-words text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2">
             {targetContent}
           </span>
         </div>

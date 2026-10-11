@@ -20,7 +20,7 @@ import MuteToggle from './MuteToggle';
 import AdminUserPopover from '@/components/shared/admin/AdminUserPopover';
 
 function Divider() {
-  return <div className="w-full h-px bg-[#DEDEDE]" />;
+  return <div className="w-full h-px bg-line" />;
 }
 
 // 답글은 한 단계만 있다(PM 결정). 최상위 댓글 아래에 답글들이 순서대로 쌓이고, 답글에는 [답글] 버튼이 없다.
@@ -102,8 +102,8 @@ function CommentComposer({
   const isMdUp = useMinWidthMd();
   const placeholder = isMdUp ? labels.placeholder : '내용을 입력하세요.';
   const checkboxClass =
-    'h-[18px] w-[18px] cursor-pointer rounded-[2px] border border-[#919191] accent-[#212121] lg:h-[24px] lg:w-[24px]';
-  const checkboxLabelClass = 'cursor-pointer text-[14px] leading-[1.6] tracking-[-0.28px] text-[#919191]';
+    'h-[18px] w-[18px] cursor-pointer rounded-[2px] border border-ink-3 accent-ink lg:h-[24px] lg:w-[24px]';
+  const checkboxLabelClass = 'cursor-pointer text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3';
 
   return (
     <div className="flex w-full flex-col gap-2 lg:gap-4">
@@ -115,8 +115,8 @@ function CommentComposer({
           onChange={(e) => setText(e.target.value)}
           placeholder={placeholder}
           rows={1}
-          className={`min-h-[40px] w-full flex-1 resize-none rounded-[4px] border bg-white px-4 py-[10px] text-[16px] leading-[1.25] tracking-[-0.32px] text-[#212121] outline-none placeholder:text-[#919191] focus:border-[#212121] lg:border-[#b9b9b9] lg:py-3 lg:leading-[1.6] lg:focus:border-[#919191] ${
-            inline ? 'border-[#212121] lg:min-h-[72px]' : 'border-[#919191] lg:min-h-[112px]'
+          className={`min-h-[40px] w-full flex-1 resize-none rounded-[4px] border bg-surface px-4 py-[10px] text-[16px] leading-[1.25] tracking-[-0.32px] text-ink outline-none placeholder:text-ink-3 focus:border-ink lg:border-line-strong lg:py-3 lg:leading-[1.6] lg:focus:border-ink-3 ${
+            inline ? 'border-ink lg:min-h-[72px]' : 'border-ink-3 lg:min-h-[112px]'
           }`}
           onKeyDown={(e) => {
             if (e.nativeEvent.isComposing) return;
@@ -133,7 +133,7 @@ function CommentComposer({
           onClick={submit}
           disabled={!canSubmit}
           aria-label={labels.submit}
-          className="flex h-[40px] w-[55px] shrink-0 items-center justify-center rounded-[4px] bg-[#212121] text-white disabled:opacity-60 lg:hidden"
+          className="flex h-[40px] w-[55px] shrink-0 items-center justify-center rounded-[4px] bg-inverse text-inverse-fg disabled:opacity-60 lg:hidden"
         >
           <ArrowBigRight width={24} height={24} strokeWidth={1.5} aria-hidden="true" />
         </button>
@@ -180,7 +180,7 @@ function CommentComposer({
               <button
                 type="button"
                 onClick={onCancel}
-                className="h-9 rounded-[4px] px-3 text-[14px] tracking-[-0.28px] text-[#919191] transition-colors hover:text-[#212121] lg:h-[52px] lg:px-4 lg:text-[16px]"
+                className="h-9 rounded-[4px] px-3 text-[14px] tracking-[-0.28px] text-ink-3 transition-colors hover:text-ink lg:h-[52px] lg:px-4 lg:text-[16px]"
               >
                 취소
               </button>
@@ -189,7 +189,7 @@ function CommentComposer({
               type="button"
               onClick={submit}
               disabled={!canSubmit}
-              className={`hidden h-[52px] shrink-0 rounded-[4px] bg-[#212121] text-[16px] tracking-[-0.32px] text-white disabled:opacity-60 lg:block ${
+              className={`hidden h-[52px] shrink-0 rounded-[4px] bg-inverse text-[16px] tracking-[-0.32px] text-inverse-fg disabled:opacity-60 lg:block ${
                 inline ? 'px-5' : 'w-[135px]'
               }`}
             >
@@ -545,7 +545,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     if (isContext) {
       return (
         <div className="w-full opacity-60">
-          <p className="px-2 pt-2 text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191] lg:px-5">
+          <p className="px-2 pt-2 text-[12px] leading-[1.6] tracking-[-0.24px] text-ink-3 lg:px-5">
             앞 페이지에서 이어지는 답글
           </p>
           {renderComment(comment, depth)}
@@ -565,7 +565,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
 
     const actionClassName = (active) =>
       `text-[12px] lg:text-[14px] transition-colors ${
-        active ? 'font-medium text-[#212121]' : 'text-[#919191] hover:text-[#212121]'
+        active ? 'font-medium text-ink' : 'text-ink-3 hover:text-ink'
       }`;
 
     // 답글/수정/삭제·신고. 폰에서는 이름 줄 오른쪽에, PC 에서는 오른쪽 열에 — 같은 버튼을 자리만 달리 그린다
@@ -607,8 +607,8 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     // 답글 표시. 폰(#183 피그마)은 꺾쇠(└) 모양의 좌·하 테두리 상자, PC 는 화살표 아이콘
     const replyMark = isReply && (
       <>
-        <span className="h-3 w-3 shrink-0 border-b border-l border-[#B9B9B9] lg:hidden" aria-hidden />
-        <CornerDownRight className="hidden h-4 w-4 shrink-0 text-[#b9b9b9] lg:block" aria-hidden />
+        <span className="h-3 w-3 shrink-0 border-b border-l border-line-strong lg:hidden" aria-hidden />
+        <CornerDownRight className="hidden h-4 w-4 shrink-0 text-ink-4 lg:block" aria-hidden />
       </>
     );
 
@@ -618,14 +618,14 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         // 댓글 하나를 URL로 가리킬 수 있게 앵커를 붙인다 (예: /students/boards/2/posts/12#comment-3)
         id={anchorId}
         className={`commentRow flex w-full scroll-mt-[100px] flex-col gap-[6px] lg:gap-3 ${
-          highlighted ? 'bg-[#F6F6F6]' : ''
+          highlighted ? 'bg-surface-2' : ''
         }`}
         style={{ '--comment-depth': indentDepth }}
       >
         <div className="flex w-full flex-col gap-[6px] lg:flex-row lg:items-start lg:justify-between lg:gap-3">
           <div className="flex min-w-0 flex-1 flex-col gap-[4px] lg:gap-[7px]">
             {deleted ? (
-              <p className="flex items-center gap-[16px] text-[16px] leading-[19px] tracking-[-0.32px] text-[#919191] lg:gap-1 lg:leading-[26px]">
+              <p className="flex items-center gap-[16px] text-[16px] leading-[19px] tracking-[-0.32px] text-ink-3 lg:gap-1 lg:leading-[26px]">
                 {replyMark}
                 삭제된 댓글입니다
               </p>
@@ -635,7 +635,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                 <div className="flex items-start justify-between gap-4 lg:block">
                   <span
                     className={`flex min-w-0 items-center gap-[6px] text-[16px] leading-[19px] tracking-[-0.32px] lg:leading-[26px] ${
-                      owner ? 'font-semibold text-[#212121]' : 'text-[#454545]'
+                      owner ? 'font-semibold text-ink' : 'text-ink-2'
                     }`}
                   >
                     {replyMark}
@@ -647,7 +647,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                     )}
                     {/* 내 댓글 표식 — 긴 스레드에서 내가 쓴 것을 바로 찾게. 익명 댓글도 서버 isMine 으로 판별된다 */}
                     {owner && (
-                      <span className="shrink-0 rounded-[3px] bg-[#212121] px-1.5 py-[1px] text-[11px] font-medium leading-[16px] tracking-[-0.2px] text-white">
+                      <span className="shrink-0 rounded-[3px] bg-inverse px-1.5 py-[1px] text-[11px] font-medium leading-[16px] tracking-[-0.2px] text-inverse-fg">
                         내 댓글
                       </span>
                     )}
@@ -657,7 +657,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                         size={13}
                         strokeWidth={1.8}
                         aria-label="비밀 댓글"
-                        className="shrink-0 text-[#757575]"
+                        className="shrink-0 text-ink-3"
                       />
                     )}
                   </span>
@@ -684,10 +684,10 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
                     </div>
                   ) : (
                     <>
-                      <p className="select-text whitespace-pre-line text-[16px] leading-[19px] tracking-[-0.32px] text-[#454545] lg:leading-[26px]">
+                      <p className="select-text whitespace-pre-line text-[16px] leading-[19px] tracking-[-0.32px] text-ink-2 lg:leading-[26px]">
                         {comment.content}
                       </p>
-                      <span className="text-[12px] leading-[14px] tracking-[-0.28px] text-[#919191] lg:text-[14px] lg:leading-[22px]">
+                      <span className="text-[12px] leading-[14px] tracking-[-0.28px] text-ink-3 lg:text-[14px] lg:leading-[22px]">
                         {formatSlashDateTime(comment.updated ?? comment.created)}
                       </span>
                     </>
@@ -709,7 +709,7 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
             className="commentReplyComposer flex w-full items-start gap-2 lg:pr-4"
             style={{ '--comment-depth': Math.min(depth + 1, MAX_INDENT_DEPTH) }}
           >
-            <CornerDownRight className="mt-3 hidden h-4 w-4 shrink-0 text-[#b9b9b9] lg:mt-4 lg:block" aria-hidden />
+            <CornerDownRight className="mt-3 hidden h-4 w-4 shrink-0 text-ink-4 lg:mt-4 lg:block" aria-hidden />
             <CommentComposer
               mode="reply"
               allowAnonymous={allowAnonymous}
@@ -729,14 +729,14 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
     <section className="flex w-full flex-col gap-8 lg:gap-[60px]">
       <div className="flex w-full flex-col items-center">
         <div className="w-full py-2 lg:px-5 lg:py-[10px]">
-          <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-[#454545]">
+          <span className="text-[18px] leading-[1.6] tracking-[-0.36px] text-ink-2">
             {/* 목록을 못 받은 동안에는 상세 응답의 commentCount 를 쓴다 (0개로 위장하지 않도록) */}
             댓글 {commentsError || commentsLoading ? (commentCount ?? 0) : list.length}개
           </span>
         </div>
 
         {missingNotice && (
-          <p className="mb-3 w-full rounded-[6px] bg-[#F5F5F5] px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545] lg:mx-5 lg:w-auto lg:self-stretch">
+          <p className="mb-3 w-full rounded-[6px] bg-surface-2 px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2 lg:mx-5 lg:w-auto lg:self-stretch">
             {missingNotice}
           </p>
         )}
@@ -755,18 +755,18 @@ export default function BoardComments({ boardId, postId, board, commentCount }) 
         </div>
 
         {commentsLoading && (
-          <div className="w-full py-4 text-center text-[14px] text-[#919191]">
+          <div className="w-full py-4 text-center text-[14px] text-ink-3">
             댓글을 불러오는 중입니다.
           </div>
         )}
 
         {!commentsLoading && commentsError && (
           <div className="flex w-full flex-col items-center gap-2 py-4">
-            <span className="text-[14px] text-[#919191]">{commentsError}</span>
+            <span className="text-[14px] text-ink-3">{commentsError}</span>
             <button
               type="button"
               onClick={refetch}
-              className="text-[14px] text-[#919191] underline transition-colors hover:text-[#212121]"
+              className="text-[14px] text-ink-3 underline transition-colors hover:text-ink"
             >
               다시 시도
             </button>

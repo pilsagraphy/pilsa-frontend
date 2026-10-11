@@ -18,7 +18,7 @@ export default function PreSignup() {
   return (
     <div className="flex size-full items-center justify-center py-20 font-pretendard">
       <div className="flex w-[600px] flex-col gap-[33px]">
-        <h1 className="text-[24px] font-semibold leading-[1.5] tracking-[-0.48px] text-black">
+        <h1 className="text-[24px] font-semibold leading-[1.5] tracking-[-0.48px] text-ink">
           현재 학교를 다니고 계신가요?
         </h1>
         <div className="flex flex-col gap-3">
@@ -27,7 +27,7 @@ export default function PreSignup() {
               key={option.id}
               variant="outline"
               onClick={() => handleSelection(option.id)}
-              className="h-[52px] w-full border-[#b9b9b9] text-[16px] font-normal text-[#212121] transition-colors hover:bg-[#212121] hover:text-white"
+              className="h-[52px] w-full border-line-strong text-[16px] font-normal text-ink transition-colors hover:bg-inverse hover:text-inverse-fg"
             >
               {option.label}
             </Button>

@@ -29,7 +29,7 @@ export default function CommentRow({
   const originHref = getCommentOriginHref(comment.postId, comment.commentId);
 
   return (
-    <TableRow className="h-[46px] border-b border-[#b9b9b9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121]">
+    <TableRow className="h-[46px] border-b border-line-strong text-[16px] leading-[1.6] tracking-[-0.02em] text-ink">
       {/* 1. 선택 체크박스 */}
       <TableCell className="text-center">
         <RowCheckbox
@@ -86,7 +86,7 @@ export default function CommentRow({
             Link
           </Link>
         ) : (
-          <span className="text-[#919191]">-</span>
+          <span className="text-ink-3">-</span>
         )}
       </TableCell>
 

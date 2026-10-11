@@ -19,9 +19,9 @@ export default function MyActivityCard() {
   const semester = summary?.semester ?? null; // 불러오기 전에는 null
 
   return (
-    <div className="flex h-full w-full flex-col rounded-[10px] border border-black/20 bg-white px-[17px] py-[16px] lg:flex-1">
+    <div className="flex h-full w-full flex-col rounded-[10px] border border-line bg-surface px-[17px] py-[16px] lg:flex-1">
       <div className="flex items-center gap-[8px]">
-        <h3 className="break-keep text-[15px] font-bold leading-[1.5] tracking-[-0.02em] text-black md:text-[16px]">
+        <h3 className="break-keep text-[15px] font-bold leading-[1.5] tracking-[-0.02em] text-ink md:text-[16px]">
           이번 학기 활동 요약
         </h3>
 
@@ -35,18 +35,18 @@ export default function MyActivityCard() {
       </div>
 
       {/* 선을 '작성한 글' 바로 위(목록 상단)에 붙임 */}
-      <dl className="-mx-[12px] mt-auto flex flex-col border-t border-[#BDBDBD] px-[12px] lg:mt-[40px]">
+      <dl className="-mx-[12px] mt-auto flex flex-col border-t border-line-strong px-[12px] lg:mt-[40px]">
         {ACTIVITY_META.map((item, index) => (
           <div
             key={item.key}
             className={`-mx-[12px] flex items-center justify-between px-[12px] py-[14px] ${
-              index !== ACTIVITY_META.length - 1 ? 'border-b border-[#BDBDBD]' : ''
+              index !== ACTIVITY_META.length - 1 ? 'border-b border-line-strong' : ''
             }`}
           >
-            <dt className="text-[13px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
+            <dt className="text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-2">
               {item.label}
             </dt>
-            <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-black">
+            <dd className="text-[13px] leading-[1.6] tracking-[-0.02em] text-ink">
               {semester ? `${semester[item.key] ?? 0}개` : '-'}
             </dd>
           </div>

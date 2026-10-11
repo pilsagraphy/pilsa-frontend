@@ -40,7 +40,7 @@ export default function SimpleLineChart({ labels = [], series = [], height = 220
   };
 
   if (!n) {
-    return <p className="py-6 text-center text-[14px] text-[#919191]">표시할 데이터가 없습니다.</p>;
+    return <p className="py-6 text-center text-[14px] text-ink-3">표시할 데이터가 없습니다.</p>;
   }
 
   return (
@@ -59,34 +59,35 @@ export default function SimpleLineChart({ labels = [], series = [], height = 220
       >
         {ticks.map((v) => (
           <g key={v}>
-            <line x1={PAD.left} x2={W - PAD.right} y1={y(v)} y2={y(v)} stroke="#EEEEEE" strokeWidth="1" />
-            <text x={PAD.left - 8} y={y(v) + 4} textAnchor="end" fontSize="11" fill="#919191">
+            {/* 눈금·글자 색은 stroke-, fill- 클래스로 — 다크모드 토큰을 따라간다. 시리즈 색은 style 로 넣어야 rgb(var(--c-ink)) 같은 문자열이 먹는다 (SVG 속성은 var() 를 못 읽는다) */}
+            <line x1={PAD.left} x2={W - PAD.right} y1={y(v)} y2={y(v)} className="stroke-surface-3" strokeWidth="1" />
+            <text x={PAD.left - 8} y={y(v) + 4} textAnchor="end" fontSize="11" className="fill-ink-3">
               {v}
             </text>
           </g>
         ))}
         {labels.map((label, i) =>
           i % labelEvery === 0 || i === n - 1 ? (
-            <text key={label + i} x={x(i)} y={H - 12} textAnchor="middle" fontSize="11" fill="#919191">
+            <text key={label + i} x={x(i)} y={H - 12} textAnchor="middle" fontSize="11" className="fill-ink-3">
               {formatLabel(label)}
             </text>
           ) : null
         )}
         {hover != null && (
-          <line x1={x(hover)} x2={x(hover)} y1={PAD.top} y2={PAD.top + innerH} stroke="#B9B9B9" strokeWidth="1" strokeDasharray="3 3" />
+          <line x1={x(hover)} x2={x(hover)} y1={PAD.top} y2={PAD.top + innerH} className="stroke-line-strong" strokeWidth="1" strokeDasharray="3 3" />
         )}
         {series.map((s) => (
           <g key={s.name}>
             <polyline
               fill="none"
-              stroke={s.color}
+              style={{ stroke: s.color }}
               strokeWidth="2"
               strokeLinejoin="round"
               strokeLinecap="round"
               points={s.values.map((v, i) => `${x(i)},${y(v)}`).join(' ')}
             />
             {s.values.map((v, i) => (
-              <circle key={i} cx={x(i)} cy={y(v)} r={hover === i ? 5 : 3} fill="#fff" stroke={s.color} strokeWidth="2" />
+              <circle key={i} cx={x(i)} cy={y(v)} r={hover === i ? 5 : 3} className="fill-surface" style={{ stroke: s.color }} strokeWidth="2" />
             ))}
           </g>
         ))}
@@ -102,7 +103,7 @@ export default function SimpleLineChart({ labels = [], series = [], height = 220
 
       <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
         {series.map((s) => (
-          <span key={s.name} className="inline-flex items-center gap-1.5 text-[12px] text-[#5f5f5f]">
+          <span key={s.name} className="inline-flex items-center gap-1.5 text-[12px] text-ink-2">
             <span className="inline-block h-[3px] w-4 rounded" style={{ background: s.color }} />
             {s.name}
           </span>
@@ -117,14 +118,14 @@ export function ChartTooltip({ leftRatio, title, rows }) {
   const flip = leftRatio > 0.7;
   return (
     <div
-      className="pointer-events-none absolute top-2 z-10 rounded-[6px] border border-[#EEEEEE] bg-white/95 px-3 py-2 text-[12px] shadow-md"
+      className="pointer-events-none absolute top-2 z-10 rounded-[6px] border border-line bg-surface/95 px-3 py-2 text-[12px] shadow-md"
       style={{ left: `${leftRatio * 100}%`, transform: flip ? 'translateX(calc(-100% - 10px))' : 'translateX(10px)' }}
     >
-      <p className="mb-1 font-medium text-[#212121]">{title}</p>
+      <p className="mb-1 font-medium text-ink">{title}</p>
       {rows.map((r) => (
-        <p key={r.name} className="flex items-center gap-1.5 whitespace-nowrap text-[#5f5f5f]">
+        <p key={r.name} className="flex items-center gap-1.5 whitespace-nowrap text-ink-2">
           <span className="inline-block size-2 rounded-full" style={{ background: r.color }} />
-          {r.name} <strong className="text-[#212121]">{Number(r.value).toLocaleString('ko-KR')}</strong>
+          {r.name} <strong className="text-ink">{Number(r.value).toLocaleString('ko-KR')}</strong>
         </p>
       ))}
     </div>

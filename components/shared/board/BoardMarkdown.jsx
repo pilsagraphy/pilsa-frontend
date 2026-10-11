@@ -27,7 +27,7 @@ const components = {
       target="_blank"
       rel="noopener noreferrer"
       // 본문에 붙여 넣은 긴 주소는 끊을 자리가 없어 break-all 로 (전역 keep-all 예외)
-      className="break-all text-[#212121] underline underline-offset-2 hover:text-black"
+      className="break-all text-ink underline underline-offset-2 hover:text-ink"
       {...props}
     >
       {children}
@@ -38,23 +38,23 @@ const components = {
   span: ({ node, style, ...props }) => <span style={pickColorStyle(style)} {...props} />,
 
   h1: ({ node, ...props }) => (
-    <h1 className="mt-6 mb-3 text-[22px] font-semibold text-[#212121] lg:text-[24px]" {...props} />
+    <h1 className="mt-6 mb-3 text-[22px] font-semibold text-ink lg:text-[24px]" {...props} />
   ),
   h2: ({ node, ...props }) => (
-    <h2 className="mt-6 mb-3 text-[20px] font-semibold text-[#212121] lg:text-[22px]" {...props} />
+    <h2 className="mt-6 mb-3 text-[20px] font-semibold text-ink lg:text-[22px]" {...props} />
   ),
   h3: ({ node, ...props }) => (
-    <h3 className="mt-5 mb-2 text-[18px] font-semibold text-[#212121] lg:text-[20px]" {...props} />
+    <h3 className="mt-5 mb-2 text-[18px] font-semibold text-ink lg:text-[20px]" {...props} />
   ),
   // H4~H6 — 편집기 제목 메뉴가 여섯 단계라 아래 세 단계도 본문보다 조금씩 크게 그린다
   h4: ({ node, ...props }) => (
-    <h4 className="mt-4 mb-2 text-[17px] font-semibold text-[#212121] lg:text-[18px]" {...props} />
+    <h4 className="mt-4 mb-2 text-[17px] font-semibold text-ink lg:text-[18px]" {...props} />
   ),
   h5: ({ node, ...props }) => (
-    <h5 className="mt-4 mb-2 text-[16px] font-semibold text-[#212121] lg:text-[17px]" {...props} />
+    <h5 className="mt-4 mb-2 text-[16px] font-semibold text-ink lg:text-[17px]" {...props} />
   ),
   h6: ({ node, ...props }) => (
-    <h6 className="mt-4 mb-2 text-[15px] font-semibold text-[#212121] lg:text-[16px]" {...props} />
+    <h6 className="mt-4 mb-2 text-[15px] font-semibold text-ink lg:text-[16px]" {...props} />
   ),
 
   p: ({ node, ...props }) => <p className="my-3 break-words" {...props} />,
@@ -64,18 +64,18 @@ const components = {
 
   blockquote: ({ node, ...props }) => (
     <blockquote
-      className="my-4 border-l-[3px] border-[#DEDEDE] pl-4 text-[#919191]"
+      className="my-4 border-l-[3px] border-line pl-4 text-ink-3"
       {...props}
     />
   ),
 
-  hr: () => <hr className="my-6 border-t border-[#DEDEDE]" />,
+  hr: () => <hr className="my-6 border-t border-line" />,
 
   // 인라인 코드(`code`)는 컴포넌트로 구분하지 않는다 —
   // react-markdown v9 부터 code 에 inline prop 이 오지 않아, 아래 래퍼의 CSS 선택자로 처리한다.
   pre: ({ node, ...props }) => (
     <pre
-      className="my-4 overflow-x-auto rounded-[4px] bg-[#f5f5f5] p-4 text-[14px] leading-[1.6] text-[#212121] [word-break:normal]"
+      className="my-4 overflow-x-auto rounded-[4px] bg-surface-2 p-4 text-[14px] leading-[1.6] text-ink [word-break:normal]"
       {...props}
     />
   ),
@@ -88,11 +88,11 @@ const components = {
   ),
   th: ({ node, ...props }) => (
     <th
-      className="border border-[#DEDEDE] bg-[#f5f5f5] px-3 py-2 text-left font-semibold"
+      className="border border-line bg-surface-2 px-3 py-2 text-left font-semibold"
       {...props}
     />
   ),
-  td: ({ node, ...props }) => <td className="border border-[#DEDEDE] px-3 py-2" {...props} />,
+  td: ({ node, ...props }) => <td className="border border-line px-3 py-2" {...props} />,
 };
 
 export default function BoardMarkdown({ content = '' }) {
@@ -100,8 +100,8 @@ export default function BoardMarkdown({ content = '' }) {
 
   return (
     <div
-      className="w-full break-words text-[15px] leading-[1.65] tracking-[-0.32px] text-[#212121] lg:text-[16px] lg:leading-[1.6]
-        [&_:not(pre)>code]:rounded-[3px] [&_:not(pre)>code]:bg-[#f5f5f5]
+      className="w-full break-words text-[15px] leading-[1.65] tracking-[-0.32px] text-ink lg:text-[16px] lg:leading-[1.6]
+        [&_:not(pre)>code]:rounded-[3px] [&_:not(pre)>code]:bg-surface-2
         [&_:not(pre)>code]:px-[5px] [&_:not(pre)>code]:py-[2px] [&_:not(pre)>code]:text-[14px]
         [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
     >

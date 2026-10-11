@@ -499,9 +499,9 @@ export default function ScheduleForm({
         checked={isAllDay}
         onCheckedChange={(next) => setIsAllDay(next === true)}
         disabled={!IS_TIME_SUPPORTED}
-        className="size-5 rounded-[2px] border-[#dedede] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
+        className="size-5 rounded-[2px] border-line data-[state=checked]:border-ink data-[state=checked]:bg-inverse"
       />
-      <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-black">종일</span>
+      <span className="text-[12px] leading-[1.6] tracking-[-0.24px] text-ink">종일</span>
     </label>
   );
 
@@ -527,8 +527,8 @@ export default function ScheduleForm({
   );
 
   return (
-    <form onSubmit={handleSubmit} className="w-full border-t border-[#DEDEDE] pt-6 md:pt-[30px]">
-      <h3 className="flex items-center gap-[16px] text-[16px] font-bold leading-[1.6] tracking-[-0.32px] text-[#454545]">
+    <form onSubmit={handleSubmit} className="w-full border-t border-line pt-6 md:pt-[30px]">
+      <h3 className="flex items-center gap-[16px] text-[16px] font-bold leading-[1.6] tracking-[-0.32px] text-ink-2">
         {isCreate ? (
           <Plus aria-hidden="true" strokeWidth={1.6} className="size-5 shrink-0" />
         ) : (
@@ -559,7 +559,7 @@ export default function ScheduleForm({
                 type="button"
                 onClick={saveAsTemplate}
                 disabled={templateBusy}
-                className="h-[40px] rounded-[4px] border border-[#b9b9b9] bg-white px-[12px] text-[13px] text-[#212121] hover:bg-[#f6f6f6] disabled:opacity-50"
+                className="h-[40px] rounded-[4px] border border-line-strong bg-surface px-[12px] text-[13px] text-ink hover:bg-surface-2 disabled:opacity-50"
               >
                 지금 내용을 템플릿으로 저장
               </button>
@@ -569,7 +569,7 @@ export default function ScheduleForm({
                     type="button"
                     onClick={overwriteTemplate}
                     disabled={templateBusy}
-                    className="h-[40px] rounded-[4px] border border-[#b9b9b9] bg-white px-[12px] text-[13px] text-[#212121] hover:bg-[#f6f6f6] disabled:opacity-50"
+                    className="h-[40px] rounded-[4px] border border-line-strong bg-surface px-[12px] text-[13px] text-ink hover:bg-surface-2 disabled:opacity-50"
                   >
                     템플릿 덮어쓰기
                   </button>
@@ -577,7 +577,7 @@ export default function ScheduleForm({
                     type="button"
                     onClick={removeTemplate}
                     disabled={templateBusy}
-                    className="h-[40px] rounded-[4px] border border-[#b9b9b9] bg-white px-[12px] text-[13px] text-[#ae0000] hover:bg-[#f6f6f6] disabled:opacity-50"
+                    className="h-[40px] rounded-[4px] border border-line-strong bg-surface px-[12px] text-[13px] text-danger hover:bg-surface-2 disabled:opacity-50"
                   >
                     템플릿 삭제
                   </button>
@@ -628,7 +628,7 @@ export default function ScheduleForm({
               { label: '종료', parts: end, setParts: setEnd, time: endTime, setTime: setEndTimeField, min: partsToInput(start) },
             ].map((row) => (
               <div key={row.label} className="flex flex-wrap items-center gap-[8px] sm:flex-nowrap">
-                <span className="w-[32px] shrink-0 text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">
+                <span className="w-[32px] shrink-0 text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-3">
                   {row.label}
                 </span>
                 {/* 높이 지정은 DateField 의 트리거 버튼(자식 div 바로 아래)에만 — [&_button] 처럼 자손 전체로 걸면
@@ -654,7 +654,7 @@ export default function ScheduleForm({
             </div>
 
             {!IS_TIME_SUPPORTED && (
-              <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191] md:ms-[2px]">
+              <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-ink-3 md:ms-[2px]">
                 시각은 아직 저장되지 않습니다. 모든 일정이 종일로 등록됩니다.
               </p>
             )}
@@ -679,7 +679,7 @@ export default function ScheduleForm({
                   ))}
                 </select>
                 {repeat === 'custom' && (
-                  <div className="flex items-center gap-[6px] text-[13px] text-[#454545]">
+                  <div className="flex items-center gap-[6px] text-[13px] text-ink-2">
                     <input
                       type="number"
                       min="1"
@@ -716,8 +716,8 @@ export default function ScheduleForm({
                       aria-pressed={repeatDays.has(day)}
                       className={`size-[32px] rounded-full text-[13px] transition-colors ${
                         repeatDays.has(day)
-                          ? 'bg-[#212121] text-white'
-                          : 'border border-[#dedede] text-[#454545] hover:bg-[#f6f6f6]'
+                          ? 'bg-inverse text-inverse-fg'
+                          : 'border border-line text-ink-2 hover:bg-surface-2'
                       }`}
                     >
                       {label}
@@ -727,7 +727,7 @@ export default function ScheduleForm({
               )}
 
               {repeat !== 'none' && rule.unit === 'month' && (
-                <div className="flex flex-wrap items-center gap-[12px] text-[13px] text-[#454545]">
+                <div className="flex flex-wrap items-center gap-[12px] text-[13px] text-ink-2">
                   {[
                     { value: 'date', label: `매월 ${toLocalDate(partsToInput(start)).getDate()}일` },
                     {
@@ -752,8 +752,8 @@ export default function ScheduleForm({
               )}
 
               {repeat !== 'none' && (
-                <div className="flex flex-wrap items-center gap-x-[12px] gap-y-[8px] text-[13px] text-[#454545]">
-                  <span className="w-[32px] shrink-0 text-[13px] leading-[1.6] tracking-[-0.26px] text-[#919191]">종료</span>
+                <div className="flex flex-wrap items-center gap-x-[12px] gap-y-[8px] text-[13px] text-ink-2">
+                  <span className="w-[32px] shrink-0 text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-3">종료</span>
                   <label className="flex cursor-pointer items-center gap-[6px]">
                     <input
                       type="radio"
@@ -799,7 +799,7 @@ export default function ScheduleForm({
               )}
 
               {repeat !== 'none' && (
-                <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
+                <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-ink-3">
                   {occurrences?.length
                     ? `${describeRule({ ...rule, days: repeatDays, monthMode, end: repeatEnd, start: toLocalDate(partsToInput(start)) })} — ${
                         occurrences.length > MAX_OCCURRENCES ? `${MAX_OCCURRENCES}개 초과` : `${occurrences.length}개`
@@ -813,10 +813,10 @@ export default function ScheduleForm({
 
         <ScheduleFormRow label="세부 사항">
           <div className="flex w-full flex-col gap-[8px]">
-            <div className="flex h-[42px] w-full items-center rounded-[6px] border border-[#dedede] bg-white focus-within:border-[#919191]">
+            <div className="flex h-[42px] w-full items-center rounded-[6px] border border-line bg-surface focus-within:border-ink-3">
               <BoardWriteToolbar editor={contentEditor} allowAttachment={false} />
             </div>
-            <div className="flex min-h-[160px] w-full items-stretch rounded-[6px] border border-[#dedede] bg-white focus-within:border-[#919191]">
+            <div className="flex min-h-[160px] w-full items-stretch rounded-[6px] border border-line bg-surface focus-within:border-ink-3">
               <BoardRichEditor
                 boardId={null}
                 value={content}
@@ -832,7 +832,7 @@ export default function ScheduleForm({
         <ScheduleFormRow label="이미지">
           {/* 다른 칸과 같은 테두리 상자 안에 썸네일 격자 + 맨 끝의 점선 '추가' 칸 (PM: 더 예쁘게, 2026-09-21) */}
           <div className="flex flex-col gap-[6px]">
-            <div className="flex flex-wrap gap-[10px] rounded-[6px] border border-[#dedede] bg-white p-[10px]">
+            <div className="flex flex-wrap gap-[10px] rounded-[6px] border border-line bg-surface p-[10px]">
               {existingImages.map((image) => {
                 const removed = removedImageIds.includes(image.imageId);
                 return (
@@ -844,7 +844,7 @@ export default function ScheduleForm({
                       className={`size-full rounded-[6px] object-cover ${removed ? 'opacity-30 grayscale' : ''}`}
                     />
                     {removed && (
-                      <span className="pointer-events-none absolute inset-x-0 bottom-[6px] text-center text-[11px] font-medium text-[#E53935]">
+                      <span className="pointer-events-none absolute inset-x-0 bottom-[6px] text-center text-[11px] font-medium text-alert">
                         삭제 예정
                       </span>
                     )}
@@ -853,7 +853,7 @@ export default function ScheduleForm({
                       onClick={() => toggleRemoveImage(image.imageId)}
                       aria-label={removed ? '삭제 취소' : '이미지 삭제'}
                       title={removed ? '삭제 취소' : '이미지 삭제'}
-                      className="absolute -right-[6px] -top-[6px] flex size-[22px] items-center justify-center rounded-full border border-white bg-[#212121] text-white shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
+                      className="absolute -right-[6px] -top-[6px] flex size-[22px] items-center justify-center rounded-full border border-white bg-inverse text-inverse-fg shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
                     >
                       {removed ? <Plus size={12} strokeWidth={2.5} /> : <X size={12} strokeWidth={2.5} />}
                     </button>
@@ -864,7 +864,7 @@ export default function ScheduleForm({
                 <div key={`new-${index}-${item.file.name}`} className="relative size-[88px]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={item.previewUrl} alt={item.file.name} className="size-full rounded-[6px] object-cover" />
-                  <span className="pointer-events-none absolute left-[6px] top-[6px] rounded-[4px] bg-[#212121]/80 px-[5px] py-[1px] text-[10px] font-medium text-white">
+                  <span className="pointer-events-none absolute left-[6px] top-[6px] rounded-[4px] bg-inverse/80 px-[5px] py-[1px] text-[10px] font-medium text-inverse-fg">
                     새 사진
                   </span>
                   <button
@@ -872,7 +872,7 @@ export default function ScheduleForm({
                     onClick={() => removeNewFile(index)}
                     aria-label="이미지 빼기"
                     title="이미지 빼기"
-                    className="absolute -right-[6px] -top-[6px] flex size-[22px] items-center justify-center rounded-full border border-white bg-[#212121] text-white shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
+                    className="absolute -right-[6px] -top-[6px] flex size-[22px] items-center justify-center rounded-full border border-white bg-inverse text-inverse-fg shadow-[0_1px_4px_rgba(0,0,0,0.25)]"
                   >
                     <X size={12} strokeWidth={2.5} />
                   </button>
@@ -883,7 +883,7 @@ export default function ScheduleForm({
               <button
                 type="button"
                 onClick={() => imageInputRef.current?.click()}
-                className="flex size-[88px] flex-col items-center justify-center gap-[4px] rounded-[6px] border border-dashed border-[#b9b9b9] text-[#919191] transition-colors hover:border-[#212121] hover:text-[#212121]"
+                className="flex size-[88px] flex-col items-center justify-center gap-[4px] rounded-[6px] border border-dashed border-line-strong text-ink-3 transition-colors hover:border-ink hover:text-ink"
               >
                 <ImagePlus size={20} strokeWidth={1.6} aria-hidden />
                 <span className="text-[12px] leading-none tracking-[-0.24px]">추가</span>
@@ -901,7 +901,7 @@ export default function ScheduleForm({
                 }}
               />
             </div>
-            <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-[#919191]">
+            <p className="text-[12px] leading-[1.6] tracking-[-0.24px] text-ink-3">
               jpg · png · gif · webp, 최대 {MAX_IMAGES}장. 세부 사항 아래에 표시됩니다.
             </p>
           </div>
@@ -914,9 +914,9 @@ export default function ScheduleForm({
           <Checkbox
             checked={notify}
             onCheckedChange={(next) => setNotify(next === true)}
-            className="size-5 rounded-[2px] border-[#dedede] data-[state=checked]:border-[#212121] data-[state=checked]:bg-[#212121]"
+            className="size-5 rounded-[2px] border-line data-[state=checked]:border-ink data-[state=checked]:bg-inverse"
           />
-          <span className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121]">
+          <span className="text-[14px] leading-[1.6] tracking-[-0.28px] text-ink">
             {isCreate ? '회원 전원에게 알림 보내기' : '(수정) 알림 보내기'}
           </span>
         </label>
@@ -927,14 +927,14 @@ export default function ScheduleForm({
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="h-[44px] w-[calc(50%-6px)] max-w-[180px] rounded-[4px] border border-[#b9b9b9] md:w-[140px] bg-white text-[14px] leading-[1.6] tracking-[-0.28px] text-[#212121] transition-colors hover:bg-[#f6f6f6] disabled:opacity-50"
+          className="h-[44px] w-[calc(50%-6px)] max-w-[180px] rounded-[4px] border border-line-strong md:w-[140px] bg-surface text-[14px] leading-[1.6] tracking-[-0.28px] text-ink transition-colors hover:bg-surface-2 disabled:opacity-50"
         >
           취소
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="h-[44px] w-[calc(50%-6px)] max-w-[180px] rounded-[4px] bg-[#212121] md:w-[140px] text-[14px] leading-[1.6] tracking-[-0.28px] text-white transition-colors hover:bg-[#424242] disabled:opacity-50"
+          className="h-[44px] w-[calc(50%-6px)] max-w-[180px] rounded-[4px] bg-inverse md:w-[140px] text-[14px] leading-[1.6] tracking-[-0.28px] text-inverse-fg transition-colors hover:bg-inverse-2 disabled:opacity-50"
         >
           확인
         </button>

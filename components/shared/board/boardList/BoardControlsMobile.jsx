@@ -19,7 +19,7 @@ const SORT_OPTIONS = [
 
 // 34px 높이 · 테두리 · 라운드 4 · 13px (피그마 Button(W))
 const triggerClass =
-  'flex h-[34px] w-[88px] shrink-0 items-center justify-between gap-1 rounded-[4px] border border-[#B9B9B9] bg-white px-[10px] text-[13px] leading-none text-[#212121] [&>span]:truncate';
+  'flex h-[34px] w-[88px] shrink-0 items-center justify-between gap-1 rounded-[4px] border border-line-strong bg-surface px-[10px] text-[13px] leading-none text-ink [&>span]:truncate';
 // 카테고리 이름은 '취업/진로'처럼 정렬보다 길다 — 칸을 조금 더 준다 (80px 에서는 '카테...' 로 잘렸다)
 const categoryTriggerClass = triggerClass.replace('w-[88px]', 'w-[112px]');
 
@@ -75,14 +75,14 @@ export default function BoardControlsMobile({
       )}
 
       {/* 검색 */}
-      <div className="flex h-[34px] min-w-0 flex-1 items-center gap-2 rounded-[4px] border border-[#B9B9B9] bg-white px-[16px]">
+      <div className="flex h-[34px] min-w-0 flex-1 items-center gap-2 rounded-[4px] border border-line-strong bg-surface px-[16px]">
         <input
           value={searchInput}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="검색어를 입력하세요"
-          className="min-w-0 flex-1 bg-transparent text-[13px] leading-none text-[#212121] outline-none placeholder:text-[#9E9E9E]"
+          className="min-w-0 flex-1 bg-transparent text-[13px] leading-none text-ink outline-none placeholder:text-ink-3"
         />
-        <Search size={18} className="shrink-0 text-[#212121]" />
+        <Search size={18} className="shrink-0 text-ink" />
       </div>
     </div>
   );

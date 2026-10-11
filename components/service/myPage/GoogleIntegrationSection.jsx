@@ -107,8 +107,8 @@ export default function GoogleIntegrationSection() {
 
   if (loading) {
     return (
-      <div className="rounded-[8px] border border-black/10 px-4 py-3">
-        <p className="text-[13px] tracking-[-0.02em] text-[#B9B9B9]">불러오는 중…</p>
+      <div className="rounded-[8px] border border-line px-4 py-3">
+        <p className="text-[13px] tracking-[-0.02em] text-ink-4">불러오는 중…</p>
       </div>
     );
   }
@@ -117,20 +117,20 @@ export default function GoogleIntegrationSection() {
   const hasSyncFailure = calendarOn && calendar?.failedCount > 0;
 
   return (
-    <div className="rounded-[8px] border border-black/10">
+    <div className="rounded-[8px] border border-line">
       {/* 계정 연결 */}
-      <div className="flex items-center justify-between gap-3 border-b border-[#F0F0F0] px-4 py-3">
+      <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
         <div className="min-w-0">
-          <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.02em] text-[#212121]">
+          <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
             구글 계정
           </p>
-          <p className="mt-0.5 truncate text-[12px] leading-[1.5] tracking-[-0.02em] text-[#919191]">
+          <p className="mt-0.5 truncate text-[12px] leading-[1.5] tracking-[-0.02em] text-ink-3">
             {account?.linked ? account.googleEmail : '연결하면 구글로 로그인할 수 있어요'}
           </p>
           {account?.linked && calendar?.linked && account.googleEmail !== calendar.googleEmail && (
             // 로그인용과 캘린더용 구글 계정이 다를 수 있다(각각 따로 동의를 받는다).
             // 어느 캘린더에 일정이 들어가는지 헷갈리지 않도록 다를 때만 짚어 준다.
-            <p className="mt-0.5 truncate text-[12px] leading-[1.5] tracking-[-0.02em] text-[#B9B9B9]">
+            <p className="mt-0.5 truncate text-[12px] leading-[1.5] tracking-[-0.02em] text-ink-4">
               동아리 일정은 {calendar.googleEmail} 캘린더에 반영해 드려요
             </p>
           )}
@@ -144,7 +144,7 @@ export default function GoogleIntegrationSection() {
               ? handleUnlinkAccount
               : () => goToConsent(getGoogleLinkUrl, '구글 계정 연결을 시작하지 못했어요')
           }
-          className="shrink-0 rounded-[6px] border border-[#E0E0E0] px-3 py-1.5 text-[12px] font-medium text-[#454545] transition hover:border-[#BDBDBD] hover:text-[#212121] disabled:opacity-50"
+          className="shrink-0 rounded-[6px] border border-line px-3 py-1.5 text-[12px] font-medium text-ink-2 transition hover:border-line-strong hover:text-ink disabled:opacity-50"
         >
           {account?.linked ? '해제' : '연결'}
         </button>
@@ -153,10 +153,10 @@ export default function GoogleIntegrationSection() {
       {/* 캘린더 자동 등록 */}
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div className="min-w-0">
-          <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.02em] text-[#212121]">
+          <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.02em] text-ink">
             내 구글 캘린더에 일정 자동 등록
           </p>
-          <p className="mt-0.5 text-[12px] leading-[1.5] tracking-[-0.02em] text-[#919191] [word-break:keep-all]">
+          <p className="mt-0.5 text-[12px] leading-[1.5] tracking-[-0.02em] text-ink-3 [word-break:keep-all]">
             {/* 건수는 보여 주지 않는다 — 사용자가 확인할 것은 '켜져 있는지' 이지 몇 건이 들어갔는지가 아니고,
                 숫자가 보이면 오히려 "왜 2건뿐이지" 하고 헤아리게 된다.
                 문구는 무엇이 어디로 가는지 주어를 밝혀 쓴다 (알림 토글의 '알려드려요' 와 같은 말투) */}
@@ -174,11 +174,11 @@ export default function GoogleIntegrationSection() {
           disabled={busy}
           onClick={handleCalendarToggle}
           className={`relative h-[26px] w-[46px] shrink-0 rounded-full transition-colors duration-200 disabled:opacity-50 ${
-            calendarOn ? 'bg-[#212121]' : 'bg-[#D6D6D6]'
+            calendarOn ? 'bg-inverse' : 'bg-line'
           }`}
         >
           <span
-            className={`absolute left-[3px] top-[3px] size-5 rounded-full bg-white shadow transition-transform duration-200 ${
+            className={`absolute left-[3px] top-[3px] size-5 rounded-full bg-surface shadow transition-transform duration-200 ${
               calendarOn ? 'translate-x-[20px]' : 'translate-x-0'
             }`}
           />

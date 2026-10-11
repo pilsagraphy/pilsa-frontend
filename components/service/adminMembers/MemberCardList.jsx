@@ -32,7 +32,7 @@ function Pill({ filled = false, children }) {
   return (
     <span
       className={`inline-flex items-center rounded-[13px] border px-2 py-[1px] text-[13px] leading-[1.5] tracking-[-0.02em] ${
-        filled ? 'border-transparent bg-[#454545] text-white' : 'border-[#454545] text-[#454545]'
+        filled ? 'border-transparent bg-inverse-2 text-inverse-fg' : 'border-ink-2 text-ink-2'
       }`}
     >
       {children}
@@ -71,7 +71,7 @@ function EditablePill({ label, value, options, filled = false, onChange }) {
       <SelectTrigger
         aria-label={`${label} 선택`}
         className={`h-auto w-fit justify-center rounded-[13px] border px-2 py-0 text-[13px] leading-[1.5] shadow-none [&>svg]:hidden ${
-          filled ? 'border-transparent bg-[#454545] text-white' : 'border-[#454545] text-[#454545]'
+          filled ? 'border-transparent bg-inverse-2 text-inverse-fg' : 'border-ink-2 text-ink-2'
         }`}
       >
         <SelectValue />
@@ -107,7 +107,7 @@ function EditableText({ label, value, onChange, className = '' }) {
           setIsEditing(true);
         }}
         aria-label={`${label} 수정 (현재 ${value || '없음'})`}
-        className={`rounded-[4px] px-1 text-left hover:bg-[#F5F5F5] ${className}`}
+        className={`rounded-[4px] px-1 text-left hover:bg-surface-2 ${className}`}
       >
         {value || '-'}
       </button>
@@ -125,7 +125,7 @@ function EditableText({ label, value, onChange, className = '' }) {
         if (e.key === 'Enter') commit();
         if (e.key === 'Escape') setIsEditing(false);
       }}
-      className="w-full min-w-0 rounded-[4px] border border-[#212121] bg-white px-2 py-[2px] text-[14px] leading-[1.6] text-[#212121] outline-none"
+      className="w-full min-w-0 rounded-[4px] border border-ink bg-surface px-2 py-[2px] text-[14px] leading-[1.6] text-ink outline-none"
     />
   );
 }
@@ -133,10 +133,10 @@ function EditableText({ label, value, onChange, className = '' }) {
 function DetailRow({ label, children }) {
   return (
     <div className="flex items-center justify-between gap-3 py-[3px]">
-      <span className="shrink-0 text-[12px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
+      <span className="shrink-0 text-[12px] leading-[1.6] tracking-[-0.02em] text-ink-3">
         {label}
       </span>
-      <span className="min-w-0 flex-1 truncate text-right text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
+      <span className="min-w-0 flex-1 truncate text-right text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-2">
         {children}
       </span>
     </div>
@@ -150,7 +150,7 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
   const change = (field) => (next) => onFieldChange?.(member.memberId, field, next);
 
   return (
-    <div className="border-b border-[#B9B9B9] px-1 py-[14px]">
+    <div className="border-b border-line-strong px-1 py-[14px]">
       {/* 첫 줄: 선택 · 이름 · ID */}
       <div className="flex items-start gap-[10px]">
         <span className="pt-[3px]">
@@ -168,7 +168,7 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
               label="이름"
               value={member.name}
               onChange={change('name')}
-              className="text-[16px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121]"
+              className="text-[16px] font-semibold leading-[1.5] tracking-[-0.02em] text-ink"
             />
             <EditablePill
               label="재학상태"
@@ -186,12 +186,12 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
             />
             {/* 정지 기간은 있을 때만 — 없는 사람에게 '-' 를 보여 줄 이유가 없다 */}
             {member.suspendedPeriod && (
-              <span className="rounded-[13px] bg-[#FDECEC] px-2 py-[1px] text-[13px] leading-[1.5] text-[#C62828]">
+              <span className="rounded-[13px] bg-danger-bg px-2 py-[1px] text-[13px] leading-[1.5] text-danger">
                 {member.suspendedPeriod}
               </span>
             )}
           </div>
-          <p className="mt-[2px] truncate pl-1 text-[13px] leading-[1.6] text-[#919191]">
+          <p className="mt-[2px] truncate pl-1 text-[13px] leading-[1.6] text-ink-3">
             <Link href={ROUTES.ADMIN_MEMBER_DETAIL(member.memberId)} className="underline underline-offset-2">
               {member.loginId}
             </Link>
@@ -203,14 +203,14 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
           type="button"
           onClick={() => setOpen((prev) => !prev)}
           aria-expanded={open}
-          className="shrink-0 rounded-[4px] border border-[#B9B9B9] px-[10px] py-[3px] text-[13px] leading-[1.6] text-[#454545]"
+          className="shrink-0 rounded-[4px] border border-line-strong px-[10px] py-[3px] text-[13px] leading-[1.6] text-ink-2"
         >
           {open ? '접기' : '자세히'}
         </button>
       </div>
 
       {open && (
-        <div className="mt-[10px] rounded-[6px] bg-[#FAFAFA] px-[12px] py-[8px]">
+        <div className="mt-[10px] rounded-[6px] bg-surface-2 px-[12px] py-[8px]">
           <DetailRow label="전화번호">
             <EditableText label="전화번호" value={member.phone} onChange={change('phone')} />
           </DetailRow>
@@ -237,7 +237,7 @@ function MemberCard({ member, selected, onSelectChange, onFieldChange, onWithdra
             disabled={!canWithdraw || isAdminRole}
             title={canWithdraw ? undefined : '관리 레벨 3만 사용할 수 있습니다.'}
             onClick={() => onWithdraw?.(member)}
-            className="mt-[8px] w-full rounded-[4px] border border-[#B9B9B9] py-[6px] text-[14px] leading-[1.6] text-[#454545] disabled:border-[#E0E0E0] disabled:text-[#C4C4C4]"
+            className="mt-[8px] w-full rounded-[4px] border border-line-strong py-[6px] text-[14px] leading-[1.6] text-ink-2 disabled:border-line disabled:text-ink-4"
           >
             강제 탈퇴
           </button>
@@ -260,7 +260,7 @@ export default function MemberCardList({
     return (
       <p
         suppressHydrationWarning
-        className="border-b border-[#B9B9B9] py-10 text-center text-[14px] text-[#919191]"
+        className="border-b border-line-strong py-10 text-center text-[14px] text-ink-3"
       >
         {emptyMessage}
       </p>

@@ -109,10 +109,10 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-[400px] rounded-[12px] p-6" hideCloseButton>
         <DialogHeader className="text-left">
-          <DialogTitle className="text-[18px] tracking-[-0.02em] text-black">
+          <DialogTitle className="text-[18px] tracking-[-0.02em] text-ink">
             비밀번호 재설정
           </DialogTitle>
-          <DialogDescription className="text-[13px] tracking-[-0.02em] text-[#757575]">
+          <DialogDescription className="text-[13px] tracking-[-0.02em] text-ink-3">
             현재 비밀번호 확인 후 새 비밀번호로 변경돼요.
           </DialogDescription>
         </DialogHeader>
@@ -122,7 +122,7 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
             <div key={key} className="flex flex-col gap-1">
               <label
                 htmlFor={`pw-${key}`}
-                className="text-[13px] font-medium tracking-[-0.02em] text-[#454545]"
+                className="text-[13px] font-medium tracking-[-0.02em] text-ink-2"
               >
                 {label}
               </label>
@@ -135,11 +135,11 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
                 autoComplete="new-password"
                 spellCheck={false}
                 className={`h-[48px] rounded-[6px] text-[15px] ${
-                  errors[key] ? 'border-[#D32F2F]' : 'border-[#c4c4c4]'
+                  errors[key] ? 'border-danger' : 'border-line-strong'
                 }`}
               />
               {errors[key] && (
-                <p className="text-[12px] tracking-[-0.02em] text-[#D32F2F]">{errors[key]}</p>
+                <p className="text-[12px] tracking-[-0.02em] text-danger">{errors[key]}</p>
               )}
             </div>
           ))}
@@ -148,7 +148,7 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
             <Button
               type="submit"
               disabled={loading}
-              className="h-[46px] w-full rounded-[6px] bg-[#212121] text-[15px] font-semibold text-white hover:bg-black disabled:opacity-40"
+              className="h-[46px] w-full rounded-[6px] bg-inverse text-[15px] font-semibold text-inverse-fg hover:bg-inverse-hover disabled:opacity-40"
             >
               {loading ? '변경 중...' : '비밀번호 변경'}
             </Button>
@@ -157,7 +157,7 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
               variant="ghost"
               disabled={loading}
               onClick={() => handleOpenChange(false)}
-              className="h-[42px] w-full rounded-[6px] text-[14px] text-[#919191] hover:text-[#454545]"
+              className="h-[42px] w-full rounded-[6px] text-[14px] text-ink-3 hover:text-ink-2"
             >
               취소
             </Button>

@@ -99,30 +99,30 @@ export default function WithdrawModal({ open, onOpenChange }) {
         {step === 1 ? (
           <>
             <DialogHeader className="text-left">
-              <DialogTitle className="text-[18px] tracking-[-0.02em] text-black">
+              <DialogTitle className="text-[18px] tracking-[-0.02em] text-ink">
                 회원 탈퇴
               </DialogTitle>
-              <DialogDescription className="text-[13px] tracking-[-0.02em] text-[#757575]">
+              <DialogDescription className="text-[13px] tracking-[-0.02em] text-ink-3">
                 탈퇴하기 전에 아래 내용을 꼭 확인해주세요.
               </DialogDescription>
             </DialogHeader>
 
-            <ul className="flex flex-col gap-3 rounded-[8px] bg-[#FAFAFA] p-4">
+            <ul className="flex flex-col gap-3 rounded-[8px] bg-surface-2 p-4">
               {NOTICE_ITEMS.map(({ icon: Icon, text }) => (
                 <li key={text} className="flex items-start gap-2.5">
-                  <Icon size={16} className="mt-0.5 shrink-0 text-[#757575]" />
-                  <span className="text-[13px] leading-[1.6] tracking-[-0.02em] text-[#454545] [word-break:keep-all]">
+                  <Icon size={16} className="mt-0.5 shrink-0 text-ink-3" />
+                  <span className="text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-2 [word-break:keep-all]">
                     {text}
                   </span>
                 </li>
               ))}
             </ul>
 
-            <label className="flex cursor-pointer select-none items-center gap-2 text-[13px] tracking-[-0.02em] text-[#212121]">
+            <label className="flex cursor-pointer select-none items-center gap-2 text-[13px] tracking-[-0.02em] text-ink">
               <Checkbox
                 checked={agreed}
                 onCheckedChange={(checked) => setAgreed(checked === true)}
-                className="border-[#c4c4c4] data-[state=checked]:bg-[#212121] data-[state=checked]:border-[#212121]"
+                className="border-line-strong data-[state=checked]:bg-inverse data-[state=checked]:border-ink"
               />
               위 내용을 모두 확인했으며 이에 동의합니다.
             </label>
@@ -132,7 +132,7 @@ export default function WithdrawModal({ open, onOpenChange }) {
                 type="button"
                 disabled={!agreed}
                 onClick={() => setStep(2)}
-                className="h-[46px] w-full rounded-[6px] bg-[#212121] text-[15px] font-semibold text-white hover:bg-black disabled:opacity-40"
+                className="h-[46px] w-full rounded-[6px] bg-inverse text-[15px] font-semibold text-inverse-fg hover:bg-inverse-hover disabled:opacity-40"
               >
                 계속하기
               </Button>
@@ -140,7 +140,7 @@ export default function WithdrawModal({ open, onOpenChange }) {
                 type="button"
                 variant="ghost"
                 onClick={() => handleOpenChange(false)}
-                className="h-[42px] w-full rounded-[6px] text-[14px] text-[#919191] hover:text-[#454545]"
+                className="h-[42px] w-full rounded-[6px] text-[14px] text-ink-3 hover:text-ink-2"
               >
                 취소
               </Button>
@@ -149,10 +149,10 @@ export default function WithdrawModal({ open, onOpenChange }) {
         ) : step === 2 ? (
           <>
             <DialogHeader className="text-left">
-              <DialogTitle className="text-[18px] tracking-[-0.02em] text-black">
+              <DialogTitle className="text-[18px] tracking-[-0.02em] text-ink">
                 본인 확인
               </DialogTitle>
-              <DialogDescription className="text-[13px] tracking-[-0.02em] text-[#757575]">
+              <DialogDescription className="text-[13px] tracking-[-0.02em] text-ink-3">
                 안전한 탈퇴 처리를 위해 현재 비밀번호를 입력해주세요.
               </DialogDescription>
             </DialogHeader>
@@ -168,14 +168,14 @@ export default function WithdrawModal({ open, onOpenChange }) {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
                 spellCheck={false}
-                className="h-[48px] rounded-[6px] border-[#c4c4c4] text-[15px]"
+                className="h-[48px] rounded-[6px] border-line-strong text-[15px]"
               />
 
               <div className="flex flex-col gap-2">
                 <Button
                   type="submit"
                   disabled={!password || submitting}
-                  className="h-[46px] w-full rounded-[6px] bg-[#212121] text-[15px] font-semibold text-white hover:bg-black disabled:opacity-40"
+                  className="h-[46px] w-full rounded-[6px] bg-inverse text-[15px] font-semibold text-inverse-fg hover:bg-inverse-hover disabled:opacity-40"
                 >
                   {submitting ? '처리 중...' : '탈퇴하기'}
                 </Button>
@@ -184,7 +184,7 @@ export default function WithdrawModal({ open, onOpenChange }) {
                   variant="ghost"
                   disabled={submitting}
                   onClick={() => setStep(1)}
-                  className="h-[42px] w-full rounded-[6px] text-[14px] text-[#919191] hover:text-[#454545]"
+                  className="h-[42px] w-full rounded-[6px] text-[14px] text-ink-3 hover:text-ink-2"
                 >
                   이전으로
                 </Button>
@@ -195,12 +195,12 @@ export default function WithdrawModal({ open, onOpenChange }) {
           <>
             {/* 3단계: 완료 안내 */}
             <div className="flex flex-col items-center gap-3 py-4 text-center">
-              <CircleCheck size={44} strokeWidth={1.5} className="text-[#212121]" />
+              <CircleCheck size={44} strokeWidth={1.5} className="text-ink" />
               <DialogHeader>
-                <DialogTitle className="text-center text-[18px] tracking-[-0.02em] text-black">
+                <DialogTitle className="text-center text-[18px] tracking-[-0.02em] text-ink">
                   탈퇴가 완료되었습니다
                 </DialogTitle>
-                <DialogDescription className="text-center text-[13px] leading-[1.6] tracking-[-0.02em] text-[#757575] [word-break:keep-all]">
+                <DialogDescription className="text-center text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-3 [word-break:keep-all]">
                   그동안 필사그래피와 함께해주셔서 감사합니다.
                   <br />
                   언제든 다시 만나요!
@@ -211,7 +211,7 @@ export default function WithdrawModal({ open, onOpenChange }) {
             <Button
               type="button"
               onClick={goHome}
-              className="h-[46px] w-full rounded-[6px] bg-[#212121] text-[15px] font-semibold text-white hover:bg-black"
+              className="h-[46px] w-full rounded-[6px] bg-inverse text-[15px] font-semibold text-inverse-fg hover:bg-inverse-hover"
             >
               홈으로 돌아가기
             </Button>

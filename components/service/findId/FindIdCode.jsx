@@ -78,12 +78,12 @@ export default function FindIdCode({ email, onNext, onPrev }) {
               disabled={loading}
               className={`h-[52px] text-[16px] ${
                 error
-                  ? 'border-[#f44336] text-[#f44336] focus-visible:ring-0 focus-visible:border-[#f44336]'
+                  ? 'border-alert text-alert focus-visible:ring-0 focus-visible:border-alert'
                   : ''
               }`}
             />
             {error && (
-              <p className="text-[#f44336] text-[12px] tracking-[-0.24px] leading-[1.4]">{error}</p>
+              <p className="text-alert text-[12px] tracking-[-0.24px] leading-[1.4]">{error}</p>
             )}
           </div>
         </div>
@@ -92,7 +92,7 @@ export default function FindIdCode({ email, onNext, onPrev }) {
       <Button
         type="submit"
         disabled={loading}
-        className="h-[52px] w-full bg-[#212121] hover:bg-[#424242] text-white text-[16px] transition-colors"
+        className="h-[52px] w-full bg-inverse hover:bg-inverse-2 text-inverse-fg text-[16px] transition-colors"
       >
         {loading ? '처리 중...' : '인증'}
       </Button>

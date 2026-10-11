@@ -5,6 +5,7 @@ import IosInstallGuide from '@/components/shared/IosInstallGuide';
 import DialogHost from '@/components/common/DialogHost';
 import LightboxHost from '@/components/common/LightboxHost';
 import AppLaunchBeacon from '@/components/common/AppLaunchBeacon';
+import ThemeBootstrap from '@/components/common/ThemeBootstrap';
 
 export const metadata = {
   // 브라우저 탭·북마크·공유 카드에 그대로 나가는 이름이라 앱·스토어 표기와 같은 값을 쓴다
@@ -41,8 +42,18 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ko">
+    // suppressHydrationWarning: 아래 스크립트가 React 보다 먼저 <html> 에 dark 클래스를 붙이므로 class 불일치 경고를 끈다
+    <html lang="ko" suppressHydrationWarning>
       <head>
+        {/* 화면 모드(다크모드) — 첫 페인트 전에 저장값(localStorage pilsaTheme: system|light|dark)대로 dark 클래스를 붙여 깜빡임을 막는다.
+            규칙은 stores/useThemeStore.js 의 resolveTheme/applyTheme 와 같아야 한다 (PM 2026-10-11) */}
+        <script
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html:
+              "(function(){try{var t=localStorage.getItem('pilsaTheme');var d=t==='dark'||((t!=='light')&&window.matchMedia('(prefers-color-scheme: dark)').matches);var r=document.documentElement;if(d){r.classList.add('dark');}r.style.colorScheme=d?'dark':'light';var m=document.querySelector('meta[name=theme-color]');if(m){m.setAttribute('content',d?'#121212':'#ffffff');}}catch(e){}})();",
+          }}
+        />
         {/* 사이트 글꼴. 컴포넌트들이 font-['Pretendard'] 를 쓰는데 정작 불러오는 곳이 없어 시스템 글꼴로 떨어졌다.
             동적 서브셋이라 페이지에 나온 글자만 받는다. 폰트는 CDN 밖 요청이 아니라 CSP 걱정이 없다 */}
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
@@ -51,7 +62,9 @@ export default function RootLayout({ children }) {
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css"
         />
       </head>
-      <body className="min-h-screen bg-white font-sans text-neutral-900 flex flex-col">
+      <body className="min-h-screen bg-page font-sans text-ink flex flex-col">
+        {/* 화면 모드 동기화 — 저장값을 스토어에 올리고 '시스템 설정'이면 OS 변화를 따라간다 */}
+        <ThemeBootstrap />
         {/* 휴대폰인데 크롬 '데스크톱 사이트' 모드로 PC 화면이 그려질 때만 뜬다 (설치형 앱에서는 끌 방법이 없어 안내가 필요하다) */}
         <DesktopSiteNotice />
         {/* 아이폰으로 사이트 링크를 열고 들어온 사람에게 '홈 화면에 추가' 설치법 안내 (설치형 앱에서는 안 뜬다) */}

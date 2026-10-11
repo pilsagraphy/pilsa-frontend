@@ -24,17 +24,17 @@ export default function Intro() {
   }, []);
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-surface px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
       {/* 타이틀 영역 */}
-      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-[#DEDEDE] pb-6 md:gap-[12px] md:pb-[40px]">
+      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-line pb-6 md:gap-[12px] md:pb-[40px]">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.02em] text-[#212121]">동아리 소개</h2>
+          <h2 className="font-['Pretendard',sans-serif] font-semibold text-[24px] leading-[1.5] tracking-[-0.02em] text-ink">동아리 소개</h2>
           <div className="flex gap-2">
             <AdminPageLink href={ROUTES.ADMIN_INTRO} label="소개 관리" />
             <AdminPageLink href={ROUTES.ADMIN_ORGANIZATION} label="조직도 편집" />
           </div>
         </div>
-        <p className="font-['Pretendard',sans-serif] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
+        <p className="font-['Pretendard',sans-serif] text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-3">
           경희대학교 국제캠퍼스 필사 동아리, 필사그래피를 소개합니다
         </p>
       </header>
@@ -42,7 +42,7 @@ export default function Intro() {
       {/* 인트로 컨텐츠 영역 */}
       <section className="flex flex-col gap-[51px]">
         {sections == null && !error && <AppLoading />}
-        {error && <p className="text-[14px] text-[#919191]">{error}</p>}
+        {error && <p className="text-[14px] text-ink-3">{error}</p>}
         {sections?.map((data) => (
           <IntroContent key={data.sectionId} title={data.title} content={data.content} />
         ))}

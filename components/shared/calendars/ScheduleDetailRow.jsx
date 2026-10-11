@@ -6,8 +6,8 @@
 export default function ScheduleDetailRow({ label, children }) {
   return (
     <div className="flex items-start text-[14px] leading-[1.6] tracking-[-0.32px] md:text-[16px]">
-      <dt className="w-[72px] shrink-0 font-semibold text-[#212121] md:w-[82px]">{label}</dt>
-      <dd className="min-w-0 flex-1 break-keep text-[#454545]">{children}</dd>
+      <dt className="w-[72px] shrink-0 font-semibold text-ink md:w-[82px]">{label}</dt>
+      <dd className="min-w-0 flex-1 break-keep text-ink-2">{children}</dd>
     </div>
   );
 }

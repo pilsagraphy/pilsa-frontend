@@ -8,20 +8,20 @@ import React, { useEffect, useRef } from 'react';
 function StatusBadge({ status }) {
   if (status === '이력') {
     return (
-      <span className="shrink-0 rounded-[11px] border border-[#b9b9b9] bg-white px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-[#757575]">
+      <span className="shrink-0 rounded-[11px] border border-line-strong bg-surface px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3">
         이력
       </span>
     );
   }
   if (status === '주의') {
     return (
-      <span className="shrink-0 rounded-[11px] bg-[#919191] px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-white">
+      <span className="shrink-0 rounded-[11px] bg-ink-3 px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-white">
         주의
       </span>
     );
   }
   return (
-    <span className="shrink-0 rounded-[11px] border border-[#ae0000] bg-white px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-[#ae0000]">
+    <span className="shrink-0 rounded-[11px] border border-danger bg-surface px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-danger">
       {status || '정지'}
     </span>
   );
@@ -111,15 +111,15 @@ export default function MemberList({ member, selected = false, dimmed = false, o
   };
 
   const label = `${member.name} (${member.loginId})`;
-  const textColor = selected ? 'text-[#212121]' : dimmed ? 'text-[#b9b9b9]' : 'text-[#454545]';
+  const textColor = selected ? 'text-ink' : dimmed ? 'text-ink-4' : 'text-ink-2';
 
   return (
     <div
       onClick={handleClick}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
-      className={`relative h-[45px] w-full cursor-pointer border-b border-[#b9b9b9] font-['Pretendard',sans-serif] ${
-        selected ? 'border-l-2 border-l-[#212121] bg-[#f6f6f6]' : ''
+      className={`relative h-[45px] w-full cursor-pointer border-b border-line-strong font-['Pretendard',sans-serif] ${
+        selected ? 'border-l-2 border-l-ink bg-surface-2' : ''
       }`}
     >
       {/* 회원 정보 텍스트 (왼쪽 정렬). 스크롤바 없이 자동 스크롤만 (overflow-hidden).
@@ -133,7 +133,7 @@ export default function MemberList({ member, selected = false, dimmed = false, o
       </div>
 
       {/* 정지 / 주의 뱃지: 우측 고정 + 뒤에 흰 배경으로 글자를 가림 (항상 불투명, 위치 고정) */}
-      <div className="absolute inset-y-0 right-0 flex items-center bg-white pl-[10px] pr-[6px]">
+      <div className="absolute inset-y-0 right-0 flex items-center bg-surface pl-[10px] pr-[6px]">
         <StatusBadge status={member.currentStatus} />
       </div>
     </div>

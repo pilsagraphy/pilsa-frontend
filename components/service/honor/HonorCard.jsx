@@ -43,7 +43,7 @@ const HonorCard = ({ data, rankType }) => {
       {/* 프레임 + 이미지 영역 */}
       <div className="relative w-full aspect-[3/4]">
         {/* 이미지 영역 (액자 안쪽) */}
-        <div className={`absolute ${style.insert} overflow-hidden bg-gray-200`}>
+        <div className={`absolute ${style.insert} overflow-hidden bg-line`}>
           {!isAnonymous && imageUrl && (
             <Image src={imageUrl} alt={data.displayName} fill className="object-cover" />
           )}

@@ -30,7 +30,7 @@ export default function SelectAllCheckbox({ checked, disabled = false, onChecked
       {!checked && (
         <Check
           aria-hidden
-          className="pointer-events-none absolute inset-0 m-auto size-4 text-[#dedede]"
+          className="pointer-events-none absolute inset-0 m-auto size-4 text-ink-4"
         />
       )}
     </span>

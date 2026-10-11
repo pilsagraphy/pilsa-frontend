@@ -32,7 +32,7 @@ export default function ModerationNote({ state, moderation, className = '' }) {
 
   return (
     <p
-      className={`rounded-[4px] bg-[#F5F5F5] px-[10px] py-[6px] text-[13px] leading-[1.6] tracking-[-0.26px] text-[#454545] [word-break:keep-all] ${className}`}
+      className={`rounded-[4px] bg-surface-2 px-[10px] py-[6px] text-[13px] leading-[1.6] tracking-[-0.26px] text-ink-2 [word-break:keep-all] ${className}`}
     >
       {text}
     </p>

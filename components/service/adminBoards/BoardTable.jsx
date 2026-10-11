@@ -46,7 +46,7 @@ export default function BoardTable({
   return (
     <>
       {/* 폰: 카드. 표는 가로 915px 이 필요해 좌우로 밀어야 했다 */}
-      <div className="border-t border-[#212121] xl:hidden">
+      <div className="border-t border-ink xl:hidden">
         <BoardCardList
           boards={boards ?? []}
           onEdit={onEdit}
@@ -59,33 +59,33 @@ export default function BoardTable({
       </div>
 
       {/* 태블릿 이상: 기존 표 */}
-      <div className="hidden overflow-x-auto border-t border-[#212121] xl:block">
+      <div className="hidden overflow-x-auto border-t border-ink xl:block">
       <Table className="w-full min-w-[915px]">
         <TableHeader>
           {/* 열 너비는 시안의 열 제목 중심 좌표에서 역산했다.
               인접한 중심의 중간을 열 경계로 보면 28 / 18 / 14 / 15 / 13 / 12 % 가 나온다. */}
-          <TableRow className="h-[46px] border-b border-[#919191] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
-            <TableHead className="w-[28%] whitespace-nowrap text-center text-[#919191]">
+          <TableRow className="h-[46px] border-b border-ink-3 text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-3">
+            <TableHead className="w-[28%] whitespace-nowrap text-center text-ink-3">
               게시판 명
             </TableHead>
-            <TableHead className="w-[18%] whitespace-nowrap text-center text-[#919191]">
+            <TableHead className="w-[18%] whitespace-nowrap text-center text-ink-3">
               게시글 수
             </TableHead>
-            <TableHead className="w-[14%] whitespace-nowrap text-center text-[#919191]">
+            <TableHead className="w-[14%] whitespace-nowrap text-center text-ink-3">
               열람 권한
             </TableHead>
-            <TableHead className="w-[15%] whitespace-nowrap text-center text-[#919191]">
+            <TableHead className="w-[15%] whitespace-nowrap text-center text-ink-3">
               작성 권한
             </TableHead>
-            <TableHead className="w-[13%] whitespace-nowrap text-center text-[#919191]">
+            <TableHead className="w-[13%] whitespace-nowrap text-center text-ink-3">
               카테고리
             </TableHead>
-            <TableHead className="w-[13%] whitespace-nowrap text-center text-[#919191]">
+            <TableHead className="w-[13%] whitespace-nowrap text-center text-ink-3">
               관리
             </TableHead>
             {/* 순서 변경 열 - 제목 대신 디자인대로 아이콘만 표시 (헤더는 드래그 대상이 아니라 장식) */}
             <TableHead className="w-[12%] text-center">
-              <span aria-hidden className="inline-flex text-[#dedede]">
+              <span aria-hidden className="inline-flex text-ink-4">
                 <Menu className="size-5" />
               </span>
             </TableHead>
@@ -94,7 +94,7 @@ export default function BoardTable({
 
         <TableBody>
           {emptyMessage ? (
-            <TableRow className="h-[46px] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
+            <TableRow className="h-[46px] text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-2">
               <TableCell colSpan={COLUMN_COUNT} className="text-center text-muted-foreground">
                 {emptyMessage}
               </TableCell>

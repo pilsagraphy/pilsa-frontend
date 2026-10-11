@@ -32,7 +32,7 @@ function Row({ label, categoryName, title, date, href, empty, borderClass }) {
     <div className="flex h-[56px] items-center justify-between gap-3 px-[10px] lg:gap-4">
       <div className="flex min-w-0 flex-1 items-center gap-3 lg:gap-[20px]">
         {/* whitespace-nowrap: '이전 글' 이 공백에서 두 줄로 쪼개지지 않게 한다 */}
-        <span className="w-[52px] shrink-0 whitespace-nowrap text-center text-[14px] tracking-[-0.02em] text-[#454545] lg:w-[80px] lg:text-[16px]">
+        <span className="w-[52px] shrink-0 whitespace-nowrap text-center text-[14px] tracking-[-0.02em] text-ink-2 lg:w-[80px] lg:text-[16px]">
           {label}
         </span>
 
@@ -41,7 +41,7 @@ function Row({ label, categoryName, title, date, href, empty, borderClass }) {
           <span
             className={cn(
               'min-w-0 truncate text-[14px] tracking-[-0.02em] lg:text-[16px]',
-              empty ? 'text-[#C4C4C4]' : 'text-[#454545]'
+              empty ? 'text-ink-4' : 'text-ink-2'
             )}
           >
             {title}
@@ -50,7 +50,7 @@ function Row({ label, categoryName, title, date, href, empty, borderClass }) {
       </div>
 
       {date ? (
-        <span className="shrink-0 text-[13px] tracking-[-0.02em] text-[#919191] lg:text-[16px]">
+        <span className="shrink-0 text-[13px] tracking-[-0.02em] text-ink-3 lg:text-[16px]">
           {date}
         </span>
       ) : null}
@@ -60,7 +60,7 @@ function Row({ label, categoryName, title, date, href, empty, borderClass }) {
   // 이동 경로가 있으면 줄 전체를 클릭 가능한 링크로
   if (href) {
     return (
-      <Link href={href} className={cn('block transition-colors hover:bg-[#F7F7F7]', borderClass)}>
+      <Link href={href} className={cn('block transition-colors hover:bg-surface-2', borderClass)}>
         {inner}
       </Link>
     );
@@ -83,8 +83,8 @@ export default function PostPrevNext({
   return (
     <div className="mx-auto w-full max-w-[920px]">
       {/* 헤더: 게시판 이름 + 목록으로 돌아가는 화살표 */}
-      <div className="flex h-[56px] items-center justify-between border-t border-t-[#919191] px-[10px]">
-        <span className="truncate text-[14px] tracking-[-0.02em] text-[#919191] lg:text-[16px]">
+      <div className="flex h-[56px] items-center justify-between border-t border-t-ink-3 px-[10px]">
+        <span className="truncate text-[14px] tracking-[-0.02em] text-ink-3 lg:text-[16px]">
           {boardLabel}
         </span>
 
@@ -93,7 +93,7 @@ export default function PostPrevNext({
           onClick={() => router.push(listPath)}
           aria-label="목록으로 이동"
           title="목록으로"
-          className="shrink-0 text-[#919191] transition-colors hover:text-[#212121]"
+          className="shrink-0 text-ink-3 transition-colors hover:text-ink"
         >
           <svg width="50" height="10" viewBox="0 0 50 10" fill="none" aria-hidden="true">
             <path
@@ -115,7 +115,7 @@ export default function PostPrevNext({
         date={prev ? formatDotDate(prev.created) : null}
         href={prevHref}
         empty={!prev}
-        borderClass="border-t border-t-[#B9B9B9]"
+        borderClass="border-t border-t-line-strong"
       />
 
       {/* 현재 글 */}
@@ -124,7 +124,7 @@ export default function PostPrevNext({
         categoryName={current?.categoryName}
         title={current?.title ?? ''}
         date={formatDotDate(current?.date)}
-        borderClass="border-t border-t-[#B9B9B9]"
+        borderClass="border-t border-t-line-strong"
       />
 
       {/* 다음 글 */}
@@ -135,7 +135,7 @@ export default function PostPrevNext({
         date={next ? formatDotDate(next.created) : null}
         href={nextHref}
         empty={!next}
-        borderClass="border-y border-t-[#B9B9B9] border-b-[#919191]"
+        borderClass="border-y border-t-line-strong border-b-ink-3"
       />
     </div>
   );

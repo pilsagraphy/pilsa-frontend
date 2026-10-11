@@ -24,7 +24,7 @@ export default function Header() {
   const openMobile = useSidebarStore((s) => s.openMobile);
 
   const iconButton =
-    'grid size-10 place-items-center rounded-full text-[#212121] transition hover:bg-[#F5F5F5]';
+    'grid size-10 place-items-center rounded-full text-ink transition hover:bg-surface-2';
 
   return (
     <header className="w-full h-16 tablet:h-40">

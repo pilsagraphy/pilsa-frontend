@@ -34,7 +34,7 @@ export default function PostRow({ post, boardId, board, listQuery = '' }) {
   return (
     <TableRow
       onClick={handleRowClick}
-      className="h-12 cursor-pointer border-b border-[#B9B9B9] text-[14px] leading-[1.6] tracking-[-0.02em] text-[#454545] hover:bg-muted/50 lg:h-14 lg:text-[16px]"
+      className="h-12 cursor-pointer border-b border-line-strong text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-2 hover:bg-muted/50 lg:h-14 lg:text-[16px]"
     >
       {/* 1. 게시글 번호 — 중요글도 번호를 그대로 보여준다 ('중요' 표시는 제목 옆 배지가 담당).
              카테고리 게시판은 모바일에서 번호 숨김 */}
@@ -48,7 +48,7 @@ export default function PostRow({ post, boardId, board, listQuery = '' }) {
           {badgeLabel && <CategoryBadge>{badgeLabel}</CategoryBadge>}
           <span className="truncate">{post.title}</span>
           {post.hasAttachment && (
-            <span className="flex-shrink-0 text-[#919191]">
+            <span className="flex-shrink-0 text-ink-3">
               <Paperclip size={16} />
             </span>
           )}

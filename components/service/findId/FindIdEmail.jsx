@@ -81,7 +81,7 @@ export default function FindIdEmail({ onNext }) {
       <Button
         type="submit"
         disabled={loading}
-        className="h-[52px] w-full bg-[#212121] hover:bg-[#424242] text-white text-[16px] transition-colors"
+        className="h-[52px] w-full bg-inverse hover:bg-inverse-2 text-inverse-fg text-[16px] transition-colors"
       >
         {loading ? '메일 발송 중...' : '다음'}
       </Button>

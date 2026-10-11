@@ -36,12 +36,12 @@ export function useActiveSemester(labels) {
 export default function SemesterJump({ semesters = [], value, onJump, className = '' }) {
   if (semesters.length === 0) return null;
   return (
-    <label className={`flex items-center gap-2 text-[13px] text-[#919191] ${className}`}>
+    <label className={`flex items-center gap-2 text-[13px] text-ink-3 ${className}`}>
       <span className="shrink-0">학기</span>
       <select
         value={value ?? semesters[0]}
         onChange={(e) => onJump(e.target.value)}
-        className="h-[34px] rounded-[6px] border border-[#dedede] bg-white px-2 pr-7 text-[13px] text-[#212121] outline-none focus:border-[#919191]"
+        className="h-[34px] rounded-[6px] border border-line bg-surface px-2 pr-7 text-[13px] text-ink outline-none focus:border-ink-3"
       >
         {semesters.map((label) => (
           <option key={label} value={label}>

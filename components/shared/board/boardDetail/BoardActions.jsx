@@ -175,8 +175,8 @@ export default function BoardActions({
             aria-pressed={liked}
             className={`flex h-[40px] w-[100px] items-center justify-center gap-[6px] rounded-[4px] border text-[14px] tracking-[-0.28px] transition-colors disabled:opacity-60 ${
               liked
-                ? 'border-[#212121] bg-[#212121] text-white'
-                : 'border-[#b9b9b9] bg-white text-[#212121]'
+                ? 'border-ink bg-inverse text-inverse-fg'
+                : 'border-line-strong bg-surface text-ink'
             }`}
           >
             <ThumbsUp width={18} height={18} strokeWidth={1.5} aria-hidden="true" />
@@ -189,7 +189,7 @@ export default function BoardActions({
                 <button
                   type="button"
                   onClick={handleEdit}
-                  className="h-[40px] w-[100px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] tracking-[-0.28px] text-[#212121]"
+                  className="h-[40px] w-[100px] rounded-[4px] border border-line-strong bg-surface text-[14px] tracking-[-0.28px] text-ink"
                 >
                   수정하기
                 </button>
@@ -199,7 +199,7 @@ export default function BoardActions({
                   type="button"
                   disabled={deleteLoading}
                   onClick={handleDelete}
-                  className="h-[40px] w-[100px] rounded-[4px] bg-[#212121] text-[14px] tracking-[-0.28px] text-white disabled:opacity-60"
+                  className="h-[40px] w-[100px] rounded-[4px] bg-inverse text-[14px] tracking-[-0.28px] text-inverse-fg disabled:opacity-60"
                 >
                   {deleteLoading ? '삭제 중...' : '삭제하기'}
                 </button>
@@ -210,7 +210,7 @@ export default function BoardActions({
                   targetType="post"
                   targetId={postId}
                   iconOnly
-                  className="flex h-[40px] w-[40px] items-center justify-center rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] disabled:opacity-60"
+                  className="flex h-[40px] w-[40px] items-center justify-center rounded-[4px] border border-line-strong bg-surface text-ink disabled:opacity-60"
                 />
               )}
             </div>
@@ -218,7 +218,7 @@ export default function BoardActions({
             <button
               type="button"
               onClick={() => setReportOpen(true)}
-              className="h-[40px] w-[100px] rounded-[4px] border border-[#b9b9b9] bg-white text-[14px] tracking-[-0.28px] text-[#212121]"
+              className="h-[40px] w-[100px] rounded-[4px] border border-line-strong bg-surface text-[14px] tracking-[-0.28px] text-ink"
             >
               신고하기
             </button>
@@ -241,8 +241,8 @@ export default function BoardActions({
           aria-pressed={liked}
           className={`flex h-12 w-full items-center justify-center gap-[6px] rounded-[4px] border text-[15px] tracking-[-0.32px] transition-colors disabled:opacity-60 lg:h-[52px] lg:w-[135px] lg:text-[16px] ${
             liked
-              ? 'border-[#212121] bg-[#212121] text-white hover:bg-black'
-              : 'border-[#b9b9b9] bg-white text-[#212121] hover:bg-[#f5f5f5]'
+              ? 'border-ink bg-inverse text-inverse-fg hover:bg-inverse-hover'
+              : 'border-line-strong bg-surface text-ink hover:bg-surface-2'
           }`}
         >
           {/* 색은 버튼의 text 색을 따라간다 (lucide 아이콘 기본 stroke 가 currentColor) */}
@@ -259,7 +259,7 @@ export default function BoardActions({
           {canEdit && (
             <button
               type="button"
-              className="h-12 flex-1 rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] transition-colors hover:bg-[#f5f5f5] lg:h-[52px] lg:w-[135px] lg:flex-none"
+              className="h-12 flex-1 rounded-[4px] border border-line-strong bg-surface text-ink transition-colors hover:bg-surface-2 lg:h-[52px] lg:w-[135px] lg:flex-none"
               onClick={handleEdit}
             >
               수정
@@ -269,7 +269,7 @@ export default function BoardActions({
             <button
               type="button"
               disabled={deleteLoading}
-              className="h-12 flex-1 rounded-[4px] bg-[#212121] text-white transition-colors hover:bg-black disabled:opacity-60 lg:h-[52px] lg:w-[135px] lg:flex-none"
+              className="h-12 flex-1 rounded-[4px] bg-inverse text-inverse-fg transition-colors hover:bg-inverse-hover disabled:opacity-60 lg:h-[52px] lg:w-[135px] lg:flex-none"
               onClick={handleDelete}
             >
               {deleteLoading ? '삭제 중...' : '삭제'}
@@ -280,7 +280,7 @@ export default function BoardActions({
             <MuteToggle
               targetType="post"
               targetId={postId}
-              className="flex h-12 shrink-0 items-center gap-[6px] rounded-[4px] border border-[#b9b9b9] bg-white px-4 text-[14px] text-[#212121] transition-colors hover:bg-[#f5f5f5] disabled:opacity-60 lg:h-[52px]"
+              className="flex h-12 shrink-0 items-center gap-[6px] rounded-[4px] border border-line-strong bg-surface px-4 text-[14px] text-ink transition-colors hover:bg-surface-2 disabled:opacity-60 lg:h-[52px]"
             />
           )}
         </div>
@@ -288,7 +288,7 @@ export default function BoardActions({
         <button
           type="button"
           onClick={() => setReportOpen(true)}
-          className="h-12 w-full rounded-[4px] border border-[#b9b9b9] bg-white text-[#212121] transition-colors hover:bg-[#f5f5f5] lg:h-[52px] lg:w-[135px]"
+          className="h-12 w-full rounded-[4px] border border-line-strong bg-surface text-ink transition-colors hover:bg-surface-2 lg:h-[52px] lg:w-[135px]"
         >
           신고
         </button>

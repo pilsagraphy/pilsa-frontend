@@ -42,16 +42,16 @@ export default function MemberTable({
   return (
     <>
       {/* 폰: 한 명을 카드 하나로. 열 12개짜리 표를 가로로 밀어 보는 건 쓸 수 없었다 */}
-      <div className="border-t border-[#212121] xl:hidden">
+      <div className="border-t border-ink xl:hidden">
         {!emptyMessage && (
-          <div className="flex items-center gap-[10px] border-b border-[#B9B9B9] px-1 py-[10px]">
+          <div className="flex items-center gap-[10px] border-b border-line-strong px-1 py-[10px]">
             <SelectAllCheckbox
               checked={allSelected}
               disabled={!members?.length}
               onCheckedChange={onSelectAll}
               label="회원 전체 선택"
             />
-            <span className="text-[13px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
+            <span className="text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-3">
               {allSelectedLabel}
               {selectedIds.length > 0 && ` · ${selectedIds.length}명 선택됨`}
             </span>
@@ -69,10 +69,10 @@ export default function MemberTable({
       </div>
 
       {/* 태블릿 이상: 지금까지의 표 그대로 */}
-      <div className="hidden overflow-x-auto border-t border-[#212121] xl:block">
+      <div className="hidden overflow-x-auto border-t border-ink xl:block">
       <Table className="w-full min-w-[915px]">
         <TableHeader>
-          <TableRow className="h-[46px] border-b border-[#919191] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
+          <TableRow className="h-[46px] border-b border-ink-3 text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-3">
             <TableHead className="w-[64px] text-center">
               <SelectAllCheckbox
                 checked={allSelected}
@@ -81,23 +81,23 @@ export default function MemberTable({
                 label="회원 전체 선택"
               />
             </TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">ID</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">이름</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">전화번호</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">학번</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">Email</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">재학상태</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">권한</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">게시글</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">댓글</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">정지 기간</TableHead>
-            <TableHead className="whitespace-nowrap text-center text-[#919191]">관리</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">ID</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">이름</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">전화번호</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">학번</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">Email</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">재학상태</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">권한</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">게시글</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">댓글</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">정지 기간</TableHead>
+            <TableHead className="whitespace-nowrap text-center text-ink-3">관리</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
           {emptyMessage ? (
-            <TableRow className="h-[58px] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#454545]">
+            <TableRow className="h-[58px] text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-2">
               <TableCell
                 colSpan={COLUMN_COUNT}
                 suppressHydrationWarning

@@ -27,14 +27,14 @@ export function AdminSelectAllBar({
   selectedCount = 0,
 }) {
   return (
-    <div className="flex items-center gap-[10px] border-b border-[#B9B9B9] px-1 py-[10px]">
+    <div className="flex items-center gap-[10px] border-b border-line-strong px-1 py-[10px]">
       <SelectAllCheckbox
         checked={checked}
         disabled={disabled}
         onCheckedChange={onCheckedChange}
         label={label}
       />
-      <span className="text-[13px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
+      <span className="text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-3">
         {checked ? '전체 해제' : '전체 선택'}
         {selectedCount > 0 && ` · ${selectedCount}개 선택됨`}
       </span>
@@ -48,7 +48,7 @@ export function AdminCardList({ emptyMessage = '', children }) {
     return (
       <p
         suppressHydrationWarning
-        className="border-b border-[#B9B9B9] py-10 text-center text-[14px] text-[#919191]"
+        className="border-b border-line-strong py-10 text-center text-[14px] text-ink-3"
       >
         {emptyMessage}
       </p>
@@ -61,7 +61,7 @@ export function AdminCardList({ emptyMessage = '', children }) {
 export function AdminStatePill({ label }) {
   if (!label) return null;
   return (
-    <span className="shrink-0 rounded-full border border-[#B9B9B9] px-[9px] py-[1px] text-[12px] leading-[1.5] text-[#454545]">
+    <span className="shrink-0 rounded-full border border-line-strong px-[9px] py-[1px] text-[12px] leading-[1.5] text-ink-2">
       {label}
     </span>
   );
@@ -92,10 +92,10 @@ export function AdminCard({
   );
 
   const titleClass =
-    'line-clamp-2 text-[15px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121]';
+    'line-clamp-2 text-[15px] font-semibold leading-[1.5] tracking-[-0.02em] text-ink';
 
   return (
-    <div className="border-b border-[#B9B9B9] px-1 py-[12px]">
+    <div className="border-b border-line-strong px-1 py-[12px]">
       <div className="flex items-start gap-[10px]">
         {onSelectChange && (
           <span className="pt-[2px]">
@@ -111,7 +111,7 @@ export function AdminCard({
               type="button"
               onClick={() => setOpen((prev) => !prev)}
               aria-expanded={open}
-              className="mt-[6px] text-[12px] leading-[1.6] text-[#919191] underline underline-offset-2"
+              className="mt-[6px] text-[12px] leading-[1.6] text-ink-3 underline underline-offset-2"
             >
               {open ? '접기' : '자세히'}
             </button>
@@ -126,15 +126,15 @@ export function AdminCard({
       </div>
 
       {open && rows.length > 0 && (
-        <dl className="mt-[8px] flex flex-col gap-[2px] rounded-[6px] bg-[#FAFAFA] px-[12px] py-[8px]">
+        <dl className="mt-[8px] flex flex-col gap-[2px] rounded-[6px] bg-surface-2 px-[12px] py-[8px]">
           {rows.map((row) => (
             <div key={row.label} className="flex items-start justify-between gap-3">
-              <dt className="shrink-0 text-[12px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
+              <dt className="shrink-0 text-[12px] leading-[1.6] tracking-[-0.02em] text-ink-3">
                 {row.label}
               </dt>
               <dd
                 suppressHydrationWarning
-                className="min-w-0 flex-1 truncate text-right text-[13px] leading-[1.6] tracking-[-0.02em] text-[#454545]"
+                className="min-w-0 flex-1 truncate text-right text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-2"
               >
                 {row.value}
               </dd>

@@ -10,7 +10,7 @@ export default function AdminPageLink({ href, label = '관리 페이지', classN
   return (
     <Link
       href={href}
-      className={`inline-flex h-[34px] shrink-0 items-center gap-1 rounded-[6px] border border-[#212121] bg-white px-3 text-[13px] text-[#212121] transition-colors hover:bg-[#f5f5f5] ${className}`}
+      className={`inline-flex h-[34px] shrink-0 items-center gap-1 rounded-[6px] border border-ink bg-surface px-3 text-[13px] text-ink transition-colors hover:bg-surface-2 ${className}`}
     >
       <span aria-hidden>⚙</span>
       {label}

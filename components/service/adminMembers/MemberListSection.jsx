@@ -218,7 +218,7 @@ export default function MemberListSection({ title = '회원 목록' }) {
             variant="outline"
             disabled={isLoading || selectedIds.length !== 1}
             onClick={handleSuspendClick}
-            className={`${actionButtonClass} border-[#212121] text-[#212121]`}
+            className={`${actionButtonClass} border-ink text-ink`}
           >
             회원 정지
           </Button>
@@ -230,7 +230,7 @@ export default function MemberListSection({ title = '회원 목록' }) {
               clearError();
               setBanOpen(true);
             }}
-            className={`${actionButtonClass} bg-[#212121] text-white`}
+            className={`${actionButtonClass} bg-inverse text-inverse-fg`}
           >
             영구 차단
           </Button>
@@ -239,7 +239,7 @@ export default function MemberListSection({ title = '회원 목록' }) {
 
       {/* 목록이 남아 있는 상태에서의 조치 실패는 목록을 지우지 않고 위에 문구로 알린다 */}
       {error && !isListEmpty && (
-        <p className="mb-2 text-[14px] leading-[1.6] tracking-[-0.02em] text-[#e02d2d]">{error}</p>
+        <p className="mb-2 text-[14px] leading-[1.6] tracking-[-0.02em] text-danger">{error}</p>
       )}
 
       <MemberTable

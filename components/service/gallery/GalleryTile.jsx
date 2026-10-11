@@ -89,7 +89,7 @@ const GalleryTile = ({ photo, activeSrc = null, onActivate, gallery = [], index 
 
   return (
     <div
-      className="group relative size-full cursor-zoom-in select-none overflow-hidden rounded-[4px] bg-[#D9D9D9] [-webkit-touch-callout:none]"
+      className="group relative size-full cursor-zoom-in select-none overflow-hidden rounded-[4px] bg-line [-webkit-touch-callout:none]"
       onClick={handleClick}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}

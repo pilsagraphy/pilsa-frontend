@@ -51,7 +51,7 @@ export default function ReportTabs({ value, onChange }) {
       role="tablist"
       aria-label="신고 대상 종류"
       onKeyDown={handleKeyDown}
-      className="flex items-center border-b border-[#212121]"
+      className="flex items-center border-b border-ink"
     >
       {REPORT_TABS.map((tab, index) => {
         const selected = tab.value === value;
@@ -59,7 +59,7 @@ export default function ReportTabs({ value, onChange }) {
         return (
           <Fragment key={tab.value}>
             {/* 탭 사이 세로 구분선 */}
-            {index > 0 && <span aria-hidden className="h-[19px] w-px bg-[#b9b9b9]" />}
+            {index > 0 && <span aria-hidden className="h-[19px] w-px bg-line-strong" />}
             <button
               type="button"
               role="tab"
@@ -69,7 +69,7 @@ export default function ReportTabs({ value, onChange }) {
               tabIndex={selected ? 0 : -1}
               onClick={() => onChange?.(tab.value)}
               className={`px-[10px] py-[8px] text-[18px] leading-[1.6] tracking-[-0.36px] transition-colors ${
-                selected ? 'font-bold text-[#212121]' : 'text-[#b9b9b9] hover:text-[#919191]'
+                selected ? 'font-bold text-ink' : 'text-ink-4 hover:text-ink-3'
               }`}
             >
               {tab.label}

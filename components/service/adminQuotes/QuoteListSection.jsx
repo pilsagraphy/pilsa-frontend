@@ -160,37 +160,37 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
   const isSearching = Boolean(keyword || searchDate);
 
   const inputClass =
-    'h-[44px] w-full rounded-[4px] border border-[#b9b9b9] px-3 text-[15px] text-[#212121] outline-none focus:border-[#212121]';
+    'h-[44px] w-full rounded-[4px] border border-line-strong px-3 text-[15px] text-ink outline-none focus:border-ink';
 
   return (
     <div className={listSectionClass}>
       <h2 className={listTitleClass}>{title}</h2>
 
       {/* 설명은 왼쪽, '지금 노출 중' 은 오른쪽. 폭이 모자라면 설명이 왼쪽 위, 노출 수가 오른쪽 아래로 내려간다 (PM, 2026-09-26) */}
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-1 text-[14px] leading-[1.6] text-[#757575]">
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-x-6 gap-y-1 text-[14px] leading-[1.6] text-ink-3">
         <p className="min-w-0">
           메인·마이페이지 인사말 옆에 뜨는 문장입니다.
           {showingCount === 0 && (
-            <span className="block text-[#d93025]">오늘 보여 줄 문장이 없어 인사말 옆이 비어 있습니다.</span>
+            <span className="block text-danger">오늘 보여 줄 문장이 없어 인사말 옆이 비어 있습니다.</span>
           )}
         </p>
-        <strong className="ml-auto shrink-0 font-semibold text-[#212121]">지금 노출 중인 문장: {showingCount}개</strong>
+        <strong className="ml-auto shrink-0 font-semibold text-ink">지금 노출 중인 문장: {showingCount}개</strong>
       </div>
 
       {/* 등록 · 수정 폼 */}
       <form
         onSubmit={handleSubmit}
-        className="mb-6 flex flex-col gap-3 rounded-[8px] border border-black/10 p-4"
+        className="mb-6 flex flex-col gap-3 rounded-[8px] border border-line p-4"
       >
         <div className="flex items-center justify-between">
-          <span className="text-[14px] font-semibold text-[#212121]">
+          <span className="text-[14px] font-semibold text-ink">
             {isEdit ? '문장 수정' : '새 문장 등록'}
           </span>
           {isEdit && (
             <button
               type="button"
               onClick={() => setForm(freshForm())}
-              className="text-[13px] text-[#919191] underline hover:text-[#212121]"
+              className="text-[13px] text-ink-3 underline hover:text-ink"
             >
               취소하기
             </button>
@@ -203,13 +203,13 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
           placeholder="문장을 입력하세요."
           rows={2}
           maxLength={500}
-          className="w-full resize-none rounded-[4px] border border-[#b9b9b9] px-3 py-2 text-[15px] leading-[1.6] text-[#212121] outline-none focus:border-[#212121]"
+          className="w-full resize-none rounded-[4px] border border-line-strong px-3 py-2 text-[15px] leading-[1.6] text-ink outline-none focus:border-ink"
         />
 
         {/* 시작일 · 종료일 각각 날짜 칸. 누르면 일정 등록과 같은 달력이 뜨고 하루를 고르면 바로 닫힌다 */}
         <div className="grid grid-cols-2 gap-3 sm:flex sm:items-end">
           <label className="flex min-w-0 flex-col gap-1 sm:flex-1">
-            <span className="text-[12px] text-[#919191]">노출 시작일</span>
+            <span className="text-[12px] text-ink-3">노출 시작일</span>
             <DateField
               value={form.startDate}
               ariaLabel="노출 시작일"
@@ -224,7 +224,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
             />
           </label>
           <label className="flex min-w-0 flex-col gap-1 sm:flex-1">
-            <span className="text-[12px] text-[#919191]">노출 종료일</span>
+            <span className="text-[12px] text-ink-3">노출 종료일</span>
             <DateField
               value={form.endDate}
               min={form.startDate}
@@ -235,7 +235,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
           <Button
             type="submit"
             disabled={saving}
-            className="col-span-2 h-[44px] rounded-[4px] bg-[#212121] px-6 text-[15px] text-white sm:w-auto"
+            className="col-span-2 h-[44px] rounded-[4px] bg-inverse px-6 text-[15px] text-inverse-fg sm:w-auto"
           >
             {saving ? '저장 중...' : isEdit ? '수정' : '등록'}
           </Button>
@@ -258,7 +258,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
             />
           </div>
         </div>
-        <span className="text-[13px] text-[#919191] sm:text-right">
+        <span className="text-[13px] text-ink-3 sm:text-right">
           {isSearching ? `검색 결과 ${filtered.length}개` : `전체 ${quotes.length}개`}
           {isSearching && (
             <button
@@ -267,7 +267,7 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
                 setKeyword('');
                 setSearchDate('');
               }}
-              className="ml-2 underline hover:text-[#212121]"
+              className="ml-2 underline hover:text-ink"
             >
               지우기
             </button>
@@ -276,22 +276,22 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
       </div>
 
       {/* 목록 — 배지·기간·버튼을 양끝에 나눠 두어 무게가 왼쪽으로만 쏠리지 않게 */}
-      <div className="flex flex-col border-t border-[#B9B9B9]">
+      <div className="flex flex-col border-t border-line-strong">
         {loading ? (
-          <p className="py-10 text-center text-[14px] text-[#919191]">불러오는 중...</p>
+          <p className="py-10 text-center text-[14px] text-ink-3">불러오는 중...</p>
         ) : error ? (
           <div className="flex flex-col items-center gap-2 py-10">
-            <p className="text-[14px] text-[#919191]">{error}</p>
+            <p className="text-[14px] text-ink-3">{error}</p>
             <button
               type="button"
               onClick={load}
-              className="text-[14px] text-[#919191] underline hover:text-[#212121]"
+              className="text-[14px] text-ink-3 underline hover:text-ink"
             >
               다시 시도
             </button>
           </div>
         ) : filtered.length === 0 ? (
-          <p className="py-10 text-center text-[14px] text-[#919191]">
+          <p className="py-10 text-center text-[14px] text-ink-3">
             {quotes.length === 0 ? '등록된 문장이 없습니다.' : '조건에 맞는 문장이 없습니다.'}
           </p>
         ) : (
@@ -303,23 +303,23 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
             return (
               <div
                 key={quote.quoteId}
-                className="flex flex-col gap-2 border-b border-[#B9B9B9] py-3 sm:flex-row sm:items-center sm:gap-4"
+                className="flex flex-col gap-2 border-b border-line-strong py-3 sm:flex-row sm:items-center sm:gap-4"
               >
                 {/* 폰 첫 줄: 배지 왼쪽 · 기간 오른쪽. 넓은 화면에서는 각자 제자리(contents) */}
                 <div className="flex items-center justify-between sm:contents">
                   <span
                     className={`inline-flex h-[24px] w-[64px] shrink-0 items-center justify-center rounded-full text-[12px] ${
-                      live ? 'bg-[#212121] text-white' : 'border border-[#B9B9B9] text-[#919191]'
+                      live ? 'bg-inverse text-inverse-fg' : 'border border-line-strong text-ink-3'
                     }`}
                   >
                     {live ? '노출 중' : '대기'}
                   </span>
-                  <span className="shrink-0 text-[13px] text-[#919191] sm:order-3">
+                  <span className="shrink-0 text-[13px] text-ink-3 sm:order-3">
                     {start} ~ {end}
                   </span>
                 </div>
 
-                <p className="min-w-0 flex-1 text-[15px] leading-[1.6] text-[#212121] sm:order-2">
+                <p className="min-w-0 flex-1 text-[15px] leading-[1.6] text-ink sm:order-2">
                   {quote.content}
                 </p>
 
@@ -327,14 +327,14 @@ export default function QuoteListSection({ title = '이 주의 문장' }) {
                   <button
                     type="button"
                     onClick={() => startEdit(quote)}
-                    className="rounded-[4px] border border-[#b9b9b9] px-3 py-1 text-[13px] text-[#212121] hover:bg-[#F5F5F5]"
+                    className="rounded-[4px] border border-line-strong px-3 py-1 text-[13px] text-ink hover:bg-surface-2"
                   >
                     수정
                   </button>
                   <button
                     type="button"
                     onClick={() => handleDelete(quote)}
-                    className="rounded-[4px] border border-[#b9b9b9] px-3 py-1 text-[13px] text-[#212121] hover:bg-[#F5F5F5]"
+                    className="rounded-[4px] border border-line-strong px-3 py-1 text-[13px] text-ink hover:bg-surface-2"
                   >
                     삭제
                   </button>

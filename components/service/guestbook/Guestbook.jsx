@@ -143,26 +143,26 @@ export default function Guestbook({ boardTheme = 'cream' }) {
   };
 
   return (
-    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-white px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
-      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-[#DEDEDE] pb-6 md:gap-[12px] md:pb-[40px]">
+    <div className="mx-auto flex w-full max-w-[1016px] flex-col gap-8 bg-surface px-4 py-4 sm:px-6 sm:py-7 md:gap-[40px] md:p-10">
+      <header className="flex flex-col gap-[8px] border-b-[1.5px] border-line pb-6 md:gap-[12px] md:pb-[40px]">
         <div className="flex flex-wrap items-end justify-between gap-3">
-          <h2 className="font-['Pretendard',sans-serif] text-[24px] font-semibold leading-[1.5] tracking-[-0.02em] text-[#212121]">
+          <h2 className="font-['Pretendard',sans-serif] text-[24px] font-semibold leading-[1.5] tracking-[-0.02em] text-ink">
             방명록
-            {boardTheme !== 'cream' && <span className="ml-2 text-[13px] font-normal text-[#919191]">바탕 테스트 · {boardTheme}</span>}
+            {boardTheme !== 'cream' && <span className="ml-2 text-[13px] font-normal text-ink-3">바탕 테스트 · {boardTheme}</span>}
           </h2>
           <div className="flex flex-wrap items-center gap-2">
             <SemesterJump semesters={semesters} value={activeSemester} onJump={jump} />
             <AdminPageLink href={ROUTES.ADMIN_GUESTBOOK} label="방명록 관리" />
           </div>
         </div>
-        <p className="font-['Pretendard',sans-serif] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#919191]">
+        <p className="font-['Pretendard',sans-serif] text-[16px] leading-[1.6] tracking-[-0.02em] text-ink-3">
           다녀간 흔적을 한 줄 남겨 주세요
         </p>
       </header>
 
       {/* 메모판 — 점 격자 종이. 학기 구간이 위에서 아래로 이어진다 */}
       <section
-        className="flex flex-col gap-10 rounded-[8px] border px-2 py-6 sm:px-4 md:px-8 md:py-8"
+        className="theme-light flex flex-col gap-10 rounded-[8px] border px-2 py-6 sm:px-4 md:px-8 md:py-8"
         style={{
           borderColor: theme.border,
           backgroundColor: theme.bg,
@@ -171,7 +171,7 @@ export default function Guestbook({ boardTheme = 'cream' }) {
         }}
       >
         {!meta && !error && <AppLoading />}
-        {error && <p className="py-10 text-center text-[14px] text-[#919191]">{error}</p>}
+        {error && <p className="py-10 text-center text-[14px] text-ink-3">{error}</p>}
 
         {meta &&
           visibleSemesters.map((label) => {
@@ -179,9 +179,9 @@ export default function Guestbook({ boardTheme = 'cream' }) {
             const notes = notesBySemester[label] ?? [];
             return (
               <div key={label} id={semesterAnchorId(label)} className="flex scroll-mt-[72px] flex-col gap-5">
-                <h3 className="flex items-baseline gap-2 text-[15px] font-semibold tracking-[-0.02em] text-[#454545]">
+                <h3 className="flex items-baseline gap-2 text-[15px] font-semibold tracking-[-0.02em] text-ink-2">
                   {label}
-                  {isCurrent && <span className="rounded-full bg-[#212121] px-2 py-[1px] text-[10px] font-medium text-white">이번 학기</span>}
+                  {isCurrent && <span className="rounded-full bg-inverse px-2 py-[1px] text-[10px] font-medium text-inverse-fg">이번 학기</span>}
                   <span className="text-[12px] font-normal text-[#a3a09a]">{notes.length}장</span>
                 </h3>
 
@@ -209,9 +209,9 @@ export default function Guestbook({ boardTheme = 'cream' }) {
         {/* 바닥 — 더 불러올 학기가 있으면 스크롤이 닿을 때 불러온다 */}
         <div ref={sentinelRef} className="h-px" aria-hidden />
         {meta && visibleCount < semesters.length ? (
-          <p className="text-center text-[12px] text-[#b9b9b9]">{loadingMore ? '지난 학기를 불러오는 중…' : '아래로 내리면 지난 학기가 더 나와요'}</p>
+          <p className="text-center text-[12px] text-ink-4">{loadingMore ? '지난 학기를 불러오는 중…' : '아래로 내리면 지난 학기가 더 나와요'}</p>
         ) : (
-          meta && semesters.length > 1 && <p className="text-center text-[12px] text-[#b9b9b9]">마지막 학기까지 다 봤어요</p>
+          meta && semesters.length > 1 && <p className="text-center text-[12px] text-ink-4">마지막 학기까지 다 봤어요</p>
         )}
       </section>
 
@@ -219,8 +219,8 @@ export default function Guestbook({ boardTheme = 'cream' }) {
 
       {/* 고치기 — 쓰기 칸을 그대로 모달에 (종이 폭은 카드와 같은 DESIGN_WIDTH) */}
       <Dialog open={Boolean(editing)} onOpenChange={(v) => !v && setEditing(null)}>
-        <DialogContent hideCloseButton className="max-h-[90dvh] max-w-[560px] overflow-y-auto rounded-[8px] border-[#dedede] p-4 md:p-5">
-          <DialogTitle className="text-[16px] font-semibold text-[#212121]">방명록 고치기</DialogTitle>
+        <DialogContent hideCloseButton className="theme-light max-h-[90dvh] max-w-[560px] overflow-y-auto rounded-[8px] border-line p-4 md:p-5">
+          <DialogTitle className="text-[16px] font-semibold text-ink">방명록 고치기</DialogTitle>
           <DialogDescription className="sr-only">내용·글씨체·잉크·종이·스티커를 고친다</DialogDescription>
           {editing && meta && (
             <GuestbookComposer

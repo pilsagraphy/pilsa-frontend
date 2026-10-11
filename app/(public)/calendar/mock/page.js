@@ -12,7 +12,7 @@ export default function CalendarMockPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="mx-auto w-full max-w-[915px] rounded-[4px] bg-[#f6f6f6] px-4 py-3 text-[14px] leading-[1.6] text-[#454545]">
+      <p className="mx-auto w-full max-w-[915px] rounded-[4px] bg-surface-2 px-4 py-3 text-[14px] leading-[1.6] text-ink-2">
         확인용 목 데이터 화면입니다. 실제 API를 호출하지 않습니다. (개발 환경에서만 열립니다)
       </p>
 

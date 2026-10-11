@@ -142,15 +142,15 @@ export default function CalendarSubscribeButton() {
   }
 
   const primaryBtn =
-    'h-[48px] w-full rounded-[4px] bg-[#212121] text-[16px] text-white hover:bg-[#424242] disabled:opacity-60';
-  const outlineBtn = 'h-[48px] w-full rounded-[4px] border-[#b9b9b9] text-[16px] text-[#212121]';
+    'h-[48px] w-full rounded-[4px] bg-inverse text-[16px] text-inverse-fg hover:bg-inverse-2 disabled:opacity-60';
+  const outlineBtn = 'h-[48px] w-full rounded-[4px] border-line-strong text-[16px] text-ink';
 
   return (
     <>
       <button
         type="button"
         onClick={handleOpen}
-        className="inline-flex h-[36px] shrink-0 items-center gap-1.5 rounded-[8px] border border-[#E0E0E0] px-3 text-[13px] font-medium text-[#454545] transition hover:border-[#BDBDBD] hover:text-[#212121] sm:h-[40px] sm:px-4 sm:text-[14px]"
+        className="inline-flex h-[36px] shrink-0 items-center gap-1.5 rounded-[8px] border border-line px-3 text-[13px] font-medium text-ink-2 transition hover:border-line-strong hover:text-ink sm:h-[40px] sm:px-4 sm:text-[14px]"
       >
         <CalendarPlus size={16} />내 캘린더에 구독
       </button>
@@ -158,12 +158,12 @@ export default function CalendarSubscribeButton() {
       <Dialog open={open} onOpenChange={(next) => !busy && setOpen(next)}>
         <DialogContent
           hideCloseButton
-          className="max-w-[380px] gap-[20px] rounded-[4px] border-[#dedede] p-[24px]"
+          className="max-w-[380px] gap-[20px] rounded-[4px] border-line p-[24px]"
         >
-          <DialogTitle className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-[#212121] [word-break:keep-all]">
+          <DialogTitle className="text-center text-[18px] font-semibold leading-[1.5] tracking-[-0.36px] text-ink [word-break:keep-all]">
             {title}
           </DialogTitle>
-          <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-[#454545] [word-break:keep-all]">
+          <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
             {description}
           </DialogDescription>
 

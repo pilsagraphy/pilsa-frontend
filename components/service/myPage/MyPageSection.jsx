@@ -61,7 +61,7 @@ export default function MyPageSection() {
   }, []);
 
   return (
-    <section className="mx-auto flex w-full max-w-[1016px] flex-col gap-[30px] bg-white p-6 md:p-8">
+    <section className="mx-auto flex w-full max-w-[1016px] flex-col gap-[30px] bg-surface p-6 md:p-8">
       {/* 영역 1: 인사말(좌) + 활동 통계(우) 같은 행 */}
       <div className="flex flex-col gap-[20px] lg:flex-row lg:items-center lg:gap-[40px]">
         <div className="min-w-0 lg:flex-1">

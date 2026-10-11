@@ -73,16 +73,16 @@ export default function ModerationModal({
       {/* 위아래 진한 선은 표 바깥에 둔다.
           TableBody가 마지막 행의 아래선을 지워주므로, 마지막 행 밑에는 이 진한 선만 남는다. */}
       {/* 폰: 표 대신 줄 목록. 열 셋을 폰 폭에 넣으면 오른쪽이 잘린다 */}
-      <div className="border-b border-t border-[#454545] sm:hidden">
+      <div className="border-b border-t border-ink-2 sm:hidden">
         {items.map((item, index) => (
           <div
             key={item.id}
-            className="flex flex-col gap-[2px] border-b border-[#b9b9b9] py-[8px] last:border-b-0"
+            className="flex flex-col gap-[2px] border-b border-line-strong py-[8px] last:border-b-0"
           >
-            <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+            <span className="text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">
               {index + 1}. {formatMemberLabel(item.user)}
             </span>
-            <span className="text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545] [word-break:keep-all]">
+            <span className="text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
               {item.boardName && `[${item.boardName}] `}
               {truncateContent(item.content)}
             </span>
@@ -90,19 +90,19 @@ export default function ModerationModal({
         ))}
       </div>
 
-      <div className="hidden border-b border-t border-[#454545] sm:block">
+      <div className="hidden border-b border-t border-ink-2 sm:block">
         {/* table-fixed가 아니라 내용에 맞춰 열이 늘어나는 기본(auto) 레이아웃이다.
             앞 두 열은 시안 너비를 최소값으로만 잡아두고, 길어지면 그만큼 넓어진다. */}
         <Table>
           <TableHeader>
-            <TableRow className="h-[32px] border-b border-[#454545] hover:bg-transparent">
-              <TableHead className="min-w-[56px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
+            <TableRow className="h-[32px] border-b border-ink-2 hover:bg-transparent">
+              <TableHead className="min-w-[56px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-ink-3">
                 번호
               </TableHead>
-              <TableHead className="min-w-[200px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
+              <TableHead className="min-w-[200px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-ink-3">
                 대상 회원
               </TableHead>
-              <TableHead className="min-w-[199px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-[#919191]">
+              <TableHead className="min-w-[199px] px-0 text-center text-[12px] font-normal leading-[1.4] tracking-[-0.24px] text-ink-3">
                 대상 {targetLabel}
               </TableHead>
             </TableRow>
@@ -112,19 +112,19 @@ export default function ModerationModal({
             {items.map((item, index) => (
               <TableRow
                 key={item.id}
-                className="h-[40px] border-b border-[#b9b9b9] hover:bg-transparent"
+                className="h-[40px] border-b border-line-strong hover:bg-transparent"
               >
-                <TableCell className="px-0 pl-[18px] text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]">
+                <TableCell className="px-0 pl-[18px] text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3">
                   {index + 1}
                 </TableCell>
                 {/* 회원 정보가 길어져도 오른쪽 열 내용과 붙지 않도록 최소 16px을 띄운다.
                     auto 레이아웃에서는 td의 max-width가 먹지 않아 안쪽 span으로 상한을 건다. */}
-                <TableCell className="pl-0 pr-[16px] text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
+                <TableCell className="pl-0 pr-[16px] text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2">
                   <span className="block max-w-[280px] truncate">
                     {formatMemberLabel(item.user)}
                   </span>
                 </TableCell>
-                <TableCell className="whitespace-nowrap px-0 text-[14px] leading-[1.6] tracking-[-0.28px] text-[#454545]">
+                <TableCell className="whitespace-nowrap px-0 text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-2">
                   {item.boardName && `[${item.boardName}] `}
                   {truncateContent(item.content)}
                 </TableCell>

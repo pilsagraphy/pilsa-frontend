@@ -38,15 +38,15 @@ export default function BoardRow({
         e.preventDefault();
         onDrop?.(board.boardId);
       }}
-      className={`h-[46px] border-b border-[#b9b9b9] text-[16px] leading-[1.6] tracking-[-0.02em] text-[#212121] ${
+      className={`h-[46px] border-b border-line-strong text-[16px] leading-[1.6] tracking-[-0.02em] text-ink ${
         isDragging ? 'opacity-40' : ''
       } ${
         // 행에 이미 border-b(회색)가 있어 아래쪽 표시선이 묻힌다.
         // 표시선은 항상 보여야 하므로 !(important)로 우선순위를 확실히 준다.
         isDropTarget
           ? dropPosition === 'below'
-            ? '!border-b-2 !border-b-[#212121]'
-            : '!border-t-2 !border-t-[#212121]'
+            ? '!border-b-2 !border-b-ink'
+            : '!border-t-2 !border-t-ink'
           : ''
       }`}
     >
@@ -109,7 +109,7 @@ export default function BoardRow({
           onDragStart={() => onDragStart?.(board.boardId)}
           onDragEnd={() => onDragEnd?.()}
           title="드래그해서 순서 변경"
-          className="inline-flex cursor-grab text-[#dedede] active:cursor-grabbing"
+          className="inline-flex cursor-grab text-ink-4 active:cursor-grabbing"
         >
           <Menu className="size-5" />
         </span>

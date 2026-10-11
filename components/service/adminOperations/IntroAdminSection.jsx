@@ -10,12 +10,12 @@ import { toast } from '@/lib/toast';
 
 // 메뉴 관리 > 동아리 소개 관리 (PM 2026-10-11) — 소개 페이지의 문단(제목 + 본문)을 고치고 순서를 바꾼다. 조직도는 '조직도 편집'에서.
 const inputClass =
-  'h-[36px] w-full rounded-[6px] border border-[#dedede] bg-white px-3 text-[13px] text-[#212121] outline-none transition-colors focus:border-[#919191]';
+  'h-[36px] w-full rounded-[6px] border border-line bg-surface px-3 text-[13px] text-ink outline-none transition-colors focus:border-ink-3';
 const textareaClass =
-  'min-h-[160px] w-full resize-y rounded-[6px] border border-[#dedede] bg-white px-3 py-2 text-[13px] leading-[1.7] text-[#212121] outline-none transition-colors focus:border-[#919191]';
+  'min-h-[160px] w-full resize-y rounded-[6px] border border-line bg-surface px-3 py-2 text-[13px] leading-[1.7] text-ink outline-none transition-colors focus:border-ink-3';
 const smallBtn =
-  'h-[30px] shrink-0 rounded-[4px] border border-[#dedede] bg-white px-3 text-[12px] text-[#454545] hover:bg-[#f5f5f5] disabled:opacity-30';
-const primaryBtn = 'h-[30px] shrink-0 rounded-[4px] bg-[#212121] px-3 text-[12px] text-white disabled:opacity-30';
+  'h-[30px] shrink-0 rounded-[4px] border border-line bg-surface px-3 text-[12px] text-ink-2 hover:bg-surface-2 disabled:opacity-30';
+const primaryBtn = 'h-[30px] shrink-0 rounded-[4px] bg-inverse px-3 text-[12px] text-inverse-fg disabled:opacity-30';
 
 export default function IntroAdminSection() {
   const [sections, setSections] = useState(null);
@@ -83,11 +83,11 @@ export default function IntroAdminSection() {
   return (
     <section className={listSectionClass}>
       <h1 className={listTitleClass}>동아리 소개 관리</h1>
-      <p className="mb-5 text-[13px] leading-[1.6] text-[#919191]">소개 페이지의 문단입니다. 본문은 줄바꿈이 그대로 보입니다. 조직도는 「조직도 편집」에서 고칩니다.</p>
+      <p className="mb-5 text-[13px] leading-[1.6] text-ink-3">소개 페이지의 문단입니다. 본문은 줄바꿈이 그대로 보입니다. 조직도는 「조직도 편집」에서 고칩니다.</p>
       {/* 불러오기에 실패하면 추가 버튼까지 숨긴다 — 목록 없이 추가하면 순서값이 꼬인다 (검토 지적 10/11) */}
       {error ? (
         <div className="flex flex-col items-center gap-3 py-6">
-          <p className="text-[13px] text-[#919191]">{error}</p>
+          <p className="text-[13px] text-ink-3">{error}</p>
           <button type="button" className={smallBtn} onClick={load}>
             다시 불러오기
           </button>
@@ -142,9 +142,9 @@ function SectionCard({ section, index, total, busy, onMove, onDelete, onSaved })
   };
 
   return (
-    <div className="flex flex-col gap-2 rounded-[10px] border border-[#dedede] bg-white p-4">
+    <div className="flex flex-col gap-2 rounded-[10px] border border-line bg-surface p-4">
       <div className="flex items-center gap-2">
-        <span className="text-[12px] text-[#919191]">{index + 1}번째</span>
+        <span className="text-[12px] text-ink-3">{index + 1}번째</span>
         <span className="ml-auto flex gap-1">
           <button type="button" className={smallBtn} disabled={busy || index === 0} onClick={() => onMove(-1)}>
             ↑
@@ -152,7 +152,7 @@ function SectionCard({ section, index, total, busy, onMove, onDelete, onSaved })
           <button type="button" className={smallBtn} disabled={busy || index === total - 1} onClick={() => onMove(1)}>
             ↓
           </button>
-          <button type="button" className={`${smallBtn} text-[#b3261e]`} disabled={busy} onClick={onDelete}>
+          <button type="button" className={`${smallBtn} text-danger`} disabled={busy} onClick={onDelete}>
             삭제
           </button>
         </span>

@@ -7,7 +7,7 @@ import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { alertDialog } from '@/stores/useDialogStore';
 
 function Divider() {
-  return <div className="w-full h-px bg-[#DEDEDE]" />;
+  return <div className="w-full h-px bg-line" />;
 }
 
 // 첨부파일 목록 (없으면 렌더하지 않는다)
@@ -54,8 +54,8 @@ export default function BoardAttachments({ attachments = [] }) {
         <Divider />
 
         <div className="flex items-center gap-[12px] py-3 text-[14px] tracking-[-0.28px]">
-          <span className="shrink-0 text-[#919191] leading-none">첨부파일</span>
-          <span className="h-[16px] w-px shrink-0 bg-[#DEDEDE]" aria-hidden="true" />
+          <span className="shrink-0 text-ink-3 leading-none">첨부파일</span>
+          <span className="h-[16px] w-px shrink-0 bg-line" aria-hidden="true" />
 
           <div className="flex min-w-0 flex-col gap-1">
             {list.map((file) => {
@@ -69,10 +69,10 @@ export default function BoardAttachments({ attachments = [] }) {
                   type="button"
                   onClick={() => handleDownload(file)}
                   disabled={downloadingId != null}
-                  className="flex items-center gap-1 break-all text-left leading-none text-[#454545] hover:underline disabled:opacity-60"
+                  className="flex items-center gap-1 break-all text-left leading-none text-ink-2 hover:underline disabled:opacity-60"
                 >
                   {fileName}
-                  {isDownloading && <span className="text-[#919191]">(받는 중...)</span>}
+                  {isDownloading && <span className="text-ink-3">(받는 중...)</span>}
                 </button>
               );
             })}
@@ -89,7 +89,7 @@ export default function BoardAttachments({ attachments = [] }) {
       <Divider />
 
       <div className="flex flex-col gap-2 text-[15px] tracking-[-0.32px] lg:flex-row lg:items-start lg:gap-6 lg:text-[16px]">
-        <span className="shrink-0 text-[#919191]">첨부파일</span>
+        <span className="shrink-0 text-ink-3">첨부파일</span>
 
         <div className="flex min-w-0 flex-col items-start gap-2 lg:gap-[8px]">
           {list.map((file) => {
@@ -103,10 +103,10 @@ export default function BoardAttachments({ attachments = [] }) {
                 type="button"
                 onClick={() => handleDownload(file)}
                 disabled={downloadingId != null}
-                className="flex items-center gap-1 break-all text-left text-[#454545] hover:underline disabled:opacity-60"
+                className="flex items-center gap-1 break-all text-left text-ink-2 hover:underline disabled:opacity-60"
               >
                 {fileName}
-                {isDownloading && <span className="text-[#919191]">(받는 중...)</span>}
+                {isDownloading && <span className="text-ink-3">(받는 중...)</span>}
               </button>
             );
           })}

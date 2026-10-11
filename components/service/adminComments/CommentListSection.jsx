@@ -74,7 +74,7 @@ export default function CommentListSection({ title = '댓글 관리' }) {
             variant="outline"
             disabled={list.isBusy || !list.hasSelection}
             onClick={() => list.openBulkConfirm('blind')}
-            className={`${actionButtonClass} border-[#212121] text-[#212121]`}
+            className={`${actionButtonClass} border-ink text-ink`}
           >
             선택 블라인드
           </Button>
@@ -82,7 +82,7 @@ export default function CommentListSection({ title = '댓글 관리' }) {
             type="button"
             disabled={list.isBusy || !list.hasSelection}
             onClick={() => list.openBulkConfirm('delete')}
-            className={`${actionButtonClass} bg-[#212121] text-white`}
+            className={`${actionButtonClass} bg-inverse text-inverse-fg`}
           >
             선택 삭제
           </Button>

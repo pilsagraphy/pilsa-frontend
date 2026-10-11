@@ -64,7 +64,7 @@ export default function DesktopSiteNotice() {
   };
 
   return (
-    <div className="fixed inset-x-0 top-0 z-[100] bg-[#212121] px-4 py-3 text-white">
+    <div className="fixed inset-x-0 top-0 z-[100] bg-inverse px-4 py-3 text-inverse-fg">
       <div className="mx-auto flex max-w-[720px] items-start gap-3">
         <p className="flex-1 text-[13px] leading-[1.6] [word-break:keep-all]">
           <span className="font-semibold">PC 화면으로 보이고 있어요.</span>{' '}

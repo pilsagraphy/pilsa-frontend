@@ -10,11 +10,11 @@ import StateChip from './StateChip';
 import CategoryBadge from '@/components/shared/board/boardList/CategoryBadge';
 
 function Divider({ dark = false }) {
-  return <div className={['w-full h-px', dark ? 'bg-[#B9B9B9]' : 'bg-[#DEDEDE]'].join(' ')} />;
+  return <div className={['w-full h-px', dark ? 'bg-line-strong' : 'bg-line'].join(' ')} />;
 }
 
 function VLine() {
-  return <div className="w-px h-[16px] bg-[#DEDEDE]" aria-hidden="true" />;
+  return <div className="w-px h-[16px] bg-line" aria-hidden="true" />;
 }
 
 // 카테고리명 또는 '중요' 같은 배지
@@ -38,21 +38,21 @@ export default function BoardInfo({ badgeLabel, title, date, author, stateLabel,
   const safeDate = formatKoreanDate(date);
   const authorNode =
     adminLevel >= 1 && authorId != null ? (
-      <AdminUserPopover userId={authorId} name={safeAuthor} className="min-w-0 break-all leading-none text-[#454545]" />
+      <AdminUserPopover userId={authorId} name={safeAuthor} className="min-w-0 break-all leading-none text-ink-2" />
     ) : (
-      <span className="min-w-0 break-all text-[#454545] leading-none">{safeAuthor}</span>
+      <span className="min-w-0 break-all text-ink-2 leading-none">{safeAuthor}</span>
     );
 
   // 모바일(#183): 등록일·작성자를 한 줄(좌·우)로. 데스크톱은 아래 return 그대로.
   if (!isMdUp) {
     return (
       <section className="w-full">
-        <div className="h-px w-full bg-[#919191]" />
+        <div className="h-px w-full bg-ink-3" />
 
         <div className="flex min-h-0 items-center py-3">
           <div className="flex min-w-0 flex-wrap items-center gap-2">
             {badgeLabel && <Badge label={badgeLabel} />}
-            <h2 className="min-w-0 flex-1 text-[16px] leading-snug tracking-[-0.36px] text-[#212121]">
+            <h2 className="min-w-0 flex-1 text-[16px] leading-snug tracking-[-0.36px] text-ink">
               {safeTitle}
             </h2>
           </div>
@@ -62,20 +62,20 @@ export default function BoardInfo({ badgeLabel, title, date, author, stateLabel,
 
         <div className="flex items-center justify-between gap-2 py-3 text-[14px] tracking-[-0.28px]">
           <div className="flex min-w-0 items-center gap-[12px]">
-            <span className="shrink-0 text-[#919191] leading-none">등록일</span>
+            <span className="shrink-0 text-ink-3 leading-none">등록일</span>
             <VLine />
-            <span className="text-[#454545] leading-none">{safeDate}</span>
+            <span className="text-ink-2 leading-none">{safeDate}</span>
             {viewCount != null && (
               <>
                 <VLine />
-                <span className="shrink-0 text-[#919191] leading-none">조회</span>
-                <span className="text-[#454545] leading-none">{Number(viewCount).toLocaleString()}</span>
+                <span className="shrink-0 text-ink-3 leading-none">조회</span>
+                <span className="text-ink-2 leading-none">{Number(viewCount).toLocaleString()}</span>
               </>
             )}
           </div>
 
           <div className="flex items-center gap-[12px]">
-            <span className="shrink-0 text-[#919191] leading-none">작성자</span>
+            <span className="shrink-0 text-ink-3 leading-none">작성자</span>
             <VLine />
             {authorNode}
           </div>
@@ -95,7 +95,7 @@ export default function BoardInfo({ badgeLabel, title, date, author, stateLabel,
               상태가 오른쪽 끝으로 밀려 '제목 옆'이 아니게 된다.
               상태가 없는 사용자 상세는 지금까지와 똑같이 flex-1 을 유지한다. */}
           <h2
-            className={`min-w-0 text-[16px] leading-snug tracking-[-0.36px] text-[#212121] lg:text-[18px] lg:leading-none ${
+            className={`min-w-0 text-[16px] leading-snug tracking-[-0.36px] text-ink lg:text-[18px] lg:leading-none ${
               stateLabel ? '' : 'flex-1'
             }`}
           >
@@ -109,21 +109,21 @@ export default function BoardInfo({ badgeLabel, title, date, author, stateLabel,
 
       <div className="flex flex-col gap-3 py-3 text-[13px] tracking-[-0.28px] lg:h-[56px] lg:flex-row lg:items-center lg:justify-between lg:gap-0 lg:py-0 lg:text-[14px]">
         <div className="flex flex-wrap items-center gap-2 lg:gap-[12px]">
-          <span className="shrink-0 text-[#919191] leading-none">등록일</span>
+          <span className="shrink-0 text-ink-3 leading-none">등록일</span>
           <VLine />
-          <span className="break-all text-[#454545] leading-none">{safeDate}</span>
+          <span className="break-all text-ink-2 leading-none">{safeDate}</span>
           {viewCount != null && (
             <>
               <VLine />
-              <span className="shrink-0 text-[#919191] leading-none">조회수</span>
+              <span className="shrink-0 text-ink-3 leading-none">조회수</span>
               <VLine />
-              <span className="text-[#454545] leading-none">{Number(viewCount).toLocaleString()}</span>
+              <span className="text-ink-2 leading-none">{Number(viewCount).toLocaleString()}</span>
             </>
           )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2 lg:gap-[12px]">
-          <span className="shrink-0 text-[#919191] leading-none">작성자</span>
+          <span className="shrink-0 text-ink-3 leading-none">작성자</span>
           <VLine />
           {authorNode}
         </div>

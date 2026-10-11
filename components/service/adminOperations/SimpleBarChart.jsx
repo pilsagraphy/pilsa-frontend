@@ -42,7 +42,7 @@ export default function SimpleBarChart({ labels = [], series = [], height = 220,
   };
 
   if (!n) {
-    return <p className="py-6 text-center text-[14px] text-[#919191]">표시할 데이터가 없습니다.</p>;
+    return <p className="py-6 text-center text-[14px] text-ink-3">표시할 데이터가 없습니다.</p>;
   }
 
   return (
@@ -61,14 +61,15 @@ export default function SimpleBarChart({ labels = [], series = [], height = 220,
       >
         {ticks.map((v) => (
           <g key={v}>
-            <line x1={PAD.left} x2={W - PAD.right} y1={y(v)} y2={y(v)} stroke="#EEEEEE" strokeWidth="1" />
-            <text x={PAD.left - 8} y={y(v) + 4} textAnchor="end" fontSize="11" fill="#919191">
+            {/* 색은 클래스/style 로 — 다크모드 토큰을 따라간다 (SVG 속성은 var() 를 못 읽는다) */}
+            <line x1={PAD.left} x2={W - PAD.right} y1={y(v)} y2={y(v)} className="stroke-surface-3" strokeWidth="1" />
+            <text x={PAD.left - 8} y={y(v) + 4} textAnchor="end" fontSize="11" className="fill-ink-3">
               {v}
             </text>
           </g>
         ))}
         {hover != null && (
-          <rect x={PAD.left + groupW * hover} y={PAD.top} width={groupW} height={innerH} fill="#F3F3F3" />
+          <rect x={PAD.left + groupW * hover} y={PAD.top} width={groupW} height={innerH} className="fill-surface-2" />
         )}
         {labels.map((label, i) => {
           const gx = PAD.left + groupW * i + (groupW - barW * series.length) / 2;
@@ -83,14 +84,14 @@ export default function SimpleBarChart({ labels = [], series = [], height = 220,
                     y={y(v)}
                     width={barW - 1}
                     height={Math.max(0, PAD.top + innerH - y(v))}
-                    fill={s.color}
+                    style={{ fill: s.color }}
                     opacity={hover == null || hover === i ? 1 : 0.55}
                     rx="2"
                   />
                 );
               })}
               {(i % labelEvery === 0 || i === n - 1) && (
-                <text x={PAD.left + groupW * i + groupW / 2} y={H - 12} textAnchor="middle" fontSize="11" fill="#919191">
+                <text x={PAD.left + groupW * i + groupW / 2} y={H - 12} textAnchor="middle" fontSize="11" className="fill-ink-3">
                   {formatLabel(label)}
                 </text>
               )}
@@ -109,7 +110,7 @@ export default function SimpleBarChart({ labels = [], series = [], height = 220,
 
       <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
         {series.map((s) => (
-          <span key={s.name} className="inline-flex items-center gap-1.5 text-[12px] text-[#5f5f5f]">
+          <span key={s.name} className="inline-flex items-center gap-1.5 text-[12px] text-ink-2">
             <span className="inline-block size-3 rounded-[2px]" style={{ background: s.color }} />
             {s.name}
           </span>

@@ -13,12 +13,12 @@ import {
 } from '@/constants/adminReports';
 
 // '신고 상세' · '신고 접수' 소제목 (ReasonDialog의 '사유' 라벨과 같은 크기)
-const sectionLabelClass = 'text-[12px] leading-[1.4] tracking-[-0.24px] text-[#919191]';
+const sectionLabelClass = 'text-[12px] leading-[1.4] tracking-[-0.24px] text-ink-3';
 
 // 글자 크기와 색을 나눠 둔다. 한 className에 색 클래스를 두 개 넣으면
 // 적용 순서가 CSS 정의 순서에 따라 갈려서(cn 병합이 아니므로) 안쪽 회색 글자 색이 흔들린다.
 const bodyTypeClass = 'text-[14px] leading-[1.6] tracking-[-0.28px]';
-const bodyTextClass = `${bodyTypeClass} text-[#454545]`;
+const bodyTextClass = `${bodyTypeClass} text-ink-2`;
 
 /**
  * 신고 대상 한 건 = 무엇을 처리하는지(신고 상세) + 어떤 신고가 들어왔는지(신고 접수)
@@ -45,7 +45,7 @@ function ReportTargetBlock({ item }) {
       <div className="flex flex-col gap-[4px]">
         <span className={sectionLabelClass}>신고 상세</span>
         <p className={bodyTextClass}>
-          {!isComment && <span className="text-[#919191]">[{item.boardName}] </span>}
+          {!isComment && <span className="text-ink-3">[{item.boardName}] </span>}
           {item.preview} / {item.authorName} / {formatReportedAt(item.firstReportedAt)}
         </p>
       </div>
@@ -69,7 +69,7 @@ function ReportTargetBlock({ item }) {
                 {item.reports.map((report, index) => (
                   <TableRow key={report.reportId} className="border-none hover:bg-transparent">
                     <TableCell
-                      className={`w-[56px] whitespace-nowrap px-0 font-semibold text-[#212121] ${bodyTypeClass}`}
+                      className={`w-[56px] whitespace-nowrap px-0 font-semibold text-ink ${bodyTypeClass}`}
                     >
                       {report.reporterName ?? getReporterAlias(index)}
                     </TableCell>
@@ -90,7 +90,7 @@ function ReportTargetBlock({ item }) {
                 ))}
               </TableBody>
             </Table>
-            <p className={`${bodyTypeClass} text-[#919191]`}>
+            <p className={`${bodyTypeClass} text-ink-3`}>
               총 {item.reportCount}건 · 현재 {getReportStatusLabel(item)}
             </p>
           </>
@@ -98,9 +98,9 @@ function ReportTargetBlock({ item }) {
           <p className={bodyTextClass}>
             {item.reasonLabel}
             {item.reportCount > 1 && (
-              <span className="text-[#919191]"> 외 {item.reportCount - 1}건</span>
+              <span className="text-ink-3"> 외 {item.reportCount - 1}건</span>
             )}
-            <span className="text-[#919191]">
+            <span className="text-ink-3">
               {' '}
               · 총 {item.reportCount}건 · 현재 {getReportStatusLabel(item)}
             </span>
@@ -182,7 +182,7 @@ export default function ReportActionModal({
           // 대상이 여러 건이면 어디서 끊기는지 보이도록 묶음 사이에 선을 넣는다
           <div
             key={item.targetId}
-            className={index > 0 ? 'border-t border-[#dedede] pt-[16px]' : ''}
+            className={index > 0 ? 'border-t border-line pt-[16px]' : ''}
           >
             <ReportTargetBlock item={item} />
           </div>

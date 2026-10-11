@@ -54,8 +54,8 @@ export default function NotificationPreferences() {
         return (
           <li key={s.type} className="flex items-center gap-3 py-3">
             <div className="min-w-0 flex-1">
-              <p className="text-[14px] font-medium tracking-[-0.02em] text-black">{s.title}</p>
-              <p className="text-[12px] leading-[1.5] tracking-[-0.02em] text-[#757575]">{s.detail}</p>
+              <p className="text-[14px] font-medium tracking-[-0.02em] text-ink">{s.title}</p>
+              <p className="text-[12px] leading-[1.5] tracking-[-0.02em] text-ink-3">{s.detail}</p>
             </div>
             <button
               type="button"
@@ -65,11 +65,11 @@ export default function NotificationPreferences() {
               disabled={!settings || busy === s.type}
               onClick={() => toggle(s.type)}
               className={`relative h-[28px] w-[50px] shrink-0 rounded-full transition-colors disabled:opacity-40 ${
-                on ? 'bg-[#212121]' : 'bg-[#dedede]'
+                on ? 'bg-inverse' : 'bg-line'
               }`}
             >
               <span
-                className={`absolute top-[3px] size-[22px] rounded-full bg-white shadow transition-all ${
+                className={`absolute top-[3px] size-[22px] rounded-full bg-surface shadow transition-all ${
                   on ? 'left-[25px]' : 'left-[3px]'
                 }`}
               />
