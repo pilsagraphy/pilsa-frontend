@@ -366,7 +366,7 @@ function SignupFormInner() {
         >
           {/* 비밀번호 없는 소셜 가입 안내 — 문구는 PM 2026-10-13 */}
           <span className="font-bold">
-            {providerLabel(googlePending.provider)} 계정({googlePending.maskedEmail})으로 가입합니다.
+            {providerLabel(googlePending.provider)} 계정{googlePending.maskedEmail ? `(${googlePending.maskedEmail})` : ''}으로 가입합니다.
           </span>
           <br />
           <span className="text-ink-2">
