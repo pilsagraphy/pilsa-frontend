@@ -337,7 +337,8 @@ function SignupFormInner() {
   const checkPasswordRule = (regex) => regex.test(passwordValue || '');
 
   return (
-    <div className="mx-auto w-full max-w-[600px] py-20 font-['Pretendard',sans-serif]">
+    <div className="mx-auto w-full max-w-[1280px] px-[24px] py-[48px] font-['Pretendard',sans-serif] desktop:px-[80px] desktop:py-[80px]">
+    <div className="mx-auto w-full max-w-[600px]">
       <Toaster richColors position="top-center" />
 
       <div className="mb-8">
@@ -720,6 +721,7 @@ function SignupFormInner() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
     </div>
   );
 }

@@ -31,7 +31,7 @@ export default function FindId() {
 
   return (
     // 전체 페이지의 여백과 중앙 정렬 레이아웃을 여기서 정리
-    <div className="mx-auto w-full max-w-[1280px] px-[80px] py-[80px]">
+    <div className="mx-auto w-full max-w-[1280px] px-[24px] py-[48px] desktop:px-[80px] desktop:py-[80px]">
       <div className="mx-auto w-full max-w-[600px]">
         {step === 'EMAIL' && <FindIdEmail onNext={handleEmailSubmit} />}
 

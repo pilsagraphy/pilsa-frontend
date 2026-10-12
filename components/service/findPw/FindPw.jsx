@@ -49,7 +49,7 @@ export default function FindPw() {
 
   return (
     // 전체 페이지 레이아웃: 최대 너비 설정 및 중앙 정렬
-    <div className="mx-auto w-full max-w-[1280px] px-[80px] py-[80px]">
+    <div className="mx-auto w-full max-w-[1280px] px-[24px] py-[48px] desktop:px-[80px] desktop:py-[80px]">
       <div className="mx-auto w-full max-w-[600px]">
         {/* 각 단계(step) 상태에 따라 해당 컴포넌트를 조건부 렌더링 */}
 
