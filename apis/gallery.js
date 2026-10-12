@@ -11,12 +11,15 @@ export const getGallery = async (semester) => {
 };
 
 // 2. 올리기 (POST /api/user/gallery) [MEMBER] — multipart files[] + ratios[](가로÷세로) + title + hashtags + semester(선택, 비우면 이번 학기). 201 [사진...]
-export const uploadGalleryPhotos = async (files, ratios, { title, hashtags, semester } = {}) => {
+// titles[]·hashtagsList[]: 파일 순서대로 사진별 제목·해시태그 (2026-10-12). 있으면 공통 title/hashtags 보다 우선
+export const uploadGalleryPhotos = async (files, ratios, { title, hashtags, semester, titles, hashtagsList } = {}) => {
   const formData = new FormData();
   files.forEach((file) => formData.append('files', file));
   (ratios ?? []).forEach((r) => formData.append('ratios', String(r)));
   if (title) formData.append('title', title);
   if (hashtags) formData.append('hashtags', hashtags);
+  (titles ?? []).forEach((t) => formData.append('titles', t ?? ''));
+  (hashtagsList ?? []).forEach((h) => formData.append('hashtagsList', h ?? ''));
   if (semester) formData.append('semester', semester);
   const response = await axiosInstance.post('/api/user/gallery', formData, {
     headers: { 'Content-Type': 'multipart/form-data' },

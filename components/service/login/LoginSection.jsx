@@ -126,7 +126,26 @@ export default function LoginSection() {
   // 처리 중에 로그인이 성공하면 뒤늦게 도착한 로그아웃이 방금 받은 세션을 지운다.
   const [loggingOut, setLoggingOut] = useState(false);
   // 구글 동의 화면으로 나가는 중 (버튼 중복 클릭 방지)
-  const [googleBusy, setGoogleBusy] = useState(false);
+  // 어느 간편로그인 버튼이 이동 중인지 ('google'|'naver'|'kakao'|null) — 구글만 busy 로 두면 네이버를 눌러도 구글 버튼이 '이동 중' 이 됐다 (PM 2026-10-12)
+  const [socialBusy, setSocialBusy] = useState(null);
+  const googleBusy = socialBusy != null;
+  const setGoogleBusy = (v) => setSocialBusy(v ? 'google' : null);
+  // 동의 화면에 갔다가 뒤로 오면 브라우저가 이 화면을 그대로 복원해 busy 가 남는다 — 복원·복귀 때 푼다
+  useEffect(() => {
+    const release = () => setSocialBusy(null);
+    const onPageShow = (e) => {
+      if (e.persisted) release();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') release();
+    };
+    window.addEventListener('pageshow', onPageShow);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
   const [lastSocial, setLastSocial] = useState(null);
   useEffect(() => {
     setLastSocial(readLastSocial());
@@ -308,7 +327,7 @@ export default function LoginSection() {
   // 네이버·카카오 — 구글과 같은 흐름 (apis/social.js). 키가 아직 없으면 서버가 503 { message } 로 알린다
   const handleSocialLogin = async (provider) => {
     if (googleBusy || loggingOut) return;
-    setGoogleBusy(true);
+    setSocialBusy(provider);
     try {
       const url = await getSocialLoginUrl(provider);
       if (!url) throw new Error('authorizeUrl 없음');
@@ -316,7 +335,7 @@ export default function LoginSection() {
       window.location.href = url;
     } catch (err) {
       toast.error(err?.response?.data?.message ?? `${providerLabel(provider)} 로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.`);
-      setGoogleBusy(false);
+      setSocialBusy(null);
     }
   };
 
@@ -356,6 +375,11 @@ export default function LoginSection() {
         const label = providerLabel(pendingProvider);
         try {
           const linked = pendingProvider === 'google' ? await completeGoogleLink() : await completeSocialLink(pendingProvider);
+          try {
+            localStorage.setItem(LAST_SOCIAL_KEY, pendingProvider);
+          } catch {
+            // ignore
+          }
           const linkedEmail = linked?.googleEmail || linked?.email;
           toast.success(
             `${label} 계정${linkedEmail ? `(${linkedEmail})` : ''}을 연결했어요. 다음부터 ${label}로 바로 로그인할 수 있어요.`
@@ -537,11 +561,13 @@ export default function LoginSection() {
               <span className="h-px flex-1 bg-surface-3" />
             </div>
 
+            {/* 구글 · 네이버 · 카카오 한 줄 (PM 2026-10-12) */}
+            <div className="flex gap-2">
             <button
               type="button"
               onClick={handleGoogleLogin}
               disabled={googleBusy || loggingOut}
-              className="relative flex h-[52px] w-full items-center justify-center gap-3 rounded-[4px] border border-line bg-surface text-[16px] font-medium text-ink-2 transition hover:bg-surface-2 disabled:opacity-60"
+              className="relative flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] border border-line bg-surface text-[15px] font-medium text-ink-2 transition hover:bg-surface-2 disabled:opacity-60"
             >
               {lastSocial === 'google' && <RecentBadge />}
               <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
@@ -562,31 +588,29 @@ export default function LoginSection() {
                   d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
                 />
               </svg>
-              {googleBusy ? '구글로 이동 중…' : '구글로 로그인'}
+              {socialBusy === 'google' ? '이동 중…' : '구글'}
             </button>
-            {/* 네이버 · 카카오 (PM 2026-10-11) — 각 브랜드 색. 연결한 회원만 들어올 수 있는 건 구글과 같다 */}
-            <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => handleSocialLogin('naver')}
                 disabled={googleBusy || loggingOut}
-                className="relative flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[#03C75A] text-[16px] font-medium text-white transition hover:brightness-95 disabled:opacity-60"
+                className="relative flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[#03C75A] text-[15px] font-medium text-white transition hover:brightness-95 disabled:opacity-60"
               >
                 {lastSocial === 'naver' && <RecentBadge />}
                 <span className="text-[18px] font-extrabold leading-none">N</span>
-                네이버
+                {socialBusy === 'naver' ? '이동 중…' : '네이버'}
               </button>
               <button
                 type="button"
                 onClick={() => handleSocialLogin('kakao')}
                 disabled={googleBusy || loggingOut}
-                className="relative flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[#FEE500] text-[16px] font-medium text-[#191919] transition hover:brightness-95 disabled:opacity-60"
+                className="relative flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[#FEE500] text-[15px] font-medium text-[#191919] transition hover:brightness-95 disabled:opacity-60"
               >
                 {lastSocial === 'kakao' && <RecentBadge />}
                 <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                   <path fill="#191919" d="M12 3C6.48 3 2 6.58 2 11c0 2.83 1.86 5.31 4.66 6.72L5.5 21.5l4.74-2.98c.58.08 1.17.13 1.76.13 5.52 0 10-3.58 10-8S17.52 3 12 3z" />
                 </svg>
-                카카오
+                {socialBusy === 'kakao' ? '이동 중…' : '카카오'}
               </button>
             </div>
           </div>

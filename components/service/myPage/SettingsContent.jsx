@@ -9,11 +9,14 @@ import SocialAccountsSection from './SocialAccountsSection';
 import WithdrawModal from './WithdrawModal';
 import PasswordChangeModal from './PasswordChangeModal';
 import { canShowPushToggle } from '@/lib/push';
+import { toast } from '@/lib/toast';
+import { getErrorMessage } from '@/apis/auth';
+import { updateMyProfile } from '@/apis/mypage';
 import useThemeStore, { THEMES } from '@/stores/useThemeStore';
 import { isSidebarSwipeEnabled, setSidebarSwipeEnabled } from '@/lib/sidebarSwipe';
 
-// 설정 본문 — 내 정보 / 화면 / 알림 / 구글 연동 / 계정. PC 는 모달(MyInfoEditModal), 폰은 페이지(/mypage/settings)가 같은 것을 그린다 (PM 2026-10-10).
-// 알림·구글 연동은 접었다 펼 수 있다 — 스위치가 네 개라 펼쳐 두면 설정 전체가 길어진다 (PM: "알림 아래로 열리고 닫혔으면").
+// 설정 본문 — 내 정보 / 화면 / 알림 / 간편로그인·캘린더 연동 / 계정. 폰·PC 모두 페이지(/mypage/settings)가 그린다 (PM 2026-10-12).
+// 알림·연동은 접었다 펼 수 있다 — 스위치가 많아 펼쳐 두면 설정 전체가 길어진다.
 // onNestedOpenChange: 하위 모달(비밀번호·탈퇴)이 열렸는지 — 모달 안에서 쓸 때 장막을 겹치지 않게 부모가 알아야 한다.
 function Collapsible({ title, defaultOpen = false, children }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -64,7 +67,6 @@ function ThemeSegment() {
 // 폰에서 쓸어 사이드바 열기 켜고 끄기 — 기본값은 아이폰 끔·그 밖 켬(lib/sidebarSwipe). 이 기기에만 저장. PC 는 사이드바가 늘 보여 숨긴다
 function SidebarSwipeRow() {
   const [on, setOn] = useState(null); // null = 아직 모름(서버 렌더)
-  // 기기 판별·저장값은 클라이언트에서만 — 하이드레이션 불일치를 피하려고 mount 후 결정
   useEffect(() => {
     setOn(isSidebarSwipeEnabled());
   }, []);
@@ -97,7 +99,88 @@ function SidebarSwipeRow() {
   );
 }
 
-export default function SettingsContent({ myInfo, onNestedOpenChange }) {
+// 이름·연락처 고치기 (PM 2026-10-12 "설정에 본인 개인정보 수정") — 회원가입과 같은 규칙. 저장하면 PUT /api/user/mypage/profile
+function ProfileEditRows({ myInfo, onSaved }) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(myInfo?.name ?? '');
+  const [phone, setPhone] = useState(myInfo?.phone ?? '');
+  const [saving, setSaving] = useState(false);
+  useEffect(() => {
+    if (!editing) {
+      setName(myInfo?.name ?? '');
+      setPhone(myInfo?.phone ?? '');
+    }
+  }, [myInfo?.name, myInfo?.phone, editing]);
+
+  const formatPhone = (v) => {
+    const d = v.replace(/\D/g, '').slice(0, 11);
+    if (d.length <= 3) return d;
+    if (d.length <= 7) return `${d.slice(0, 3)}-${d.slice(3)}`;
+    return `${d.slice(0, 3)}-${d.slice(3, 7)}-${d.slice(7)}`;
+  };
+
+  const save = async () => {
+    if (name.trim().length < 2 || name.trim().length > 20) {
+      toast.error('이름은 2~20자로 적어 주세요.');
+      return;
+    }
+    if (!/^010-\d{4}-\d{4}$/.test(phone)) {
+      toast.error('연락처는 010-0000-0000 꼴로 적어 주세요.');
+      return;
+    }
+    setSaving(true);
+    try {
+      await updateMyProfile({ name: name.trim(), phone });
+      toast.success('내 정보를 고쳤어요.');
+      setEditing(false);
+      onSaved?.();
+    } catch (err) {
+      toast.error(getErrorMessage(err, '고치지 못했어요.'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const inputClass = 'h-[32px] w-[180px] max-w-full rounded-[6px] border border-line bg-surface px-2 text-right text-[13px] text-ink outline-none focus:border-ink-3';
+  return (
+    <>
+      <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+        <span className="text-[13px] tracking-[-0.02em] text-ink-3">이름</span>
+        {editing ? (
+          <input type="text" value={name} maxLength={20} onChange={(e) => setName(e.target.value)} className={inputClass} />
+        ) : (
+          <span className="text-[13px] font-medium tracking-[-0.02em] text-ink">{myInfo?.name || '-'}</span>
+        )}
+      </div>
+      <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+        <span className="text-[13px] tracking-[-0.02em] text-ink-3">연락처</span>
+        {editing ? (
+          <input type="tel" inputMode="numeric" value={phone} onChange={(e) => setPhone(formatPhone(e.target.value))} placeholder="010-0000-0000" className={inputClass} />
+        ) : (
+          <span className="text-[13px] font-medium tracking-[-0.02em] text-ink">{myInfo?.phone || '-'}</span>
+        )}
+      </div>
+      <div className="flex items-center justify-end gap-2 px-4 py-2">
+        {editing ? (
+          <>
+            <button type="button" onClick={() => setEditing(false)} disabled={saving} className="h-[30px] rounded-[6px] border border-line px-3 text-[12px] text-ink-2">
+              취소
+            </button>
+            <button type="button" onClick={save} disabled={saving} className="h-[30px] rounded-[6px] bg-inverse px-3 text-[12px] text-inverse-fg disabled:opacity-50">
+              {saving ? '저장 중…' : '저장'}
+            </button>
+          </>
+        ) : (
+          <button type="button" onClick={() => setEditing(true)} className="h-[30px] rounded-[6px] border border-line px-3 text-[12px] text-ink-2 hover:border-line-strong hover:text-ink">
+            이름·연락처 고치기
+          </button>
+        )}
+      </div>
+    </>
+  );
+}
+
+export default function SettingsContent({ myInfo, onNestedOpenChange, onProfileSaved }) {
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   // UA 판별은 클라이언트에서만 가능 — SSR 하이드레이션 불일치를 피하려고 mount 후 결정
@@ -111,7 +194,7 @@ export default function SettingsContent({ myInfo, onNestedOpenChange }) {
 
   return (
     <>
-      {/* 1. 내 정보 — 아이디·가입일은 마이페이지 요약(GET /api/user/mypage)에서 온 값 */}
+      {/* 1. 내 정보 — 아이디·가입일은 읽기만, 이름·연락처는 고칠 수 있다 (GET /api/user/mypage) */}
       <section className="flex flex-col gap-1">
         <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-ink-3">내 정보</h4>
         <div className="rounded-[8px] border border-line">
@@ -119,10 +202,11 @@ export default function SettingsContent({ myInfo, onNestedOpenChange }) {
             <span className="text-[13px] tracking-[-0.02em] text-ink-3">아이디</span>
             <span className="text-[13px] font-medium tracking-[-0.02em] text-ink">{myInfo?.loginId ?? '-'}</span>
           </div>
-          <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center justify-between border-b border-line px-4 py-3">
             <span className="text-[13px] tracking-[-0.02em] text-ink-3">가입일</span>
             <span className="text-[13px] font-medium tracking-[-0.02em] text-ink">{myInfo?.joinedAt ?? '-'}</span>
           </div>
+          <ProfileEditRows myInfo={myInfo} onSaved={onProfileSaved} />
         </div>
       </section>
 
@@ -150,17 +234,15 @@ export default function SettingsContent({ myInfo, onNestedOpenChange }) {
         </div>
       </Collapsible>
 
-      {/* 3. 구글 연동 — 계정 연결(소셜 로그인) + 캘린더 자동 등록 */}
-      <Collapsible title="구글 연동">
-        <GoogleIntegrationSection />
+      {/* 4. 간편로그인 · 캘린더 — 구글(계정 + 캘린더 자동 업데이트) · 네이버(계정 + 캘린더 새 일정 넣기) · 카카오(계정). 하나로 묶음 (PM 2026-10-12) */}
+      <Collapsible title="간편로그인 · 캘린더 연동">
+        <div className="flex flex-col gap-2">
+          <GoogleIntegrationSection />
+          <SocialAccountsSection />
+        </div>
       </Collapsible>
 
-      {/* 3-1. 네이버·카카오 계정 연결 — 소셜 로그인용 (PM 2026-10-11) */}
-      <Collapsible title="네이버 · 카카오 연동">
-        <SocialAccountsSection />
-      </Collapsible>
-
-      {/* 4. 계정 */}
+      {/* 5. 계정 */}
       <section className="flex flex-col gap-1">
         <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-ink-3">계정</h4>
         <div className="rounded-[8px] border border-line">

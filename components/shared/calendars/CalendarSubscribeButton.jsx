@@ -164,7 +164,7 @@ export default function CalendarSubscribeButton() {
     title = linked ? '구글 캘린더는 이미 구독 중이에요' : '구글 계정과 연동이 필요해요';
     body = linked
       ? `${google.googleEmail ? `${google.googleEmail} ` : ''}구글 캘린더에 새 일정·변경·삭제가 자동으로 반영돼요 (반영까지 최대 10분). 연동 관리는 마이페이지 → 설정에서.`
-      : '구글 계정 선택 화면이 열려요. 계정을 고르고 캘린더 권한을 허용하면 동아리 일정이 내 구글 캘린더에 자동 등록되고, 등록·수정·삭제가 그대로 반영돼요 (반영까지 최대 10분). 2단계 인증 화면이 나오면 로그인 화면에 뜬 숫자를 휴대폰 알림에서 눌러주세요.';
+      : '구글 계정을 고르고 캘린더 권한을 허용하면 동아리 일정이 내 구글 캘린더에 자동 등록되고, 수정·삭제가 그대로 반영돼요 (반영까지 최대 10분).';
     footer = linked ? (
       <Button type="button" onClick={close} className={primaryBtn}>
         확인
@@ -179,7 +179,7 @@ export default function CalendarSubscribeButton() {
     title = linked ? '네이버 캘린더는 이미 연동 중이에요' : '네이버 계정과 연동이 필요해요';
     body = linked
       ? `${naver.naverEmail ? `${naver.naverEmail} ` : ''}네이버 캘린더에 새 일정이 생길 때마다 넣어 드려요. 네이버는 일정 추가만 되는 서비스라 바뀌거나 지워진 일정은 직접 고쳐야 해요. 연동 관리는 마이페이지 → 설정에서.`
-      : '네이버 로그인 화면이 열려요. 캘린더 권한을 허용하면 앞으로의 동아리 일정을 네이버 캘린더에 넣어 드리고, 새 일정이 생기면 그때그때 넣어요. 다만 네이버는 일정 추가만 되는 서비스라 바뀌거나 지워진 일정은 직접 고쳐야 해요.';
+      : '네이버 계정으로 로그인하고 캘린더 권한을 허용하면 동아리 일정이 내 네이버 캘린더에 자동 등록돼요 (추가만 — 수정·삭제는 직접 해야 해요).';
     footer = linked ? (
       <Button type="button" onClick={close} className={primaryBtn}>
         확인

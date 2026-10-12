@@ -8,8 +8,7 @@ import useMyPageStore from '@/stores/useMyPageStore';
 import { formatDotDate } from '@/lib/utils';
 import { ROUTES } from '@/constants/routes';
 
-// 설정 페이지 (/mypage/settings) — 폰에서는 모달 대신 이 페이지로 온다 (PM 2026-10-10 "모바일에서는 페이지처럼").
-// PC 에서 주소로 직접 들어와도 같은 내용이 보인다. 본문은 모달과 같은 SettingsContent.
+// 설정 페이지 (/mypage/settings) — 폰·PC 모두 이 페이지로 온다 (PM 2026-10-10 폰, 2026-10-12 PC 도 "내용이 많아 모달로 안 된다").
 export default function MyPageSettingsSection() {
   const summary = useMyPageStore((s) => s.summary);
   const fetchSummary = useMyPageStore((s) => s.fetchSummary);
@@ -22,6 +21,8 @@ export default function MyPageSettingsSection() {
   const myInfo = {
     loginId: summary?.loginId ?? '-',
     joinedAt: formatDotDate(summary?.joinedAt) || '-',
+    name: summary?.name ?? '',
+    phone: summary?.phone ?? '',
   };
 
   return (
@@ -34,7 +35,7 @@ export default function MyPageSettingsSection() {
         마이페이지로 돌아가기
       </Link>
       <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-ink">설정</h2>
-      <SettingsContent myInfo={myInfo} />
+      <SettingsContent myInfo={myInfo} onProfileSaved={() => fetchSummary?.()} />
     </section>
   );
 }

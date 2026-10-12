@@ -87,7 +87,7 @@ function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete, onEdit,
                 }}
                 aria-label="사진 정보 고치기"
                 title="제목·해시태그 고치기"
-                className="absolute right-[32px] top-1 z-10 flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/55 text-[12px] leading-none text-white opacity-80 hover:bg-black/75 md:opacity-0 md:group-hover:opacity-100"
+                className={`absolute right-[32px] top-1 z-10 flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/55 text-[12px] leading-none text-white hover:bg-black/75 md:opacity-0 md:group-hover:opacity-100 ${activeSrc === photo.imageSrc ? 'opacity-90' : 'max-md:hidden'}`}
               >
                 ✎
               </button>
@@ -101,7 +101,7 @@ function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete, onEdit,
                 }}
                 aria-label="사진 지우기"
                 title="내 사진 지우기"
-                className="absolute right-1 top-1 z-10 flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/55 text-[14px] leading-none text-white opacity-80 hover:bg-black/75 md:opacity-0 md:group-hover:opacity-100"
+                className={`absolute right-1 top-1 z-10 flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/55 text-[14px] leading-none text-white hover:bg-black/75 md:opacity-0 md:group-hover:opacity-100 ${activeSrc === photo.imageSrc ? 'opacity-90' : 'max-md:hidden'}`}
               >
                 ×
               </button>
@@ -275,8 +275,8 @@ const Gallery = () => {
         </div>
         <p className="text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-3 md:text-[16px]">
           {manageMine
-            ? '내가 올린 사진에 고치기(✎)·지우기(×)가 떠 있어요. 끝나면 ⋮ 메뉴에서 [관리 끝내기]'
-            : `우리가 함께한 모든 순간들${isLoggedIn ? ' — 로그인한 회원은 누구나 사진을 올릴 수 있어요' : ''}`}
+            ? '내가 올린 사진을 터치하면 고치기(✎)·지우기(×)가 가능해요. 끝나면 ⋮ 메뉴에서 [관리 끝내기]를 눌러주세요.'
+            : '우리가 함께한 모든 순간들'}
         </p>
       </header>
 
