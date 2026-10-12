@@ -39,6 +39,12 @@ const GOOGLE_CALLBACK_MESSAGES = {
     failed: { type: 'error', text: '구글 캘린더 연동에 실패했어요. 다시 시도해주세요.' },
     cancelled: { type: 'info', text: '구글 캘린더 연동을 취소했어요' },
   },
+  // 네이버 캘린더 (2026-10-12) — 추가만 되는 서비스
+  ncalendar: {
+    linked: { type: 'success', text: '네이버 캘린더에 앞으로의 동아리 일정을 넣는 중이에요. 새 일정이 생기면 그때그때 넣어 드려요' },
+    failed: { type: 'error', text: '네이버 캘린더 연동에 실패했어요. 다시 시도해주세요.' },
+    cancelled: { type: 'info', text: '네이버 캘린더 연동을 취소했어요' },
+  },
 };
 
 // 마이페이지 본문 조립 (공통 레이아웃의 Header/Sidebar/Footer는 상위 layout에서 처리)
