@@ -419,7 +419,14 @@ export default function ScheduleForm({
       return normalize ? normalize(next) : next;
     });
 
-  const setStartTimeField = patch(setStartTime);
+  // 시작 시각을 고르면 종료는 자동으로 +1시간 — 종료가 시작보다 앞이거나 같을 때만 손댄다 (PM 2026-10-12). 23시는 23:55 로(분은 5분 단위)
+  const toMin = (t) => Number(t.hour) * 60 + Number(t.minute);
+  const plusHour = (t) => (Number(t.hour) >= 23 ? { hour: '23', minute: '55' } : { hour: pad2(Number(t.hour) + 1), minute: t.minute });
+  const setStartTimeField = (key) => (value) => {
+    const next = { ...startTime, [key]: value };
+    setStartTime(next);
+    if (toMin(endTime) <= toMin(next)) setEndTime(plusHour(next));
+  };
   const setEndTimeField = patch(setEndTime);
 
   const handleSubmit = (event) => {
