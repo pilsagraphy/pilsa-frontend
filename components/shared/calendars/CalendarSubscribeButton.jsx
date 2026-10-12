@@ -9,10 +9,9 @@ import { isIOS } from '@/lib/platform';
 import { calendarWebcalUrl } from '@/lib/calendarFeed';
 import { ROUTES } from '@/constants/routes';
 import { loginUrlWithReturnTo } from '@/lib/returnTo';
-import { getCalendarLinkStatus, getCalendarLinkUrl, getGoogleLinkStatus } from '@/apis/google';
+import { getCalendarLinkStatus, getCalendarLinkUrl } from '@/apis/google';
 import { getNaverCalendarLinkUrl, getNaverCalendarStatus } from '@/apis/naverCalendar';
 import { getKakaoCalendarLinkUrl, getKakaoCalendarStatus } from '@/apis/kakaoCalendar';
-import { getSocialLinkStatus } from '@/apis/social';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -27,7 +26,7 @@ import {
 //  - 구글·카카오: 서버가 각자 캘린더에 일정을 넣고 등록·수정·삭제를 그대로 반영 (콜백 ?calendar= / ?kcalendar=).
 //  - 네이버: 네이버 API 는 '일정 추가' 만 있어 새 일정만 넣어 준다. 수정·삭제는 본인이 직접 (콜백 ?ncalendar=).
 //  - 아이폰: 기본 캘린더 앱의 webcal 구독. 계정 연동 없이 OS 가 구독 창을 연다.
-//  2단계 버튼 문구: 그 계정을 이미 연동(간편로그인 연결)했으면 "OO 캘린더 구독하기", 아니면 "OO 계정 연동하고 구독하기" (PM 2026-10-13).
+//  캘린더 연동은 간편로그인 계정 연결과 별개다(토큰이 따로) — 연결 안 했어도 그 계정으로 로그인해 캘린더 권한만 허용하면 된다 (PM 2026-10-13).
 const CALENDAR_RESULT = {
   calendar: {
     linked: ['success', '구글 캘린더 구독이 시작됐어요. 동아리 일정이 내 캘린더에 보이기까지 최대 10분 정도 걸릴 수 있어요.'],
@@ -109,8 +108,6 @@ export default function CalendarSubscribeButton() {
   const [google, setGoogle] = useState(undefined);
   const [naver, setNaver] = useState(undefined);
   const [kakao, setKakao] = useState(undefined);
-  // 간편로그인 계정 연결 여부 — 2단계 버튼 문구("계정 연동하고 구독하기" vs "구독하기")
-  const [accounts, setAccounts] = useState({});
 
   useEffect(() => {
     setOnIOS(isIOS());
@@ -139,9 +136,6 @@ export default function CalendarSubscribeButton() {
     getCalendarLinkStatus().then(setGoogle).catch(() => setGoogle(null));
     getNaverCalendarStatus().then(setNaver).catch(() => setNaver(null));
     getKakaoCalendarStatus().then(setKakao).catch(() => setKakao(null));
-    getGoogleLinkStatus().then((r) => setAccounts((a) => ({ ...a, google: !!r?.linked }))).catch(() => {});
-    getSocialLinkStatus('naver').then((r) => setAccounts((a) => ({ ...a, naver: !!r?.linked }))).catch(() => {});
-    getSocialLinkStatus('kakao').then((r) => setAccounts((a) => ({ ...a, kakao: !!r?.linked }))).catch(() => {});
   };
 
   // 계정 선택 화면에서 뒤로 가기로 돌아오면 브라우저가 이 화면을 그대로 복원해 busy 가 켜진 채 남는다 (테스터 제보, 2026-09-27)
@@ -227,7 +221,6 @@ export default function CalendarSubscribeButton() {
   } else {
     const o = optionOf(pick);
     const linked = linkedOf(pick);
-    const accountLinked = !!accounts[pick];
     const s = statusOf[pick];
     const who = pick === 'google' ? s?.googleEmail : pick === 'naver' ? s?.naverEmail : s?.kakaoName;
     if (linked) {
@@ -238,16 +231,16 @@ export default function CalendarSubscribeButton() {
           : `${who ? `${who} ` : ''}${o.calendarLabel}에 새 일정·변경·삭제가 자동으로 반영돼요 (반영까지 최대 10분). 연동 관리는 마이페이지 → 설정에서.`;
       footer = null; // 이미 구독 중 — 확인 버튼 없이 아래 "다른 캘린더 고르기 · 닫기" 만 (PM 2026-10-13)
     } else {
-      title = accountLinked ? `${o.calendarLabel}에 구독할까요?` : `${o.label} 계정과 연동이 필요해요`;
+      title = `${o.calendarLabel}에 구독할까요?`;
       body =
         pick === 'google'
-          ? '구글 계정을 고르고 캘린더 권한을 허용하면 동아리 일정이 내 구글 캘린더에 자동 등록되고, 수정·삭제가 그대로 반영돼요 (반영까지 최대 10분).'
+          ? '구글 계정을 고르고 캘린더 권한을 허용하면 동아리 일정이 내 구글 캘린더에 자동 등록되고, 수정·삭제가 그대로 반영돼요 (반영까지 최대 10분). 간편로그인 연결과는 별개예요.'
           : pick === 'kakao'
-            ? '카카오 계정으로 로그인하고 톡캘린더 권한을 허용하면 동아리 일정이 내 톡캘린더에 자동 등록되고, 수정·삭제가 그대로 반영돼요 (반영까지 최대 10분).'
-            : '네이버 계정으로 로그인하고 캘린더 권한을 허용하면 동아리 일정이 내 네이버 캘린더에 자동 등록돼요 (추가만 — 수정·삭제는 직접 해야 해요).';
+            ? '카카오 계정으로 로그인하고 톡캘린더 권한을 허용하면 동아리 일정이 내 톡캘린더에 자동 등록되고, 수정·삭제가 그대로 반영돼요 (반영까지 최대 10분). 간편로그인 연결과는 별개예요.'
+            : '네이버 계정으로 로그인하고 캘린더 권한을 허용하면 동아리 일정이 내 네이버 캘린더에 자동 등록돼요 (추가만 — 수정·삭제는 직접 해야 해요). 간편로그인 연결과는 별개예요.';
       footer = (
         <BrandButton option={o} onClick={() => startConsent(pick)} disabled={busy || loadingOf(pick)}>
-          {busy ? `${o.label}로 이동 중…` : accountLinked ? `${o.calendarLabel} 구독하기` : `${o.label} 계정 연동하고 구독하기`}
+          {busy ? `${o.label}로 이동 중…` : `${o.calendarLabel} 구독하기`}
         </BrandButton>
       );
     }
