@@ -42,6 +42,18 @@ const GOOGLE_ERROR_MESSAGES = {
 };
 // 소셜 로그인 콜백의 ?login= 값 (구글·네이버·카카오 공통 흐름, 2026-10-11)
 const SOCIAL_LOGIN_PROVIDERS = ['google', 'naver', 'kakao'];
+// 이 브라우저에서 마지막으로 성공한 간편로그인 — 버튼에 '최근 사용' 표시 (PM 2026-10-12). 서버가 아니라 기기가 기억한다
+const LAST_SOCIAL_KEY = 'pilsaLastSocial';
+const readLastSocial = () => {
+  try {
+    return localStorage.getItem(LAST_SOCIAL_KEY);
+  } catch {
+    return null;
+  }
+};
+const RecentBadge = () => (
+  <span className="absolute -top-[8px] right-[8px] rounded-full bg-alert px-[6px] py-[1px] text-[10px] font-semibold leading-[1.4] text-white">최근 사용</span>
+);
 
 // 시안의 체크박스 — 아이디 저장 / 자동 로그인이 같은 모양을 공유한다
 function LoginCheckbox({ checked, onChange, label }) {
@@ -115,6 +127,10 @@ export default function LoginSection() {
   const [loggingOut, setLoggingOut] = useState(false);
   // 구글 동의 화면으로 나가는 중 (버튼 중복 클릭 방지)
   const [googleBusy, setGoogleBusy] = useState(false);
+  const [lastSocial, setLastSocial] = useState(null);
+  useEffect(() => {
+    setLastSocial(readLastSocial());
+  }, []);
   // 아이디·비밀번호가 틀렸을 때 '구글로 로그인' 안내를 띄울지
   const [showGoogleHint, setShowGoogleHint] = useState(false);
   // [구글로 로그인] 했는데 연결된 회원이 없어 돌아온 상태 — 서버가 그 구글 계정을 10분간 보관 중이다.
@@ -256,6 +272,11 @@ export default function LoginSection() {
         }
         restorePushAfterLogin();
 
+        try {
+          localStorage.setItem(LAST_SOCIAL_KEY, loginProvider);
+        } catch {
+          // ignore
+        }
         toast.success(`${loginLabel} 계정으로 로그인했어요`);
         // 알림 딥링크 등에서 밀려났던 경로가 있으면 그리로 (구글을 거치는 동안 sessionStorage 에 남겨 둔 값)
         router.replace(takeReturnTo(searchParams) ?? ROUTES.STUDENTS_DASHBOARD);
@@ -520,8 +541,9 @@ export default function LoginSection() {
               type="button"
               onClick={handleGoogleLogin}
               disabled={googleBusy || loggingOut}
-              className="flex h-[52px] w-full items-center justify-center gap-3 rounded-[4px] border border-line bg-surface text-[16px] font-medium text-ink-2 transition hover:bg-surface-2 disabled:opacity-60"
+              className="relative flex h-[52px] w-full items-center justify-center gap-3 rounded-[4px] border border-line bg-surface text-[16px] font-medium text-ink-2 transition hover:bg-surface-2 disabled:opacity-60"
             >
+              {lastSocial === 'google' && <RecentBadge />}
               <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
                 <path
                   fill="#EA4335"
@@ -548,8 +570,9 @@ export default function LoginSection() {
                 type="button"
                 onClick={() => handleSocialLogin('naver')}
                 disabled={googleBusy || loggingOut}
-                className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[#03C75A] text-[16px] font-medium text-white transition hover:brightness-95 disabled:opacity-60"
+                className="relative flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[#03C75A] text-[16px] font-medium text-white transition hover:brightness-95 disabled:opacity-60"
               >
+                {lastSocial === 'naver' && <RecentBadge />}
                 <span className="text-[18px] font-extrabold leading-none">N</span>
                 네이버
               </button>
@@ -557,8 +580,9 @@ export default function LoginSection() {
                 type="button"
                 onClick={() => handleSocialLogin('kakao')}
                 disabled={googleBusy || loggingOut}
-                className="flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[#FEE500] text-[16px] font-medium text-[#191919] transition hover:brightness-95 disabled:opacity-60"
+                className="relative flex h-[52px] flex-1 items-center justify-center gap-2 rounded-[4px] bg-[#FEE500] text-[16px] font-medium text-[#191919] transition hover:brightness-95 disabled:opacity-60"
               >
+                {lastSocial === 'kakao' && <RecentBadge />}
                 <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
                   <path fill="#191919" d="M12 3C6.48 3 2 6.58 2 11c0 2.83 1.86 5.31 4.66 6.72L5.5 21.5l4.74-2.98c.58.08 1.17.13 1.76.13 5.52 0 10-3.58 10-8S17.52 3 12 3z" />
                 </svg>
