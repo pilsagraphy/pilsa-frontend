@@ -10,7 +10,7 @@ import WithdrawModal from './WithdrawModal';
 import PasswordChangeModal from './PasswordChangeModal';
 import { canShowPushToggle } from '@/lib/push';
 import useThemeStore, { THEMES } from '@/stores/useThemeStore';
-import { canChooseSidebarSwipe, isSidebarSwipeEnabled, setSidebarSwipeEnabled } from '@/lib/sidebarSwipe';
+import { isSidebarSwipeEnabled, setSidebarSwipeEnabled } from '@/lib/sidebarSwipe';
 
 // 설정 본문 — 내 정보 / 화면 / 알림 / 구글 연동 / 계정. PC 는 모달(MyInfoEditModal), 폰은 페이지(/mypage/settings)가 같은 것을 그린다 (PM 2026-10-10).
 // 알림·구글 연동은 접었다 펼 수 있다 — 스위치가 네 개라 펼쳐 두면 설정 전체가 길어진다 (PM: "알림 아래로 열리고 닫혔으면").
@@ -61,16 +61,14 @@ function ThemeSegment() {
   );
 }
 
-// 폰에서 쓸어 사이드바 열기 켜고 끄기 — 아이폰에는 보이지 않는다(늘 꺼짐, lib/sidebarSwipe). 이 기기에만 저장
+// 폰에서 쓸어 사이드바 열기 켜고 끄기 — 기본값은 아이폰 끔·그 밖 켬(lib/sidebarSwipe). 이 기기에만 저장. PC 는 사이드바가 늘 보여 숨긴다
 function SidebarSwipeRow() {
-  const [visible, setVisible] = useState(false);
-  const [on, setOn] = useState(true);
+  const [on, setOn] = useState(null); // null = 아직 모름(서버 렌더)
   // 기기 판별·저장값은 클라이언트에서만 — 하이드레이션 불일치를 피하려고 mount 후 결정
   useEffect(() => {
-    setVisible(canChooseSidebarSwipe());
     setOn(isSidebarSwipeEnabled());
   }, []);
-  if (!visible) return null;
+  if (on === null) return null;
   const toggle = () => {
     setSidebarSwipeEnabled(!on);
     setOn(!on);

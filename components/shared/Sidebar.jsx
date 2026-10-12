@@ -133,7 +133,7 @@ const Sidebar = () => {
         start = null;
         return;
       }
-      // 아이폰은 늘, 그 밖은 설정에서 끈 기기면 쓸어 열기를 받지 않는다 (lib/sidebarSwipe). 열려 있을 때 쓸어 닫기는 그대로 둔다
+      // 설정에서 끈 기기면 쓸어 열기를 받지 않는다 — 기본값은 아이폰 끔·그 밖 켬 (lib/sidebarSwipe). 열려 있을 때 쓸어 닫기는 그대로 둔다
       if (!isMobileOpenRef.current && !isSidebarSwipeEnabled()) {
         start = null;
         return;
