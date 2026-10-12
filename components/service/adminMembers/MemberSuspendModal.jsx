@@ -17,7 +17,7 @@ const today = new Date();
 const CURRENT_YEAR = today.getFullYear();
 const CURRENT_MONTH = today.getMonth() + 1;
 const CURRENT_DAY = today.getDate();
-const YEARS = Array.from({ length: 4 }, (_, i) => CURRENT_YEAR + i);
+const YEARS = Array.from({ length: 4 }, (_, i) => CURRENT_YEAR + 3 - i); // 최근(먼) 연도가 위로 (PM 2026-10-12)
 
 // 선택한 연도가 올해면 이번 달부터, 그 이후 연도면 1월부터 고를 수 있다 (과거 달 차단)
 const monthsForYear = (year) => {

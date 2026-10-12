@@ -92,7 +92,8 @@ export function Calendar({
   const y = month.getFullYear();
 
   const years = [];
-  for (let yy = y - 20; yy <= y + 20; yy += 1) years.push(yy);
+  // 최근 연도가 위로 (PM 2026-10-12 "2027년이 더 위로")
+  for (let yy = y + 20; yy >= y - 20; yy -= 1) years.push(yy);
 
   const currentMonth = month.getMonth();
   const currentYear = month.getFullYear();
