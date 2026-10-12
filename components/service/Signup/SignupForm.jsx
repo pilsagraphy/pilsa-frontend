@@ -19,6 +19,7 @@ import {
 import { sendVerifyCode, verifyEmailCode } from '@/apis/mail';
 import { getGooglePendingLink } from '@/apis/google';
 import { providerLabel } from '@/apis/social';
+import AppLoading from '@/components/common/AppLoading';
 import {
   Form,
   FormControl,
@@ -745,9 +746,7 @@ function SignupFormInner() {
 
 export default function SignupForm() {
   return (
-    <Suspense
-      fallback={<div className="flex h-screen items-center justify-center">로딩 중...</div>}
-    >
+    <Suspense fallback={<AppLoading full />}>
       <SignupFormInner />
     </Suspense>
   );

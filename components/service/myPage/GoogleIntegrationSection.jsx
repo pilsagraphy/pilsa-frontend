@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { toast } from '@/lib/toast';
+import { ROUTES } from '@/constants/routes';
 import { confirmDialog } from '@/stores/useDialogStore';
 import {
   getGoogleLinkStatus,
@@ -45,7 +46,25 @@ export default function GoogleIntegrationSection() {
     load();
   }, []);
 
-  // 동의 화면으로 이동. 돌아올 때는 백엔드가 /user/myPage?google=linked 등으로 리다이렉트한다
+
+  // 동의 화면에 갔다가 뒤로 오면 브라우저(bfcache)가 이 화면을 그대로 복원해 busy 가 켜진 채 남아 토글이 비활성으로 보였다 — 복원·복귀 때 푼다 (PM 2026-10-13)
+  useEffect(() => {
+    const release = () => setBusy(false);
+    const onPageShow = (e) => {
+      if (e.persisted) release();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') release();
+    };
+    window.addEventListener('pageshow', onPageShow);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
+
+  // 동의 화면으로 이동. 돌아올 때는 백엔드가 returnTo(설정 페이지)?google=linked 등으로 리다이렉트한다
   const goToConsent = async (fetchUrl, failMessage) => {
     if (busy) return;
     setBusy(true);
@@ -79,7 +98,7 @@ export default function GoogleIntegrationSection() {
     if (busy || loading) return;
 
     if (!calendar?.linked) {
-      await goToConsent(getCalendarLinkUrl, '구글 캘린더 연동을 시작하지 못했어요');
+      await goToConsent(() => getCalendarLinkUrl(ROUTES.MY_PAGE_SETTINGS), '구글 캘린더 연동을 시작하지 못했어요');
       return;
     }
 
@@ -142,7 +161,7 @@ export default function GoogleIntegrationSection() {
           onClick={
             account?.linked
               ? handleUnlinkAccount
-              : () => goToConsent(getGoogleLinkUrl, '구글 계정 연결을 시작하지 못했어요')
+              : () => goToConsent(() => getGoogleLinkUrl(ROUTES.MY_PAGE_SETTINGS), '구글 계정 연결을 시작하지 못했어요')
           }
           className="shrink-0 rounded-[6px] border border-line px-3 py-1.5 text-[12px] font-medium text-ink-2 transition hover:border-line-strong hover:text-ink disabled:opacity-50"
         >

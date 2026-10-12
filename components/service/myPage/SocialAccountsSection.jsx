@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { toast } from '@/lib/toast';
+import { ROUTES } from '@/constants/routes';
 import { getErrorMessage } from '@/apis/auth';
 import { SOCIAL_PROVIDERS, getSocialLinkStatus, getSocialLinkUrl, unlinkSocialAccount } from '@/apis/social';
 import { getNaverCalendarLinkUrl, getNaverCalendarStatus, unlinkNaverCalendar } from '@/apis/naverCalendar';
@@ -49,6 +50,24 @@ export default function SocialAccountsSection() {
     };
   }, []);
 
+
+  // 동의 화면에 갔다가 뒤로 오면 브라우저(bfcache)가 이 화면을 그대로 복원해 busy 가 켜진 채 남아 토글이 비활성으로 보였다 — 복원·복귀 때 푼다 (PM 2026-10-13)
+  useEffect(() => {
+    const release = () => setBusy(null);
+    const onPageShow = (e) => {
+      if (e.persisted) release();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') release();
+    };
+    window.addEventListener('pageshow', onPageShow);
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.removeEventListener('pageshow', onPageShow);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, []);
+
   const goTo = async (fetchUrl, failMessage, key) => {
     if (busy) return;
     setBusy(key);
@@ -86,7 +105,7 @@ export default function SocialAccountsSection() {
   const toggleNaverCal = async () => {
     if (busy || !naverCal) return;
     if (!naverCal.linked) {
-      await goTo(() => getNaverCalendarLinkUrl(), '네이버 캘린더 연동을 시작하지 못했어요', 'ncal');
+      await goTo(() => getNaverCalendarLinkUrl(ROUTES.MY_PAGE_SETTINGS), '네이버 캘린더 연동을 시작하지 못했어요', 'ncal');
       return;
     }
     const go = await confirmDialog('네이버 캘린더 연동을 해제할까요?\n이미 넣은 일정은 네이버 캘린더에 남아 있어요. 필요하면 직접 지워 주세요.', { confirmText: '해제', cancelText: '취소' });
@@ -106,7 +125,7 @@ export default function SocialAccountsSection() {
   const toggleKakaoCal = async () => {
     if (busy || !kakaoCal) return;
     if (!kakaoCal.linked) {
-      await goTo(() => getKakaoCalendarLinkUrl(), '톡캘린더 연동을 시작하지 못했어요', 'kcal');
+      await goTo(() => getKakaoCalendarLinkUrl(ROUTES.MY_PAGE_SETTINGS), '톡캘린더 연동을 시작하지 못했어요', 'kcal');
       return;
     }
     const removeEvents = await confirmDialog('톡캘린더 연동을 해제합니다.\n그동안 등록된 일정도 톡캘린더에서 삭제할까요?', { confirmText: '일정도 삭제', cancelText: '일정은 두기' });
@@ -143,7 +162,7 @@ export default function SocialAccountsSection() {
         <button
           type="button"
           disabled={busy != null || (!s.linked && !s.configured)}
-          onClick={() => (s.linked ? unlinkAccount(p) : goTo(() => getSocialLinkUrl(p.key), `${p.label} 계정 연결을 시작하지 못했어요`, p.key))}
+          onClick={() => (s.linked ? unlinkAccount(p) : goTo(() => getSocialLinkUrl(p.key, ROUTES.MY_PAGE_SETTINGS), `${p.label} 계정 연결을 시작하지 못했어요`, p.key))}
           className="shrink-0 rounded-[6px] border border-line px-3 py-1.5 text-[12px] font-medium text-ink-2 transition hover:border-line-strong hover:text-ink disabled:opacity-50"
         >
           {s.linked ? '해제' : '연결'}

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Link from 'next/link';
 import { ChevronLeft } from 'lucide-react';
 import SettingsContent from './SettingsContent';
+import useOAuthResultToast from './useOAuthResultToast';
 import useMyPageStore from '@/stores/useMyPageStore';
 import { formatDotDate } from '@/lib/utils';
 import { ROUTES } from '@/constants/routes';
@@ -18,11 +19,15 @@ export default function MyPageSettingsSection() {
     if (!summary) fetchSummary?.();
   }, [summary, fetchSummary]);
 
+  // 연동 콜백이 이 페이지로 돌아오게 됐으니(returnTo) 결과 토스트도 여기서 띄운다
+  useOAuthResultToast();
+
   const myInfo = {
     loginId: summary?.loginId ?? '-',
     joinedAt: formatDotDate(summary?.joinedAt) || '-',
     name: summary?.name ?? '',
     phone: summary?.phone ?? '',
+    socialOnly: !!summary?.socialOnly, // 비밀번호 없는 소셜 가입 회원 — '비밀번호 만들기'·탈퇴 확인 문구
   };
 
   return (
