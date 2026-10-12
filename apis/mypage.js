@@ -26,6 +26,12 @@ export const getMyPage = async () => {
   return response.data;
 };
 
+// 1-1. 이름·연락처 고치기 (PUT /api/user/mypage/profile) [MEMBER] — { name, phone }. 이름 2~20자, 연락처 010-0000-0000, 남의 연락처면 409 (2026-10-12)
+export const updateMyProfile = async ({ name, phone }) => {
+  const response = await axiosInstance.put('/api/user/mypage/profile', { name, phone });
+  return response.data;
+};
+
 // 2. 비밀번호 변경 (PATCH /api/user/mypage/password/reset) [MEMBER]
 //    요청: { currentPassword, newPassword }
 //    새 비밀번호 재입력(확인)은 프론트 검증 — API 로는 보내지 않는다

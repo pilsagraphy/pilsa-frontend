@@ -123,10 +123,10 @@ export default function SocialAccountsSection() {
           <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.02em] text-ink">내 네이버 캘린더에 새 일정 넣기</p>
           <p className="mt-0.5 text-[12px] leading-[1.5] tracking-[-0.02em] text-ink-3 [word-break:keep-all]">
             {naverCal?.linked
-              ? `${naverCal.naverEmail ? `${naverCal.naverEmail} 캘린더에 ` : ''}새 일정이 생기면 넣어 드려요. 네이버는 일정 추가만 되는 서비스라 바뀌거나 지워진 일정은 직접 고쳐야 해요`
+              ? `${naverCal.naverEmail ? `${naverCal.naverEmail} 캘린더에 ` : ''}동아리 일정을 자동으로 업데이트해요 (추가만 — 수정·삭제는 직접)`
               : naverCal?.configured === false
                 ? '준비 중이에요'
-                : '앞으로의 동아리 일정을 네이버 캘린더에 넣어 드려요 (추가만 — 수정·삭제는 직접)'}
+                : '동아리 일정을 내 캘린더에 자동으로 업데이트해요 (추가만 — 수정·삭제는 직접)'}
           </p>
         </div>
         <button

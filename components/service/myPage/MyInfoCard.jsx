@@ -1,18 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
-import MyInfoEditModal from './MyInfoEditModal';
 
 import useMyPageStore from '@/stores/useMyPageStore';
 import { formatDotDate } from '@/lib/utils';
-import { useMinWidthMd } from '@/lib/useMinWidthMd';
 import { ROUTES } from '@/constants/routes';
 
 export default function MyInfoCard() {
   const router = useRouter();
-  const isMdUp = useMinWidthMd();
-  const [editOpen, setEditOpen] = useState(false);
 
   // 내 정보(아이디·가입일)도 스토어에서 읽기만 한다 (호출은 MyPageSection이 담당)
   const summary = useMyPageStore((s) => s.summary);
@@ -20,13 +16,6 @@ export default function MyInfoCard() {
   // 불러오기 전에는 '-'
   const loginId = summary?.loginId ?? '-';
   const joinedAt = formatDotDate(summary?.joinedAt) || '-';
-  const myInfo = { loginId, joinedAt }; // 수정 모달도 같은 값을 그대로 보여준다
-
-  // 폰에서는 모달 대신 설정 페이지로 — 모달은 스위치·연동 설명이 들어오면서 폰 화면보다 길어졌다 (PM 2026-10-10)
-  const openSettings = () => {
-    if (isMdUp) setEditOpen(true);
-    else router.push(ROUTES.MY_PAGE_SETTINGS);
-  };
 
   // h-full 을 두지 않는다 — 폰 2열 그리드가 알아서 같은 높이로 늘려 준다 (MyActivityCard 와 같은 이유)
   return (
@@ -50,16 +39,15 @@ export default function MyInfoCard() {
         </div>
       </dl>
 
-      {/* 설정 — 알림·구글 연동·계정까지 다루므로 '정보 수정' 이 아니라 '설정' 이다. PC 는 모달, 폰은 페이지 */}
+      {/* 설정 — 알림·간편로그인·캘린더·계정까지 다루므로 '정보 수정' 이 아니라 '설정'. PC 도 모달이 아니라 페이지(/mypage/settings)로 —
+          내용이 길어져 모달에 안 들어간다 (PM 2026-10-12) */}
       <button
         type="button"
-        onClick={openSettings}
+        onClick={() => router.push(ROUTES.MY_PAGE_SETTINGS)}
         className="mt-auto flex h-[38px] w-full shrink-0 items-center justify-center rounded-[4px] bg-inverse px-4 text-[16px] leading-[1.6] tracking-[-0.02em] text-inverse-fg transition hover:bg-inverse-hover"
       >
         설정
       </button>
-
-      <MyInfoEditModal open={editOpen} onOpenChange={setEditOpen} myInfo={myInfo} />
     </div>
   );
 }
