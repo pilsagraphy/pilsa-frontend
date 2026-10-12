@@ -222,8 +222,16 @@ export default function SettingsContent({ myInfo, onNestedOpenChange, onProfileS
         </div>
       </section>
 
-      {/* 3. 알림 — '무엇을 받을지'(유형 스위치)는 PC·폰 모두, '이 기기에서 받을지'(푸시 토글)는 모바일에서만 */}
-      <Collapsible title="알림">
+      {/* 3. 간편로그인 · 캘린더 — 구글(계정 + 캘린더 자동 업데이트) · 네이버(계정 + 캘린더 새 일정 넣기) · 카카오(계정). 제공자마다 한 상자. 알림보다 위, 기본 펼침 (PM 2026-10-13) */}
+      <Collapsible title="간편로그인 · 캘린더 연동" defaultOpen>
+        <div className="flex flex-col gap-2">
+          <GoogleIntegrationSection />
+          <SocialAccountsSection />
+        </div>
+      </Collapsible>
+
+      {/* 4. 알림 — '무엇을 받을지'(유형 스위치)는 PC·폰 모두, '이 기기에서 받을지'(푸시 토글)는 모바일에서만 */}
+      <Collapsible title="알림" defaultOpen>
         <div className="rounded-[8px] border border-line px-4">
           {showPushToggle && (
             <div className="border-b border-line py-3">
@@ -231,14 +239,6 @@ export default function SettingsContent({ myInfo, onNestedOpenChange, onProfileS
             </div>
           )}
           <NotificationPreferences />
-        </div>
-      </Collapsible>
-
-      {/* 4. 간편로그인 · 캘린더 — 구글(계정 + 캘린더 자동 업데이트) · 네이버(계정 + 캘린더 새 일정 넣기) · 카카오(계정). 하나로 묶음 (PM 2026-10-12) */}
-      <Collapsible title="간편로그인 · 캘린더 연동">
-        <div className="flex flex-col gap-2">
-          <GoogleIntegrationSection />
-          <SocialAccountsSection />
         </div>
       </Collapsible>
 

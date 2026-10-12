@@ -65,9 +65,10 @@ export default function GoogleIntegrationSection() {
     try {
       await unlinkGoogleAccount();
       setAccount({ linked: false });
-      // 캘린더 연동은 별도 동의로 받은 별개 기능이라 여기서 함께 끊지 않는다.
-      // 캘린더를 끄려면 아래 토글을 따로 내려야 한다.
-      toast.success('구글 계정 연결을 해제했어요');
+      // 계정을 끊으면 서버가 캘린더 연동도 함께 끊는다 (PM 2026-10-13) — 화면도 같이 내린다
+      const calWasOn = !!calendar?.linked;
+      setCalendar({ linked: false });
+      toast.success(calWasOn ? '구글 계정 연결과 캘린더 연동을 해제했어요' : '구글 계정 연결을 해제했어요');
     } catch {
       toast.error('연결 해제에 실패했어요. 잠시 후 다시 시도해주세요.');
     } finally {
