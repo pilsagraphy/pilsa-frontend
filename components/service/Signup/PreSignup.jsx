@@ -16,8 +16,8 @@ export default function PreSignup() {
   };
 
   return (
-    <div className="flex size-full items-center justify-center py-20 font-pretendard">
-      <div className="flex w-[600px] flex-col gap-[33px]">
+    <div className="mx-auto flex w-full max-w-[1280px] items-center justify-center px-[24px] py-[48px] font-pretendard desktop:px-[80px] desktop:py-[80px]">
+      <div className="flex w-full max-w-[600px] flex-col gap-[24px] desktop:gap-[33px]">
         <h1 className="text-[24px] font-semibold leading-[1.5] tracking-[-0.48px] text-ink">
           현재 학교를 다니고 계신가요?
         </h1>
