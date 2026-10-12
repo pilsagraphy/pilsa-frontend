@@ -42,8 +42,11 @@ const NOTICE_ITEMS = [
   },
 ];
 
-// 회원 탈퇴 모달 — 3단계 플로우 (안내·동의 → 비밀번호 확인 → 완료)
-export default function WithdrawModal({ open, onOpenChange }) {
+// 소셜 전용 계정(비밀번호 없음)의 본인 확인 문구 — 서버 WithdrawService.WITHDRAW_CONFIRM_TEXT 와 같은 값
+const CONFIRM_TEXT = '회원 탈퇴';
+
+// 회원 탈퇴 모달 — 3단계 플로우 (안내·동의 → 비밀번호 확인 → 완료). socialOnly: 비밀번호 대신 확인 문구 입력 (PM 2026-10-13)
+export default function WithdrawModal({ open, onOpenChange, socialOnly = false }) {
   const [step, setStep] = useState(1); // 1: 안내, 2: 비밀번호 확인, 3: 완료
   const [agreed, setAgreed] = useState(false);
   const [password, setPassword] = useState('');
@@ -66,10 +69,11 @@ export default function WithdrawModal({ open, onOpenChange }) {
   const handleWithdraw = async (e) => {
     e.preventDefault();
     if (!password || submitting) return;
+    if (socialOnly && password.trim() !== CONFIRM_TEXT) return;
 
     setSubmitting(true);
     try {
-      await withdrawAccount(password);
+      await withdrawAccount(socialOnly ? undefined : password, socialOnly ? password.trim() : undefined);
 
       try {
         localStorage.removeItem(AUTO_LOGIN_KEY);
@@ -153,7 +157,9 @@ export default function WithdrawModal({ open, onOpenChange }) {
                 본인 확인
               </DialogTitle>
               <DialogDescription className="text-[13px] tracking-[-0.02em] text-ink-3">
-                안전한 탈퇴 처리를 위해 현재 비밀번호를 입력해주세요.
+                {socialOnly
+                  ? `비밀번호가 없는 간편 로그인 계정이에요. 확인을 위해 '${CONFIRM_TEXT}' 를 그대로 입력해주세요.`
+                  : '안전한 탈퇴 처리를 위해 현재 비밀번호를 입력해주세요.'}
               </DialogDescription>
             </DialogHeader>
 
@@ -162,8 +168,8 @@ export default function WithdrawModal({ open, onOpenChange }) {
               <Input
                 required
                 autoFocus
-                type="password"
-                placeholder="현재 비밀번호"
+                type={socialOnly ? 'text' : 'password'}
+                placeholder={socialOnly ? CONFIRM_TEXT : '현재 비밀번호'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
@@ -174,7 +180,7 @@ export default function WithdrawModal({ open, onOpenChange }) {
               <div className="flex flex-col gap-2">
                 <Button
                   type="submit"
-                  disabled={!password || submitting}
+                  disabled={!password || submitting || (socialOnly && password.trim() !== CONFIRM_TEXT)}
                   className="h-[46px] w-full rounded-[6px] bg-inverse text-[15px] font-semibold text-inverse-fg hover:bg-inverse-hover disabled:opacity-40"
                 >
                   {submitting ? '처리 중...' : '탈퇴하기'}

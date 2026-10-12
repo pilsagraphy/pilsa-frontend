@@ -1,16 +1,17 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useRef, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from '@/lib/toast';
 
-import { registerFormSchema, loginIdSchema } from '@/schemas/auth';
+import { registerFormSchema, registerSocialFormSchema, loginIdSchema } from '@/schemas/auth';
 import { EMAIL_DOMAINS } from '@/constants/email';
 import { ROUTES } from '@/constants/routes';
 import {
   registerUser,
+  registerSocialUser,
   checkLoginIdDuplicate,
   checkEmailDuplicate,
   getErrorMessage,
@@ -96,8 +97,11 @@ function SignupFormInner() {
   const [googlePending, setGooglePending] = useState(null);
   const [existingMemberField, setExistingMemberField] = useState(null);
 
+  // 소셜로 들어온 가입은 비밀번호가 없다 — 검증 스키마를 그때그때 고른다 (resolver 는 호출 시점에 ref 를 읽는다)
+  const socialRef = useRef(false);
   const form = useForm({
-    resolver: zodResolver(registerFormSchema),
+    resolver: (values, ctx, opts) =>
+      zodResolver(socialRef.current ? registerSocialFormSchema : registerFormSchema)(values, ctx, opts),
     defaultValues: DEFAULT_VALUES,
     mode: 'onChange',
   });
@@ -123,6 +127,7 @@ function SignupFormInner() {
     getGooglePendingLink()
       .then((info) => {
         if (!info?.pending) return;
+        socialRef.current = true;
         setGooglePending(info);
 
         // 구글 계정 이메일로 이메일 칸을 채운다 — 인증번호는 그대로 받아야 한다 (가입 API 가 인증 통과를 확인한다)
@@ -305,19 +310,26 @@ function SignupFormInner() {
       studentNo: safe(data.studentId),
       email: safe(finalEmail),
       loginId: safe(data.username),
-      password: data.password ?? '',
       memberType: memberTypeForApi,
     };
 
     try {
       setIsRegistering(true);
-      await registerUser(payload);
 
-      toast.success(
-        googlePending
-          ? '회원가입이 완료되었습니다. 로그인하면 구글 계정이 연결돼요.'
-          : '회원가입이 완료되었습니다.'
-      );
+      // 소셜 가입(비밀번호 없음, PM 2026-10-13) — 서버가 가입·소셜 계정 연결·로그인(리프레시 쿠키)을 한 번에 끝낸다.
+      // 로그인 화면의 ?login=<provider> 처리가 세션을 마무리하므로 그리로 보낸다 (구글 로그인 복귀와 같은 길)
+      if (googlePending) {
+        await registerSocialUser(payload);
+        const provider = String(googlePending.provider ?? 'GOOGLE').toLowerCase();
+        toast.success('회원가입이 완료되었습니다.');
+        form.reset(DEFAULT_VALUES);
+        router.replace(`${ROUTES.LOGIN}?login=${provider}`);
+        return;
+      }
+
+      await registerUser({ ...payload, password: data.password ?? '' });
+
+      toast.success('회원가입이 완료되었습니다.');
 
       form.reset(DEFAULT_VALUES);
       setIsEmailSent(false);
@@ -325,8 +337,7 @@ function SignupFormInner() {
       setIsDuplicateChecked(false);
       setEmailExpireTime(0);
 
-      // 구글 연결 대기 중이면 로그인 화면이 "로그인하면 연결돼요" 배너를 이어서 보여 준다
-      router.push(googlePending ? `${ROUTES.LOGIN}?googleLink=login` : ROUTES.LOGIN);
+      router.push(ROUTES.LOGIN);
     } catch (error) {
       reportSignupError(error, '회원가입에 실패했습니다.');
     } finally {
@@ -352,12 +363,13 @@ function SignupFormInner() {
           role="status"
           className="mb-6 rounded-[6px] border border-line bg-surface-2 px-4 py-3 text-[14px] leading-[1.6] tracking-[-0.28px] text-ink [word-break:keep-all]"
         >
-          <span className="font-bold">{providerLabel(googlePending.provider)} 계정 연결 대기 중</span>
+          {/* 비밀번호 없는 소셜 가입 안내 — 문구는 PM 2026-10-13 */}
+          <span className="font-bold">
+            {providerLabel(googlePending.provider)} 계정({googlePending.maskedEmail})으로 가입합니다.
+          </span>
           <br />
           <span className="text-ink-2">
-            가입을 마치고 로그인하면{' '}
-            <span className="font-medium text-ink">{googlePending.maskedEmail}</span> 계정이 자동으로
-            연결돼요.
+            비밀번호는 만들지 않아요. {providerLabel(googlePending.provider)} 간편로그인으로 로그인하세요.
           </span>
         </div>
       )}
@@ -613,6 +625,9 @@ function SignupFormInner() {
             </div>
           </div>
 
+          {/* 소셜 가입은 비밀번호가 없다 — 두 칸을 통째로 뺀다 */}
+          {!googlePending && (
+            <>
           <FormField
             control={form.control}
             name="password"
@@ -672,6 +687,8 @@ function SignupFormInner() {
               </FormItem>
             )}
           />
+            </>
+          )}
 
           <Button
             type="submit"

@@ -70,6 +70,14 @@ export const registerUser = async (payload) => {
   return response.data;
 };
 
+// 2-0. 소셜 가입 — 비밀번호 없음 (POST /api/auth/register/social) - 응답: AuthResponse (바로 로그인, 리프레시 쿠키 심김)
+// 소셜 로그인 → 미가입 → 회원가입으로 넘어온 경우(대기 쿠키 g_pending_link)만 된다. 본문은 register 와 같되 password 없음
+// 실패: 400 간편 로그인 대기 없음·만료 / 그 외는 register 와 동일. 가입 뒤 /login?login=<provider> 로 보내면 로그인 화면이 세션을 마무리한다
+export const registerSocialUser = async (payload) => {
+  const response = await axiosInstance.post('/api/auth/register/social', payload);
+  return response.data;
+};
+
 // 2-1. 아이디 중복 확인 (GET /api/auth/check?loginId=value) - 200 본문 없음(사용 가능)
 // 실패: 400 '이미 사용 중인 아이디입니다.' — 객체가 아니라 문자열로 내려온다
 export const checkLoginIdDuplicate = async (loginId) => {
