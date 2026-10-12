@@ -4,9 +4,9 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/lib/toast';
 import { Copy } from 'lucide-react';
+import { ROUTES } from '@/constants/routes';
 
-export default function FindIdSuccess({ userId = 'pilsa1234' }) {
-  // 일단 하드 코딩
+export default function FindIdSuccess({ userId = '' }) {
   const router = useRouter();
 
   // 아이디 클립보드 복사
@@ -47,13 +47,13 @@ export default function FindIdSuccess({ userId = 'pilsa1234' }) {
       {/* 버튼 영역 */}
       <div className="flex flex-col gap-3 w-full">
         <Button
-          onClick={() => router.push('/login')}
+          onClick={() => router.push(ROUTES.LOGIN)}
           className="h-[52px] w-full bg-inverse hover:bg-inverse-2 text-inverse-fg text-[16px] transition-colors"
         >
           로그인 하러가기
         </Button>
         <Button
-          onClick={() => router.push('/findPw')}
+          onClick={() => router.push(ROUTES.FIND_PW)} // '/findPw' 로 보내 404 가 나던 것 (실제 경로 /findPassword)
           variant="outline"
           className="h-[52px] w-full border-line-strong text-ink text-[16px] transition-colors hover:bg-surface-2"
         >

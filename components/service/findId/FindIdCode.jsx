@@ -43,8 +43,8 @@ export default function FindIdCode({ email, onNext, onPrev }) {
       await verifyFindIdCode(email, normalizedCode);
       const result = await findLoginIdByEmail(email);
 
-      toast.success('인증이 완료되었습니다.', {
-        description: '아이디 확인 화면으로 이동합니다.',
+      toast.success('인증했어요', {
+        description: '',
       });
 
       timerRef.current = setTimeout(() => {

@@ -26,8 +26,9 @@ export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, on
   const label = providerLabel;
   const { emailMatched, maskedEmail, maskedLoginId } = pending;
 
+  // 바깥 클릭·ESC 는 모달만 닫는다(onAccept: 대기 유지, 배너만 남음). 실수로 닫았는데 10분 보관이 사라지면 소셜 로그인부터 다시 해야 한다 (감사 2026-10-13)
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onDecline?.()}>
+    <Dialog open={open} onOpenChange={(next) => !next && onAccept?.()}>
       <DialogContent
         hideCloseButton
         className="max-w-[380px] gap-[20px] rounded-[4px] border-line p-[24px]"
@@ -39,22 +40,17 @@ export default function GoogleLinkDialog({ open, pending, onAccept, onSignup, on
         <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
           {emailMatched ? (
             <>
-              {label} 계정 <span className="font-medium text-ink">{maskedEmail}</span>과 같은 이메일로
-              가입된 회원(아이디 <span className="font-medium text-ink">{maskedLoginId}</span>)이 있어요.
+              같은 이메일로 가입한 아이디 <span className="font-medium text-ink">{maskedLoginId}</span>가 있어요.
               <br />
-              이 {label} 계정을 그 회원 계정에 연결할까요?
-              <br />
-              본인 확인을 위해 아이디·비밀번호로 한 번만 로그인하면 연결되고, 다음부터는 {label}로 바로
-              로그인할 수 있어요.
+              아이디·비밀번호로 한 번 로그인하면 {label} 계정이 연결되고, 다음부턴 {label}로 바로 들어와요.
             </>
           ) : (
             <>
-              {label} 계정 <span className="font-medium text-ink">{maskedEmail}</span>로 가입된 회원이
-              없어요.
+              이 {label} 계정{maskedEmail ? <>(<span className="font-medium text-ink">{maskedEmail}</span>)</> : null}으로 가입한 회원이 없어요.
               <br />
-              회원가입을 진행할까요? 가입을 마치고 로그인하면 이 {label} 계정이 자동으로 연결돼요.
+              비밀번호 없이 {label} 계정으로 바로 가입할 수 있어요.
               <br />
-              다른 이메일로 이미 가입했다면 아이디·비밀번호로 로그인해도 연결돼요.
+              이미 다른 이메일로 가입했다면 아이디·비밀번호로 로그인하면 연결돼요.
             </>
           )}
         </DialogDescription>

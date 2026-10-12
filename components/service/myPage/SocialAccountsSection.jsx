@@ -96,7 +96,7 @@ export default function SocialAccountsSection() {
       toast.success(`${p.label} 계정 연결을 해제했어요`);
     } catch (err) {
       // 비밀번호 없는 소셜 전용 계정의 마지막 연결이면 서버가 409 로 막는다 — 그 문구를 그대로 보여 준다
-      toast.error(getErrorMessage(err, '연결 해제에 실패했어요. 잠시 후 다시 시도해주세요.'));
+      toast.error(getErrorMessage(err, '연결 해제에 실패했어요.'));
     } finally {
       setBusy(null);
     }
@@ -108,7 +108,7 @@ export default function SocialAccountsSection() {
       await goTo(() => getNaverCalendarLinkUrl(ROUTES.MY_PAGE_SETTINGS), '네이버 캘린더 연동을 시작하지 못했어요', 'ncal');
       return;
     }
-    const go = await confirmDialog('네이버 캘린더 연동을 해제할까요?\n이미 넣은 일정은 네이버 캘린더에 남아 있어요. 필요하면 직접 지워 주세요.', { confirmText: '해제', cancelText: '취소' });
+    const go = await confirmDialog('네이버 캘린더 연동을 끌까요?\n넣어 둔 일정은 네이버 캘린더에 그대로 남아요.', { confirmText: '끄기', cancelText: '취소' });
     if (!go) return;
     setBusy('ncal');
     try {
@@ -116,7 +116,7 @@ export default function SocialAccountsSection() {
       setNaverCal((prev) => ({ ...prev, linked: false, naverEmail: '' }));
       toast.success('네이버 캘린더 연동을 해제했어요');
     } catch {
-      toast.error('연동 해제에 실패했어요. 잠시 후 다시 시도해주세요.');
+      toast.error('연동 해제에 실패했어요.');
     } finally {
       setBusy(null);
     }
@@ -128,14 +128,17 @@ export default function SocialAccountsSection() {
       await goTo(() => getKakaoCalendarLinkUrl(ROUTES.MY_PAGE_SETTINGS), '톡캘린더 연동을 시작하지 못했어요', 'kcal');
       return;
     }
-    const removeEvents = await confirmDialog('톡캘린더 연동을 해제합니다.\n그동안 등록된 일정도 톡캘린더에서 삭제할까요?', { confirmText: '일정도 삭제', cancelText: '일정은 두기' });
+    // 바깥 클릭·ESC 가 곧 '일정은 두기' 로 읽혀 취소할 길이 없었다 — 해제 여부를 먼저 묻는다 (감사 2026-10-13)
+    const go = await confirmDialog('톡캘린더 연동을 끌까요?', { confirmText: '끄기', cancelText: '취소' });
+    if (!go) return;
+    const removeEvents = await confirmDialog('넣어 둔 일정도 톡캘린더에서 지울까요?', { confirmText: '일정도 지우기', cancelText: '일정은 두기' });
     setBusy('kcal');
     try {
       const result = await unlinkKakaoCalendar(removeEvents);
       setKakaoCal((prev) => ({ ...prev, linked: false, kakaoName: '' }));
       toast.success(removeEvents && result?.removedEvents ? `연동을 해제하고 일정 ${result.removedEvents}건을 삭제했어요` : '톡캘린더 연동을 해제했어요');
     } catch {
-      toast.error('연동 해제에 실패했어요. 잠시 후 다시 시도해주세요.');
+      toast.error('연동 해제에 실패했어요.');
     } finally {
       setBusy(null);
     }
@@ -184,10 +187,10 @@ export default function SocialAccountsSection() {
             <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.02em] text-ink">내 네이버 캘린더에 새 일정 넣기</p>
             <p className="mt-0.5 text-[12px] leading-[1.5] tracking-[-0.02em] text-ink-3 [word-break:keep-all]">
               {naverCal?.linked
-                ? `${naverCal.naverEmail ? `${naverCal.naverEmail} 캘린더에 ` : ''}동아리 일정을 자동으로 업데이트해요 (추가만 — 수정·삭제는 직접)`
+                ? `${naverCal.naverEmail ? `${naverCal.naverEmail} 캘린더에 ` : ''}새 일정을 넣어 드려요. 바뀐 일정은 직접 고쳐야 해요`
                 : naverCal?.configured === false
                   ? '준비 중이에요'
-                  : '동아리 일정을 내 캘린더에 자동으로 업데이트해요 (추가만 — 수정·삭제는 직접)'}
+                  : '새 일정만 내 캘린더에 넣어 드려요. 바뀐 일정은 직접 고쳐야 해요'}
             </p>
           </div>
           <Switch on={!!naverCal?.linked} label="내 네이버 캘린더에 새 일정 넣기" disabled={busy != null || !naverCal || (!naverCal.linked && naverCal.configured === false)} onClick={toggleNaverCal} />
@@ -205,7 +208,7 @@ export default function SocialAccountsSection() {
                 ? '일부 일정을 반영하지 못했어요. 연동을 해제한 뒤 다시 켜주세요.'
                 : kakaoCal?.configured === false && !kakaoCal?.linked
                   ? '준비 중이에요'
-                  : '동아리 일정을 내 캘린더에 자동으로 업데이트해요 (수정·삭제도 반영)'}
+                  : '동아리 일정이 내 캘린더에 자동으로 들어가요. 바뀌거나 지워진 일정도 그대로 반영돼요'}
             </p>
           </div>
           <Switch on={!!kakaoCal?.linked} label="내 톡캘린더에 일정 자동 등록" disabled={busy != null || !kakaoCal || (!kakaoCal.linked && kakaoCal.configured === false)} onClick={toggleKakaoCal} />

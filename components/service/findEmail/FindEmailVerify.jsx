@@ -56,7 +56,7 @@ export default function FindEmailVerify({ onNext }) {
         });
       } else {
         // 네트워크·서버 오류는 '회원 없음'과 구분해 알린다 (예전 mock 은 전부 회원 없음으로 뭉뚱그렸다)
-        toast.error(getErrorMessage(err, '이메일을 조회하지 못했어요. 잠시 후 다시 시도해주세요.'));
+        toast.error(getErrorMessage(err, '이메일을 찾지 못했어요'));
       }
       setLoading(false); // 실패 시 다시 입력 시도할 수 있게 로딩 해제
     }

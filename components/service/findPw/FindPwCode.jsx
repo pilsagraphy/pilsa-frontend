@@ -53,8 +53,8 @@ export default function FindPwCode({ email, onNext, onPrev }) {
         return;
       }
 
-      toast.success('인증이 완료되었습니다.', {
-        description: '비밀번호 재설정 화면으로 이동합니다.',
+      toast.success('인증했어요', {
+        description: '',
       });
 
       // 성공 메시지를 보여준 뒤 1초 후 4단계(비밀번호 재설정)로 이동

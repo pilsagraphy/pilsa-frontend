@@ -54,8 +54,9 @@ export default function FindPwEmail({ loginId, onNext, onPrev }) {
       }, 1000);
     } catch (error) {
       // 에러 발생 시(등록되지 않은 이메일 등) 안내 메시지 표시
-      toast.error('발송 실패', {
-        description: getErrorMessage(error, '등록되지 않은 이메일이거나 서버 오류가 발생했습니다.'),
+      // 소셜 전용 계정(403)이면 서버 문구가 곧 안내라 제목으로 올린다
+      toast.error(getErrorMessage(error, '메일을 보내지 못했어요'), {
+        description: error?.response?.status === 404 ? '아이디와 가입한 이메일이 맞는지 확인해주세요' : '',
       });
       setLoading(false); // 다시 입력할 수 있도록 로딩 상태 해제
     }

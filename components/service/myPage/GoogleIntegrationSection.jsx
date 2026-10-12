@@ -88,7 +88,7 @@ export default function GoogleIntegrationSection() {
       toast.success('구글 계정 연결을 해제했어요');
     } catch (err) {
       // 비밀번호 없는 소셜 전용 계정의 마지막 연결이면 서버가 409 로 막는다 — 그 문구를 그대로 보여 준다
-      toast.error(getErrorMessage(err, '연결 해제에 실패했어요. 잠시 후 다시 시도해주세요.'));
+      toast.error(getErrorMessage(err, '연결 해제에 실패했어요'));
     } finally {
       setBusy(false);
     }
@@ -102,11 +102,11 @@ export default function GoogleIntegrationSection() {
       return;
     }
 
+    // 바깥 클릭·ESC 가 곧 '일정은 두기' 로 읽혀 취소할 길이 없었다 — 해제 여부를 먼저 묻고, 그 다음 일정 삭제 여부 (감사 2026-10-13)
+    const go = await confirmDialog('구글 캘린더 연동을 끌까요?', { confirmText: '끄기', cancelText: '취소' });
+    if (!go) return;
     // 이미 담긴 일정을 말없이 지우면 안 된다 — 그걸 보고 일정을 잡았을 수 있다
-    const removeEvents = await confirmDialog(
-      '연동을 해제합니다.\n그동안 등록된 일정도 구글 캘린더에서 삭제할까요?',
-      { confirmText: '일정도 삭제', cancelText: '일정은 두기' }
-    );
+    const removeEvents = await confirmDialog('넣어 둔 일정도 구글 캘린더에서 지울까요?', { confirmText: '일정도 지우기', cancelText: '일정은 두기' });
 
     setBusy(true);
     try {
@@ -118,7 +118,7 @@ export default function GoogleIntegrationSection() {
           : '구글 캘린더 연동을 해제했어요'
       );
     } catch {
-      toast.error('연동 해제에 실패했어요. 잠시 후 다시 시도해주세요.');
+      toast.error('연동 해제에 실패했어요');
     } finally {
       setBusy(false);
     }
@@ -181,7 +181,7 @@ export default function GoogleIntegrationSection() {
                 문구는 무엇이 어디로 가는지 주어를 밝혀 쓴다 (알림 토글의 '알려드려요' 와 같은 말투) */}
             {hasSyncFailure
               ? '일부 일정을 반영하지 못했어요. 연동을 해제한 뒤 다시 켜주세요.'
-              : '동아리 일정을 내 캘린더에 자동으로 업데이트해요 (수정·삭제도 반영)'}
+              : '동아리 일정이 내 캘린더에 자동으로 들어가요. 바뀌거나 지워진 일정도 그대로 반영돼요'}
           </p>
         </div>
 

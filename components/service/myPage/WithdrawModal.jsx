@@ -22,23 +22,23 @@ import { BASE_PATH } from '@/constants/routes';
 const NOTICE_ITEMS = [
   {
     icon: UserX,
-    text: '이름·이메일·아이디·전화번호 등 개인정보는 즉시 파기됩니다.',
+    text: '이름·이메일·아이디·전화번호 같은 개인정보는 바로 지워요.',
   },
   {
     icon: FileText,
-    text: '작성하신 글과 댓글은 남지만, 작성자가 "탈퇴한 회원"으로 표시됩니다.',
+    text: '쓴 글과 댓글은 남고, 작성자는 "탈퇴한 회원"으로 보여요.',
   },
   {
     icon: BellOff,
-    text: '이 계정으로 알림을 받던 모든 기기의 알림 수신이 해제됩니다.',
+    text: '이 계정으로 알림을 받던 모든 기기의 알림이 꺼져요.',
   },
   {
     icon: CalendarClock,
-    text: '탈퇴 후 30일 동안은 같은 학번으로 재가입할 수 없습니다.',
+    text: '30일 동안은 같은 학번으로 다시 가입할 수 없어요.',
   },
   {
     icon: ShieldAlert,
-    text: '이용 제한(정지·차단) 중 탈퇴한 경우, 제한이 끝날 때까지 재가입이 제한됩니다.',
+    text: '이용 제한 중에 탈퇴하면 제한이 끝날 때까지 다시 가입할 수 없어요.',
   },
 ];
 
@@ -158,7 +158,7 @@ export default function WithdrawModal({ open, onOpenChange, socialOnly = false }
               </DialogTitle>
               <DialogDescription className="text-[13px] tracking-[-0.02em] text-ink-3">
                 {socialOnly
-                  ? `비밀번호가 없는 간편 로그인 계정이에요. 확인을 위해 '${CONFIRM_TEXT}' 를 그대로 입력해주세요.`
+                  ? `간편로그인 전용 계정이라 비밀번호 대신 '${CONFIRM_TEXT}'를 그대로 적어주세요.`
                   : '안전한 탈퇴 처리를 위해 현재 비밀번호를 입력해주세요.'}
               </DialogDescription>
             </DialogHeader>

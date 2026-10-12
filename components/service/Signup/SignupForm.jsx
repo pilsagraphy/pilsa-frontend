@@ -17,7 +17,7 @@ import {
   getErrorMessage,
 } from '@/apis/auth';
 import { sendVerifyCode, verifyEmailCode } from '@/apis/mail';
-import { getGooglePendingLink } from '@/apis/google';
+import { getGooglePendingLink, discardGooglePendingLink } from '@/apis/google';
 import { providerLabel } from '@/apis/social';
 import AppLoading from '@/components/common/AppLoading';
 import {
@@ -31,7 +31,6 @@ import {
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Toaster } from '@/components/ui/sonner';
 import {
   Select,
   SelectContent,
@@ -179,6 +178,17 @@ function SignupFormInner() {
     form.setValue('emailCode', '');
   };
 
+  // 소셜 모드에서 빠져나와 보통 가입으로 — 서버의 대기 정보를 버리고 비밀번호 칸을 되살린다
+  const leaveSocialMode = async () => {
+    try {
+      await discardGooglePendingLink();
+    } catch {
+      // 못 버려도 화면은 보통 폼으로 — 대기는 10분 뒤 사라진다
+    }
+    socialRef.current = false;
+    setGooglePending(null);
+  };
+
   // 구글 연결 대기 중 + 본인 식별 항목 중복 → "이미 가입된 회원" 모달. 그 외에는 평소처럼 토스트
   const reportSignupError = (error, fallback) => {
     const message = getErrorMessage(error, fallback);
@@ -203,10 +213,10 @@ function SignupFormInner() {
       setIsCheckingLoginId(true);
       await checkLoginIdDuplicate(username);
       setIsDuplicateChecked(true);
-      toast.success('사용 가능한 아이디입니다.');
+      toast.success('사용할 수 있는 아이디예요');
     } catch (error) {
       setIsDuplicateChecked(false);
-      toast.error(getErrorMessage(error, '아이디 중복 확인에 실패했습니다.'));
+      toast.error(getErrorMessage(error, '아이디 중복 확인을 못 했어요'));
     } finally {
       setIsCheckingLoginId(false);
     }
@@ -238,12 +248,12 @@ function SignupFormInner() {
       setEmailExpireTime(expireTime);
       form.setValue('emailCode', '');
 
-      toast.success('인증번호가 발송되었습니다.');
+      toast.success('인증번호를 보냈어요');
     } catch (error) {
       setIsEmailSent(false);
       setIsEmailVerified(false);
       setEmailExpireTime(0);
-      reportSignupError(error, '인증번호 발송에 실패했습니다.');
+      reportSignupError(error, '인증번호를 보내지 못했어요');
     } finally {
       setIsSendingEmailCode(false);
     }
@@ -275,15 +285,15 @@ function SignupFormInner() {
 
       if (!verified) {
         setIsEmailVerified(false);
-        toast.error('인증번호가 올바르지 않거나 만료되었습니다.');
+        toast.error('인증번호가 틀렸거나 만료됐어요');
         return;
       }
 
       setIsEmailVerified(true);
-      toast.success('이메일 인증이 완료되었습니다.');
+      toast.success('이메일 인증을 마쳤어요');
     } catch (error) {
       setIsEmailVerified(false);
-      toast.error(getErrorMessage(error, '이메일 인증에 실패했습니다.'));
+      toast.error(getErrorMessage(error, '이메일 인증에 실패했어요'));
     } finally {
       setIsVerifyingEmailCode(false);
     }
@@ -322,7 +332,7 @@ function SignupFormInner() {
       if (googlePending) {
         await registerSocialUser(payload);
         const provider = String(googlePending.provider ?? 'GOOGLE').toLowerCase();
-        toast.success('회원가입이 완료되었습니다.');
+        toast.success('가입을 마쳤어요');
         form.reset(DEFAULT_VALUES);
         router.replace(`${ROUTES.LOGIN}?login=${provider}`);
         return;
@@ -330,7 +340,7 @@ function SignupFormInner() {
 
       await registerUser({ ...payload, password: data.password ?? '' });
 
-      toast.success('회원가입이 완료되었습니다.');
+      toast.success('가입을 마쳤어요');
 
       form.reset(DEFAULT_VALUES);
       setIsEmailSent(false);
@@ -340,7 +350,7 @@ function SignupFormInner() {
 
       router.push(ROUTES.LOGIN);
     } catch (error) {
-      reportSignupError(error, '회원가입에 실패했습니다.');
+      reportSignupError(error, '가입에 실패했어요');
     } finally {
       setIsRegistering(false);
     }
@@ -351,7 +361,7 @@ function SignupFormInner() {
   return (
     <div className="mx-auto w-full max-w-[1280px] px-[24px] py-[48px] font-['Pretendard',sans-serif] desktop:px-[80px] desktop:py-[80px]">
     <div className="mx-auto w-full max-w-[600px]">
-      <Toaster richColors position="top-center" />
+      {/* Toaster 는 (auth) 레이아웃의 ClientToaster 하나만 — 여기서 또 그리면 토스트가 두 번 뜬다 (감사 2026-10-13) */}
 
       <div className="mb-8">
         <span className="inline-block rounded-[4px] bg-surface-2 px-4 py-2 text-[14px] text-ink">
@@ -366,12 +376,21 @@ function SignupFormInner() {
         >
           {/* 비밀번호 없는 소셜 가입 안내 — 문구는 PM 2026-10-13 */}
           <span className="font-bold">
-            {providerLabel(googlePending.provider)} 계정{googlePending.maskedEmail ? `(${googlePending.maskedEmail})` : ''}으로 가입합니다.
+            {providerLabel(googlePending.provider)} 계정{googlePending.maskedEmail ? `(${googlePending.maskedEmail})` : ''}으로 가입해요.
           </span>
           <br />
           <span className="text-ink-2">
-            비밀번호는 만들지 않아요. {providerLabel(googlePending.provider)} 간편로그인으로 로그인하세요.
+            비밀번호 없이 {providerLabel(googlePending.provider)} 간편로그인으로 들어와요. 필요하면 나중에 설정에서 만들 수 있어요.
           </span>
+          <br />
+          {/* 대기 쿠키가 살아 있는 10분 동안은 어느 길로 와도 소셜 모드라 일반 가입으로 빠져나갈 길이 없었다 — 여기서 대기를 버리고 보통 폼으로 (감사 2026-10-13) */}
+          <button
+            type="button"
+            onClick={leaveSocialMode}
+            className="mt-1 text-[13px] text-ink-3 underline underline-offset-2 hover:text-ink"
+          >
+            비밀번호를 만들어 일반 회원으로 가입할래요
+          </button>
         </div>
       )}
 
@@ -715,10 +734,10 @@ function SignupFormInner() {
             이미 가입된 회원이에요
           </DialogTitle>
           <DialogDescription className="text-center text-[14px] leading-[1.7] tracking-[-0.28px] text-ink-2 [word-break:keep-all]">
-            입력한 {existingMemberField}로 가입된 회원이 있어요.
+            이 {existingMemberField}로 가입한 회원이 이미 있어요.
             <br />
-            새로 가입하는 대신 그 계정으로 로그인하면 {providerLabel(googlePending?.provider)} 계정{' '}
-            <span className="font-medium text-ink">{googlePending?.maskedEmail}</span>이 연결돼요.
+            그 아이디로 로그인하면 {providerLabel(googlePending?.provider)} 계정
+            {googlePending?.maskedEmail ? <span className="font-medium text-ink">({googlePending.maskedEmail})</span> : null}이 연결돼요.
           </DialogDescription>
           <DialogFooter className="flex flex-col gap-[8px] sm:flex-col sm:space-x-0">
             <Button
