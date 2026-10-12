@@ -67,8 +67,9 @@ export default function GoogleIntegrationSection() {
       setAccount({ linked: false });
       // 캘린더 연동은 별개(토큰이 따로)라 여기서 끊지 않는다 — 캘린더 토글에서 따로 (PM 2026-10-13 결정)
       toast.success('구글 계정 연결을 해제했어요');
-    } catch {
-      toast.error('연결 해제에 실패했어요. 잠시 후 다시 시도해주세요.');
+    } catch (err) {
+      // 비밀번호 없는 소셜 전용 계정의 마지막 연결이면 서버가 409 로 막는다 — 그 문구를 그대로 보여 준다
+      toast.error(getErrorMessage(err, '연결 해제에 실패했어요. 잠시 후 다시 시도해주세요.'));
     } finally {
       setBusy(false);
     }

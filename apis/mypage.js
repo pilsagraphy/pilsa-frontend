@@ -64,8 +64,9 @@ export const logoutAllDevices = async () => {
 // 학번은 복원 불가 해시로 남는다. 글·댓글은 유지되며 작성자명이 '탈퇴한 회원'으로 바뀐다
 // 재가입은 30일 쿨다운. 알림 기기 삭제·알림함 정리·세션 종료가 함께 처리된다
 // 실패: 400 비밀번호 불일치 / 404 탈퇴 처리할 수 없는 계정
-export const withdrawAccount = async (password) => {
-  const response = await axiosInstance.patch('/api/user/mypage/withdraw', { password });
+// 소셜 전용 계정(비밀번호 없음, GET /api/user/mypage 의 socialOnly)은 password 대신 confirmText='회원 탈퇴' 를 보낸다 (2026-10-13)
+export const withdrawAccount = async (password, confirmText) => {
+  const response = await axiosInstance.patch('/api/user/mypage/withdraw', { password, confirmText });
   return response.data;
 };
 

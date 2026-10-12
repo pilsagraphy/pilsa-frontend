@@ -61,3 +61,16 @@ export const registerFormSchema = z
     message: '비밀번호가 일치하지 않습니다.',
     path: ['passwordConfirm'],
   });
+
+// 소셜 가입(비밀번호 없음) — 비밀번호 두 칸만 빠지고 나머지는 같다 (PM 2026-10-13)
+export const registerSocialFormSchema = z.object({
+  name: nameSchema,
+  department: z.string().min(1, { message: '학과를 입력해주세요.' }),
+  studentId: studentIdSchema,
+  emailLocal: z.string().min(1, { message: '이메일을 입력해주세요.' }),
+  emailDomain: z.string().min(1, { message: '선택해주세요.' }),
+  emailCustom: z.string().optional(),
+  emailCode: emailCodeSchema,
+  phone: phoneSchema,
+  username: loginIdSchema,
+});

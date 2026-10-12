@@ -252,8 +252,11 @@ export default function SettingsContent({ myInfo, onNestedOpenChange, onProfileS
             className="flex w-full items-center justify-between px-4 py-3 text-left transition hover:bg-surface-2"
           >
             <div>
-              <p className="text-[14px] font-medium tracking-[-0.02em] text-ink">비밀번호 재설정</p>
-              <p className="mt-0.5 text-[12px] tracking-[-0.02em] text-ink-3">현재 비밀번호 확인 후 새 비밀번호로 변경해요</p>
+              {/* 비밀번호 없는 소셜 가입 회원(socialOnly)은 '만들기' — 만들면 아이디·비밀번호로도 로그인할 수 있다 (PM 2026-10-13) */}
+              <p className="text-[14px] font-medium tracking-[-0.02em] text-ink">{myInfo?.socialOnly ? '비밀번호 만들기' : '비밀번호 재설정'}</p>
+              <p className="mt-0.5 text-[12px] tracking-[-0.02em] text-ink-3">
+                {myInfo?.socialOnly ? '간편 로그인 전용 계정이에요. 비밀번호를 만들면 아이디로도 로그인할 수 있어요' : '현재 비밀번호 확인 후 새 비밀번호로 변경해요'}
+              </p>
             </div>
             <ChevronRight size={16} className="shrink-0 text-ink-4" />
           </button>
@@ -269,8 +272,8 @@ export default function SettingsContent({ myInfo, onNestedOpenChange, onProfileS
         회원 탈퇴
       </button>
 
-      <WithdrawModal open={withdrawOpen} onOpenChange={setWithdrawOpen} />
-      <PasswordChangeModal open={passwordOpen} onOpenChange={setPasswordOpen} />
+      <WithdrawModal open={withdrawOpen} onOpenChange={setWithdrawOpen} socialOnly={!!myInfo?.socialOnly} />
+      <PasswordChangeModal open={passwordOpen} onOpenChange={setPasswordOpen} createMode={!!myInfo?.socialOnly} />
     </>
   );
 }

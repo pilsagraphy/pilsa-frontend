@@ -34,10 +34,21 @@ const changePwSchema = z
     path: ['newPassword'],
   });
 
+// 비밀번호 만들기(소셜 전용 계정) — 현재 비밀번호가 없으니 그 칸·검사만 뺀다 (PM 2026-10-13)
+const createPwSchema = z
+  .object({
+    newPassword: passwordSchema,
+    confirmPassword: z.string().min(1, { message: '비밀번호 확인을 입력해주세요.' }),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: '비밀번호가 일치하지 않습니다.',
+    path: ['confirmPassword'],
+  });
+
 const EMPTY_FORM = { currentPassword: '', newPassword: '', confirmPassword: '' };
 
-// 비밀번호 재설정 모달
-export default function PasswordChangeModal({ open, onOpenChange }) {
+// 비밀번호 재설정 모달. createMode: 비밀번호 없는 소셜 가입 회원의 '비밀번호 만들기' (같은 API, 현재 비밀번호 없이)
+export default function PasswordChangeModal({ open, onOpenChange, createMode = false }) {
   const router = useRouter();
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState(EMPTY_FORM);
@@ -61,7 +72,7 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
     e.preventDefault();
     if (loading) return;
 
-    const result = changePwSchema.safeParse(form);
+    const result = (createMode ? createPwSchema : changePwSchema).safeParse(form);
     if (!result.success) {
       const newErrors = { ...EMPTY_FORM };
       result.error.issues.forEach((issue) => {
@@ -75,7 +86,7 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
     setLoading(true);
     try {
       await changePassword({
-        currentPassword: form.currentPassword,
+        currentPassword: createMode ? undefined : form.currentPassword,
         newPassword: form.newPassword,
       });
 
@@ -90,13 +101,13 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
       onOpenChange(false);
       router.replace(`${ROUTES.LOGIN}?logout=1&reason=pw`);
     } catch (err) {
-      toast.error(getErrorMessage(err, '비밀번호 변경에 실패했습니다.'));
+      toast.error(getErrorMessage(err, createMode ? '비밀번호를 만들지 못했습니다.' : '비밀번호 변경에 실패했습니다.'));
       setLoading(false);
     }
   };
 
   const fields = [
-    { key: 'currentPassword', label: '현재 비밀번호', placeholder: '현재 비밀번호를 입력하세요' },
+    ...(createMode ? [] : [{ key: 'currentPassword', label: '현재 비밀번호', placeholder: '현재 비밀번호를 입력하세요' }]),
     { key: 'newPassword', label: '새 비밀번호', placeholder: '새 비밀번호를 입력하세요' },
     {
       key: 'confirmPassword',
@@ -110,10 +121,12 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
       <DialogContent className="max-w-[400px] rounded-[12px] p-6" hideCloseButton>
         <DialogHeader className="text-left">
           <DialogTitle className="text-[18px] tracking-[-0.02em] text-ink">
-            비밀번호 재설정
+            {createMode ? '비밀번호 만들기' : '비밀번호 재설정'}
           </DialogTitle>
           <DialogDescription className="text-[13px] tracking-[-0.02em] text-ink-3">
-            현재 비밀번호 확인 후 새 비밀번호로 변경돼요.
+            {createMode
+              ? '비밀번호를 만들면 아이디·비밀번호로도 로그인할 수 있어요. 만든 뒤에는 다시 로그인해요.'
+              : '현재 비밀번호 확인 후 새 비밀번호로 변경돼요.'}
           </DialogDescription>
         </DialogHeader>
 
@@ -150,7 +163,7 @@ export default function PasswordChangeModal({ open, onOpenChange }) {
               disabled={loading}
               className="h-[46px] w-full rounded-[6px] bg-inverse text-[15px] font-semibold text-inverse-fg hover:bg-inverse-hover disabled:opacity-40"
             >
-              {loading ? '변경 중...' : '비밀번호 변경'}
+              {loading ? (createMode ? '만드는 중...' : '변경 중...') : createMode ? '비밀번호 만들기' : '비밀번호 변경'}
             </Button>
             <Button
               type="button"

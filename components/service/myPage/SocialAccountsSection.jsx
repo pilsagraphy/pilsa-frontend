@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { toast } from '@/lib/toast';
+import { getErrorMessage } from '@/apis/auth';
 import { SOCIAL_PROVIDERS, getSocialLinkStatus, getSocialLinkUrl, unlinkSocialAccount } from '@/apis/social';
 import { getNaverCalendarLinkUrl, getNaverCalendarStatus, unlinkNaverCalendar } from '@/apis/naverCalendar';
 import { getKakaoCalendarLinkUrl, getKakaoCalendarStatus, unlinkKakaoCalendar } from '@/apis/kakaoCalendar';
@@ -74,8 +75,9 @@ export default function SocialAccountsSection() {
       await unlinkSocialAccount(p.key);
       setStatus((prev) => ({ ...prev, [p.key]: { ...prev[p.key], linked: false, email: '' } }));
       toast.success(`${p.label} 계정 연결을 해제했어요`);
-    } catch {
-      toast.error('연결 해제에 실패했어요. 잠시 후 다시 시도해주세요.');
+    } catch (err) {
+      // 비밀번호 없는 소셜 전용 계정의 마지막 연결이면 서버가 409 로 막는다 — 그 문구를 그대로 보여 준다
+      toast.error(getErrorMessage(err, '연결 해제에 실패했어요. 잠시 후 다시 시도해주세요.'));
     } finally {
       setBusy(null);
     }
