@@ -13,6 +13,7 @@ import { loginUrlWithReturnTo, stashReturnTo } from '@/lib/returnTo';
 import { confirmDialog } from '@/stores/useDialogStore';
 import { confirmLogout } from '@/lib/confirmLogout';
 import useLightboxStore from '@/stores/useLightboxStore';
+import { isSidebarSwipeEnabled } from '@/lib/sidebarSwipe';
 
 const Sidebar = () => {
   const router = useRouter();
@@ -129,6 +130,11 @@ const Sidebar = () => {
     const onStart = (event) => {
       const t = event.touches[0];
       if (!t || window.innerWidth >= 768) {
+        start = null;
+        return;
+      }
+      // 설정에서 끈 기기면 쓸어 열기를 받지 않는다 — 기본값은 아이폰 끔·그 밖 켬 (lib/sidebarSwipe). 열려 있을 때 쓸어 닫기는 그대로 둔다
+      if (!isMobileOpenRef.current && !isSidebarSwipeEnabled()) {
         start = null;
         return;
       }
