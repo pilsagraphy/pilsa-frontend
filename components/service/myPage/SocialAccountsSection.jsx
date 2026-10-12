@@ -9,7 +9,7 @@ import { confirmDialog } from '@/stores/useDialogStore';
 
 // 네이버·카카오 — 구글 상자(GoogleIntegrationSection)처럼 제공자마다 한 상자: 계정 연결 줄 + 캘린더 줄 (PM 2026-10-13 "네이버랑 네이버 캘린더 하나로").
 // 계정 연결은 간편로그인용. 네이버 캘린더는 '새 일정 넣기'만(추가 API 뿐), 톡캘린더는 구글처럼 등록·수정·삭제 반영.
-// 계정 연결을 끊으면 서버가 그 캘린더 연동도 함께 끊는다 (PM 2026-10-13) — 화면도 같이 내린다.
+// 계정 연결과 캘린더 연동은 별개(토큰이 따로) — 계정을 끊어도 캘린더는 계속 간다 (PM 2026-10-13 결정).
 const Switch = ({ on, label, disabled, onClick }) => (
   <button
     type="button"
@@ -65,7 +65,7 @@ export default function SocialAccountsSection() {
     if (busy) return;
     const calOn = p.key === 'naver' ? naverCal?.linked : kakaoCal?.linked;
     const go = await confirmDialog(
-      calOn ? `${p.label} 계정 연결을 해제할까요?\n${p.label} 캘린더 연동도 함께 꺼져요.` : `${p.label} 계정 연결을 해제할까요?`,
+      calOn ? `${p.label} 계정 연결을 해제할까요?\n${p.label} 캘린더 연동은 그대로 유지돼요 (캘린더 줄에서 따로 끌 수 있어요).` : `${p.label} 계정 연결을 해제할까요?`,
       { confirmText: '해제', cancelText: '취소' }
     );
     if (!go) return;
@@ -73,9 +73,7 @@ export default function SocialAccountsSection() {
     try {
       await unlinkSocialAccount(p.key);
       setStatus((prev) => ({ ...prev, [p.key]: { ...prev[p.key], linked: false, email: '' } }));
-      if (p.key === 'naver') setNaverCal((prev) => prev && { ...prev, linked: false, naverEmail: '' });
-      if (p.key === 'kakao') setKakaoCal((prev) => prev && { ...prev, linked: false, kakaoName: '' });
-      toast.success(calOn ? `${p.label} 계정 연결과 캘린더 연동을 해제했어요` : `${p.label} 계정 연결을 해제했어요`);
+      toast.success(`${p.label} 계정 연결을 해제했어요`);
     } catch {
       toast.error('연결 해제에 실패했어요. 잠시 후 다시 시도해주세요.');
     } finally {
