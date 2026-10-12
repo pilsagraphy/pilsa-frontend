@@ -5,9 +5,9 @@ import { getErrorMessage } from '@/apis/auth';
 import { deleteGalleryPhoto, getGallery, updateMyGalleryPhoto } from '@/apis/gallery';
 import { updateGalleryPhotoMeta } from '@/apis/admin/gallery';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
+import GalleryMenu from './GalleryMenu';
 import AppLoading from '@/components/common/AppLoading';
 import ConfirmModal from '@/components/common/ConfirmModal';
-import AdminPageLink from '@/components/shared/AdminPageLink';
 import SemesterJump, { scrollToSemester, semesterAnchorId, useActiveSemester } from '@/components/shared/SemesterJump';
 import { ROUTES } from '@/constants/routes';
 import { apiUrl } from '@/lib/apiBase';
@@ -59,7 +59,8 @@ const toTile = (p) => ({
   ratio: Number(p.ratio) > 0 ? Number(p.ratio) : 1,
 });
 
-function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete, onEdit }) {
+// manageMine: ⋮ 메뉴의 [내가 올린 사진 관리]를 켰을 때만 내 사진에 ✎·× 가 뜬다. 관리자도 남의 사진은 여기서 손대지 않는다 — 사진 관리 메뉴에서 (PM 2026-10-12)
+function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete, onEdit, manageMine }) {
   return rows.map((row, rowIndex) => {
     const aspect = Math.max(
       MIN_ROW_ASPECT,
@@ -76,9 +77,8 @@ function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete, onEdit 
               gallery={allPhotos}
               index={allPhotos.findIndex((x) => x.photoId === photo.photoId)}
             />
-            {/* 내 사진: 제목·해시태그 고치기 (PM 2026-10-11) — 지우기 왼쪽.
-                관리자(canManage)는 남의 사진도 고친다 — 숨기기밖에 없어 오타 하나에도 관리 화면까지 가야 했다 (PM 2026-10-12) */}
-            {(photo.isMine || photo.canManage) && photo.state === 'normal' && (
+            {/* 내 사진: 제목·해시태그 고치기 — ⋮ 메뉴 [내가 올린 사진 관리]를 켰을 때만. 관리자의 남의 사진 수정은 사진 관리 메뉴에서 (PM 2026-10-12) */}
+            {manageMine && photo.isMine && photo.state === 'normal' && (
               <button
                 type="button"
                 onClick={(e) => {
@@ -92,7 +92,7 @@ function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete, onEdit 
                 ✎
               </button>
             )}
-            {photo.canManage && photo.state !== 'hidden' && (
+            {manageMine && photo.isMine && photo.state === 'normal' && (
               <button
                 type="button"
                 onClick={(e) => {
@@ -100,7 +100,7 @@ function GalleryRows({ rows, activeSrc, onActivate, allPhotos, onDelete, onEdit 
                   onDelete(photo);
                 }}
                 aria-label="사진 지우기"
-                title={photo.isMine ? '내 사진 지우기' : '숨기기 (관리자)'}
+                title="내 사진 지우기"
                 className="absolute right-1 top-1 z-10 flex h-[26px] w-[26px] items-center justify-center rounded-full bg-black/55 text-[14px] leading-none text-white opacity-80 hover:bg-black/75 md:opacity-0 md:group-hover:opacity-100"
               >
                 ×
@@ -127,6 +127,7 @@ const Gallery = () => {
   const [error, setError] = useState(null);
   const [pendingJump, setPendingJump] = useState(null);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [manageMine, setManageMine] = useState(false); // ⋮ 메뉴 [내가 올린 사진 관리]
   const [deleting, setDeleting] = useState(null);
   const sentinelRef = useRef(null);
 
@@ -254,7 +255,7 @@ const Gallery = () => {
     setDeleting(null);
     try {
       await deleteGalleryPhoto(photo.photoId);
-      toast.success(photo.isMine ? '지웠어요.' : '숨겼어요. 활동 사진 관리에서 복원할 수 있어요.');
+      toast.success('지웠어요.');
       refresh(photo.semesterLabel);
     } catch (err) {
       toast.error(getErrorMessage(err, '지우지 못했어요.'));
@@ -268,20 +269,14 @@ const Gallery = () => {
           <h2 className="font-semibold text-[20px] leading-[1.5] tracking-[-0.02em] text-ink md:text-[24px]">활동 사진</h2>
           <div className="flex flex-wrap items-center gap-2">
             <SemesterJump semesters={semesters} value={activeSemester} onJump={jump} />
-            {isLoggedIn && meta && (
-              <button
-                type="button"
-                onClick={() => setUploadOpen(true)}
-                className="h-[34px] shrink-0 rounded-[6px] bg-inverse px-3 text-[13px] text-inverse-fg transition-colors hover:bg-inverse-hover"
-              >
-                + 사진 올리기
-              </button>
-            )}
-            <AdminPageLink href={ROUTES.ADMIN_GALLERY} label="사진 관리" />
+            {/* 사진 올리기 · 내가 올린 사진 관리 · 관리자 메뉴 — 버튼이 많아 ⋮ 하나에 모았다 (PM 2026-10-12) */}
+            {isLoggedIn && meta && <GalleryMenu manageMine={manageMine} onUpload={() => setUploadOpen(true)} onToggleManage={() => setManageMine((v) => !v)} />}
           </div>
         </div>
         <p className="text-[14px] leading-[1.6] tracking-[-0.02em] text-ink-3 md:text-[16px]">
-          우리가 함께한 모든 순간들{isLoggedIn ? ' — 로그인한 회원은 누구나 사진을 올릴 수 있어요' : ''}
+          {manageMine
+            ? '내가 올린 사진에 고치기(✎)·지우기(×)가 떠 있어요. 끝나면 ⋮ 메뉴에서 [관리 끝내기]'
+            : `우리가 함께한 모든 순간들${isLoggedIn ? ' — 로그인한 회원은 누구나 사진을 올릴 수 있어요' : ''}`}
         </p>
       </header>
 
@@ -308,10 +303,10 @@ const Gallery = () => {
               ) : (
                 <>
                   <div className="flex w-full flex-col gap-1 md:hidden">
-                    <GalleryRows rows={mobileRows} activeSrc={activeSrc} onActivate={setActiveSrc} allPhotos={allPhotos} onDelete={setDeleting} onEdit={openEdit} />
+                    <GalleryRows rows={mobileRows} activeSrc={activeSrc} onActivate={setActiveSrc} allPhotos={allPhotos} onDelete={setDeleting} onEdit={openEdit} manageMine={manageMine} />
                   </div>
                   <div className="hidden w-full flex-col gap-1 md:flex">
-                    <GalleryRows rows={desktopRows} activeSrc={activeSrc} onActivate={setActiveSrc} allPhotos={allPhotos} onDelete={setDeleting} onEdit={openEdit} />
+                    <GalleryRows rows={desktopRows} activeSrc={activeSrc} onActivate={setActiveSrc} allPhotos={allPhotos} onDelete={setDeleting} onEdit={openEdit} manageMine={manageMine} />
                   </div>
                 </>
               )}
@@ -369,7 +364,7 @@ const Gallery = () => {
       </Dialog>
       <ConfirmModal
         open={Boolean(deleting)}
-        title={deleting?.isMine ? '내가 올린 사진을 지울까요?' : '이 사진을 숨길까요? (활동 사진 관리에서 복원할 수 있어요)'}
+        title="내가 올린 사진을 지울까요?"
         onConfirm={confirmDelete}
         onCancel={() => setDeleting(null)}
       />
