@@ -31,8 +31,11 @@ export const getSocialLinkStatus = async (provider) => {
   return response.data;
 };
 
-export const getSocialLinkUrl = async (provider) => {
-  const response = await axiosInstance.get(`/api/user/mypage/social/${provider}/authorize`);
+// returnTo(선택): 동의(취소) 뒤 돌아갈 경로('/...'). 없으면 /mypage — 설정 페이지에서는 /mypage/settings 를 넘긴다 (2026-10-13)
+export const getSocialLinkUrl = async (provider, returnTo) => {
+  const response = await axiosInstance.get(`/api/user/mypage/social/${provider}/authorize`, {
+    params: returnTo ? { returnTo } : undefined,
+  });
   return response.data?.authorizeUrl;
 };
 

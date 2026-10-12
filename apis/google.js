@@ -48,8 +48,11 @@ export const getGoogleLinkStatus = async () => {
 };
 
 // 연결 동의 URL (GET /api/user/mypage/google/authorize)
-export const getGoogleLinkUrl = async () => {
-  const response = await axiosInstance.get('/api/user/mypage/google/authorize');
+// returnTo(선택): 동의(취소) 뒤 돌아갈 경로('/...'). 없으면 /mypage — 설정 페이지에서는 /mypage/settings 를 넘긴다 (2026-10-13)
+export const getGoogleLinkUrl = async (returnTo) => {
+  const response = await axiosInstance.get('/api/user/mypage/google/authorize', {
+    params: returnTo ? { returnTo } : undefined,
+  });
   return response.data?.authorizeUrl;
 };
 
