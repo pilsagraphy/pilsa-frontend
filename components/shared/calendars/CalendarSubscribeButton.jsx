@@ -236,11 +236,7 @@ export default function CalendarSubscribeButton() {
         pick === 'naver'
           ? `${who ? `${who} ` : ''}네이버 캘린더에 새 일정이 생길 때마다 넣어 드려요. 네이버는 일정 추가만 되는 서비스라 바뀌거나 지워진 일정은 직접 고쳐야 해요. 연동 관리는 마이페이지 → 설정에서.`
           : `${who ? `${who} ` : ''}${o.calendarLabel}에 새 일정·변경·삭제가 자동으로 반영돼요 (반영까지 최대 10분). 연동 관리는 마이페이지 → 설정에서.`;
-      footer = (
-        <BrandButton option={o} onClick={close}>
-          확인
-        </BrandButton>
-      );
+      footer = null; // 이미 구독 중 — 확인 버튼 없이 아래 "다른 캘린더 고르기 · 닫기" 만 (PM 2026-10-13)
     } else {
       title = accountLinked ? `${o.calendarLabel}에 구독할까요?` : `${o.label} 계정과 연동이 필요해요`;
       body =
