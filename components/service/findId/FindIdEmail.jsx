@@ -51,8 +51,8 @@ export default function FindIdEmail({ onNext }) {
         onNext(normalizedEmail);
       }, 1000); // 알림 읽을 시간 주기 위해 여유시간 추가
     } catch (error) {
-      toast.error('발송 실패', {
-        description: getErrorMessage(error, '등록되지 않은 이메일이거나 서버 오류가 발생했습니다.'),
+      toast.error(getErrorMessage(error, '메일을 보내지 못했어요'), {
+        description: error?.response?.status === 404 ? '가입한 이메일이 맞는지 확인해주세요' : '',
       });
       setLoading(false); // 실패 시에는 다시 입력을 시도할 수 있게 로딩 해제
     }

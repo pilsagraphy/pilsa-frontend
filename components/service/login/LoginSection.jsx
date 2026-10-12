@@ -31,14 +31,13 @@ const LOGOUT_TOAST_ID = 'logout-done';
 
 // 구글 로그인 콜백이 실패했을 때 백엔드가 붙여 보내는 코드
 const GOOGLE_ERROR_MESSAGES = {
-  GOOGLE_NOT_LINKED:
-    '연결된 계정이 없어요. 아이디로 로그인한 뒤 마이페이지에서 구글 계정을 연결해주세요.',
-  GOOGLE_LOGIN_FAILED: '구글 로그인에 실패했어요. 잠시 후 다시 시도해주세요.',
-  INVALID_STATE: '인증 정보가 만료되었어요. 다시 시도해주세요.',
-  NAVER_NOT_LINKED: '연결된 계정이 없어요. 아이디로 로그인한 뒤 마이페이지에서 네이버 계정을 연결해주세요.',
-  NAVER_LOGIN_FAILED: '네이버 로그인에 실패했어요. 잠시 후 다시 시도해주세요.',
-  KAKAO_NOT_LINKED: '연결된 계정이 없어요. 아이디로 로그인한 뒤 마이페이지에서 카카오 계정을 연결해주세요.',
-  KAKAO_LOGIN_FAILED: '카카오 로그인에 실패했어요. 잠시 후 다시 시도해주세요.',
+  GOOGLE_NOT_LINKED: '연결된 계정이 없어요. 다시 구글로 로그인하면 가입하거나 연결할 수 있어요.',
+  GOOGLE_LOGIN_FAILED: '구글 로그인에 실패했어요',
+  INVALID_STATE: '인증 정보가 만료됐어요. 다시 시도해주세요.',
+  NAVER_NOT_LINKED: '연결된 계정이 없어요. 다시 네이버로 로그인하면 가입하거나 연결할 수 있어요.',
+  NAVER_LOGIN_FAILED: '네이버 로그인에 실패했어요',
+  KAKAO_NOT_LINKED: '연결된 계정이 없어요. 다시 카카오로 로그인하면 가입하거나 연결할 수 있어요.',
+  KAKAO_LOGIN_FAILED: '카카오 로그인에 실패했어요',
 };
 // 소셜 로그인 콜백의 ?login= 값 (구글·네이버·카카오 공통 흐름, 2026-10-11)
 const SOCIAL_LOGIN_PROVIDERS = ['google', 'naver', 'kakao'];
@@ -185,6 +184,8 @@ export default function LoginSection() {
     // reason=pw: 비밀번호 변경으로 토큰이 무효화돼 넘어온 경우 — 변경 성공을 여기서 알린다
     // (변경 API 성공 응답은 곧바로 화면을 떠나기 때문에 마이페이지에서는 띄울 자리가 없다)
     const isPasswordChanged = searchParams.get('reason') === 'pw';
+    // reason=pw-created: 소셜 전용 회원이 비밀번호를 '만든' 경우 — 바꾼 적이 없으니 문구를 가른다
+    const isPasswordCreated = searchParams.get('reason') === 'pw-created';
 
     const runLogout = async () => {
       try {
@@ -198,9 +199,11 @@ export default function LoginSection() {
         logout();
         setLoggingOut(false);
         toast.success(
-          isPasswordChanged
-            ? '비밀번호가 변경되었습니다. 새 비밀번호로 다시 로그인해주세요.'
-            : '로그아웃되었습니다!',
+          isPasswordCreated
+            ? '비밀번호를 만들었어요. 이제 아이디로도 로그인할 수 있어요'
+            : isPasswordChanged
+              ? '비밀번호를 바꿨어요. 새 비밀번호로 다시 로그인해주세요'
+              : '로그아웃했어요',
           {
             id: LOGOUT_TOAST_ID,
             // 예전엔 Infinity 라 사용자가 X 를 누르기 전까지 화면에 남아 로그인 화면을 가렸다.
@@ -319,7 +322,7 @@ export default function LoginSection() {
       stashReturnTo(searchParams.get(RETURN_TO_PARAM));
       window.location.href = url;
     } catch {
-      toast.error('구글 로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.');
+      toast.error('구글 로그인을 시작하지 못했어요');
       setGoogleBusy(false);
     }
   };
@@ -334,7 +337,7 @@ export default function LoginSection() {
       stashReturnTo(searchParams.get(RETURN_TO_PARAM));
       window.location.href = url;
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? `${providerLabel(provider)} 로그인을 시작하지 못했어요. 잠시 후 다시 시도해주세요.`);
+      toast.error(err?.response?.data?.message ?? `${providerLabel(provider)} 로그인을 시작하지 못했어요`);
       setSocialBusy(null);
     }
   };
@@ -382,7 +385,7 @@ export default function LoginSection() {
           }
           const linkedEmail = linked?.googleEmail || linked?.email;
           toast.success(
-            `${label} 계정${linkedEmail ? `(${linkedEmail})` : ''}을 연결했어요. 다음부터 ${label}로 바로 로그인할 수 있어요.`
+            `${label} 계정${linkedEmail ? `(${linkedEmail})` : ''}을 연결했어요. 다음부턴 ${label}로 바로 로그인돼요`
           );
         } catch (linkErr) {
           toast.error(
@@ -476,8 +479,13 @@ export default function LoginSection() {
                   {pendingGoogleLink.emailMatched
                     ? `아이디 ${pendingGoogleLink.maskedLoginId} 로 로그인하면 `
                     : '아이디·비밀번호로 로그인하면 '}
-                  <span className="font-medium text-ink">{pendingGoogleLink.maskedEmail}</span>{' '}
-                  계정이 연결돼요.
+                  {pendingGoogleLink.maskedEmail ? (
+                    <>
+                      <span className="font-medium text-ink">{pendingGoogleLink.maskedEmail}</span> 계정이 연결돼요.
+                    </>
+                  ) : (
+                    `${providerLabel(pendingGoogleLink.provider)} 계정이 연결돼요.`
+                  )}
                 </span>
               </p>
               <button
@@ -545,9 +553,8 @@ export default function LoginSection() {
               구글 계정을 연결해 둔 사람은 비밀번호를 몰라도 아래 [구글로 로그인]으로 들어올 수 있다 */}
           {showGoogleHint && (
             <p className="rounded-[4px] bg-surface-2 px-4 py-3 text-[13px] leading-[1.6] tracking-[-0.02em] text-ink-3">
-              구글 계정을 연결해 두셨다면 아래 <strong className="font-semibold">구글로 로그인</strong>으로
-              바로 들어올 수 있어요. 연결한 적이 없다면 위 <strong className="font-semibold">비밀번호 재설정</strong>을
-              이용해 주세요.
+              간편로그인을 연결해 뒀다면 아래 버튼으로 바로 들어올 수 있어요. 아니면 위{' '}
+              <strong className="font-semibold">비밀번호 재설정</strong>을 눌러주세요.
             </p>
           )}
 

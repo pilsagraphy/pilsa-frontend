@@ -99,9 +99,9 @@ export default function PasswordChangeModal({ open, onOpenChange, createMode = f
       setForm(EMPTY_FORM);
       setErrors(EMPTY_FORM);
       onOpenChange(false);
-      router.replace(`${ROUTES.LOGIN}?logout=1&reason=pw`);
+      router.replace(`${ROUTES.LOGIN}?logout=1&reason=${createMode ? 'pw-created' : 'pw'}`);
     } catch (err) {
-      toast.error(getErrorMessage(err, createMode ? '비밀번호를 만들지 못했습니다.' : '비밀번호 변경에 실패했습니다.'));
+      toast.error(getErrorMessage(err, createMode ? '비밀번호를 만들지 못했어요' : '비밀번호를 바꾸지 못했어요'));
       setLoading(false);
     }
   };
@@ -125,7 +125,7 @@ export default function PasswordChangeModal({ open, onOpenChange, createMode = f
           </DialogTitle>
           <DialogDescription className="text-[13px] tracking-[-0.02em] text-ink-3">
             {createMode
-              ? '비밀번호를 만들면 아이디·비밀번호로도 로그인할 수 있어요. 만든 뒤에는 다시 로그인해요.'
+              ? '만들고 나면 아이디로도 로그인할 수 있어요. 만든 뒤 다시 로그인해주세요.'
               : '현재 비밀번호 확인 후 새 비밀번호로 변경돼요.'}
           </DialogDescription>
         </DialogHeader>

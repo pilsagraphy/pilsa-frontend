@@ -30,17 +30,17 @@ import {
 const CALENDAR_RESULT = {
   calendar: {
     linked: ['success', '구글 캘린더 구독이 시작됐어요. 동아리 일정이 내 캘린더에 보이기까지 최대 10분 정도 걸릴 수 있어요.'],
-    failed: ['error', '구글 캘린더 연동에 실패했어요. 잠시 후 다시 시도해주세요.'],
+    failed: ['error', '구글 캘린더 연동에 실패했어요'],
     cancelled: ['info', '구글 캘린더 연동을 취소했어요.'],
   },
   ncalendar: {
     linked: ['success', '네이버 캘린더에 앞으로의 동아리 일정을 넣는 중이에요. 새 일정이 생기면 그때그때 넣어 드려요.'],
-    failed: ['error', '네이버 캘린더 연동에 실패했어요. 잠시 후 다시 시도해주세요.'],
+    failed: ['error', '네이버 캘린더 연동에 실패했어요'],
     cancelled: ['info', '네이버 캘린더 연동을 취소했어요.'],
   },
   kcalendar: {
     linked: ['success', '톡캘린더 구독이 시작됐어요. 동아리 일정이 내 톡캘린더에 보이기까지 최대 10분 정도 걸릴 수 있어요.'],
-    failed: ['error', '톡캘린더 연동에 실패했어요. 잠시 후 다시 시도해주세요.'],
+    failed: ['error', '톡캘린더 연동에 실패했어요'],
     cancelled: ['info', '톡캘린더 연동을 취소했어요.'],
   },
 };
@@ -164,7 +164,7 @@ export default function CalendarSubscribeButton() {
       if (!url) throw new Error('authorizeUrl 없음');
       window.location.href = url;
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? `${optionOf(which).label} 연동을 시작하지 못했어요. 잠시 후 다시 시도해주세요.`);
+      toast.error(err?.response?.data?.message ?? `${optionOf(which).label} 연동을 시작하지 못했어요`);
       setBusy(false);
     }
   };
@@ -234,10 +234,10 @@ export default function CalendarSubscribeButton() {
       title = `${o.calendarLabel}에 구독할까요?`;
       body =
         pick === 'google'
-          ? '구글 계정을 고르고 캘린더 권한을 허용하면 동아리 일정이 내 구글 캘린더에 자동 등록되고, 수정·삭제가 그대로 반영돼요 (반영까지 최대 10분). 간편로그인 연결과는 별개예요.'
+          ? '구글 계정에서 캘린더 권한을 허용하면 동아리 일정이 내 구글 캘린더에 자동으로 들어가요. 바뀐 일정도 반영되고, 최대 10분 걸려요. 간편로그인 연결과는 별개예요.'
           : pick === 'kakao'
-            ? '카카오 계정으로 로그인하고 톡캘린더 권한을 허용하면 동아리 일정이 내 톡캘린더에 자동 등록되고, 수정·삭제가 그대로 반영돼요 (반영까지 최대 10분). 간편로그인 연결과는 별개예요.'
-            : '네이버 계정으로 로그인하고 캘린더 권한을 허용하면 동아리 일정이 내 네이버 캘린더에 자동 등록돼요 (추가만 — 수정·삭제는 직접 해야 해요). 간편로그인 연결과는 별개예요.';
+            ? '카카오 계정에서 톡캘린더 권한을 허용하면 동아리 일정이 내 톡캘린더에 자동으로 들어가요. 바뀐 일정도 반영되고, 최대 10분 걸려요. 간편로그인 연결과는 별개예요.'
+            : '네이버 계정에서 캘린더 권한을 허용하면 새 동아리 일정이 내 네이버 캘린더에 들어가요. 바뀐 일정은 직접 고쳐야 해요. 간편로그인 연결과는 별개예요.';
       footer = (
         <BrandButton option={o} onClick={() => startConsent(pick)} disabled={busy || loadingOf(pick)}>
           {busy ? `${o.label}로 이동 중…` : `${o.calendarLabel} 구독하기`}

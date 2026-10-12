@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import { ROUTES } from '@/constants/routes';
 
 export default function FindPwSuccess() {
   // 페이지 이동을 위한 Next.js router 훅
@@ -20,8 +21,7 @@ export default function FindPwSuccess() {
       {/* 하단 버튼 섹션 */}
       <div className="flex flex-col gap-3 w-full">
         <Button
-          // 클릭 시 로그인 페이지('/login')로 이동
-          onClick={() => router.push('/login')}
+          onClick={() => router.push(ROUTES.LOGIN)}
           // 디자인 시스템에 맞춘 버튼 스타일 (검은색 배경, 흰색 글자, 높이 52px)
           className="h-[52px] w-full bg-inverse hover:bg-inverse-2 text-inverse-fg text-[16px] transition-colors"
         >
