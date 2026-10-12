@@ -213,7 +213,12 @@ export function Calendar({
         /* 오늘: 진한 원에 흰 숫자 — 예전 '고른 일정' 채움색을 그대로 가져왔다 (테스터들이 이 모양을 오늘로 읽어서, 10/10).
            점(9/21 제거) → 굵기만 → 가는 원(10/10 오전) 을 거쳐 여기로. 막대가 있는 날에도 원이 막대 위(z-index 1)에 올라간다.
            막대 칸의 '배경 투명 !important' 보다 뒤에 두어 이 규칙이 이긴다 */
+        /* 모양은 일정 막대·선택 테두리와 같은 알약(타원)으로 통일 — 원형과 타원이 섞여 보였다 (PM 2026-10-12 "타원으로 통일").
+           버튼을 칸 폭 전체 · 위아래 4px 안쪽으로 키워 ::before 막대와 같은 상자가 되게 한다 */
         td[data-today] > button {
+          width: 100%;
+          height: calc(100% - 8px);
+          border-radius: 9999px;
           font-weight: 700;
           background-color: rgb(var(--c-inverse-2)) !important;
           color: rgb(var(--c-inverse-fg)) !important;
