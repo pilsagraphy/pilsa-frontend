@@ -10,6 +10,7 @@ import WithdrawModal from './WithdrawModal';
 import PasswordChangeModal from './PasswordChangeModal';
 import { canShowPushToggle } from '@/lib/push';
 import useThemeStore, { THEMES } from '@/stores/useThemeStore';
+import { canChooseSidebarSwipe, isSidebarSwipeEnabled, setSidebarSwipeEnabled } from '@/lib/sidebarSwipe';
 
 // 설정 본문 — 내 정보 / 화면 / 알림 / 구글 연동 / 계정. PC 는 모달(MyInfoEditModal), 폰은 페이지(/mypage/settings)가 같은 것을 그린다 (PM 2026-10-10).
 // 알림·구글 연동은 접었다 펼 수 있다 — 스위치가 네 개라 펼쳐 두면 설정 전체가 길어진다 (PM: "알림 아래로 열리고 닫혔으면").
@@ -60,6 +61,44 @@ function ThemeSegment() {
   );
 }
 
+// 폰에서 쓸어 사이드바 열기 켜고 끄기 — 아이폰에는 보이지 않는다(늘 꺼짐, lib/sidebarSwipe). 이 기기에만 저장
+function SidebarSwipeRow() {
+  const [visible, setVisible] = useState(false);
+  const [on, setOn] = useState(true);
+  // 기기 판별·저장값은 클라이언트에서만 — 하이드레이션 불일치를 피하려고 mount 후 결정
+  useEffect(() => {
+    setVisible(canChooseSidebarSwipe());
+    setOn(isSidebarSwipeEnabled());
+  }, []);
+  if (!visible) return null;
+  const toggle = () => {
+    setSidebarSwipeEnabled(!on);
+    setOn(!on);
+  };
+  return (
+    <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-3 md:hidden">
+      <div className="min-w-0">
+        <p className="text-[13px] tracking-[-0.02em] text-ink-3">쓸어서 메뉴 열기</p>
+        <p className="mt-0.5 text-[12px] tracking-[-0.02em] text-ink-4">화면을 오른쪽으로 쓸면 사이드바가 열려요</p>
+      </div>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        aria-label={`쓸어서 메뉴 열기 ${on ? '켜짐' : '꺼짐'}`}
+        onClick={toggle}
+        className={`relative h-[26px] w-[46px] shrink-0 rounded-full transition-colors duration-200 ${on ? 'bg-inverse' : 'bg-line'}`}
+      >
+        <span
+          className={`absolute left-[3px] top-[3px] size-5 rounded-full shadow transition-transform duration-200 ${
+            on ? 'translate-x-[20px] bg-inverse-fg' : 'translate-x-0 bg-white'
+          }`}
+        />
+      </button>
+    </div>
+  );
+}
+
 export default function SettingsContent({ myInfo, onNestedOpenChange }) {
   const [withdrawOpen, setWithdrawOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
@@ -92,9 +131,12 @@ export default function SettingsContent({ myInfo, onNestedOpenChange }) {
       {/* 2. 화면 — 시스템 설정 따름 / 라이트 / 다크 (PM 2026-10-11). 이 기기(브라우저)에만 저장된다 */}
       <section className="flex flex-col gap-1">
         <h4 className="text-[13px] font-semibold tracking-[-0.02em] text-ink-3">화면</h4>
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-[8px] border border-line px-4 py-3">
-          <span className="text-[13px] tracking-[-0.02em] text-ink-3">다크 모드</span>
-          <ThemeSegment />
+        <div className="rounded-[8px] border border-line">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3">
+            <span className="text-[13px] tracking-[-0.02em] text-ink-3">다크 모드</span>
+            <ThemeSegment />
+          </div>
+          <SidebarSwipeRow />
         </div>
       </section>
 
