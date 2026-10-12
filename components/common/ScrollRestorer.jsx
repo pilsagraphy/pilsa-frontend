@@ -3,75 +3,127 @@
 import { useEffect, useLayoutEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 
-// 뒤로가기(popstate)로 돌아온 화면의 스크롤 위치를 되살린다. 레이아웃에 한 번만 둔다.
-// Next 도 되살리려 하지만, 내용을 받아 와서 그리는 화면(홈 달력·일정·목록)은 돌아온 순간 아직 짧아서
-// 맨 위에 멈춘다 — "게시글 들어갔다가 뒤로가기 누르면 위로 올라가요" (테스터 제보 10/11, 홈 화면).
-// 그래서 떠날 때 위치를 주소별로 적어 두고, 돌아오면 화면이 그 높이까지 자랄 때까지 잠깐(최대 2초) 다시 시도한다.
-// 사용자가 그 사이 직접 스크롤·터치하면 바로 멈춘다. 게시판 목록(BoardSection)은 자체 복원이 있고 값이 같아 겹쳐도 무방하다.
+// 뒤로가기·앞으로가기·새로고침으로 돌아온 화면의 스크롤 위치를 되살린다. 레이아웃에 한 번만 둔다 (PM 2026-10-12 "어떤 페이지든").
+//
+// 브라우저 기본 복원(scrollRestoration auto)에 맡기지 않는다 — 내용을 받아 와서 그리는 화면(홈·마이페이지)은 돌아온 순간 아직 짧아서
+// 브라우저가 맨 위나 엉뚱한 곳에 멈추고, 우리 복원과 서로 당겼다 ("마이페이지 > 설정에서 뒤로가기 했는데 보던 위치가 아니야").
+// 그래서 manual 로 두고 직접 한다:
+//  - 저장: 화면이 바뀌기 직전(useLayoutEffect 정리 = 새 화면이 커밋되는 중, Next 가 맨 위로 올리기 전)에 떠나는 주소의 위치를 적는다.
+//    스크롤 이벤트로 적으면 Next 가 새 화면을 맨 위로 올린 스크롤이 어느 주소 것인지 꼬였다. 새로고침 대비로 떠날 때(pagehide)도 적는다.
+//  - 복원: popstate(뒤로·앞으로) 로 바뀐 주소이거나 새로고침으로 처음 뜬 경우, 화면이 그 높이까지 자랄 때까지 잠깐(최대 3초) 다시 시도한다.
+//    사용자가 그 사이 직접 손대면 바로 멈춘다.
+// 게시판 목록(BoardSection)은 자체 복원도 있다 — 같은 값이라 겹쳐도 무방하다.
 
-const RETRY_MS = 2000;
-const POP_WINDOW_MS = 1000; // popstate 직후 이 안에 주소가 바뀌면 '뒤로가기로 돌아온 것'으로 본다
+const STORAGE_KEY = 'pilsaScrollPositions';
+const MAX_ENTRIES = 50;
+const RETRY_MS = 3000;
+const HOLD_MS = 500; // 맞춘 뒤에도 잠깐 지켜본다 — 늦게 자리를 잡는 이미지나 라우터가 한 번 더 움직일 수 있다
+const POP_WINDOW_MS = 3000; // popstate 뒤 이 안에 주소가 바뀌면 '뒤로가기로 돌아온 것' (로딩 화면을 거쳐도 넉넉하게)
 
-const keyOf = () => window.location.pathname + window.location.search;
+// 주소별 칸. pathname 은 React(usePathname)가 준 값을 믿고, 쿼리는 주소창이 이미 그 경로일 때만 붙인다
+// (주소창 갱신이 커밋보다 늦으면 떠나는 화면의 쿼리가 섞일 수 있다)
+const keyOf = (pathname = window.location.pathname) =>
+  pathname + (window.location.pathname === pathname ? window.location.search : '');
+
+const readPositions = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '{}');
+  } catch {
+    return {};
+  }
+};
+const savePosition = (key, y) => {
+  try {
+    const map = readPositions();
+    delete map[key]; // 다시 넣어 '최근' 순서로
+    map[key] = Math.max(0, Math.round(y));
+    const keys = Object.keys(map);
+    if (keys.length > MAX_ENTRIES) keys.slice(0, keys.length - MAX_ENTRIES).forEach((k) => delete map[k]);
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+  } catch {
+    // 저장소를 못 쓰는 환경 — 복원만 못 할 뿐 화면은 그대로
+  }
+};
+
+// 첫 로드가 새로고침이나 뒤로·앞으로(다른 사이트에서 돌아옴)인가
+const isRestoringLoad = () => {
+  try {
+    const type = performance.getEntriesByType('navigation')[0]?.type;
+    return type === 'reload' || type === 'back_forward';
+  } catch {
+    return false;
+  }
+};
 
 export default function ScrollRestorer() {
   const pathname = usePathname();
-  const positionsRef = useRef(new Map()); // 주소 → 마지막 scrollY
-  const currentKeyRef = useRef(null);
-  const poppedAtRef = useRef(0);
+  const poppedRef = useRef(null); // { at, key } — popstate 시점과 그때 돌아간 주소
+  const firstRef = useRef(true);
 
-  // 스크롤할 때마다 지금 주소의 위치를 적는다. 스크롤 이벤트는 다음 프레임에 오므로,
-  // 새 화면으로 바뀌며 Next 가 맨 위로 올린 것은 이미 새 주소로 적혀 이전 주소의 값을 덮지 않는다
   useEffect(() => {
-    const onScroll = () => {
-      if (currentKeyRef.current) positionsRef.current.set(currentKeyRef.current, window.scrollY);
-    };
+    const previous = window.history.scrollRestoration;
+    window.history.scrollRestoration = 'manual';
+    // 주소까지 적어 둔다 — 사진 크게 보기를 닫는 뒤로가기(같은 주소)는 그 주소에서만 의미가 있어, 곧이어 링크로 다른 화면에 가도
+    // '뒤로가기로 돌아온 것'으로 착각하지 않는다
     const onPop = () => {
-      poppedAtRef.current = Date.now();
+      poppedRef.current = { at: Date.now(), key: keyOf() };
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
+    const onPageHide = () => savePosition(keyOf(), window.scrollY);
     window.addEventListener('popstate', onPop);
+    window.addEventListener('pagehide', onPageHide);
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      window.history.scrollRestoration = previous;
       window.removeEventListener('popstate', onPop);
+      window.removeEventListener('pagehide', onPageHide);
     };
   }, []);
 
   useLayoutEffect(() => {
-    const key = keyOf();
-    currentKeyRef.current = key;
+    const key = keyOf(pathname);
+    const first = firstRef.current;
+    firstRef.current = false;
 
-    const popped = Date.now() - poppedAtRef.current < POP_WINDOW_MS;
-    poppedAtRef.current = 0;
-    const target = positionsRef.current.get(key) ?? 0;
-    if (!popped || target <= 0) return undefined;
+    const pop = poppedRef.current;
+    const popped = Boolean(pop) && Date.now() - pop.at < POP_WINDOW_MS && pop.key === key;
+    if (popped) poppedRef.current = null;
+    const target = readPositions()[key] ?? 0;
+    const shouldRestore = (popped || (first && isRestoringLoad())) && target > 0;
 
     let cancelled = false;
     let frame = 0;
-    const startedAt = Date.now();
     const stop = () => {
       cancelled = true;
     };
-    // 사용자가 손대면 그만둔다 — 내가 스크롤하는데 끌려가면 안 된다
-    window.addEventListener('touchstart', stop, { passive: true, once: true });
-    window.addEventListener('wheel', stop, { passive: true, once: true });
-    window.addEventListener('keydown', stop, { once: true });
 
-    // 맞춘 뒤에도 잠깐(HOLD_MS) 지켜본다 — 늦게 자리를 잡는 이미지나 라우터가 한 번 더 움직일 수 있다
-    const HOLD_MS = 500;
-    let reachedAt = 0;
-    const tick = () => {
-      if (cancelled) return;
-      const now = Date.now();
-      const maxY = document.documentElement.scrollHeight - window.innerHeight;
-      if (maxY >= target - 1 && Math.abs(window.scrollY - target) > 1) window.scrollTo(0, target);
-      if (Math.abs(window.scrollY - target) <= 1 && !reachedAt) reachedAt = now;
-      if (reachedAt && now - reachedAt > HOLD_MS) return;
-      if (now - startedAt < RETRY_MS) frame = requestAnimationFrame(tick);
-    };
-    tick();
+    if (shouldRestore) {
+      // 사용자가 손대면 그만둔다 — 내가 스크롤하는데 끌려가면 안 된다
+      window.addEventListener('touchstart', stop, { passive: true, once: true });
+      window.addEventListener('wheel', stop, { passive: true, once: true });
+      window.addEventListener('keydown', stop, { once: true });
+
+      const startedAt = Date.now();
+      let reachedAt = 0;
+      const tick = () => {
+        if (cancelled) return;
+        const now = Date.now();
+        const maxY = document.documentElement.scrollHeight - window.innerHeight;
+        // 아직 그 높이가 안 되면 갈 수 있는 데까지라도 내려 둔다 (다 자라면 마저 내려간다)
+        const y = Math.min(target, Math.max(0, maxY));
+        if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
+        if (maxY >= target - 1 && Math.abs(window.scrollY - target) <= 1) {
+          if (!reachedAt) reachedAt = now;
+          if (now - reachedAt > HOLD_MS) return;
+        } else {
+          reachedAt = 0;
+        }
+        if (now - startedAt < RETRY_MS) frame = requestAnimationFrame(tick);
+      };
+      tick();
+    }
 
     return () => {
+      // 화면이 바뀌기 직전 — 아직 떠나는 화면의 위치다 (새 화면이 그려지며 맨 위로 가기 전)
+      savePosition(key, window.scrollY);
       stop();
       cancelAnimationFrame(frame);
       window.removeEventListener('touchstart', stop);
