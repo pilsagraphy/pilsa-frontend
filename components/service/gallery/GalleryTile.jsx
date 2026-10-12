@@ -5,7 +5,7 @@ import Image from 'next/image';
 
 import { openLightbox } from '@/stores/useLightboxStore';
 
-// 꾹 누르기(폰): 이 시간 넘게 누르고 있으면 설명을 띄운다. usePressDrag(300ms)보다 조금 길게 둬서 '탭해서 크게 보기'와 갈린다
+// 꾹 누르기(폰): 이 시간 넘게 누르고 있으면 크게 보기를 연다
 const LONG_PRESS_MS = 400;
 const MOVE_SLOP_PX = 8; // 이보다 움직이면 스크롤로 본다 (usePressDrag 와 같은 기준)
 
@@ -24,8 +24,10 @@ const GalleryTile = ({ photo, activeSrc = null, onActivate, gallery = [], index 
 
   // 꾹 누르기 타이머. { x, y, timer } — 기다리는 중이면 값이 있다
   const pressRef = useRef(null);
-  // 꾹 눌러 설명을 띄웠으면 뒤따라오는 click 은 크게 보기로 이어지지 않게 막는다
+  // 꾹 눌러 크게 보기를 열었으면 뒤따라오는 click 은 설명 토글로 이어지지 않게 막는다
   const longPressedRef = useRef(false);
+  // 마지막으로 누른 게 손가락·펜인지 — 폰과 PC 의 동작이 다르다
+  const touchRef = useRef(false);
 
   const clearPress = () => {
     if (pressRef.current?.timer) clearTimeout(pressRef.current.timer);
@@ -38,42 +40,11 @@ const GalleryTile = ({ photo, activeSrc = null, onActivate, gallery = [], index 
   const hasCaption = Boolean(photo.title || photo.hashtags?.length);
 
   // 활성 타일은 부모(Gallery)가 activeSrc 하나로 관리한다 →
-  // 새 이미지를 꾹 누르면 이전에 켜둔 캡션은 자동으로 풀리고 이 타일만 켜진다.
+  // 다른 사진을 누르면 이전에 켜둔 설명은 자동으로 풀리고 이 타일만 켜진다.
   const isActive = activeSrc === photo.imageSrc;
 
-  const handlePointerDown = (event) => {
-    // 마우스는 호버로 이미 보인다. 손가락·펜만 꾹 누르기 대상
-    if (!hasCaption || event.pointerType === 'mouse' || event.isPrimary === false) return;
-    longPressedRef.current = false;
-    const timer = setTimeout(() => {
-      pressRef.current = null;
-      longPressedRef.current = true;
-      onActivate?.(photo.imageSrc);
-      navigator.vibrate?.(10);
-    }, LONG_PRESS_MS);
-    pressRef.current = { x: event.clientX, y: event.clientY, timer };
-  };
-
-  const handlePointerMove = (event) => {
-    const start = pressRef.current;
-    if (!start) return;
-    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > MOVE_SLOP_PX) clearPress();
-  };
-
-  // 탭 = 크게 보기 (폰·PC 모두, PM 2026-09-21). 꾹 누르기 = 설명 띄우기 (테스터 요청, 2026-10-05).
-  // 크게 보기로 넘어갈 때 타일 캡션은 접는다 — 예전엔 탭이 캡션도 켜서, 크게 보기를 닫고 나온 뒤에야 캡션이
-  // 불쑥 보이는 버그가 있었다 ("축소할 때만 설명이 나온다").
-  const handleClick = () => {
-    clearPress();
-    if (longPressedRef.current) {
-      longPressedRef.current = false;
-      return;
-    }
-    if (isActive) {
-      // 띄워 둔 설명은 한 번 더 누르면 닫힌다
-      onActivate?.(null);
-      return;
-    }
+  const openLarge = () => {
+    // 크게 보기로 넘어갈 때 타일 설명은 접는다 — 닫고 나온 뒤 설명이 불쑥 남아 있지 않게
     onActivate?.(null);
     const list = gallery.length ? gallery : [photo];
     openLightbox(
@@ -85,6 +56,45 @@ const GalleryTile = ({ photo, activeSrc = null, onActivate, gallery = [], index 
       })),
       gallery.length ? index : 0
     );
+  };
+
+  // 폰(손가락·펜): 가볍게 탭 = 제목·설명 켜고 끄기, 꾹 누르기 = 크게 보기 (PM 2026-10-12 — 예전 10/05 와 반대로).
+  // PC(마우스): 올리면 설명이 보이고, 클릭 = 크게 보기 (꾹 누르기가 어색한 기기라 그대로)
+  const handlePointerDown = (event) => {
+    touchRef.current = event.pointerType !== 'mouse';
+    if (!touchRef.current || event.isPrimary === false) return;
+    longPressedRef.current = false;
+    const timer = setTimeout(() => {
+      pressRef.current = null;
+      longPressedRef.current = true;
+      navigator.vibrate?.(10);
+      openLarge();
+    }, LONG_PRESS_MS);
+    pressRef.current = { x: event.clientX, y: event.clientY, timer };
+  };
+
+  const handlePointerMove = (event) => {
+    const start = pressRef.current;
+    if (!start) return;
+    if (Math.hypot(event.clientX - start.x, event.clientY - start.y) > MOVE_SLOP_PX) clearPress();
+  };
+
+  const handleClick = () => {
+    clearPress();
+    if (longPressedRef.current) {
+      longPressedRef.current = false;
+      return;
+    }
+    if (!touchRef.current) {
+      openLarge();
+      return;
+    }
+    // 설명이 없는 사진은 탭으로 켤 게 없으니 바로 크게 보기
+    if (!hasCaption) {
+      openLarge();
+      return;
+    }
+    onActivate?.(isActive ? null : photo.imageSrc);
   };
 
   return (
