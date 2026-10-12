@@ -11,6 +11,7 @@ import { ROUTES } from '@/constants/routes';
 import { loginUrlWithReturnTo } from '@/lib/returnTo';
 import { getCalendarLinkStatus, getCalendarLinkUrl } from '@/apis/google';
 import { getNaverCalendarLinkUrl, getNaverCalendarStatus } from '@/apis/naverCalendar';
+import { getKakaoCalendarLinkUrl, getKakaoCalendarStatus } from '@/apis/kakaoCalendar';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -20,15 +21,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 
-// 일정 구독 버튼 — 누르면 어느 캘린더에 넣을지 고른다: 구글 캘린더 · 네이버 캘린더 · (아이폰만) 아이폰 캘린더 (PM 2026-10-12).
-//
-//  - 구글: 서버가 각자 구글 캘린더에 일정을 넣고 등록·수정·삭제를 그대로 반영한다 (동의 → 콜백 ?calendar=).
-//  - 네이버: 네이버 캘린더 API 는 '일정 추가' 만 있어 새 일정만 넣어 준다. 수정·삭제는 본인이 직접 (동의 → 콜백 ?ncalendar=).
+// 일정 구독 버튼 — 누르면 어느 캘린더에 넣을지 고른다: 구글 · 네이버 · 카카오(톡캘린더) · (아이폰만) 아이폰 캘린더.
+// 각 선택지는 브랜드 색·로고로 (PM 2026-10-12 "각각 색깔과 로고").
+//  - 구글·카카오: 서버가 각자 캘린더에 일정을 넣고 등록·수정·삭제를 그대로 반영 (콜백 ?calendar= / ?kcalendar=).
+//  - 네이버: 네이버 API 는 '일정 추가' 만 있어 새 일정만 넣어 준다. 수정·삭제는 본인이 직접 (콜백 ?ncalendar=).
 //  - 아이폰: 기본 캘린더 앱의 webcal 구독. 계정 연동 없이 OS 가 구독 창을 연다.
-//  구글·네이버는 그 계정과의 연동(동의)이 필요하다는 걸 고른 뒤 한 번 더 알리고 동의 화면으로 보낸다.
-//  비로그인은 로그인부터. 돌아올 곳(returnTo)을 함께 보내 콜백이 이 페이지로 돌려보내게 한다.
-//
-// 참고: 구글 OAuth 동의 화면이 '테스트 중' 이면 테스트 사용자 외에는 전부 403(access_denied)으로 막힌다 — Google Cloud Console 쪽 설정.
+//  구글·네이버·카카오는 그 계정과의 연동(동의)이 필요하다는 걸 고른 뒤 한 번 더 알리고 동의 화면으로 보낸다.
 const CALENDAR_RESULT = {
   calendar: {
     linked: ['success', '구글 캘린더 구독이 시작됐어요. 동아리 일정이 내 캘린더에 보이기까지 최대 10분 정도 걸릴 수 있어요.'],
@@ -40,7 +38,41 @@ const CALENDAR_RESULT = {
     failed: ['error', '네이버 캘린더 연동에 실패했어요. 잠시 후 다시 시도해주세요.'],
     cancelled: ['info', '네이버 캘린더 연동을 취소했어요.'],
   },
+  kcalendar: {
+    linked: ['success', '톡캘린더 구독이 시작됐어요. 동아리 일정이 내 톡캘린더에 보이기까지 최대 10분 정도 걸릴 수 있어요.'],
+    failed: ['error', '톡캘린더 연동에 실패했어요. 잠시 후 다시 시도해주세요.'],
+    cancelled: ['info', '톡캘린더 연동을 취소했어요.'],
+  },
 };
+
+// 브랜드 로고 (작게, 흰 동그라미 안)
+const GoogleLogo = () => (
+  <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+  </svg>
+);
+const NaverLogo = () => <span className="text-[15px] font-extrabold leading-none text-[#03C75A]">N</span>;
+const KakaoLogo = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="#191919" d="M12 3C6.48 3 2 6.58 2 11c0 2.83 1.86 5.31 4.66 6.72L5.5 21.5l4.74-2.98c.58.08 1.17.13 1.76.13 5.52 0 10-3.58 10-8S17.52 3 12 3z" />
+  </svg>
+);
+const AppleLogo = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="#111" d="M16.37 12.8c.02-2.36 1.93-3.5 2.02-3.55-1.1-1.61-2.81-1.83-3.42-1.86-1.46-.15-2.84.86-3.58.86-.74 0-1.88-.84-3.09-.82-1.59.02-3.06.93-3.88 2.35-1.65 2.87-.42 7.12 1.19 9.45.79 1.14 1.72 2.42 2.95 2.37 1.19-.05 1.64-.77 3.07-.77 1.44 0 1.84.77 3.1.74 1.28-.02 2.09-1.16 2.87-2.3.9-1.32 1.27-2.6 1.29-2.66-.03-.01-2.48-.95-2.52-3.81zM14.02 5.86c.65-.79 1.09-1.89.97-2.99-.94.04-2.07.63-2.74 1.42-.6.7-1.13 1.82-.99 2.89 1.05.08 2.11-.53 2.76-1.32z" />
+  </svg>
+);
+
+// 선택지 — 색·로고·문구. iOS 는 아이폰에서만
+const OPTIONS = [
+  { key: 'google', label: '구글 캘린더', Logo: GoogleLogo, bg: 'bg-white', fg: 'text-[#1f1f1f]', border: 'border-[#dadce0]', note: '등록·수정·삭제 자동 반영' },
+  { key: 'naver', label: '네이버 캘린더', Logo: NaverLogo, bg: 'bg-[#03C75A]', fg: 'text-white', border: 'border-[#03C75A]', note: '새 일정만 넣어 드려요' },
+  { key: 'kakao', label: '카카오 톡캘린더', Logo: KakaoLogo, bg: 'bg-[#FEE500]', fg: 'text-[#191919]', border: 'border-[#FEE500]', note: '등록·수정·삭제 자동 반영' },
+  { key: 'ios', label: '아이폰 캘린더', Logo: AppleLogo, bg: 'bg-[#f2f2f7]', fg: 'text-[#111]', border: 'border-[#d1d1d6]', note: '기본 캘린더 앱이 구독해요', iosOnly: true },
+];
 
 export default function CalendarSubscribeButton() {
   const router = useRouter();
@@ -48,11 +80,12 @@ export default function CalendarSubscribeButton() {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [onIOS, setOnIOS] = useState(false);
-  // 고른 캘린더: null(선택 화면) | 'google' | 'naver'
+  // 고른 캘린더: null(선택 화면) | 'google' | 'naver' | 'kakao'
   const [pick, setPick] = useState(null);
   // 연동 상태. undefined = 조회 중, null = 조회 실패
   const [google, setGoogle] = useState(undefined);
   const [naver, setNaver] = useState(undefined);
+  const [kakao, setKakao] = useState(undefined);
 
   useEffect(() => {
     setOnIOS(isIOS());
@@ -77,8 +110,10 @@ export default function CalendarSubscribeButton() {
     if (!isLoggedIn) return;
     setGoogle(undefined);
     setNaver(undefined);
+    setKakao(undefined);
     getCalendarLinkStatus().then(setGoogle).catch(() => setGoogle(null));
     getNaverCalendarStatus().then(setNaver).catch(() => setNaver(null));
+    getKakaoCalendarStatus().then(setKakao).catch(() => setKakao(null));
   };
 
   // 계정 선택 화면에서 뒤로 가기로 돌아오면 브라우저가 이 화면을 그대로 복원해 busy 가 켜진 채 남는다 (테스터 제보, 2026-09-27)
@@ -102,11 +137,13 @@ export default function CalendarSubscribeButton() {
     if (busy) return;
     setBusy(true);
     try {
-      const url = which === 'naver' ? await getNaverCalendarLinkUrl(ROUTES.CALENDAR) : await getCalendarLinkUrl(ROUTES.CALENDAR);
+      const fetchUrl = which === 'naver' ? getNaverCalendarLinkUrl : which === 'kakao' ? getKakaoCalendarLinkUrl : getCalendarLinkUrl;
+      const url = await fetchUrl(ROUTES.CALENDAR);
       if (!url) throw new Error('authorizeUrl 없음');
       window.location.href = url;
     } catch (err) {
-      toast.error(err?.response?.data?.message ?? `${which === 'naver' ? '네이버' : '구글'} 연동을 시작하지 못했어요. 잠시 후 다시 시도해주세요.`);
+      const label = which === 'naver' ? '네이버' : which === 'kakao' ? '카카오' : '구글';
+      toast.error(err?.response?.data?.message ?? `${label} 연동을 시작하지 못했어요. 잠시 후 다시 시도해주세요.`);
       setBusy(false);
     }
   };
@@ -117,6 +154,9 @@ export default function CalendarSubscribeButton() {
     setBusy(false);
     setOpen(false);
   };
+
+  const statusOf = { google, naver, kakao };
+  const linkedOf = (key) => !!statusOf[key]?.linked;
 
   // 화면 내용 — 단계별
   let title;
@@ -132,35 +172,40 @@ export default function CalendarSubscribeButton() {
     );
   } else if (pick === null) {
     title = '어느 캘린더에 넣을까요?';
-    body = onIOS
-      ? '구글·네이버는 그 계정과 연동해 서버가 일정을 넣어 드리고, 아이폰 캘린더는 기본 캘린더 앱이 바로 구독해요.'
-      : '구글·네이버 계정과 연동하면 서버가 동아리 일정을 그 캘린더에 넣어 드려요.';
+    body = '구글·네이버·카카오는 그 계정과 연동하면 서버가 동아리 일정을 넣어 드려요.';
     footer = (
-      <>
-        <Button type="button" onClick={() => setPick('google')} className={primaryBtn}>
-          구글 캘린더{google?.linked ? ' (구독 중)' : ''}
-        </Button>
-        <Button type="button" variant="outline" onClick={() => setPick('naver')} className={outlineBtn}>
-          네이버 캘린더{naver?.linked ? ' (연동 중)' : ''}
-        </Button>
-        {onIOS && (
-          <Button
+      <div className="flex flex-col gap-[8px]">
+        {OPTIONS.filter((o) => !o.iosOnly || onIOS).map((o) => (
+          <button
+            key={o.key}
             type="button"
-            variant="outline"
             onClick={() => {
-              // webcal:// 은 OS 가 캘린더 앱으로 넘긴다
-              window.location.href = calendarWebcalUrl();
-              setOpen(false);
+              if (o.key === 'ios') {
+                // webcal:// 은 OS 가 캘린더 앱으로 넘긴다
+                window.location.href = calendarWebcalUrl();
+                setOpen(false);
+                return;
+              }
+              setPick(o.key);
             }}
-            className={outlineBtn}
+            className={`flex h-[52px] w-full items-center gap-3 rounded-[6px] border px-3 text-left transition hover:brightness-95 ${o.bg} ${o.fg} ${o.border}`}
           >
-            아이폰 캘린더에 구독
-          </Button>
-        )}
-      </>
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white shadow-[0_1px_2px_rgba(0,0,0,0.15)]">
+              <o.Logo />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[15px] font-semibold leading-[1.3]">
+                {o.label}
+                {linkedOf(o.key) ? ' · 연동 중' : ''}
+              </span>
+              <span className="block text-[11px] leading-[1.3] opacity-80">{o.note}</span>
+            </span>
+          </button>
+        ))}
+      </div>
     );
   } else if (pick === 'google') {
-    const linked = !!google?.linked;
+    const linked = linkedOf('google');
     title = linked ? '구글 캘린더는 이미 구독 중이에요' : '구글 계정과 연동이 필요해요';
     body = linked
       ? `${google.googleEmail ? `${google.googleEmail} ` : ''}구글 캘린더에 새 일정·변경·삭제가 자동으로 반영돼요 (반영까지 최대 10분). 연동 관리는 마이페이지 → 설정에서.`
@@ -174,8 +219,23 @@ export default function CalendarSubscribeButton() {
         {busy ? '구글로 이동 중…' : '구글로 연동하고 구독하기'}
       </Button>
     );
+  } else if (pick === 'kakao') {
+    const linked = linkedOf('kakao');
+    title = linked ? '톡캘린더는 이미 구독 중이에요' : '카카오 계정과 연동이 필요해요';
+    body = linked
+      ? `${kakao.kakaoName ? `${kakao.kakaoName} ` : ''}톡캘린더에 새 일정·변경·삭제가 자동으로 반영돼요 (반영까지 최대 10분). 연동 관리는 마이페이지 → 설정에서.`
+      : '카카오 계정으로 로그인하고 톡캘린더 권한을 허용하면 동아리 일정이 내 톡캘린더에 자동 등록되고, 수정·삭제가 그대로 반영돼요 (반영까지 최대 10분).';
+    footer = linked ? (
+      <Button type="button" onClick={close} className={primaryBtn}>
+        확인
+      </Button>
+    ) : (
+      <Button type="button" onClick={() => startConsent('kakao')} disabled={busy || kakao === undefined} className={primaryBtn}>
+        {busy ? '카카오로 이동 중…' : '카카오로 연동하고 구독하기'}
+      </Button>
+    );
   } else {
-    const linked = !!naver?.linked;
+    const linked = linkedOf('naver');
     title = linked ? '네이버 캘린더는 이미 연동 중이에요' : '네이버 계정과 연동이 필요해요';
     body = linked
       ? `${naver.naverEmail ? `${naver.naverEmail} ` : ''}네이버 캘린더에 새 일정이 생길 때마다 넣어 드려요. 네이버는 일정 추가만 되는 서비스라 바뀌거나 지워진 일정은 직접 고쳐야 해요. 연동 관리는 마이페이지 → 설정에서.`

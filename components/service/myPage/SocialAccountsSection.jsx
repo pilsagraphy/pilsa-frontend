@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from '@/lib/toast';
 import { SOCIAL_PROVIDERS, getSocialLinkStatus, getSocialLinkUrl, unlinkSocialAccount } from '@/apis/social';
 import { getNaverCalendarLinkUrl, getNaverCalendarStatus, unlinkNaverCalendar } from '@/apis/naverCalendar';
+import { getKakaoCalendarLinkUrl, getKakaoCalendarStatus, unlinkKakaoCalendar } from '@/apis/kakaoCalendar';
 import { confirmDialog } from '@/stores/useDialogStore';
 
 // 네이버·카카오 계정 연결 (PM 2026-10-11) — 구글 계정 연결(GoogleIntegrationSection)과 같은 줄 모양.
@@ -12,12 +13,15 @@ export default function SocialAccountsSection() {
   const [status, setStatus] = useState({}); // { naver: { linked, email, configured }, kakao: ... }
   // 네이버 캘린더 — 새 일정 넣기 (추가만 되는 서비스, 2026-10-12). { linked, naverEmail, sentCount, configured }
   const [naverCal, setNaverCal] = useState(null);
+  // 카카오 톡캘린더 — 구글처럼 등록·수정·삭제 반영 (2026-10-12). { linked, kakaoName, failedCount, configured }
+  const [kakaoCal, setKakaoCal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(null);
 
   useEffect(() => {
     let alive = true;
     getNaverCalendarStatus().then((r) => alive && setNaverCal(r)).catch(() => alive && setNaverCal({ linked: false, configured: false }));
+    getKakaoCalendarStatus().then((r) => alive && setKakaoCal(r)).catch(() => alive && setKakaoCal({ linked: false, configured: false }));
     Promise.all(SOCIAL_PROVIDERS.map((p) => getSocialLinkStatus(p.key).catch(() => ({ linked: false, configured: false }))))
       .then((list) => {
         if (!alive) return;
@@ -86,6 +90,33 @@ export default function SocialAccountsSection() {
     }
   };
 
+  const toggleKakaoCal = async () => {
+    if (busy || !kakaoCal) return;
+    if (!kakaoCal.linked) {
+      setBusy('kcal');
+      try {
+        const url = await getKakaoCalendarLinkUrl();
+        if (!url) throw new Error('authorizeUrl 없음');
+        window.location.href = url;
+      } catch (err) {
+        toast.error(err?.response?.data?.message ?? '톡캘린더 연동을 시작하지 못했어요');
+        setBusy(null);
+      }
+      return;
+    }
+    const removeEvents = await confirmDialog('톡캘린더 연동을 해제합니다.\n그동안 등록된 일정도 톡캘린더에서 삭제할까요?', { confirmText: '일정도 삭제', cancelText: '일정은 두기' });
+    setBusy('kcal');
+    try {
+      const result = await unlinkKakaoCalendar(removeEvents);
+      setKakaoCal((prev) => ({ ...prev, linked: false, kakaoName: '' }));
+      toast.success(removeEvents && result?.removedEvents ? `연동을 해제하고 일정 ${result.removedEvents}건을 삭제했어요` : '톡캘린더 연동을 해제했어요');
+    } catch {
+      toast.error('연동 해제에 실패했어요. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="rounded-[8px] border border-line px-4 py-3">
@@ -139,6 +170,30 @@ export default function SocialAccountsSection() {
           className={`relative h-[26px] w-[46px] shrink-0 rounded-full transition-colors duration-200 disabled:opacity-50 ${naverCal?.linked ? 'bg-inverse' : 'bg-line'}`}
         >
           <span className={`absolute left-[3px] top-[3px] size-5 rounded-full bg-white shadow transition-transform duration-200 ${naverCal?.linked ? 'translate-x-[20px]' : 'translate-x-0'}`} />
+        </button>
+      </div>
+      {/* 톡캘린더 — 구글과 같은 자동 업데이트 */}
+      <div className="flex items-center justify-between gap-3 border-t border-line px-4 py-3">
+        <div className="min-w-0">
+          <p className="text-[14px] font-medium leading-[1.5] tracking-[-0.02em] text-ink">내 톡캘린더에 일정 자동 등록</p>
+          <p className="mt-0.5 text-[12px] leading-[1.5] tracking-[-0.02em] text-ink-3 [word-break:keep-all]">
+            {kakaoCal?.linked && kakaoCal?.failedCount > 0
+              ? '일부 일정을 반영하지 못했어요. 연동을 해제한 뒤 다시 켜주세요.'
+              : kakaoCal?.configured === false && !kakaoCal?.linked
+                ? '준비 중이에요'
+                : '동아리 일정을 내 캘린더에 자동으로 업데이트해요 (수정·삭제도 반영)'}
+          </p>
+        </div>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={!!kakaoCal?.linked}
+          aria-label="내 톡캘린더에 일정 자동 등록"
+          disabled={busy != null || !kakaoCal || (!kakaoCal.linked && kakaoCal.configured === false)}
+          onClick={toggleKakaoCal}
+          className={`relative h-[26px] w-[46px] shrink-0 rounded-full transition-colors duration-200 disabled:opacity-50 ${kakaoCal?.linked ? 'bg-inverse' : 'bg-line'}`}
+        >
+          <span className={`absolute left-[3px] top-[3px] size-5 rounded-full bg-white shadow transition-transform duration-200 ${kakaoCal?.linked ? 'translate-x-[20px]' : 'translate-x-0'}`} />
         </button>
       </div>
     </div>
