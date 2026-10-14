@@ -56,3 +56,14 @@ export const getTopMembers = async (days = 30, limit = 10) =>
   (await axiosInstance.get('/api/admin/monitoring/top-members', { params: { days, limit } })).data;
 // 급상승 판정 기준값: { minScore, spikeRatio, topN }
 export const getTrendingPolicy = async () => (await axiosInstance.get('/api/admin/monitoring/trending/policy')).data;
+
+// ── 인사이트 (PM 2026-10-15 "인사이트가 없다") ──
+// 가입 코호트 잔존: [{ weekStart, signups, w1Eligible, w1Retained, w2Eligible, w2Retained, w4Eligible, w4Retained }] (eligible = 창이 다 지난 회원, 최근 주부터)
+export const getCohortRetention = async (weeks = 12) => (await axiosInstance.get('/api/admin/monitoring/cohort-retention', { params: { weeks } })).data;
+// 콘텐츠 반응: { days, boards: [{ boardId, boardName, postCount, commentCount, likeCount, zeroCommentPosts, medianFirstCommentMinutes }] }
+export const getContentReaction = async (days = 30) => (await axiosInstance.get('/api/admin/monitoring/content-reaction', { params: { days } })).data;
+// 캘린더 연동 장애: { staleDays, googleFailedMembers, kakaoFailedMembers, naverStuckMembers, staleLinks,
+//   rows: [{ provider: google|kakao|naver, issue: FAILED|TOKEN|STALE, userId, name, loginId, memberType, failedCount, exhaustedCount, lastError, lastReflectedAt }] }
+export const getCalendarIssues = async (staleDays = 7) => (await axiosInstance.get('/api/admin/monitoring/calendar/issues', { params: { staleDays } })).data;
+// 기타 장애 신호: { lastAccessHour, lastTrendingHour, lastSignupCapturedAt, calendarExhaustedMembers, accessStale, signupBatchStale }
+export const getHealthSignals = async () => (await axiosInstance.get('/api/admin/monitoring/health-signals')).data;
