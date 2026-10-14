@@ -6,6 +6,9 @@ import { getErrorMessage } from '@/apis/auth';
 import {
   getAppLaunchReport,
   getBoardActivity,
+  getCalendarIssues,
+  getCohortRetention,
+  getContentReaction,
   getDailyAccess,
   getHourlyAccess,
   getInactiveMembers,
@@ -116,6 +119,16 @@ function MemberTable({ rows, columns, empty }) {
   );
 }
 
+// 비율 칸 — 분모가 0 이면(창이 아직 안 지남) '-'
+const pct = (part, whole) => (whole ? `${Math.round((part / whole) * 100)}%` : '-');
+const fmtMinutes = (m) => {
+  if (m == null) return '-';
+  if (m < 60) return `${m}분`;
+  if (m < 60 * 24) return `${Math.floor(m / 60)}시간 ${m % 60}분`;
+  return `${Math.floor(m / 1440)}일 ${Math.floor((m % 1440) / 60)}시간`;
+};
+const CALENDAR_PROVIDER = { google: '구글', kakao: '톡캘린더', naver: '네이버' };
+
 const nameCell = (m) => (
   <Link href={ROUTES.ADMIN_MEMBER_DETAIL(m.userId)} className="text-ink hover:underline">
     {m.name}
@@ -143,6 +156,11 @@ export default function MonitoringSection() {
   const noPush = useFetch(useCallback(() => getPushUnregistered(), []), []);
   const top = useFetch(useCallback(() => getTopMembers(topDays, 10), [topDays]), [topDays]);
   const policy = useFetch(useCallback(() => getTrendingPolicy(), []), []);
+  const cohort = useFetch(useCallback(() => getCohortRetention(12), []), []);
+  const reaction = useFetch(useCallback(() => getContentReaction(30), []), []);
+  const calendarIssues = useFetch(useCallback(() => getCalendarIssues(7), []), []);
+  // 연동 장애 카드를 누르면 그 회원 목록 — `${issue}:${provider}` (STALE 은 provider 무관)
+  const [issueFilter, setIssueFilter] = useState(null);
   const trending = useFetch(
     useCallback(() => getTrending({ hours: trendingHours, onlyTrending, limit: 200 }), [trendingHours, onlyTrending]),
     [trendingHours, onlyTrending]
@@ -280,6 +298,162 @@ export default function MonitoringSection() {
               />
             </div>
           )}
+        </Status>
+      </Block>
+
+      {/* 가입 코호트 잔존 */}
+      <Block
+        title="가입 코호트 잔존"
+        hint="가입 주(월요일 기준)별로, 가입일 기준 N주차 7일 동안 한 번이라도 접속한 비율 — 분모는 그 7일이 다 지난 가입자(탈퇴 제외), 최근 12주."
+      >
+        <Status state={cohort}>
+          {cohort.data?.length ? (
+            <div className="overflow-x-auto rounded-[8px] border border-line">
+              <table className="w-full min-w-[480px] text-[13px]">
+                <thead className="bg-surface-2 text-left text-ink-2">
+                  <tr>
+                    <th className="px-3 py-2 font-medium">가입 주</th>
+                    <th className="px-3 py-2 text-right font-medium">가입</th>
+                    <th className="px-3 py-2 text-right font-medium">1주 뒤</th>
+                    <th className="px-3 py-2 text-right font-medium">2주 뒤</th>
+                    <th className="px-3 py-2 text-right font-medium">4주 뒤</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {cohort.data.map((r) => (
+                    <tr key={r.weekStart}>
+                      <td className="px-3 py-2">{r.weekStart} 주</td>
+                      <td className="px-3 py-2 text-right">{num(r.signups)}</td>
+                      {[
+                        [r.w1Retained, r.w1Eligible],
+                        [r.w2Retained, r.w2Eligible],
+                        [r.w4Retained, r.w4Eligible],
+                      ].map(([kept, base], i) => (
+                        <td key={i} className="px-3 py-2 text-right">
+                          {pct(kept, base)}
+                          {base > 0 && <span className="ml-1 text-[11px] text-ink-4">{`${kept}/${base}`}</span>}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p className="py-6 text-center text-[14px] text-ink-3">최근 12주 가입자가 없습니다.</p>
+          )}
+        </Status>
+      </Block>
+
+      {/* 콘텐츠 반응 */}
+      <Block
+        title="콘텐츠 반응 (30일)"
+        hint="최근 30일 정상 글 기준 — 댓글은 정상·공개 댓글만, 첫 댓글 시간은 글쓴이 본인 댓글을 빼고 댓글 달린 글들의 중앙값."
+      >
+        <Status state={reaction}>
+          {reaction.data && (
+            <div className="overflow-x-auto rounded-[8px] border border-line">
+              <table className="w-full min-w-[560px] text-[13px]">
+                <thead className="bg-surface-2 text-left text-ink-2">
+                  <tr>
+                    <th className="px-3 py-2 font-medium">게시판</th>
+                    <th className="px-3 py-2 text-right font-medium">글</th>
+                    <th className="px-3 py-2 text-right font-medium">글당 댓글</th>
+                    <th className="px-3 py-2 text-right font-medium">글당 좋아요</th>
+                    <th className="px-3 py-2 text-right font-medium">댓글 0개 글</th>
+                    <th className="px-3 py-2 text-right font-medium">첫 댓글까지</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {reaction.data.boards.map((b) => (
+                    <tr key={b.boardId}>
+                      <td className="px-3 py-2">{b.boardName}</td>
+                      <td className="px-3 py-2 text-right">{num(b.postCount)}</td>
+                      <td className="px-3 py-2 text-right">{b.postCount ? (b.commentCount / b.postCount).toFixed(1) : '-'}</td>
+                      <td className="px-3 py-2 text-right">{b.postCount ? (b.likeCount / b.postCount).toFixed(1) : '-'}</td>
+                      <td className="px-3 py-2 text-right">{pct(b.zeroCommentPosts, b.postCount)}</td>
+                      <td className="px-3 py-2 text-right">{fmtMinutes(b.medianFirstCommentMinutes)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Status>
+      </Block>
+
+      {/* 캘린더 연동 장애 */}
+      <Block
+        title="캘린더 연동 장애"
+        hint="구글·톡캘린더는 동기화 실패가 남은 회원, 네이버는 토큰 갱신 실패로 멈춘 회원, 그리고 마지막 반영이 7일 넘게 없는 연동 수. 카드를 누르면 회원 목록."
+      >
+        <Status state={calendarIssues}>
+          {calendarIssues.data &&
+            (() => {
+              const c = calendarIssues.data;
+              const cards = [
+                { key: 'FAILED:google', label: '구글 동기화 실패', value: c.googleFailedMembers, sub: '실패 일정이 남은 회원' },
+                { key: 'FAILED:kakao', label: '톡캘린더 동기화 실패', value: c.kakaoFailedMembers, sub: '실패 일정이 남은 회원' },
+                { key: 'TOKEN:naver', label: '네이버 토큰 만료', value: c.naverStuckMembers, sub: '재연동해야 다시 들어감' },
+                { key: 'STALE', label: `${c.staleDays}일 넘게 반영 없음`, value: c.staleLinks, sub: '연동 단위' },
+              ];
+              const rows = issueFilter
+                ? c.rows.filter((r) => (issueFilter === 'STALE' ? r.issue === 'STALE' : `${r.issue}:${r.provider}` === issueFilter))
+                : [];
+              return (
+                <div className="flex flex-col gap-3">
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {cards.map((card) => (
+                      <button
+                        key={card.key}
+                        type="button"
+                        onClick={() => setIssueFilter((f) => (f === card.key ? null : card.key))}
+                        className={`rounded-[8px] text-left ${issueFilter === card.key ? 'ring-2 ring-ink' : ''}`}
+                      >
+                        <Card label={card.label} value={num(card.value)} sub={card.sub} />
+                      </button>
+                    ))}
+                  </div>
+                  {issueFilter &&
+                    (rows.length ? (
+                      <div className="overflow-x-auto rounded-[8px] border border-line">
+                        <table className="w-full min-w-[560px] text-[13px]">
+                          <thead className="bg-surface-2 text-left text-ink-2">
+                            <tr>
+                              <th className="px-3 py-2 font-medium">이름</th>
+                              <th className="px-3 py-2 font-medium">아이디</th>
+                              <th className="px-3 py-2 font-medium">캘린더</th>
+                              <th className="px-3 py-2 font-medium">마지막 반영</th>
+                              {issueFilter.startsWith('FAILED') && <th className="px-3 py-2 text-right font-medium">실패 (상한 소진)</th>}
+                              {issueFilter.startsWith('FAILED') && <th className="px-3 py-2 font-medium">최근 오류</th>}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-line">
+                            {rows.map((r) => (
+                              <tr key={`${r.issue}-${r.provider}-${r.userId}`}>
+                                <td className="px-3 py-2">{nameCell(r)}</td>
+                                <td className="px-3 py-2 text-ink-3">{r.loginId}</td>
+                                <td className="px-3 py-2">{CALENDAR_PROVIDER[r.provider] ?? r.provider}</td>
+                                <td className="px-3 py-2">{fmtDateTime(r.lastReflectedAt)}</td>
+                                {issueFilter.startsWith('FAILED') && (
+                                  <td className="px-3 py-2 text-right">{`${num(r.failedCount)} (${num(r.exhaustedCount)})`}</td>
+                                )}
+                                {issueFilter.startsWith('FAILED') && (
+                                  <td className="max-w-[280px] truncate px-3 py-2 text-ink-3" title={r.lastError ?? ''}>
+                                    {r.lastError ?? '-'}
+                                  </td>
+                                )}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <p className="py-6 text-center text-[14px] text-ink-3">해당하는 회원이 없습니다.</p>
+                    ))}
+                </div>
+              );
+            })()}
         </Status>
       </Block>
 
