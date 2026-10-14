@@ -180,13 +180,24 @@ export default function MonitoringSection() {
       {/* 0. 요약 카드 */}
       <Status state={summary}>
         {s && (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-4">
             <Card label="오늘 접속 (DAU)" value={num(s.dau)} sub={`7일 ${num(s.wau)} · 30일 ${num(s.mau)}`} />
             <Card label="회원" value={num(s.membersTotal)} sub={`이달 가입 ${num(s.signupsThisMonth)}`} />
             <Card label="글 · 댓글 (7일)" value={`${num(s.postsLast7)} · ${num(s.commentsLast7)}`} sub={`30일 ${num(s.postsLast30)} · ${num(s.commentsLast30)}`} />
             <Card label="신고 대기" value={num(s.pendingReports)} sub="대상(글·댓글) 단위" />
             <Card label="푸시 등록 회원" value={num(s.pushRegisteredMembers)} sub={`미등록 ${num(s.membersTotal - s.pushRegisteredMembers)}`} />
             <Card label="활동 비율 (30일)" value={s.membersTotal ? `${Math.round((s.mau / s.membersTotal) * 100)}%` : '-'} sub="30일 접속 ÷ 회원" />
+            {/* 간편로그인·캘린더 연동 현황 (PM 2026-10-13) — 제공자별 수는 한 회원이 여럿 연결하면 각각 센다 */}
+            <Card
+              label="간편로그인 연결 회원"
+              value={num(s.socialLinkedMembers)}
+              sub={`구글 ${num(s.socialByProvider?.GOOGLE ?? 0)} · 네이버 ${num(s.socialByProvider?.NAVER ?? 0)} · 카카오 ${num(s.socialByProvider?.KAKAO ?? 0)} · 비번 없음 ${num(s.socialOnlyMembers)}`}
+            />
+            <Card
+              label="캘린더 연동 회원"
+              value={num(s.calendarLinkedMembers)}
+              sub={`구글 ${num(s.calendarByProvider?.google ?? 0)} · 톡 ${num(s.calendarByProvider?.kakao ?? 0)} · 네이버 ${num(s.calendarByProvider?.naver ?? 0)}`}
+            />
           </div>
         )}
       </Status>

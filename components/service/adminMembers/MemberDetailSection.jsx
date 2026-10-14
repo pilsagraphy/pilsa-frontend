@@ -197,15 +197,62 @@ export default function MemberDetailSection({ userId }) {
               <Row label="알림 끈 글·댓글">{data.muteCount}건</Row>
             </Card>
 
-            <Card title="구글 연동">
-              <Row label="연동">{data.googleLinked ? '연동됨' : '안 됨'}</Row>
-              {data.googleLinked && (
-                <>
-                  <Row label="구글 계정">{data.googleEmail ?? '-'}</Row>
-                  <Row label="연동일">{fmtDateTime(data.googleLinkedAt)}</Row>
-                  <Row label="마지막 동기화">{fmtDateTime(data.googleLastSyncedAt)}</Row>
-                </>
+            {/* 어떤 간편로그인으로 들어오는지 (PM 2026-10-13) */}
+            <Card
+              title="간편로그인"
+              aside={data.socialOnly ? <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[12px] text-ink-2">비밀번호 없음</span> : null}
+            >
+              {(data.socialAccounts ?? []).length === 0 ? (
+                <Row label="연결">없음 (아이디·비밀번호로만 로그인)</Row>
+              ) : (
+                (data.socialAccounts ?? []).map((a) => (
+                  <Row key={a.provider} label={a.label}>
+                    {a.email || '이메일 없음'}
+                    <span className="ml-2 text-[12px] text-ink-3">{fmtDate(a.linkedAt)} 연결</span>
+                  </Row>
+                ))
               )}
+              {data.socialOnly && (
+                <p className="text-[12px] leading-[1.6] text-ink-3 [word-break:keep-all]">
+                  소셜로만 가입한 회원이에요. 비밀번호를 만들기 전까지는 위 간편로그인으로만 들어올 수 있어요.
+                </p>
+              )}
+            </Card>
+
+            {/* 캘린더 연동 — 간편로그인 연결과 별개 */}
+            <Card title="캘린더 연동">
+              <Row label="구글 캘린더">
+                {data.googleLinked ? (
+                  <>
+                    {data.googleEmail ?? '연동됨'}
+                    <span className="ml-2 text-[12px] text-ink-3">마지막 반영 {fmtDateTime(data.googleLastSyncedAt)}</span>
+                  </>
+                ) : (
+                  '안 함'
+                )}
+              </Row>
+              <Row label="톡캘린더">
+                {data.kakaoCalendarLinked ? (
+                  <>
+                    {data.kakaoCalendarName || '연동됨'}
+                    <span className="ml-2 text-[12px] text-ink-3">마지막 반영 {fmtDateTime(data.kakaoCalendarLastSyncedAt)}</span>
+                  </>
+                ) : (
+                  '안 함'
+                )}
+              </Row>
+              <Row label="네이버 캘린더">
+                {data.naverCalendarLinked ? (
+                  <>
+                    {data.naverCalendarEmail || '연동됨'}
+                    <span className="ml-2 text-[12px] text-ink-3">
+                      {data.naverCalendarSentCount ?? 0}건 넣음 · 마지막 {fmtDateTime(data.naverCalendarLastSentAt)}
+                    </span>
+                  </>
+                ) : (
+                  '안 함'
+                )}
+              </Row>
             </Card>
 
             <Card
