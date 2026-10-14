@@ -65,3 +65,5 @@ export const getContentReaction = async (days = 30) => (await axiosInstance.get(
 // 캘린더 연동 장애: { staleDays, googleFailedMembers, kakaoFailedMembers, naverStuckMembers, staleLinks,
 //   rows: [{ provider: google|kakao|naver, issue: FAILED|TOKEN|STALE, userId, name, loginId, memberType, failedCount, exhaustedCount, lastError, lastReflectedAt }] }
 export const getCalendarIssues = async (staleDays = 7) => (await axiosInstance.get('/api/admin/monitoring/calendar/issues', { params: { staleDays } })).data;
+// 기타 장애 신호: { lastAccessHour, lastTrendingHour, lastSignupCapturedAt, calendarExhaustedMembers, accessStale, signupBatchStale }
+export const getHealthSignals = async () => (await axiosInstance.get('/api/admin/monitoring/health-signals')).data;

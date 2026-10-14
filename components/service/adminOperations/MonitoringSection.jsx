@@ -10,6 +10,7 @@ import {
   getCohortRetention,
   getContentReaction,
   getDailyAccess,
+  getHealthSignals,
   getHourlyAccess,
   getInactiveMembers,
   getMonitoringSummary,
@@ -159,6 +160,7 @@ export default function MonitoringSection() {
   const cohort = useFetch(useCallback(() => getCohortRetention(12), []), []);
   const reaction = useFetch(useCallback(() => getContentReaction(30), []), []);
   const calendarIssues = useFetch(useCallback(() => getCalendarIssues(7), []), []);
+  const health = useFetch(useCallback(() => getHealthSignals(), []), []);
   // 연동 장애 카드를 누르면 그 회원 목록 — `${issue}:${provider}` (STALE 은 provider 무관)
   const [issueFilter, setIssueFilter] = useState(null);
   const trending = useFetch(
@@ -454,6 +456,31 @@ export default function MonitoringSection() {
                 </div>
               );
             })()}
+        </Status>
+      </Block>
+
+      {/* 기타 장애 신호 */}
+      <Block
+        title="기타 장애 신호"
+        hint="DB 에 흔적이 남는 것만 — 접속 기록 3시간·가입 배치 2일 넘게 없으면 '확인 필요'. 푸시·메일 발송 실패와 5xx 오류는 기록이 없어 서버 로그를 봐야 합니다."
+      >
+        <Status state={health}>
+          {health.data && (
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <Card
+                label="마지막 접속 기록"
+                value={fmtDateTime(health.data.lastAccessHour)}
+                sub={health.data.accessStale ? '⚠ 확인 필요 — 3시간 넘게 기록 없음' : '정상'}
+              />
+              <Card
+                label="주간 가입 배치 (04:50)"
+                value={fmtDateTime(health.data.lastSignupCapturedAt)}
+                sub={health.data.signupBatchStale ? '⚠ 확인 필요 — 2일 넘게 실행 흔적 없음' : '정상'}
+              />
+              <Card label="마지막 급상승 집계 행" value={fmtDateTime(health.data.lastTrendingHour)} sub="조용한 구간엔 행이 없어 늦어도 정상" />
+              <Card label="캘린더 자동 복구 멈춤" value={num(health.data.calendarExhaustedMembers)} sub="재시도 상한 소진 회원 (재연동 필요)" />
+            </div>
+          )}
         </Status>
       </Block>
 
