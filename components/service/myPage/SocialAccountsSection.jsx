@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from '@/lib/toast';
 import { ROUTES } from '@/constants/routes';
 import { getErrorMessage } from '@/apis/auth';
+import { requirePasswordBeforeUnlink } from '@/lib/requirePasswordBeforeUnlink';
 import { SOCIAL_PROVIDERS, getSocialLinkStatus, getSocialLinkUrl, unlinkSocialAccount } from '@/apis/social';
 import { getNaverCalendarLinkUrl, getNaverCalendarStatus, unlinkNaverCalendar } from '@/apis/naverCalendar';
 import { getKakaoCalendarLinkUrl, getKakaoCalendarStatus, unlinkKakaoCalendar } from '@/apis/kakaoCalendar';
@@ -26,7 +27,7 @@ const Switch = ({ on, label, disabled, onClick }) => (
   </button>
 );
 
-export default function SocialAccountsSection() {
+export default function SocialAccountsSection({ socialOnly = false, onCreatePassword }) {
   const [status, setStatus] = useState({}); // { naver: { linked, email, configured }, kakao: ... }
   const [naverCal, setNaverCal] = useState(null); // { linked, naverEmail, sentCount, configured }
   const [kakaoCal, setKakaoCal] = useState(null); // { linked, kakaoName, failedCount, configured }
@@ -83,6 +84,7 @@ export default function SocialAccountsSection() {
 
   const unlinkAccount = async (p) => {
     if (busy) return;
+    if (!(await requirePasswordBeforeUnlink(socialOnly, p.label, onCreatePassword))) return;
     const calOn = p.key === 'naver' ? naverCal?.linked : kakaoCal?.linked;
     const go = await confirmDialog(
       calOn ? `${p.label} 계정 연결을 해제할까요?\n${p.label} 캘린더 연동은 그대로 유지돼요 (캘린더 줄에서 따로 끌 수 있어요).` : `${p.label} 계정 연결을 해제할까요?`,
@@ -95,7 +97,7 @@ export default function SocialAccountsSection() {
       setStatus((prev) => ({ ...prev, [p.key]: { ...prev[p.key], linked: false, email: '' } }));
       toast.success(`${p.label} 계정 연결을 해제했어요`);
     } catch (err) {
-      // 비밀번호 없는 소셜 전용 계정의 마지막 연결이면 서버가 409 로 막는다 — 그 문구를 그대로 보여 준다
+      // 비밀번호 없는 소셜 전용 계정이면 서버가 409 로 막는다 — 그 문구를 그대로 보여 준다
       toast.error(getErrorMessage(err, '연결 해제에 실패했어요.'));
     } finally {
       setBusy(null);

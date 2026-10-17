@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { toast } from '@/lib/toast';
 import { ROUTES } from '@/constants/routes';
 import { confirmDialog } from '@/stores/useDialogStore';
+import { requirePasswordBeforeUnlink } from '@/lib/requirePasswordBeforeUnlink';
 import {
   getGoogleLinkStatus,
   getGoogleLinkUrl,
@@ -19,7 +20,7 @@ import {
 // Google Calendar API 에는 외부 ICS URL 을 구독으로 추가하는 방법이 없고,
 // 안드로이드 구글 캘린더 앱에는 URL 구독 기능 자체가 없다.
 // 그래서 동의를 받아 서버가 각자 캘린더에 일정을 직접 넣는다 — 사용자에게는 구독처럼 보인다.
-export default function GoogleIntegrationSection() {
+export default function GoogleIntegrationSection({ socialOnly = false, onCreatePassword }) {
   const [account, setAccount] = useState(null); // { linked, googleEmail, linkedAt }
   // 서버 응답: { linked, lastSyncedAt, syncedCount, failedCount } — syncedCount 는 화면에 쓰지 않는다(위 문구 주석 참고)
   const [calendar, setCalendar] = useState(null);
@@ -80,6 +81,7 @@ export default function GoogleIntegrationSection() {
 
   const handleUnlinkAccount = async () => {
     if (busy) return;
+    if (!(await requirePasswordBeforeUnlink(socialOnly, '구글', onCreatePassword))) return;
     setBusy(true);
     try {
       await unlinkGoogleAccount();

@@ -19,6 +19,7 @@ import {
 import { sendVerifyCode, verifyEmailCode } from '@/apis/mail';
 import { getGooglePendingLink, discardGooglePendingLink } from '@/apis/google';
 import { providerLabel } from '@/apis/social';
+import useSocialPendingExpiry from '@/hooks/useSocialPendingExpiry';
 import AppLoading from '@/components/common/AppLoading';
 import {
   Form,
@@ -95,6 +96,8 @@ function SignupFormInner() {
   // ({ googleEmail, maskedEmail, ... }). 이메일 칸을 채워 두고, 가입 도중 학번·전화·이메일이
   // 이미 있는 회원과 겹치면 새로 만들지 말고 그 계정으로 로그인해서 연결하라고 안내한다.
   const [googlePending, setGooglePending] = useState(null);
+  // 간편로그인 대기(10분)가 끝나면 로그인 화면을 새로 열고 만료 팝업 (PM 2026-10-16)
+  useSocialPendingExpiry(Boolean(googlePending));
   const [existingMemberField, setExistingMemberField] = useState(null);
 
   // 소셜로 들어온 가입은 비밀번호가 없다 — 검증 스키마를 그때그때 고른다 (resolver 는 호출 시점에 ref 를 읽는다)
