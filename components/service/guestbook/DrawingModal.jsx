@@ -276,6 +276,12 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
       window.removeEventListener('blur', blur);
     };
   }, [open]);
+  // 색을 고르면 그리기로 돌아간다 — 지우개면 펜, 이동(손)이면 이동 누르기 전 도구로 (PM 10/18)
+  const pickColorTool = () =>
+    setTool((t) => {
+      const back = t === 'hand' ? toolBeforeHand.current : t;
+      return back === 'eraser' ? 'pen' : back;
+    });
   const handActive = view.scale > 1 && (tool === 'hand' || spaceHeld);
   const onDown = (event) => {
     // 확대 상태의 마우스 끌기 이동 — 손 도구·스페이스바·휠 버튼. 그리기보다 먼저 가로챈다
@@ -458,7 +464,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
               aria-label={c}
               onClick={() => {
                 setColor(c);
-                setTool((t) => (t === 'eraser' ? 'pen' : t));
+                pickColorTool();
               }}
               className={`h-[22px] w-[22px] rounded-full border-2 ${!eraser && color === c ? 'border-ink ring-1 ring-ink ring-offset-1' : 'border-line'}`}
               style={{ backgroundColor: c }}
@@ -483,7 +489,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
               const h = hex.toLowerCase();
               setCustoms((list) => (PRESETS.includes(h) || list.includes(h) ? list : [...list, h].slice(-MAX_CUSTOM)));
               setColor(h);
-              setTool((t) => (t === 'eraser' ? 'pen' : t));
+              pickColorTool();
               setPickerOpen(false);
             }}
           />
