@@ -14,7 +14,8 @@ function toMember(user) {
     memberId: user.userId,
     name: user.name,
     loginId: user.loginId,
-    currentStatus: user.tag === 'caution' ? '주의' : user.tag === 'history' ? '이력' : '정지',
+    // withdrawn = 강제 탈퇴(가린 이름·아이디로만 남음, PM 2026-10-17)
+    currentStatus: user.tag === 'withdrawn' ? '강퇴' : user.tag === 'caution' ? '주의' : user.tag === 'history' ? '이력' : '정지',
   };
 }
 
