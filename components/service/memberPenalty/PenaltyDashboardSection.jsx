@@ -37,10 +37,7 @@ const formatTime = (iso) => (iso ? iso.slice(11, 16) : '');
 // 회원 상태 줄: 주의 | 영구 정지 | 정지 (기간) | 제재 없음(로그만)
 function toBanText(detail) {
   if (!detail) return '';
-  if (detail.tag === 'withdrawn') {
-    const at = detail.withdrawnAt ? `${formatDate(detail.withdrawnAt)} ${String(detail.withdrawnAt).slice(11, 16)}` : '';
-    return `강제 탈퇴 (${at}${detail.withdrawnByName ? ` · ${detail.withdrawnByName}` : ''})`;
-  }
+  if (detail.tag === 'withdrawn') return '강제 탈퇴';
   if (detail.tag === 'caution') return '주의';
   if (detail.tag === 'history' || detail.tag === 'none') return '제재 없음';
   if (detail.tag === 'permanent' || !detail.bannedUntil) return '영구 정지';
@@ -267,15 +264,18 @@ export default function PenaltyDashboardSection() {
                 </span>
               </div>
 
-              {/* 강제 탈퇴 사유 */}
-              {selectedDetail.data?.tag === 'withdrawn' && (
-                <div className="flex items-start justify-between gap-4 border-b border-line-strong py-[12px] pr-[14px]">
-                  <span className="shrink-0 text-[14px] font-medium tracking-[-0.28px] text-ink-4">탈퇴 사유</span>
-                  <span className="text-right text-[14px] tracking-[-0.28px] text-ink [word-break:keep-all]">
-                    {selectedDetail.data.withdrawReason || '-'}
-                  </span>
-                </div>
-              )}
+              {/* 강제 탈퇴 — 처리 일시 · 조치한 사람 · 사유를 항목 이름과 함께 (PM 2026-10-18) */}
+              {selectedDetail.data?.tag === 'withdrawn' &&
+                [
+                  ['처리 일시', selectedDetail.data.withdrawnAt ? `${formatDate(selectedDetail.data.withdrawnAt)} ${formatTime(selectedDetail.data.withdrawnAt)}` : '-'],
+                  ['조치한 사람', selectedDetail.data.withdrawnByName || '-'],
+                  ['탈퇴 사유', selectedDetail.data.withdrawReason || '-'],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-start justify-between gap-4 border-b border-line-strong py-[12px] pr-[14px]">
+                    <span className="shrink-0 text-[14px] font-medium tracking-[-0.28px] text-ink-4">{label}</span>
+                    <span className="text-right text-[14px] tracking-[-0.28px] text-ink [word-break:keep-all]">{value}</span>
+                  </div>
+                ))}
 
               {/* 통계 카드 4개: 로딩 / 에러 / 데이터 있음 처리 */}
               {selectedDetail.isLoading ? (
