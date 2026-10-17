@@ -661,7 +661,7 @@ function SignupFormInner() {
                   <Input
                     {...field}
                     type="password"
-                    placeholder="문자, 숫자, 특수문자 포함 8~20자"
+                    placeholder="문자와 숫자를 섞어 8~20자"
                     className="h-[52px]"
                   />
                 </FormControl>
@@ -670,7 +670,6 @@ function SignupFormInner() {
                   {[
                     { label: '문자', regex: /[a-zA-Z]/ },
                     { label: '숫자', regex: /\d/ },
-                    { label: '특수문자', regex: /[^A-Za-z0-9]/ },
                     { label: '8~20자', regex: /^.{8,20}$/ },
                   ].map((rule) => {
                     const isValid = checkPasswordRule(rule.regex);
