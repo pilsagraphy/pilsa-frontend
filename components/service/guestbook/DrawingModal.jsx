@@ -39,6 +39,12 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
   const pointers = useRef(new Map()); // 눌려 있는 손가락들
   const pinch = useRef(null); // 두 손가락 시작 상태
   const [view, setView] = useState({ scale: 1, tx: 0, ty: 0 });
+  // PC 확대 이동 — 확대한 뒤 손(이동) 도구로 끌거나, 스페이스바를 누른 채 끌거나, 휠 버튼으로 끌면 캔버스가 상하좌우로 움직인다 (PM 10/17 "가운데만 보인다").
+  // 마우스(정밀 포인터)에서만 확대 시 손 도구로 자동 전환한다 — 폰은 기존 핀치 그대로
+  const pan = useRef(null); // 끌기 시작 상태 { x, y, view0 }
+  const [panning, setPanning] = useState(false);
+  const [spaceHeld, setSpaceHeld] = useState(false);
+  const toolBeforeHand = useRef('pen');
 
   // 캔버스가 DOM 에 붙는 순간 정사각형 비트맵으로 잡는다 (선명하도록 기기 배율만큼 크게, 좌표는 pos() 가 실제 픽셀로 환산).
   // 예전엔 open 이 바뀔 때 useEffect 에서 잡았는데, Dialog 내용이 그 시점엔 아직 없어서 건너뛰었고 캔버스가 기본 300×150 그대로였다 —
@@ -72,6 +78,8 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
     history.current = [];
     pointers.current.clear();
     pinch.current = null;
+    pan.current = null;
+    setPanning(false);
     setView({ scale: 1, tx: 0, ty: 0 });
     setDirty(false);
     setTool((t) => (t === 'eraser' ? 'pen' : t));
@@ -232,13 +240,54 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
     const scale = Math.min(4, Math.max(1, Math.round(next * 100) / 100));
     const frame = frameRef.current?.getBoundingClientRect();
     if (!frame) return;
+    // 마우스로 처음 확대하면 바로 끌어 볼 수 있게 손 도구로 (다시 그리려면 도구 줄에서 펜 등을 고른다)
+    if (view.scale <= 1 && scale > 1 && window.matchMedia?.('(hover: hover) and (pointer: fine)').matches) chooseHand();
     const cx = frame.width / 2;
     const cy = frame.height / 2;
     const px = (cx - view.tx) / view.scale;
     const py = (cy - view.ty) / view.scale;
     setView(clampView({ scale, tx: cx - px * scale, ty: cy - py * scale }));
   };
+  // 확대를 풀면 손 도구는 쓸 데가 없으니 원래 도구로
+  useEffect(() => {
+    if (view.scale <= 1 && tool === 'hand') setTool(toolBeforeHand.current);
+  }, [view.scale, tool]);
+  const chooseHand = () => {
+    if (tool !== 'hand') toolBeforeHand.current = tool;
+    setTool('hand');
+  };
+  // 스페이스바를 누르는 동안 잠깐 손 도구 (그림판 프로그램들처럼). 글자 입력 칸에서는 건드리지 않는다
+  useEffect(() => {
+    if (!open) return undefined;
+    const typing = (e) => e.target?.closest?.('input, textarea, [contenteditable="true"]');
+    const down = (e) => {
+      if (e.code !== 'Space' || typing(e)) return;
+      e.preventDefault();
+      setSpaceHeld(true);
+    };
+    const up = (e) => {
+      if (e.code === 'Space') setSpaceHeld(false);
+    };
+    const blur = () => setSpaceHeld(false);
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    window.addEventListener('blur', blur);
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', blur);
+    };
+  }, [open]);
+  const handActive = view.scale > 1 && (tool === 'hand' || spaceHeld);
   const onDown = (event) => {
+    // 확대 상태의 마우스 끌기 이동 — 손 도구·스페이스바·휠 버튼. 그리기보다 먼저 가로챈다
+    if (view.scale > 1 && event.pointerType !== 'touch' && pointers.current.size === 0 && (handActive || event.button === 1)) {
+      event.preventDefault();
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      pan.current = { id: event.pointerId, x: event.clientX, y: event.clientY, view0: view };
+      setPanning(true);
+      return;
+    }
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pointers.current.size === 2) {
       // 두 번째 손가락 — 그리기를 멈추고 핀치 시작. 첫 손가락이 찍어 둔 점(이나 채우기)이 거의 안 움직였으면 되돌린다 (PM 10/11 "확대했는데 점이 찍힌다")
@@ -256,9 +305,15 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
       };
       return;
     }
-    if (pointers.current.size === 1) start(event);
+    if (pointers.current.size === 1 && tool !== 'hand') start(event); // 폰에서 손 도구를 골랐으면 한 손가락은 그리지 않는다(핀치는 그대로)
   };
   const onMove = (event) => {
+    if (pan.current?.id === event.pointerId) {
+      event.preventDefault();
+      const { x, y, view0 } = pan.current;
+      setView(clampView({ scale: view0.scale, tx: view0.tx + event.clientX - x, ty: view0.ty + event.clientY - y }));
+      return;
+    }
     if (!pointers.current.has(event.pointerId)) return;
     pointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
     if (pinch.current && pointers.current.size >= 2) {
@@ -277,6 +332,11 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
     move(event);
   };
   const onUp = (event) => {
+    if (pan.current?.id === event.pointerId) {
+      pan.current = null;
+      setPanning(false);
+      return;
+    }
     pointers.current.delete(event.pointerId);
     if (pointers.current.size < 2) pinch.current = null;
     end();
@@ -378,7 +438,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
               aspectRatio: '1 / 1',
               touchAction: 'none',
               display: 'block',
-              cursor: 'crosshair',
+              cursor: handActive || panning ? (panning ? 'grabbing' : 'grab') : 'crosshair',
               transform: `translate(${view.tx}px, ${view.ty}px) scale(${view.scale})`,
               transformOrigin: '0 0',
             }}
@@ -386,6 +446,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
             onPointerMove={onMove}
             onPointerUp={onUp}
             onPointerCancel={onUp}
+            onMouseDown={(e) => e.button === 1 && e.preventDefault() /* 휠 버튼 자동 스크롤 막기 */}
           />
         </div>
 
@@ -487,6 +548,17 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
             +
           </button>
           <span className="w-[44px] shrink-0 text-right text-[12px] tabular-nums text-ink-2">{Math.round(view.scale * 100)}%</span>
+          {view.scale > 1 && (
+            <button
+              type="button"
+              title="끌어서 이동 (스페이스바를 누른 채 끌어도 돼요)"
+              aria-pressed={tool === 'hand'}
+              onClick={() => (tool === 'hand' ? setTool(toolBeforeHand.current) : chooseHand())}
+              className={toolBtn(tool === 'hand')}
+            >
+              이동
+            </button>
+          )}
         </div>
 
         <div className="flex justify-end gap-2 border-t border-line pt-3">
