@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { withdrawAccount } from '@/apis/mypage';
 import { getErrorMessage } from '@/apis/auth';
-import { AUTO_LOGIN_KEY } from '@/stores/useAuthStore';
+import useAuthStore, { AUTO_LOGIN_KEY } from '@/stores/useAuthStore';
 import { BASE_PATH } from '@/constants/routes';
 
 // 탈퇴 시 처리 내용 안내
@@ -50,6 +50,8 @@ export default function WithdrawModal({ open, onOpenChange, socialOnly = false }
   const [step, setStep] = useState(1); // 1: 안내, 2: 비밀번호 확인, 3: 완료
   const [agreed, setAgreed] = useState(false);
   const [password, setPassword] = useState('');
+  // 관리 권한이 있으면 바로 탈퇴할 수 없다 — 서버도 막는다 (PM 2026-10-18)
+  const isAdmin = useAuthStore((s) => s.adminLevel) >= 1;
   const [submitting, setSubmitting] = useState(false);
 
   const reset = () => {
@@ -131,10 +133,16 @@ export default function WithdrawModal({ open, onOpenChange, socialOnly = false }
               위 내용을 모두 확인했으며 이에 동의합니다.
             </label>
 
+            {isAdmin && (
+              <p className="rounded-[8px] bg-surface-2 px-4 py-3 text-[13px] leading-[1.6] tracking-[-0.02em] text-danger [word-break:keep-all]">
+                관리 권한이 있는 계정은 바로 탈퇴할 수 없어요. 다른 관리자에게 관리 권한 해제를 요청한 뒤 진행해 주세요.
+              </p>
+            )}
+
             <div className="mt-1 flex flex-col gap-2">
               <Button
                 type="button"
-                disabled={!agreed}
+                disabled={!agreed || isAdmin}
                 onClick={() => setStep(2)}
                 className="h-[46px] w-full rounded-[6px] bg-inverse text-[15px] font-semibold text-inverse-fg hover:bg-inverse-hover disabled:opacity-40"
               >
