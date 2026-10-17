@@ -50,9 +50,11 @@ export const banUsers = async (userIds) => {
 //    되돌릴 수 없다 — 개인정보 즉시 파기 + 학번 해시 보관 + 재가입 쿨다운 적용
 //    실패: 404 없거나 이미 탈퇴 / 400 관리자 계정은 대상 불가 / 403 Lv3 미만
 //    ※ FE 는 adminLevel < 3 이면 버튼 자체를 노출하지 않는다
-export const withdrawUser = async (userId) => {
+//    reason 필수(300자) — 가린 이름·아이디와 함께 강제 탈퇴 이력에 남는다 (2026-10-17)
+export const withdrawUser = async (userId, reason) => {
   const response = await axiosInstance.patch(
-    `/api/admin/users/${encodeURIComponent(userId)}/withdraw`
+    `/api/admin/users/${encodeURIComponent(userId)}/withdraw`,
+    { reason }
   );
   return response.data;
 };

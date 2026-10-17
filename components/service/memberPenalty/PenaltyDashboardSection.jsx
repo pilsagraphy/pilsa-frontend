@@ -4,6 +4,7 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import MemberListSection from './MemberListSection';
 import PenaltyStatCard from './PenaltyStatCard';
 import ReportSection from './ReportSection';
+import ForceWithdrawLogSection from './ForceWithdrawLogSection';
 import ModerationLegend from '@/components/shared/admin/ModerationLegend';
 import useSanctionStore from '@/stores/useSanctionStore';
 import { DETAIL_FROM_PENALTY, getAdminPostDetailHref } from '@/constants/adminPosts';
@@ -312,6 +313,9 @@ export default function PenaltyDashboardSection() {
           )}
         </div>
       </div>
+
+      {/* 강제 탈퇴 이력 — 탈퇴자는 위 목록에 안 나오므로 따로 (PM 2026-10-17) */}
+      <ForceWithdrawLogSection />
     </section>
   );
 }

@@ -164,10 +164,10 @@ export default function MemberListSection({ title = '회원 목록' }) {
   };
 
   // 강제 탈퇴 — 되돌릴 수 없는 처리(개인정보 즉시 파기)라 확인 모달을 거친다
-  const handleWithdrawConfirm = async () => {
-    if (!withdrawTarget) return;
+  const handleWithdrawConfirm = async (reason) => {
+    if (!withdrawTarget || !reason) return;
     try {
-      await withdrawUser(withdrawTarget.memberId);
+      await withdrawUser(withdrawTarget.memberId, reason);
       setSelectedIds((prev) => prev.filter((id) => id !== withdrawTarget.memberId));
       setWithdrawTarget(null);
       await loadUsers();

@@ -51,3 +51,12 @@ export const getSanctionedUserReportedComments = async (userId) => {
 //    ban_status 를 none 으로 되돌리고 열린 ban_log 를 전부 해제 처리한다 (lifted_by 에 처리 관리자 기록)
 //    정지만 푼다 — 경고(warning_log)는 시효 365일 동안 유효하게 남는다
 //    ※ 백엔드는 제공 중이다 — 화면 연결(해제 버튼)만 3기 진행 예정, 연결 전 PM 확인 필요
+
+// 강제 탈퇴 이력 (GET /api/admin/sanctions/withdrawals?page&size&keyword) [ADMIN] — 2026-10-17
+//    응답: { items:[{ logId, userId, maskedName, maskedLoginId, memberType, reason, withdrawnBy, withdrawnByName, createdAt }], totalCount, totalPages, page, size }
+export const getForceWithdrawLogs = async ({ page = 1, size = 10, keyword } = {}) => {
+  const response = await axiosInstance.get('/api/admin/sanctions/withdrawals', {
+    params: { page, size, ...(keyword ? { keyword } : {}) },
+  });
+  return response.data;
+};
