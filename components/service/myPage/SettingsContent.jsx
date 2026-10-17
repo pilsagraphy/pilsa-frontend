@@ -225,8 +225,8 @@ export default function SettingsContent({ myInfo, onNestedOpenChange, onProfileS
       {/* 3. 간편로그인 · 캘린더 — 구글(계정 + 캘린더 자동 업데이트) · 네이버(계정 + 캘린더 새 일정 넣기) · 카카오(계정). 제공자마다 한 상자. 알림보다 위, 기본 펼침 (PM 2026-10-13) */}
       <Collapsible title="간편로그인 · 캘린더 연동" defaultOpen>
         <div className="flex flex-col gap-2">
-          <GoogleIntegrationSection />
-          <SocialAccountsSection />
+          <GoogleIntegrationSection socialOnly={!!myInfo?.socialOnly} onCreatePassword={() => setPasswordOpen(true)} />
+          <SocialAccountsSection socialOnly={!!myInfo?.socialOnly} onCreatePassword={() => setPasswordOpen(true)} />
         </div>
       </Collapsible>
 

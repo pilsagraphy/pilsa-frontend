@@ -22,6 +22,8 @@ import LoginBannedSection from './LoginBannedSection';
 import LoginRestrictedSection from './LoginRestrictedSection';
 import GoogleLinkDialog from './GoogleLinkDialog';
 import { completeSocialLink, getSocialLoginUrl, providerLabel } from '@/apis/social';
+import useSocialPendingExpiry, { SOCIAL_EXPIRED_PARAM } from '@/hooks/useSocialPendingExpiry';
+import { alertDialog } from '@/stores/useDialogStore';
 
 // 아이디 저장(로컬 스토리지) 키 — 아이디만 채워둘 뿐 세션과는 무관
 const SAVED_LOGIN_ID_KEY = 'savedLoginId';
@@ -155,6 +157,8 @@ export default function LoginSection() {
   // GET /api/auth/google/pending 응답: { googleEmail, maskedEmail, emailMatched, maskedLoginId }
   // 지금 아이디로 로그인하면 그 구글 계정을 붙인다.
   const [pendingGoogleLink, setPendingGoogleLink] = useState(null);
+  // 로그인해서 연결하기 중에 대기(10분)가 끝나면 이 화면을 새로 연다 (PM 2026-10-16)
+  useSocialPendingExpiry(Boolean(pendingGoogleLink));
   // "연결할까요 / 회원가입할까요" 모달 — 구글에서 막 돌아온 순간(?googleLink=1)에만 띄운다
   const [googleDialogOpen, setGoogleDialogOpen] = useState(false);
   const { login, logout, applyAuthResponse } = useAuthStore();
@@ -245,6 +249,13 @@ export default function LoginSection() {
         // 확인에 실패하면 안내 없이 일반 로그인 화면으로 둔다
       });
   }, [searchParams]);
+
+  // 간편로그인 대기 만료로 새로 열린 경우 (useSocialPendingExpiry) — 팝업으로 알리고 쿼리를 정리한다
+  useEffect(() => {
+    if (!searchParams.has(SOCIAL_EXPIRED_PARAM)) return;
+    router.replace(ROUTES.LOGIN);
+    alertDialog('간편로그인 인증 시간이 만료되었어요', '보안을 위해 인증 후 10분이 지나면 다시 인증해야 해요. 간편로그인을 다시 눌러 주세요.');
+  }, [searchParams, router]);
 
   // 구글 로그인 콜백 복귀 처리: /login?login=google (실패 시 /login?error=코드)
   //
@@ -388,8 +399,14 @@ export default function LoginSection() {
             `${label} 계정${linkedEmail ? `(${linkedEmail})` : ''}을 연결했어요. 다음부턴 ${label}로 바로 로그인돼요`
           );
         } catch (linkErr) {
-          toast.error(
-            getErrorMessage(linkErr, `${label} 계정 연결에 실패했어요. 마이페이지에서 다시 연결할 수 있어요.`)
+          // 토스트는 바로 뒤 화면 이동에 묻혀 안 보였다(PM 2026-10-16 "연결 안 되는데 안내가 없음") — 팝업으로 알리고 닫은 뒤 이동한다.
+          // 409 = 그 간편 계정이 이미 다른 필사 계정에 연결돼 있음 (서버 문구에 그대로 담겨 온다)
+          const conflict = linkErr?.response?.status === 409;
+          await alertDialog(
+            `${label} 계정을 연결하지 못했어요`,
+            conflict
+              ? `${getErrorMessage(linkErr, `이미 다른 필사 계정에 연결된 ${label} 계정이에요.`)}\n로그인은 됐어요. 그 계정에서 연결을 해제한 뒤 마이페이지에서 다시 연결할 수 있어요.`
+              : `${getErrorMessage(linkErr, '연결 중 문제가 생겼어요.')}\n로그인은 됐어요. 마이페이지에서 다시 연결할 수 있어요.`
           );
         } finally {
           setPendingGoogleLink(null);
