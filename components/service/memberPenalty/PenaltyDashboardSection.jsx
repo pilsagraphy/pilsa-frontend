@@ -4,7 +4,6 @@ import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import MemberListSection from './MemberListSection';
 import PenaltyStatCard from './PenaltyStatCard';
 import ReportSection from './ReportSection';
-import ForceWithdrawLogSection from './ForceWithdrawLogSection';
 import ModerationLegend from '@/components/shared/admin/ModerationLegend';
 import useSanctionStore from '@/stores/useSanctionStore';
 import { DETAIL_FROM_PENALTY, getAdminPostDetailHref } from '@/constants/adminPosts';
@@ -19,6 +18,7 @@ import { getCommentAnchorId } from '@/lib/utils';
 // 목록/상세를 다시 GET 해서 갱신된 tag 를 받아오면 된다.
 // history = 제재는 없지만 신고·조치 로그가 있는 회원 (복원된 사람 포함), none = 그것도 없음
 const statusText = (tag) => {
+  if (tag === 'withdrawn') return '강퇴';
   if (tag === 'caution') return '주의';
   if (tag === 'history' || tag === 'none') return '제재 없음';
   return '정지';
@@ -37,6 +37,10 @@ const formatTime = (iso) => (iso ? iso.slice(11, 16) : '');
 // 회원 상태 줄: 주의 | 영구 정지 | 정지 (기간) | 제재 없음(로그만)
 function toBanText(detail) {
   if (!detail) return '';
+  if (detail.tag === 'withdrawn') {
+    const at = detail.withdrawnAt ? `${formatDate(detail.withdrawnAt)} ${String(detail.withdrawnAt).slice(11, 16)}` : '';
+    return `강제 탈퇴 (${at}${detail.withdrawnByName ? ` · ${detail.withdrawnByName}` : ''})`;
+  }
   if (detail.tag === 'caution') return '주의';
   if (detail.tag === 'history' || detail.tag === 'none') return '제재 없음';
   if (detail.tag === 'permanent' || !detail.bannedUntil) return '영구 정지';
@@ -263,6 +267,16 @@ export default function PenaltyDashboardSection() {
                 </span>
               </div>
 
+              {/* 강제 탈퇴 사유 */}
+              {selectedDetail.data?.tag === 'withdrawn' && (
+                <div className="flex items-start justify-between gap-4 border-b border-line-strong py-[12px] pr-[14px]">
+                  <span className="shrink-0 text-[14px] font-medium tracking-[-0.28px] text-ink-4">탈퇴 사유</span>
+                  <span className="text-right text-[14px] tracking-[-0.28px] text-ink [word-break:keep-all]">
+                    {selectedDetail.data.withdrawReason || '-'}
+                  </span>
+                </div>
+              )}
+
               {/* 통계 카드 4개: 로딩 / 에러 / 데이터 있음 처리 */}
               {selectedDetail.isLoading ? (
                 <div className="mt-[24px] flex h-[87px] items-center justify-center text-[14px] tracking-[-0.28px] text-ink-3">
@@ -314,8 +328,6 @@ export default function PenaltyDashboardSection() {
         </div>
       </div>
 
-      {/* 강제 탈퇴 이력 — 탈퇴자는 위 목록에 안 나오므로 따로 (PM 2026-10-17) */}
-      <ForceWithdrawLogSection />
     </section>
   );
 }

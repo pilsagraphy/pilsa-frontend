@@ -6,6 +6,14 @@ import React, { useEffect, useRef } from 'react';
 // - 주의: 테두리 없이 회색 배경 + 흰 글자
 // - 이력: 회색 테두리 + 흰 배경 + 회색 글자 (제재는 없고 신고·조치 로그만 있음)
 function StatusBadge({ status }) {
+  // 강퇴: 진한 배경 + 흰 글자 — 되돌릴 수 없는 조치라 가장 눈에 띄게
+  if (status === '강퇴') {
+    return (
+      <span className="shrink-0 rounded-[11px] bg-inverse px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-inverse-fg">
+        강퇴
+      </span>
+    );
+  }
   if (status === '이력') {
     return (
       <span className="shrink-0 rounded-[11px] border border-line-strong bg-surface px-[9px] text-[14px] leading-[1.6] tracking-[-0.28px] text-ink-3">
