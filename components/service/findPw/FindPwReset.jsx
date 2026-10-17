@@ -113,7 +113,7 @@ export default function FindPwReset({ loginId, onNext }) {
                 type="password"
                 value={newPassword}
                 onChange={handleNewPasswordChange}
-                placeholder="영문, 숫자, 특수문자 포함 8자 이상"
+                placeholder="문자와 숫자를 섞어 8~20자"
                 disabled={loading}
                 className={`h-[52px] text-[16px] ${
                   errors.newPassword

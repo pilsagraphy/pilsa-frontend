@@ -25,8 +25,7 @@ export const passwordSchema = z
   .min(8, { message: '비밀번호는 최소 8자 이상이어야 합니다.' })
   .max(20, { message: '비밀번호는 최대 20자까지 가능합니다.' })
   .regex(/[A-Za-z]/, { message: '문자 포함 여부를 확인해주세요.' })
-  .regex(/[0-9]/, { message: '숫자 포함 여부를 확인해주세요.' })
-  .regex(/[^A-Za-z0-9]/, { message: '특수문자 포함 여부를 확인해주세요.' });
+  .regex(/[0-9]/, { message: '숫자 포함 여부를 확인해주세요.' }); // 특수문자 필수는 없앰 (PM 2026-10-17)
 
 export const emailCodeSchema = z
   .string()
