@@ -40,7 +40,7 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
   const pinch = useRef(null); // 두 손가락 시작 상태
   const [view, setView] = useState({ scale: 1, tx: 0, ty: 0 });
   // PC 확대 이동 — 확대한 뒤 손(이동) 도구로 끌거나, 스페이스바를 누른 채 끌거나, 휠 버튼으로 끌면 캔버스가 상하좌우로 움직인다 (PM 10/17 "가운데만 보인다").
-  // 마우스(정밀 포인터)에서만 확대 시 손 도구로 자동 전환한다 — 폰은 기존 핀치 그대로
+  // 확대해도 도구는 그대로 — 이동은 확대 줄의 '이동' 버튼으로 켠다 (PM 10/18 "자동 선택 말고 버튼만"). 폰은 기존 핀치 그대로
   const pan = useRef(null); // 끌기 시작 상태 { x, y, view0 }
   const [panning, setPanning] = useState(false);
   const [spaceHeld, setSpaceHeld] = useState(false);
@@ -240,8 +240,6 @@ export default function DrawingModal({ open, onClose, onDone, maxKb = 200, initi
     const scale = Math.min(4, Math.max(1, Math.round(next * 100) / 100));
     const frame = frameRef.current?.getBoundingClientRect();
     if (!frame) return;
-    // 마우스로 처음 확대하면 바로 끌어 볼 수 있게 손 도구로 (다시 그리려면 도구 줄에서 펜 등을 고른다)
-    if (view.scale <= 1 && scale > 1 && window.matchMedia?.('(hover: hover) and (pointer: fine)').matches) chooseHand();
     const cx = frame.width / 2;
     const cy = frame.height / 2;
     const px = (cx - view.tx) / view.scale;
