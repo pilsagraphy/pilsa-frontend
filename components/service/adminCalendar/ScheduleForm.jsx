@@ -289,8 +289,8 @@ export default function ScheduleForm({
 
   // 세부 사항은 게시글과 같은 편집기(툴바 서식 · 마크다운 저장). 이미지는 위 이미지 칸이 맡으므로 본문 삽입은 끈다 (PM, 2026-09-21)
   const [contentEditor, setContentEditor] = React.useState(null);
-  // 회원 전원 알림 — 등록은 기본 켬, 수정은 기본 끔 (고칠 때마다 전원에게 가면 안 된다). 관리자가 정한다 (PM, 2026-09-21)
-  const [notify, setNotify] = React.useState(isCreate);
+  // 회원 전원 알림 — 등록·수정 모두 기본 끔, 보낼 때만 관리자가 직접 켠다 (PM 2026-10-18 "디폴트로 체크 해제", 이전엔 등록 기본 켬)
+  const [notify, setNotify] = React.useState(false);
 
   // 반복 (등록 전용). 요일은 시작일의 요일로 시작한다
   const [repeat, setRepeat] = React.useState('none');
