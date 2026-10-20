@@ -23,6 +23,7 @@ import {
 import { listSectionClass, listTitleClass } from '@/components/shared/admin/CommunityListStyles';
 import { ROUTES } from '@/constants/routes';
 import AppLaunchPanel from './AppLaunchPanel';
+import NotificationReportPanel from './NotificationReportPanel';
 import SimpleLineChart from './SimpleLineChart';
 import SimpleBarChart from './SimpleBarChart';
 import TrendingTable from './TrendingTable';
@@ -383,6 +384,9 @@ export default function MonitoringSection() {
           )}
         </Status>
       </Block>
+
+      {/* 알림 발송·읽음 */}
+      <NotificationReportPanel Block={Block} />
 
       {/* 캘린더 연동 장애 */}
       <Block
