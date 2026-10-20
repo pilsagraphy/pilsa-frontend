@@ -62,6 +62,11 @@ export const getTrendingPolicy = async () => (await axiosInstance.get('/api/admi
 export const getCohortRetention = async (weeks = 12) => (await axiosInstance.get('/api/admin/monitoring/cohort-retention', { params: { weeks } })).data;
 // 콘텐츠 반응: { days, boards: [{ boardId, boardName, postCount, commentCount, likeCount, zeroCommentPosts, medianFirstCommentMinutes }] }
 export const getContentReaction = async (days = 30) => (await axiosInstance.get('/api/admin/monitoring/content-reaction', { params: { days } })).data;
+// 알림 발송·읽음: { days, types: [{ type, sent, read, readRate, medianReadMinutes }], batches: [{ date, type, title, sent, read }] }
+export const getNotificationReport = async (days = 30) => (await axiosInstance.get('/api/admin/monitoring/notifications', { params: { days } })).data;
+// 발송 묶음 수신자: [{ notificationId, userId, name, loginId, title, state, read, sentAt, readAt }]
+export const getNotificationRecipients = async (date, type) =>
+  (await axiosInstance.get('/api/admin/monitoring/notifications/recipients', { params: { date, type } })).data;
 // 캘린더 연동 장애: { staleDays, googleFailedMembers, kakaoFailedMembers, naverStuckMembers, staleLinks,
 //   rows: [{ provider: google|kakao|naver, issue: FAILED|TOKEN|STALE, userId, name, loginId, memberType, failedCount, exhaustedCount, lastError, lastReflectedAt }] }
 export const getCalendarIssues = async (staleDays = 7) => (await axiosInstance.get('/api/admin/monitoring/calendar/issues', { params: { staleDays } })).data;
